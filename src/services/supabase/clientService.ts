@@ -14,10 +14,27 @@ export const getClients = async (): Promise<Client[]> => {
     return [];
   }
   
-  return data || [];
+  // Récupérer également les clients stockés localement
+  const localClientsString = localStorage.getItem('local_clients');
+  const localClients = localClientsString ? JSON.parse(localClientsString) : [];
+  
+  // Combiner les deux sources
+  return [...(data || []), ...localClients];
 };
 
 export const getClientById = async (clientId: string): Promise<Client | null> => {
+  // Vérifier d'abord si c'est un client local
+  if (clientId.startsWith('local_')) {
+    const localClientsString = localStorage.getItem('local_clients');
+    if (localClientsString) {
+      const localClients = JSON.parse(localClientsString);
+      const client = localClients.find((c: Client) => c.id === clientId);
+      return client || null;
+    }
+    return null;
+  }
+  
+  // Si ce n'est pas un client local, interroger Supabase
   const { data, error } = await supabase
     .from('clients')
     .select('*')
