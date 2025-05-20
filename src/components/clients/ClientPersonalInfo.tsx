@@ -1,5 +1,5 @@
 
-import { User, Mail, Phone, Building, FileText, Calendar, MapPinned, FileSpreadsheet, MapPin } from "lucide-react";
+import { User, Mail, Phone, Building, FileText, Calendar, MapPinned, FileSpreadsheet, MapPin, Navigation } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AddressSearch from "./AddressSearch";
 import { Button } from "@/components/ui/button";
@@ -134,6 +134,21 @@ const CadastralInfo = ({
             <span className="text-gray-500">Chargement de la zone climatique...</span>
           ) : climateZone ? (
             <span>{climateZone}</span>
+          ) : (
+            <span className="text-amber-600 text-sm">Non disponible</span>
+          )}
+        </div>
+      </div>
+      
+      {/* Géolocalisation */}
+      <div className="flex">
+        <Navigation className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
+        <div>
+          <p className="font-medium text-sm">Géolocalisation:</p>
+          {loadingCadastral ? (
+            <span className="text-gray-500">Chargement des coordonnées GPS...</span>
+          ) : utmCoordinates ? (
+            <span className="text-xs font-mono">Lat/Long disponible dans l'API Google Maps</span>
           ) : (
             <span className="text-amber-600 text-sm">Non disponible</span>
           )}
