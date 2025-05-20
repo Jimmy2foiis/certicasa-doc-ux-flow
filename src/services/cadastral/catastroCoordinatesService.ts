@@ -1,7 +1,7 @@
 
 import { GeoCoordinates } from '../geoCoordinatesService';
 import { getCadastralDataByCoordinatesREST } from '../catastroRestService';
-import { getFromCache, saveToCache } from './catastroCache';
+import { getFromCache, saveToCache, getCache } from './catastroCache';
 import { CatastroData } from '../catastroTypes';
 
 // Fonction principale pour récupérer les données cadastrales à partir de coordonnées
