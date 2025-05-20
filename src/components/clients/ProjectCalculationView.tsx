@@ -31,9 +31,11 @@ const ProjectCalculationView = ({
   onSave 
 }: ProjectCalculationViewProps) => {
   // Find the calculation data if we're editing an existing calculation
-  const calculationData = currentProjectId
-    ? savedCalculations.find(c => c.projectId === currentProjectId)?.calculationData
+  const currentCalculation = currentProjectId
+    ? savedCalculations.find(c => c.projectId === currentProjectId)
     : undefined;
+    
+  const calculationData = currentCalculation?.calculationData;
     
   return (
     <div className="space-y-4">
@@ -53,7 +55,10 @@ const ProjectCalculationView = ({
         projectId={currentProjectId}
         savedData={calculationData}
         onSave={onSave}
-        clientClimateZone={client.climateZone || "B3"} // Ajout de la zone climatique du client
+        clientClimateZone={client.climateZone || "B3"}
+        clientName={client.name}
+        clientAddress={client.address}
+        projectName={currentCalculation?.projectName}
       />
     </div>
   );
