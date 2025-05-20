@@ -1,7 +1,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Form } from "@/components/ui/form";
 import { useCoordinates } from "@/hooks/useCoordinates";
 import { clientSchema, ClientFormValues } from "./schemas/clientSchema";
@@ -26,7 +26,6 @@ interface ClientFormProps {
 }
 
 export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = false }: ClientFormProps) => {
-  const addressInputRef = useRef<HTMLInputElement>(null);
   const { coordinates, setClientCoordinates } = useCoordinates();
   const { toast } = useToast();
   const [addressSelected, setAddressSelected] = useState(false);
@@ -58,8 +57,6 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
   // Handle address selection from Google Maps autocomplete
   const handleAddressSelected = (address: string) => {
     console.log("Adresse sélectionnée:", address);
-    form.setValue("address", address, { shouldValidate: true, shouldDirty: true });
-    form.trigger("address");
     setAddressSelected(true);
     setAddressWarning(null);
     
@@ -93,7 +90,7 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
         toast({
           title: "Attention",
           description: "L'adresse n'a pas été sélectionnée dans les suggestions. Les coordonnées pourraient ne pas être précises.",
-          variant: "destructive", // Fixed: Changed from "warning" to "destructive"
+          variant: "destructive",
           duration: 5000,
         });
       }
@@ -142,7 +139,6 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
         
         <AddressField 
           control={form.control}
-          inputRef={addressInputRef}
           onAddressSelected={handleAddressSelected}
           onCoordinatesSelected={handleCoordinatesSelected}
         />
