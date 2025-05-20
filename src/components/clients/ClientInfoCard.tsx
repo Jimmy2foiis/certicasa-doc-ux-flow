@@ -34,38 +34,36 @@ const ClientInfoCard = ({
   onRefreshCadastralData
 }: ClientInfoCardProps) => {
   return (
-    <div className="space-y-6 lg:col-span-2">
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col gap-6">
-            <ClientBasicInfo 
-              email={client?.email || ''}
-              phone={client?.phone || ''}
-              nif={client?.nif || ''}
-              type={client?.type || ''}
+    <Card>
+      <CardContent className="p-6">
+        <div className="flex flex-col gap-6">
+          <ClientBasicInfo 
+            email={client?.email || ''}
+            phone={client?.phone || ''}
+            nif={client?.nif || ''}
+            type={client?.type || ''}
+          />
+          
+          <div className="space-y-4">
+            <AddressSearch 
+              initialAddress={address || ''} 
+              onAddressChange={onAddressChange || (() => {})} 
+              onCoordinatesChange={onCoordinatesChange}
             />
             
-            <div className="space-y-4">
-              <AddressSearch 
-                initialAddress={address || ''} 
-                onAddressChange={onAddressChange || (() => {})} 
-                onCoordinatesChange={onCoordinatesChange}
-              />
-              
-              <CadastralInfo 
-                utmCoordinates={utmCoordinates}
-                cadastralReference={cadastralReference}
-                climateZone={climateZone}
-                apiSource={apiSource}
-                loadingCadastral={loadingCadastral}
-                gpsCoordinates={gpsCoordinates}
-                onRefresh={onRefreshCadastralData}
-              />
-            </div>
+            <CadastralInfo 
+              utmCoordinates={utmCoordinates}
+              cadastralReference={cadastralReference}
+              climateZone={climateZone}
+              apiSource={apiSource}
+              loadingCadastral={loadingCadastral}
+              gpsCoordinates={gpsCoordinates}
+              onRefresh={onRefreshCadastralData}
+            />
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

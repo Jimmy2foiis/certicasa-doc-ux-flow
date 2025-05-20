@@ -15,7 +15,7 @@ export const ClientTabsContainer = ({ onShowCalculation }: ClientTabsContainerPr
   const [currentTab, setCurrentTab] = useState("projects");
 
   return (
-    <Card className="lg:col-span-1">
+    <Card>
       <Tabs defaultValue="projects" onValueChange={setCurrentTab}>
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="projects">Projets</TabsTrigger>

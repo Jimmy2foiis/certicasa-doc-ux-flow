@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast"; 
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
-import { ClientTabsContainer } from "./ClientTabsContainer.tsx";
+import { ClientTabsContainer } from "./ClientTabsContainer";
 import ClientInfoCard from "./ClientInfoCard";
 import CadastralInfo from "./CadastralInfo";
 
@@ -83,19 +83,21 @@ const ClientInfoTab = ({
   
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <ClientInfoCard 
-        client={client}
-        address={address}
-        onAddressChange={handleAddressChange}
-        onCoordinatesChange={handleCoordinatesChange}
-        utmCoordinates={utmCoordinates}
-        cadastralReference={cadastralReference}
-        climateZone={climateZone}
-        apiSource={apiSource}
-        loadingCadastral={loadingCadastral}
-        onRefreshCadastralData={handleRefreshCadastralData}
-        gpsCoordinates={coordinates}
-      />
+      <div className="lg:col-span-1">
+        <ClientInfoCard 
+          client={client}
+          address={address}
+          onAddressChange={handleAddressChange}
+          onCoordinatesChange={handleCoordinatesChange}
+          utmCoordinates={utmCoordinates}
+          cadastralReference={cadastralReference}
+          climateZone={climateZone}
+          apiSource={apiSource}
+          loadingCadastral={loadingCadastral}
+          onRefreshCadastralData={handleRefreshCadastralData}
+          gpsCoordinates={coordinates}
+        />
+      </div>
 
       <div className="lg:col-span-2">
         <ClientTabsContainer onShowCalculation={onShowCalculation} />
