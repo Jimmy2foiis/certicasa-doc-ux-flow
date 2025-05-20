@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import AddressSearch from "./AddressSearch";
 import CadastralInfo from "./CadastralInfo";
@@ -43,7 +42,7 @@ const ClientInfoCard = ({
             <ClientPersonalInfo client={client} />
             
             <AddressSearch 
-              address={address || ''} 
+              initialAddress={address || ''} 
               onAddressChange={onAddressChange} 
               onCoordinatesChange={onCoordinatesChange}
             />
