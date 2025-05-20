@@ -20,6 +20,7 @@ interface ClientInfoTabProps {
   utmCoordinates: string;
   cadastralReference: string;
   climateZone: string;
+  apiSource?: string;
   loadingCadastral: boolean;
   onShowCalculation?: (projectId?: string) => void;
   onAddressChange?: (newAddress: string) => void;
@@ -32,6 +33,7 @@ const ClientInfoTab = ({
   utmCoordinates, 
   cadastralReference, 
   climateZone,
+  apiSource,
   loadingCadastral,
   onShowCalculation,
   onAddressChange,
@@ -94,6 +96,7 @@ const ClientInfoTab = ({
             utmCoordinates={utmCoordinates}
             cadastralReference={cadastralReference}
             climateZone={climateZone}
+            apiSource={apiSource}
             loadingCadastral={loadingCadastral}
             onRefreshCadastralData={handleRefreshCadastralData}
           />

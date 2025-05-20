@@ -16,6 +16,7 @@ interface ClientPersonalInfoProps {
   cadastralReference: string;
   climateZone: string;
   loadingCadastral: boolean;
+  apiSource?: string;
   onRefreshCadastralData?: () => void;
 }
 
@@ -28,6 +29,7 @@ const ClientPersonalInfo = ({
   cadastralReference,
   climateZone,
   loadingCadastral,
+  apiSource,
   onRefreshCadastralData
 }: ClientPersonalInfoProps) => {
   return (
@@ -68,6 +70,7 @@ const ClientPersonalInfo = ({
           cadastralReference={cadastralReference}
           climateZone={climateZone}
           loadingCadastral={loadingCadastral}
+          apiSource={apiSource}
           onRefresh={onRefreshCadastralData}
         />
         
@@ -94,18 +97,27 @@ const CadastralInfo = ({
   cadastralReference,
   climateZone,
   loadingCadastral,
+  apiSource,
   onRefresh
 }: {
   utmCoordinates: string;
   cadastralReference: string;
   climateZone: string;
   loadingCadastral: boolean;
+  apiSource?: string;
   onRefresh?: () => void;
 }) => {
   return (
     <div className="space-y-2 mt-4 border-t pt-4">
       <div className="flex items-center justify-between">
-        <h3 className="font-semibold text-sm">Données Cadastrales</h3>
+        <h3 className="font-semibold text-sm">
+          Données Cadastrales
+          {apiSource && (
+            <Badge variant="outline" className="ml-2 text-xs">
+              API {apiSource}
+            </Badge>
+          )}
+        </h3>
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>

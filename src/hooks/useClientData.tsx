@@ -38,6 +38,7 @@ export const useClientData = (clientId: string) => {
     utmCoordinates, 
     cadastralReference, 
     climateZone, 
+    apiSource,
     isLoading: loadingCadastral,
     error: cadastralError,
     refreshData: refreshCadastralData
@@ -121,6 +122,7 @@ export const useClientData = (clientId: string) => {
     utmCoordinates,
     cadastralReference,
     climateZone,
+    apiSource,
     loadingCadastral,
     refreshCadastralData: handleRefreshCadastralData
   };

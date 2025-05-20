@@ -1,13 +1,16 @@
 
 /**
  * Service pour interagir avec l'API officielle du Catastro Español (Sede Electrónica del Catastro)
+ * Utilise maintenant les endpoints REST/JSON modernes (plus fiables et plus simples)
  */
 
 import { fetchViaProxy } from './proxyService';
 import { getCoordinatesFromAddress, normalizeSpanishAddress, validateSpanishCoordinates, convertToUTM, type GeoCoordinates } from './geoCoordinatesService';
 import { createCoordinatesSoapEnvelope } from './soapRequestService';
 import { parseCatastroResponse, type CatastroData } from './cadastralParserService';
+import { getCadastralDataByCoordinates, getCadastralDataByAddress, getCadastralDataByReference } from './catastroRestService';
 
+// API URL conservée pour compatibilité avec l'implémentation SOAP
 const CATASTRO_API_URL = "https://ovc.catastro.meh.es/ovcservweb/OVCSWLocalizacionRC/OVCCoordenadas.asmx";
 // Liste des serveurs proxy alternatifs en cas d'échec
 const ALTERNATIVE_PROXIES = [
@@ -21,7 +24,7 @@ const cadastralCache = new Map<string, CatastroData>();
 
 /**
  * Interrogation de l'API Catastro à partir de coordonnées
- * Utilise directement les coordonnées WGS84 (latitude/longitude)
+ * Utilise maintenant l'API REST en priorité, avec fallback sur SOAP
  */
 export const getCadastralInfoFromCoordinates = async (lat: number, lng: number): Promise<CatastroData> => {
   try {
@@ -46,12 +49,39 @@ export const getCadastralInfoFromCoordinates = async (lat: number, lng: number):
       };
     }
 
-    // Création de l'enveloppe SOAP avec les coordonnées
-    const soapEnvelope = createCoordinatesSoapEnvelope(lat, lng);
-    
-    // Convertir les coordonnées en UTM pour les logs
+    // Convertir les coordonnées en UTM pour les logs et l'affichage
     const utmCoords = convertToUTM(lat, lng);
     console.log(`Coordonnées UTM calculées: X=${utmCoords.x}, Y=${utmCoords.y}`);
+    
+    // MÉTHODE REST (prioritaire)
+    try {
+      console.log("Tentative avec l'API REST...");
+      const restResult = await getCadastralDataByCoordinates(lat, lng);
+      
+      if (!restResult.error) {
+        const result: CatastroData = {
+          cadastralReference: restResult.cadastralReference || "",
+          address: restResult.address || "",
+          utmCoordinates: `${utmCoords.x}, ${utmCoords.y}`,
+          climateZone: restResult.climateZone || "",
+          apiSource: "REST" // Marquer la source pour le débogage
+        };
+        
+        // Mettre en cache les résultats réussis
+        cadastralCache.set(cacheKey, result);
+        return result;
+      } else {
+        console.warn("Échec de l'API REST, fallback sur SOAP:", restResult.error);
+      }
+    } catch (restError) {
+      console.warn("Erreur avec l'API REST, fallback sur SOAP:", restError);
+    }
+    
+    // MÉTHODE SOAP (fallback)
+    console.log("Tentative avec SOAP...");
+    
+    // Création de l'enveloppe SOAP avec les coordonnées
+    const soapEnvelope = createCoordinatesSoapEnvelope(lat, lng);
 
     // Essayer avec le service proxy principal et les alternatives en cas d'échec
     for (let i = 0; i < ALTERNATIVE_PROXIES.length; i++) {
@@ -78,6 +108,7 @@ export const getCadastralInfoFromCoordinates = async (lat: number, lng: number):
         
         // Analyse de la réponse XML
         const result: CatastroData = parseCatastroResponse(xmlText);
+        result.apiSource = "SOAP"; // Marquer la source pour le débogage
         
         // Si pas d'erreur mais pas de référence cadastrale, ajouter un avertissement
         if (!result.error && !result.cadastralReference) {
@@ -115,7 +146,8 @@ export const getCadastralInfoFromCoordinates = async (lat: number, lng: number):
 
 /**
  * Fonction principale pour obtenir les données cadastrales à partir d'une adresse
- * Cette fonction fait d'abord une conversion de l'adresse en coordonnées via Google Maps
+ * Cette fonction essaie d'abord l'API REST, puis fait une conversion de l'adresse en coordonnées
+ * en cas d'échec pour utiliser la méthode par coordonnées
  */
 export const getCadastralDataFromAddress = async (address: string): Promise<CatastroData> => {
   try {
@@ -129,6 +161,35 @@ export const getCadastralDataFromAddress = async (address: string): Promise<Cata
       console.log("Utilisation des données cadastrales du cache pour l'adresse", normalizedAddress);
       return cadastralCache.get(cacheKey)!;
     }
+    
+    // MÉTHODE REST par adresse (prioritaire)
+    try {
+      console.log("Tentative avec l'API REST par adresse...");
+      const restResult = await getCadastralDataByAddress(normalizedAddress);
+      
+      if (!restResult.error) {
+        const utmCoords = { x: 0, y: 0 }; // À compléter si disponible dans l'API
+        
+        const result: CatastroData = {
+          cadastralReference: restResult.cadastralReference || "",
+          address: normalizedAddress,
+          utmCoordinates: restResult.utmCoordinates || "",
+          climateZone: restResult.climateZone || "",
+          apiSource: "REST" // Marquer la source pour le débogage
+        };
+        
+        // Mettre en cache les résultats réussis
+        cadastralCache.set(cacheKey, result);
+        return result;
+      } else {
+        console.warn("Échec de l'API REST par adresse, passage à la méthode par coordonnées:", restResult.error);
+      }
+    } catch (restAddressError) {
+      console.warn("Erreur avec l'API REST par adresse, passage à la méthode par coordonnées:", restAddressError);
+    }
+    
+    // Si l'API REST par adresse a échoué, utiliser le géocodage et la méthode par coordonnées
+    console.log("Tentative avec géocodage + API par coordonnées...");
     
     // 1. Obtenir les coordonnées géographiques à partir de l'adresse
     const coordinates = await getCoordinatesFromAddress(normalizedAddress);

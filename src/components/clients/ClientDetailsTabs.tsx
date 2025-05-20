@@ -14,6 +14,7 @@ import CalculationsTab from "./CalculationsTab";
 import DocumentsTab from "./DocumentsTab";
 import BillingTab from "./BillingTab";
 import StatisticsTab from "./StatisticsTab";
+import { GeoCoordinates } from "@/services/geoCoordinatesService";
 
 interface ClientDetailsTabsProps {
   clientId: string;
@@ -22,12 +23,15 @@ interface ClientDetailsTabsProps {
   utmCoordinates: string;
   cadastralReference: string;
   climateZone: string;
+  apiSource?: string;
   loadingCadastral: boolean;
   savedCalculations: any[];
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onShowCalculation: (projectId?: string) => void;
   onAddressChange: (address: string) => void;
+  onCoordinatesChange?: (coordinates: GeoCoordinates) => void;
+  onRefreshCadastralData?: () => Promise<void>;
 }
 
 const ClientDetailsTabs = ({
@@ -37,12 +41,15 @@ const ClientDetailsTabs = ({
   utmCoordinates,
   cadastralReference,
   climateZone,
+  apiSource,
   loadingCadastral,
   savedCalculations,
   activeTab,
   setActiveTab,
   onShowCalculation,
-  onAddressChange
+  onAddressChange,
+  onCoordinatesChange,
+  onRefreshCadastralData
 }: ClientDetailsTabsProps) => {
   return (
     <Tabs 
@@ -82,10 +89,13 @@ const ClientDetailsTabs = ({
           client={client} 
           utmCoordinates={utmCoordinates} 
           cadastralReference={cadastralReference} 
-          climateZone={climateZone} 
+          climateZone={climateZone}
+          apiSource={apiSource}
           loadingCadastral={loadingCadastral}
           onShowCalculation={onShowCalculation}
           onAddressChange={onAddressChange}
+          onCoordinatesChange={onCoordinatesChange}
+          onRefreshCadastralData={onRefreshCadastralData}
         />
       </TabsContent>
 

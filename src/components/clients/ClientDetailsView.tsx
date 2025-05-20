@@ -12,7 +12,19 @@ interface ClientDetailsViewProps {
 }
 
 const ClientDetailsView = ({ clientId, onBack }: ClientDetailsViewProps) => {
-  const { client, clientAddress, setClientAddress, savedCalculations, loadingCadastral, utmCoordinates, cadastralReference, climateZone } = useClientData(clientId);
+  const { 
+    client, 
+    clientAddress, 
+    setClientAddress, 
+    setClientCoordinates,
+    savedCalculations, 
+    loadingCadastral, 
+    utmCoordinates, 
+    cadastralReference, 
+    climateZone,
+    apiSource,
+    refreshCadastralData 
+  } = useClientData(clientId);
   const [showCalculations, setShowCalculations] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("client-info");
@@ -26,6 +38,18 @@ const ClientDetailsView = ({ clientId, onBack }: ClientDetailsViewProps) => {
     toast({
       title: "Adresse mise à jour",
       description: "Les données cadastrales sont en cours de mise à jour...",
+      duration: 3000
+    });
+  };
+
+  // Fonction pour mettre à jour les coordonnées
+  const handleCoordinatesChange = (coordinates: any) => {
+    setClientCoordinates(coordinates);
+    
+    // Afficher une notification
+    toast({
+      title: "Coordonnées mises à jour",
+      description: "Récupération des données cadastrales avec précision GPS...",
       duration: 3000
     });
   };
@@ -80,12 +104,15 @@ const ClientDetailsView = ({ clientId, onBack }: ClientDetailsViewProps) => {
         utmCoordinates={utmCoordinates}
         cadastralReference={cadastralReference}
         climateZone={climateZone}
+        apiSource={apiSource}
         loadingCadastral={loadingCadastral}
         savedCalculations={savedCalculations}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onShowCalculation={handleShowCalculation}
         onAddressChange={handleAddressChange}
+        onCoordinatesChange={handleCoordinatesChange}
+        onRefreshCadastralData={refreshCadastralData}
       />
     </div>
   );
