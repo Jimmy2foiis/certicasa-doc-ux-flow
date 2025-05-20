@@ -1,5 +1,5 @@
 
-import { CatastroData } from "../catastroService";
+import { CatastroData } from "../catastroTypes";
 import { supabase } from '@/integrations/supabase/client';
 import { Json } from '@/integrations/supabase/types';
 
@@ -20,6 +20,45 @@ const isCacheValid = (timestamp: string): boolean => {
   const cacheTime = new Date(timestamp).getTime();
   const currentTime = new Date().getTime();
   return (currentTime - cacheTime) < CACHE_EXPIRY_TIME;
+};
+
+/**
+ * Efface toutes les données du cache cadastral ou pour des coordonnées spécifiques
+ */
+export const clearCadastralCache = async (lat?: number, lng?: number): Promise<void> => {
+  try {
+    if (lat !== undefined && lng !== undefined) {
+      // Supprimer une entrée spécifique du cache
+      const cacheKey = generateCacheKey(lat, lng);
+      
+      const { error } = await supabase
+        .from('cadastral_cache')
+        .delete()
+        .eq('coordinate_key', cacheKey);
+      
+      if (error) {
+        console.error(`Erreur lors de la suppression du cache pour ${lat}, ${lng}:`, error);
+        throw error;
+      }
+      
+      console.log(`Cache supprimé pour les coordonnées ${lat}, ${lng}`);
+    } else {
+      // Supprimer tout le cache
+      const { error } = await supabase
+        .from('cadastral_cache')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000'); // Condition pour tout supprimer
+      
+      if (error) {
+        console.error("Erreur lors de la suppression complète du cache cadastral:", error);
+        throw error;
+      }
+      
+      console.log("Cache cadastral entièrement supprimé");
+    }
+  } catch (error) {
+    console.error("Erreur lors du nettoyage du cache cadastral:", error);
+  }
 };
 
 /**
