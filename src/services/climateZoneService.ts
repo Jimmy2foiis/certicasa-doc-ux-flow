@@ -1,12 +1,22 @@
 
+// Fonction pour normaliser les noms de province (suppression des accents, majuscules, etc.)
+export const normalizeProvince = (province: string): string => {
+  if (!province) return "";
+  return province
+    .toUpperCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+    .replace(/\./g, '')
+    .trim();
+};
+
 // Mapping des provinces espagnoles à leurs zones climatiques selon CTE
 export const provinceToClimateZone: Record<string, string> = {
   // Zone α3
-  "ALMERÍA": "α3",
+  "ALMERIA": "α3",
   // Zone A3
-  "CÁDIZ": "A3",
+  "CADIZ": "A3",
   "HUELVA": "A3",
-  "MÁLAGA": "A3",
+  "MALAGA": "A3",
   "LAS PALMAS": "A3",
   "SANTA CRUZ DE TENERIFE": "A3",
   // Zone A4
@@ -18,11 +28,11 @@ export const provinceToClimateZone: Record<string, string> = {
   "VALENCIA": "B3",
   // Zone B4
   "BADAJOZ": "B4",
-  "CÓRDOBA": "B4",
+  "CORDOBA": "B4",
   "GRANADA": "B4",
-  "JAÉN": "B4",
+  "JAEN": "B4",
   // Zone C1
-  "A CORUÑA": "C1",
+  "A CORUNA": "C1",
   "ASTURIAS": "C1",
   "CANTABRIA": "C1",
   "GUIPUZCOA": "C1",
@@ -45,7 +55,7 @@ export const provinceToClimateZone: Record<string, string> = {
   "TOLEDO": "C4",
   // Zone D1
   "ALAVA": "D1",
-  "ARABA/ÁLAVA": "D1",
+  "ARABA/ALAVA": "D1",
   "LLEIDA": "D1",
   "NAVARRA": "D1",
   "LA RIOJA": "D1",
@@ -69,25 +79,40 @@ export const provinceToClimateZone: Record<string, string> = {
   "GUADALAJARA": "E1",
 };
 
-// Fonction pour obtenir la zone climatique par province
+// Fonction pour obtenir la zone climatique par province avec normalisation
 export const getClimateZoneByProvince = (province: string): string => {
   if (!province) return "";
   
   // Normalisation du nom de province
-  const normalizedProvince = province.toUpperCase().trim();
+  const normalizedProvince = normalizeProvince(province);
   
-  return provinceToClimateZone[normalizedProvince] || "N/A";
+  // Essayer d'abord une correspondance exacte
+  if (provinceToClimateZone[normalizedProvince]) {
+    return provinceToClimateZone[normalizedProvince];
+  }
+  
+  // Si pas de correspondance exacte, essayons de trouver une province qui contient la chaîne
+  for (const key in provinceToClimateZone) {
+    const normalizedKey = normalizeProvince(key);
+    if (normalizedProvince.includes(normalizedKey) || normalizedKey.includes(normalizedProvince)) {
+      return provinceToClimateZone[key];
+    }
+  }
+  
+  return "N/A";
 };
 
 // Fonction pour obtenir la zone climatique par adresse
 export const getClimateZoneByAddress = (address: string): string => {
   if (!address) return "";
   
-  // Détection simplifiée de la province dans l'adresse
-  const normalizedAddress = address.toUpperCase().trim();
+  // Normalisation de l'adresse
+  const normalizedAddress = normalizeProvince(address);
   
+  // Essayer de détecter une province dans l'adresse
   for (const province in provinceToClimateZone) {
-    if (normalizedAddress.includes(province)) {
+    const normalizedProvince = normalizeProvince(province);
+    if (normalizedAddress.includes(normalizedProvince)) {
       return provinceToClimateZone[province];
     }
   }

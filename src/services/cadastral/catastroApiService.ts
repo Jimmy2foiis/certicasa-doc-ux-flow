@@ -12,6 +12,11 @@ export const getCadastralDataByCoordinatesREST = async (
   longitude: number
 ): Promise<CatastroData> => {
   try {
+    // Validation préliminaire des coordonnées
+    if (isNaN(latitude) || isNaN(longitude) || !latitude || !longitude) {
+      throw new Error("Coordonnées invalides ou manquantes");
+    }
+    
     // Création de l'URL avec paramètres
     const url = new URL(OVC_COORDENADAS_URL);
     
@@ -19,19 +24,31 @@ export const getCadastralDataByCoordinatesREST = async (
     // SRS est le système de référence spatial (EPSG:4326 = WGS84)
     url.searchParams.append("SRS", "EPSG:4326"); 
     
-    // CORRECTION: Inversion des paramètres - X doit être longitude, Y latitude
-    // Important: Les valeurs décimales doivent utiliser le point comme séparateur
-    const longitudeStr = longitude.toString().replace(',', '.');
-    const latitudeStr = latitude.toString().replace(',', '.');
+    // CORRECTION: S'assurer que les valeurs décimales utilisent le point comme séparateur et sont correctement formatées
+    // Important: inverser latitude et longitude selon l'API Catastro
+    const longitudeStr = longitude.toString().replace(',', '.').trim();
+    const latitudeStr = latitude.toString().replace(',', '.').trim();
     
-    // CORRECTION: Vérifier que les coordonnées ne sont pas undefined ou null
-    if (!longitudeStr || longitudeStr === "undefined" || longitudeStr === "null") {
+    // Vérifications de sécurité supplémentaires
+    if (!longitudeStr || longitudeStr === "undefined" || longitudeStr === "null" || longitudeStr === "NaN") {
       throw new Error("La coordonnée X (longitude) est manquante ou invalide");
     }
-    if (!latitudeStr || latitudeStr === "undefined" || latitudeStr === "null") {
+    if (!latitudeStr || latitudeStr === "undefined" || latitudeStr === "null" || latitudeStr === "NaN") {
       throw new Error("La coordonnée Y (latitude) est manquante ou invalide");
     }
     
+    // Validation des limites de coordonnées pour l'Espagne
+    const longitudeNum = parseFloat(longitudeStr);
+    const latitudeNum = parseFloat(latitudeStr);
+    
+    if (longitudeNum < -10 || longitudeNum > 5) {
+      throw new Error("Longitude hors des limites de l'Espagne");
+    }
+    if (latitudeNum < 35 || latitudeNum > 45) {
+      throw new Error("Latitude hors des limites de l'Espagne");
+    }
+    
+    // Ajouter les paramètres à l'URL
     url.searchParams.append("Coordenada_X", longitudeStr);
     url.searchParams.append("Coordenada_Y", latitudeStr);
     
@@ -39,33 +56,55 @@ export const getCadastralDataByCoordinatesREST = async (
     console.log(`Appel API REST Catastro par coordonnées: ${url.toString()}`);
     console.log(`Paramètres envoyés: X=${longitudeStr}, Y=${latitudeStr}`);
     
-    // Appel à l'API
-    const response = await fetch(url.toString());
+    // Appel à l'API avec un timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
     
-    // Vérifier le code de statut
-    if (!response.ok) {
-      throw new Error(`Erreur HTTP: ${response.status}`);
-    }
-    
-    // Parser la réponse JSON
-    const data = await response.json();
-    console.log("Réponse API Catastro (brute):", data);
-    
-    // Extraction plus détaillée pour débogage
-    if (data && data.coordenadas && data.coordenadas.coord && data.coordenadas.coord.length > 0) {
-      const firstCoord = data.coordenadas.coord[0];
-      console.log("Premier élément de coordonnées:", firstCoord);
+    try {
+      const response = await fetch(url.toString(), { 
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'CertiCasaDoc/1.0'
+        }
+      });
+      clearTimeout(timeoutId);
       
-      if (firstCoord.pc) {
-        console.log("Référence cadastrale trouvée dans pc:", firstCoord.pc);
+      // Vérifier le code de statut
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
       }
       
-      if (firstCoord.lrc) {
-        console.log("Référence cadastrale trouvée dans lrc:", firstCoord.lrc);
+      // Parser la réponse JSON
+      const data = await response.json();
+      console.log("Réponse API Catastro (brute):", data);
+      
+      // Parser et retourner les données cadastrales
+      const result = parseCoordinatesResponse(data);
+      
+      // Logging final des résultats
+      if (result.cadastralReference) {
+        console.log(`✓ Référence cadastrale obtenue: ${result.cadastralReference}`);
+      } else {
+        console.log(`✗ Pas de référence cadastrale trouvée dans la réponse`);
+        // Log supplémentaire pour le débogage
+        console.log("Structure complète de la réponse Catastro:", JSON.stringify(data, null, 2));
       }
+      
+      if (result.climateZone) {
+        console.log(`✓ Zone climatique obtenue: ${result.climateZone}`);
+      }
+      
+      return result;
+      
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      // Gérer les erreurs spécifiques au fetch
+      if (fetchError.name === 'AbortError') {
+        throw new Error("La requête a dépassé le délai d'attente");
+      }
+      throw fetchError;
     }
-    
-    return parseCoordinatesResponse(data);
     
   } catch (error) {
     console.error("Erreur lors de la récupération des données cadastrales REST:", error);
@@ -89,11 +128,20 @@ export const getCadastralDataByAddressREST = async (address: string): Promise<Ca
     // Parser l'adresse pour extraire les composants
     const { province, municipality, roadType, roadName, number } = parseAddress(address);
     
+    // Validation des données d'entrée
+    if (!province || !municipality || !roadName) {
+      throw new Error("Adresse incomplète: province, municipalité et nom de rue sont requis");
+    }
+    
     // Création de l'URL avec paramètres
     const url = new URL(OVC_CALLEJERO_DNPLOC_URL);
     url.searchParams.append("Provincia", province);
     url.searchParams.append("Municipio", municipality);
-    url.searchParams.append("TipoVia", roadType);
+    
+    if (roadType) {
+      url.searchParams.append("TipoVia", roadType);
+    }
+    
     url.searchParams.append("NombreVia", roadName);
     
     if (number) {
@@ -102,18 +150,40 @@ export const getCadastralDataByAddressREST = async (address: string): Promise<Ca
     
     // Appel à l'API
     console.log(`Appel API REST Catastro par adresse: ${url.toString()}`);
-    const response = await fetch(url.toString());
     
-    // Vérifier le code de statut
-    if (!response.ok) {
-      throw new Error(`Erreur HTTP: ${response.status}`);
+    // Ajout d'un timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    
+    try {
+      const response = await fetch(url.toString(), { 
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'CertiCasaDoc/1.0'
+        }
+      });
+      clearTimeout(timeoutId);
+      
+      // Vérifier le code de statut
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP: ${response.status}`);
+      }
+      
+      // Parser la réponse JSON
+      const data = await response.json();
+      console.log("Réponse API Catastro par adresse:", data);
+      
+      return parseAddressResponse(data, province);
+      
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      // Gérer les erreurs spécifiques au fetch
+      if (fetchError.name === 'AbortError') {
+        throw new Error("La requête a dépassé le délai d'attente");
+      }
+      throw fetchError;
     }
-    
-    // Parser la réponse JSON
-    const data = await response.json();
-    console.log("Réponse API Catastro par adresse:", data);
-    
-    return parseAddressResponse(data, province);
     
   } catch (error) {
     console.error("Erreur lors de la récupération des données cadastrales REST par adresse:", error);
