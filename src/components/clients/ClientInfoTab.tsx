@@ -4,6 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
 import { ClientTabsContainer } from "./ClientTabsContainer.tsx";
 import ClientInfoCard from "./ClientInfoCard";
+import CadastralInfo from "./CadastralInfo";
 
 interface ClientInfoTabProps {
   client: any;
@@ -12,6 +13,7 @@ interface ClientInfoTabProps {
   climateZone: string;
   apiSource?: string;
   loadingCadastral: boolean;
+  coordinates?: GeoCoordinates;
   onShowCalculation?: (projectId?: string) => void;
   onAddressChange?: (newAddress: string) => void;
   onCoordinatesChange?: (coordinates: GeoCoordinates) => void;
@@ -25,6 +27,7 @@ const ClientInfoTab = ({
   climateZone,
   apiSource,
   loadingCadastral,
+  coordinates,
   onShowCalculation,
   onAddressChange,
   onCoordinatesChange,
@@ -91,6 +94,7 @@ const ClientInfoTab = ({
         apiSource={apiSource}
         loadingCadastral={loadingCadastral}
         onRefreshCadastralData={handleRefreshCadastralData}
+        gpsCoordinates={coordinates}
       />
 
       <ClientTabsContainer onShowCalculation={onShowCalculation} />

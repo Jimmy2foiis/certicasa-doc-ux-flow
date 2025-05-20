@@ -25,6 +25,7 @@ interface ClientDetailsTabsProps {
   climateZone: string;
   apiSource?: string;
   loadingCadastral: boolean;
+  coordinates?: GeoCoordinates;
   savedCalculations: any[];
   activeTab: string;
   setActiveTab: (tab: string) => void;
@@ -43,6 +44,7 @@ const ClientDetailsTabs = ({
   climateZone,
   apiSource,
   loadingCadastral,
+  coordinates,
   savedCalculations,
   activeTab,
   setActiveTab,
@@ -92,6 +94,7 @@ const ClientDetailsTabs = ({
           climateZone={climateZone}
           apiSource={apiSource}
           loadingCadastral={loadingCadastral}
+          coordinates={coordinates}
           onShowCalculation={onShowCalculation}
           onAddressChange={onAddressChange}
           onCoordinatesChange={onCoordinatesChange}

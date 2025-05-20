@@ -1,5 +1,5 @@
 
-import { MapPinned, FileSpreadsheet, MapPin, Navigation, RefreshCcw } from "lucide-react";
+import { MapPinned, FileSpreadsheet, MapPin, Navigation, RefreshCcw, Globe } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -11,6 +11,7 @@ interface CadastralInfoProps {
   climateZone: string;
   loadingCadastral: boolean;
   apiSource?: string;
+  gpsCoordinates?: { lat: number; lng: number };
   onRefresh?: () => void;
 }
 
@@ -20,6 +21,7 @@ const CadastralInfo = ({
   climateZone,
   loadingCadastral,
   apiSource,
+  gpsCoordinates,
   onRefresh
 }: CadastralInfoProps) => {
   return (
@@ -53,6 +55,18 @@ const CadastralInfo = ({
           </Tooltip>
         </TooltipProvider>
       </div>
+      
+      {gpsCoordinates && (
+        <div className="flex">
+          <Globe className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
+          <div>
+            <p className="font-medium text-sm">Coordonnées GPS:</p>
+            <span className="text-xs font-mono">
+              Lat: {gpsCoordinates.lat.toFixed(6)}, Lng: {gpsCoordinates.lng.toFixed(6)}
+            </span>
+          </div>
+        </div>
+      )}
       
       <div className="flex">
         <Navigation className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />

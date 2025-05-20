@@ -16,6 +16,7 @@ const ClientDetailsView = ({ clientId, onBack }: ClientDetailsViewProps) => {
     client, 
     clientAddress, 
     setClientAddress, 
+    coordinates,
     setClientCoordinates,
     savedCalculations, 
     loadingCadastral, 
@@ -106,6 +107,7 @@ const ClientDetailsView = ({ clientId, onBack }: ClientDetailsViewProps) => {
         climateZone={climateZone}
         apiSource={apiSource}
         loadingCadastral={loadingCadastral}
+        coordinates={coordinates}
         savedCalculations={savedCalculations}
         activeTab={activeTab}
         setActiveTab={setActiveTab}

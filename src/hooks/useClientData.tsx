@@ -12,7 +12,8 @@ import {
   getCalculationsForProject,
   Project,
   Calculation,
-  CadastralData as SupabaseCadastralData
+  CadastralData as SupabaseCadastralData,
+  Client
 } from "@/services/supabaseService";
 
 interface SavedCalculation {
@@ -33,16 +34,14 @@ const SAVED_CALCULATIONS_KEY = 'saved_calculations';
 export const useClientData = (clientId: string) => {
   const { toast } = useToast();
   
-  // État pour le client (actuellement à partir des données mock, à remplacer par Supabase)
-  const [client, setClient] = useState(clientsData.find(c => c.id === clientId));
+  // État pour le client
+  const [client, setClient] = useState<Client | null>(null);
   
   // États pour les données de Supabase
   const [projects, setProjects] = useState<Project[]>([]);
   
   // État pour stocker l'adresse du client actuelle
-  const [clientAddress, setClientAddress] = useState(
-    client ? (client as any).address || "Rue Serrano 120, 28006 Madrid" : ""
-  );
+  const [clientAddress, setClientAddress] = useState("");
   
   // État pour stocker les coordonnées (priorisées pour la récupération des données cadastrales)
   const [coordinates, setCoordinates] = useState<GeoCoordinates | undefined>(undefined);
@@ -92,20 +91,41 @@ export const useClientData = (clientId: string) => {
       const clientData = await getClientById(clientId);
       if (clientData) {
         console.log("Client chargé depuis Supabase:", clientData);
-        // Dans une future version, cette fonction remplacera l'utilisation des données mock
-        // setClient(clientData);
-        // setClientAddress(clientData.address || "");
+        setClient(clientData);
+        setClientAddress(clientData.address || "");
+      } else {
+        // Fallback aux données mock si le client n'est pas trouvé dans Supabase
+        const mockClient = clientsData.find(c => c.id === clientId);
+        if (mockClient) {
+          console.log("Client chargé depuis les données mock:", mockClient);
+          setClient(mockClient as unknown as Client);
+          setClientAddress((mockClient as any).address || "");
+        } else {
+          console.error("Client non trouvé dans Supabase ni dans les données mock");
+          toast({
+            title: "Erreur",
+            description: "Client introuvable. Veuillez réessayer.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error("Erreur lors du chargement du client depuis Supabase:", error);
+      // Fallback aux données mock en cas d'erreur
+      const mockClient = clientsData.find(c => c.id === clientId);
+      if (mockClient) {
+        console.log("Client chargé depuis les données mock (fallback):", mockClient);
+        setClient(mockClient as unknown as Client);
+        setClientAddress((mockClient as any).address || "");
+      }
     }
-  }, [clientId]);
+  }, [clientId, toast]);
   
   // Fonction pour charger les projets du client depuis Supabase
   const loadProjectsFromSupabase = useCallback(async () => {
     try {
       const projectsData = await getProjectsForClient(clientId);
-      if (projectsData) {
+      if (projectsData && projectsData.length > 0) {
         console.log("Projets chargés depuis Supabase:", projectsData);
         setProjects(projectsData);
       }
@@ -156,11 +176,6 @@ export const useClientData = (clientId: string) => {
   useEffect(() => {
     loadSavedCalculations();
     
-    // Initialiser l'adresse du client
-    if (client) {
-      setClientAddress((client as any).address || "Rue Serrano 120, 28006 Madrid");
-    }
-    
     // Récupérer les données de Supabase
     const loadSupabaseData = async () => {
       // Charger le client
@@ -181,7 +196,7 @@ export const useClientData = (clientId: string) => {
     };
     
     loadSupabaseData();
-  }, [clientId, client, loadSavedCalculations, loadClientFromSupabase, loadProjectsFromSupabase]);
+  }, [clientId, loadSavedCalculations, loadClientFromSupabase, loadProjectsFromSupabase]);
 
   // Afficher les erreurs cadastrales dans un toast
   useEffect(() => {
@@ -201,7 +216,7 @@ export const useClientData = (clientId: string) => {
     setClientAddress,
     coordinates,
     setClientCoordinates,
-    projects, // Nouvelle propriété pour les projets de Supabase
+    projects,
     savedCalculations,
     loadSavedCalculations,
     utmCoordinates,
