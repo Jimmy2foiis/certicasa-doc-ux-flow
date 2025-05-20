@@ -55,6 +55,18 @@ export const AddressField = ({
   const combinedLoading = isLoading || isLoadingAutocomplete;
   const combinedError = error || autocompleteError;
 
+  // Fonction pour initialiser l'autocomplétion au clic
+  const handleInputClick = () => {
+    console.log("Champ d'adresse cliqué");
+    if (actualInputRef.current) {
+      actualInputRef.current.focus();
+      // Forcer l'initialisation de l'autocomplétion au clic
+      if (isApiAvailable) {
+        initAutocomplete();
+      }
+    }
+  };
+
   return (
     <FormField
       control={control}
@@ -74,12 +86,7 @@ export const AddressField = ({
                   field.onChange(e);
                   field.value = e.target.value;
                 }}
-                onClick={() => {
-                  console.log("Champ d'adresse cliqué");
-                  if (actualInputRef.current) {
-                    actualInputRef.current.focus();
-                  }
-                }}
+                onClick={handleInputClick}
               />
             </div>
           </FormControl>

@@ -80,7 +80,7 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
   };
   
   // Utiliser notre hook personnalisé pour Google Maps
-  const { isLoading: isLoadingGoogleMaps, error: googleMapsError, apiAvailable } = useGoogleMapsAutocomplete({
+  const { isLoading: isLoadingGoogleMaps, error: googleMapsError, apiAvailable, initAutocomplete } = useGoogleMapsAutocomplete({
     inputRef,
     initialAddress,
     onAddressSelected: handleAddressSelected,
@@ -91,6 +91,14 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
       }
     }
   });
+
+  // Initialiser l'autocomplétion quand le composant est monté
+  useEffect(() => {
+    console.log("AddressSearch: Initialisation de l'autocomplétion");
+    if (inputRef.current && apiAvailable) {
+      initAutocomplete();
+    }
+  }, [apiAvailable, initAutocomplete]);
   
   // Mettre à jour l'adresse affichée quand initialAddress change
   useEffect(() => {
@@ -107,6 +115,10 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
   
   const handleFocus = () => {
     setIsEditing(true);
+    // S'assurer que l'autocomplétion est activée
+    if (inputRef.current && apiAvailable) {
+      initAutocomplete();
+    }
   };
   
   const handleBlur = () => {
@@ -133,6 +145,17 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
         onFocus={handleFocus}
         onBlur={handleBlur}
         isLoading={isLoadingGoogleMaps || isProcessing}
+        onClick={() => {
+          console.log("Champ d'adresse cliqué");
+          if (inputRef.current) {
+            inputRef.current.focus();
+            // Forcer l'initialisation de l'autocomplétion au clic
+            if (apiAvailable) {
+              initAutocomplete();
+            }
+          }
+        }}
+        placeholder="Saisissez une adresse espagnole..."
       />
       
       {errorToShow && <AddressError error={errorToShow} />}
