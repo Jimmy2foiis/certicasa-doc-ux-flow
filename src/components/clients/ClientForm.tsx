@@ -1,7 +1,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { Form } from "@/components/ui/form";
 import { useGoogleMapsAutocomplete } from "@/hooks/useGoogleMapsAutocomplete";
 import { useCoordinates } from "@/hooks/useCoordinates";
@@ -24,7 +24,6 @@ interface ClientFormProps {
 }
 
 export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = false }: ClientFormProps) => {
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const addressInputRef = useRef<HTMLInputElement>(null);
   const { coordinates, setClientCoordinates } = useCoordinates();
   
@@ -45,7 +44,6 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
   const handleAddressSelected = (address: string) => {
     form.setValue("address", address);
     form.trigger("address");
-    setShowSuggestions(false);
   };
   
   // Initialize Google Maps Autocomplete
