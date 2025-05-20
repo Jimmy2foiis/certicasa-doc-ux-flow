@@ -42,8 +42,34 @@ const formatDate = (date?: string): string => {
   });
 };
 
-const createExcelStyles = (wb: XLSX.WorkBook) => {
-  const styles = {
+// Instead of modifying WorkBook.Styles, we'll apply the styles to individual cells
+interface CellStyle {
+  font?: {
+    bold?: boolean;
+    italic?: boolean;
+    color?: { rgb: string };
+  };
+  fill?: {
+    fgColor?: { rgb: string };
+  };
+  alignment?: {
+    horizontal?: string;
+    vertical?: string;
+  };
+  border?: {
+    top?: { style: string };
+    bottom?: { style: string };
+    left?: { style: string };
+    right?: { style: string };
+  };
+}
+
+interface ExcelStyles {
+  [key: string]: CellStyle;
+}
+
+const createExcelStyles = (): ExcelStyles => {
+  return {
     header: {
       font: { bold: true, color: { rgb: "FFFFFF" } },
       fill: { fgColor: { rgb: "4472C4" } },
@@ -96,13 +122,12 @@ const createExcelStyles = (wb: XLSX.WorkBook) => {
       }
     }
   };
+};
 
-  wb.Styles = {
-    ...wb.Styles,
-    ...styles
-  };
-
-  return styles;
+// Helper function to apply styles to cells
+const applyCellStyle = (ws: XLSX.WorkSheet, cellRef: string, style: CellStyle) => {
+  if (!ws['!styles']) ws['!styles'] = {};
+  ws['!styles'][cellRef] = style;
 };
 
 const addHeaderSection = (ws: XLSX.WorkSheet, data: ExcelExportProps) => {
@@ -364,8 +389,8 @@ export const exportToExcel = (data: ExcelExportProps) => {
   // Créer une feuille de calcul
   const ws = XLSX.utils.aoa_to_sheet([]);
   
-  // Ajouter les styles
-  const styles = createExcelStyles(wb);
+  // Créer les styles (mais ne pas les appliquer directement au classeur)
+  const styles = createExcelStyles();
   
   // Ajouter les différentes sections
   addHeaderSection(ws, data);

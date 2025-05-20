@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet, Download } from "lucide-react";
 import { exportToExcel } from "@/utils/excelExport";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { CalculationData } from "@/hooks/useCalculationState";
 
 interface ExportExcelButtonProps {
