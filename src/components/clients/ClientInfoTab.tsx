@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast"; 
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
-import { ClientTabsContainer } from "./ClientTabsContainer";
+import { ClientTabsContainer } from "./ClientTabsContainer.tsx";
 import ClientInfoCard from "./ClientInfoCard";
 
 interface ClientInfoTabProps {
