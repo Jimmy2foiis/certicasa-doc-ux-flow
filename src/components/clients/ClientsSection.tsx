@@ -84,7 +84,7 @@ const ClientsSection = () => {
         toast({
           title: "Attention",
           description: "Le client a été supprimé localement mais pas dans la base de données.",
-          variant: "warning",
+          variant: "destructive",
         });
         await loadClients();
       }
