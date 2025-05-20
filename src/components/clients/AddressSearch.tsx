@@ -1,8 +1,9 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin, Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "@/components/ui/use-toast";
 
 interface AddressSearchProps {
   initialAddress: string;
@@ -26,6 +27,7 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [apiAvailable, setApiAvailable] = useState(true);
   
   // Mettre à jour l'adresse locale si l'initialAddress change
   useEffect(() => {
@@ -61,9 +63,12 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
         setIsEditing(false);
         setError(null);
       });
+
+      setApiAvailable(true);
     } catch (err) {
       console.error("Erreur lors de l'initialisation de l'autocomplete:", err);
       setError("Erreur lors de l'initialisation de la recherche d'adresse.");
+      setApiAvailable(false);
     }
   }, [onAddressChange]);
   
@@ -79,6 +84,19 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
         initAutocomplete();
       };
       
+      // Gérer les erreurs d'API Google Maps
+      window.gm_authFailure = () => {
+        setApiAvailable(false);
+        setError("L'API Google Maps n'est pas autorisée pour ce domaine. L'autocomplétion des adresses n'est pas disponible.");
+        toast({
+          title: "Erreur Google Maps API",
+          description: "Clé API non autorisée pour ce domaine. Veuillez vérifier votre configuration dans la console Google Cloud.",
+          variant: "destructive",
+          duration: 10000,
+        });
+        setIsLoading(false);
+      };
+      
       // Vérifier si le script n'est pas déjà chargé
       if (!document.getElementById('google-maps-script')) {
         const script = document.createElement('script');
@@ -90,6 +108,7 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
         // Gérer les erreurs de chargement du script
         script.onerror = () => {
           setIsLoading(false);
+          setApiAvailable(false);
           setError("Impossible de charger l'API Google Maps. Vérifiez votre connexion internet ou votre clé API.");
         };
         
@@ -107,6 +126,9 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
       if (autocompleteRef.current && window.google) {
         window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
       }
+      
+      // Nettoyer la fonction globale
+      delete window.gm_authFailure;
     };
   }, [initAutocomplete]);
   
@@ -151,8 +173,15 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
       
       {error && (
         <Alert variant="destructive" className="py-2">
+          <AlertCircle className="h-4 w-4" />
           <AlertDescription className="text-xs">{error}</AlertDescription>
         </Alert>
+      )}
+      
+      {!apiAvailable && (
+        <p className="text-xs text-amber-600">
+          L'autocomplétion des adresses n'est pas disponible. Vous pouvez saisir manuellement l'adresse.
+        </p>
       )}
       
       {isLoading && (
