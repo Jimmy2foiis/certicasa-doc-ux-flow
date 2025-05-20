@@ -1,4 +1,3 @@
-
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
@@ -31,7 +30,7 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
       const templates = filesToSave.map(file => ({
         name: file.name.replace(/\.[^/.]+$/, ""), // Enlever l'extension
         type: file.name.split('.').pop() || "unknown",
-        content: file.content || null, // Ajouter le contenu si disponible
+        content: file.content || null, // Using the now-defined content property
         last_modified: now,
         date_uploaded: now,
         user_id: user?.id || null // Ajouter l'ID utilisateur si disponible

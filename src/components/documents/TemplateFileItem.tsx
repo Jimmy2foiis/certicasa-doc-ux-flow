@@ -11,6 +11,7 @@ export interface UploadedFile {
   lastModified: number;
   progress: number;
   status: 'uploading' | 'complete' | 'error';
+  content?: string | null; // Added the missing content property
   slice: Function;
   stream?: Function;
   text?: Function;

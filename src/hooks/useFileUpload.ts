@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { UploadedFile } from "@/components/documents/TemplateFileItem";
@@ -32,6 +31,7 @@ export const useFileUpload = () => {
           lastModified: file.lastModified,
           progress: 0,
           status: 'uploading',
+          content: null, // Initialize with null, will be populated when needed
           slice: file.slice,
           stream: file.stream?.bind(file),
           text: file.text?.bind(file),
