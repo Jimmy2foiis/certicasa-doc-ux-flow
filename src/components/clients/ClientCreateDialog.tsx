@@ -3,9 +3,9 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
-import { createClientRecord, Client } from "@/services/supabaseService";
+import { Client } from "@/services/supabaseService";
 import ClientForm from "./ClientForm";
+import { useClientCreate } from "@/hooks/useClientCreate";
 
 interface ClientCreateDialogProps {
   onClientCreated: () => Promise<void>;
@@ -13,32 +13,13 @@ interface ClientCreateDialogProps {
 
 const ClientCreateDialog = ({ onClientCreated }: ClientCreateDialogProps) => {
   const [openDialog, setOpenDialog] = useState(false);
-  const { toast } = useToast();
+  const { createClient, isCreating } = useClientCreate({
+    onClientCreated,
+    onSuccess: () => setOpenDialog(false)
+  });
 
   const handleCreateClient = async (clientData: Client) => {
-    try {
-      const createdClient = await createClientRecord(clientData);
-      
-      if (createdClient) {
-        toast({
-          title: "Client créé",
-          description: `Le client ${createdClient.name} a été créé avec succès.`,
-        });
-        
-        // Close dialog
-        setOpenDialog(false);
-        
-        // Reload client list
-        await onClientCreated();
-      }
-    } catch (error) {
-      console.error("Erreur lors de la création du client:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de créer le client. Veuillez réessayer.",
-        variant: "destructive",
-      });
-    }
+    await createClient(clientData);
   };
 
   return (
@@ -59,7 +40,8 @@ const ClientCreateDialog = ({ onClientCreated }: ClientCreateDialogProps) => {
         
         <ClientForm 
           onSubmit={handleCreateClient} 
-          onCancel={() => setOpenDialog(false)} 
+          onCancel={() => setOpenDialog(false)}
+          isSubmitting={isCreating}
         />
       </DialogContent>
     </Dialog>

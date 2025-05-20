@@ -19,14 +19,16 @@ import { useCoordinates } from "@/hooks/useCoordinates";
 import { clientSchema, ClientFormValues } from "./schemas/clientSchema";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Client } from "@/services/supabaseService";
+import { Loader2 } from "lucide-react";
 
 interface ClientFormProps {
   onSubmit: (data: Client) => Promise<void>;
   onCancel: () => void;
   initialValues?: Partial<ClientFormValues>;
+  isSubmitting?: boolean;
 }
 
-export const ClientForm = ({ onSubmit, onCancel, initialValues }: ClientFormProps) => {
+export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = false }: ClientFormProps) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const addressInputRef = useRef<HTMLInputElement>(null);
   const { coordinates, setClientCoordinates } = useCoordinates();
@@ -192,11 +194,26 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues }: ClientFormProp
         </div>
         
         <DialogFooter className="pt-4">
-          <Button variant="outline" type="button" onClick={onCancel}>
+          <Button 
+            variant="outline" 
+            type="button" 
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
             Annuler
           </Button>
-          <Button type="submit">
-            Créer le client
+          <Button 
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Création...
+              </>
+            ) : (
+              'Créer le client'
+            )}
           </Button>
         </DialogFooter>
       </form>
