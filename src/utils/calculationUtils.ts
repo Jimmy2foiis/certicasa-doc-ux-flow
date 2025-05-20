@@ -49,3 +49,13 @@ export const calculateThermalResistance = (layers: any[], rsiRse: number = 0.17)
 export const calculateUValue = (thermalResistance: number, bCoefficient: number): number => {
   return (1 / thermalResistance) * bCoefficient;
 };
+
+export const getBCoefficientTableData = () => {
+  return bCoefficientTable.map(item => ({
+    range: item.max === null ? `> ${item.min.toFixed(2)}` : `${item.min.toFixed(2)} - ${item.max.toFixed(2)}`,
+    caso1: item.caso1.toFixed(2),
+    caso2: item.caso2.toFixed(2),
+    caso1AfterWork: item.caso1AfterWork.toFixed(2),
+    caso2AfterWork: item.caso2AfterWork.toFixed(2)
+  }));
+};

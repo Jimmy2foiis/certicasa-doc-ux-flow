@@ -30,35 +30,48 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
   ]);
   
   const [projectType, setProjectType] = useState("RES010");
-  const [ventilationType, setVentilationType] = useState<VentilationType>("caso1");
   const [surfaceArea, setSurfaceArea] = useState("127");
   const [roofArea, setRoofArea] = useState("150");
-  const [ratioValue, setRatioValue] = useState(0.85);
-  const [rsi, setRsi] = useState("0.10");
-  const [rse, setRse] = useState("0.10");
   
-  // Calcul du coefficient B
+  // Séparation des états pour les configurations avant et après
+  const [ventilationBefore, setVentilationBefore] = useState<VentilationType>("caso1");
+  const [ventilationAfter, setVentilationAfter] = useState<VentilationType>("caso2");
+  
+  const [ratioBefore, setRatioBefore] = useState(0.85);
+  const [ratioAfter, setRatioAfter] = useState(0.85);
+  
+  const [rsiBefore, setRsiBefore] = useState("0.10");
+  const [rseBefore, setRseBefore] = useState("0.10");
+  
+  const [rsiAfter, setRsiAfter] = useState("0.10");
+  const [rseAfter, setRseAfter] = useState("0.10");
+  
+  // Calcul du coefficient B avant
   const bCoefficientBefore = calculateBCoefficient({
-    ratio: ratioValue,
-    ventilationType,
+    ratio: ratioBefore,
+    ventilationType: ventilationBefore,
     isAfterWork: false
   });
   
+  // Calcul du coefficient B après
   const bCoefficientAfter = calculateBCoefficient({
-    ratio: ratioValue,
-    ventilationType,
+    ratio: ratioAfter,
+    ventilationType: ventilationAfter,
     isAfterWork: true
   });
 
-  const rsiRseValue = parseFloat(rsi) + parseFloat(rse);
-  const rsiRseFallback = isNaN(rsiRseValue) ? 0.17 : rsiRseValue;
+  const rsiRseBeforeValue = parseFloat(rsiBefore) + parseFloat(rseBefore);
+  const rsiRseBeforeFallback = isNaN(rsiRseBeforeValue) ? 0.17 : rsiRseBeforeValue;
+  
+  const rsiRseAfterValue = parseFloat(rsiAfter) + parseFloat(rseAfter);
+  const rsiRseAfterFallback = isNaN(rsiRseAfterValue) ? 0.17 : rsiRseAfterValue;
 
   // Calcul de la résistance thermique totale avant
-  const totalRBefore = calculateThermalResistance(beforeLayers, rsiRseFallback);
+  const totalRBefore = calculateThermalResistance(beforeLayers, rsiRseBeforeFallback);
   const uValueBefore = calculateUValue(totalRBefore, bCoefficientBefore);
   
   // Calcul de la résistance thermique totale après
-  const totalRAfter = calculateThermalResistance(afterLayers, rsiRseFallback);
+  const totalRAfter = calculateThermalResistance(afterLayers, rsiRseAfterFallback);
   const uValueAfter = calculateUValue(totalRAfter, bCoefficientAfter);
   
   // Calcul du pourcentage d'amélioration
@@ -104,18 +117,8 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
           setSurfaceArea={setSurfaceArea}
           roofArea={roofArea}
           setRoofArea={setRoofArea}
-          ventilationType={ventilationType}
-          setVentilationType={setVentilationType}
-          ratioValue={ratioValue}
-          setRatioValue={setRatioValue}
-          bCoefficientBefore={bCoefficientBefore}
-          bCoefficientAfter={bCoefficientAfter}
           improvementPercent={improvementPercent}
           meetsRequirements={meetsRequirements}
-          rsi={rsi}
-          setRsi={setRsi}
-          rse={rse}
-          setRse={setRse}
         />
 
         {/* Thermal Calculations */}
@@ -137,6 +140,14 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
               onAddLayer={(material) => addLayer("before", material)}
               onUpdateLayer={(updatedLayer) => updateLayer("before", updatedLayer)}
               onDeleteLayer={(id) => setBeforeLayers(beforeLayers.filter(l => l.id !== id))}
+              rsi={rsiBefore}
+              setRsi={setRsiBefore}
+              rse={rseBefore}
+              setRse={setRseBefore}
+              ventilationType={ventilationBefore}
+              setVentilationType={setVentilationBefore}
+              ratioValue={ratioBefore}
+              setRatioValue={setRatioBefore}
             />
             
             {/* After Work Section */}
@@ -151,6 +162,15 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
               onDeleteLayer={(id) => setAfterLayers(afterLayers.filter(l => l.id !== id))}
               showImprovement={true}
               improvementPercent={improvementPercent}
+              isAfterWork={true}
+              rsi={rsiAfter}
+              setRsi={setRsiAfter}
+              rse={rseAfter}
+              setRse={setRseAfter}
+              ventilationType={ventilationAfter}
+              setVentilationType={setVentilationAfter}
+              ratioValue={ratioAfter}
+              setRatioValue={setRatioAfter}
             />
           </CardContent>
         </Card>

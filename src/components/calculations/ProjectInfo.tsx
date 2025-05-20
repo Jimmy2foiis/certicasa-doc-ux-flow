@@ -6,7 +6,6 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Save } from "lucide-react";
-import { VentilationType } from "@/utils/calculationUtils";
 
 interface ProjectInfoProps {
   projectType: string;
@@ -15,18 +14,8 @@ interface ProjectInfoProps {
   setSurfaceArea: (value: string) => void;
   roofArea: string;
   setRoofArea: (value: string) => void;
-  ventilationType: VentilationType;
-  setVentilationType: (value: VentilationType) => void;
-  ratioValue: number;
-  setRatioValue: (value: number) => void;
-  bCoefficientBefore: number;
-  bCoefficientAfter: number;
   improvementPercent: number;
   meetsRequirements: boolean;
-  rsi: string;
-  setRsi: (value: string) => void;
-  rse: string;
-  setRse: (value: string) => void;
 }
 
 const ProjectInfo = ({
@@ -36,18 +25,8 @@ const ProjectInfo = ({
   setSurfaceArea,
   roofArea,
   setRoofArea,
-  ventilationType,
-  setVentilationType,
-  ratioValue,
-  setRatioValue,
-  bCoefficientBefore,
-  bCoefficientAfter,
   improvementPercent,
   meetsRequirements,
-  rsi,
-  setRsi,
-  rse,
-  setRse
 }: ProjectInfoProps) => {
   return (
     <Card className="lg:col-span-3">
@@ -91,72 +70,7 @@ const ProjectInfo = ({
           />
         </div>
         
-        <div className="grid grid-cols-2 gap-3">
-          <div className="space-y-2">
-            <Label htmlFor="rsi">RSI (m²K/W)</Label>
-            <Input
-              id="rsi"
-              value={rsi}
-              onChange={(e) => setRsi(e.target.value)}
-              type="number"
-              step="0.01"
-              placeholder="0.10"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="rse">RSE (m²K/W)</Label>
-            <Input
-              id="rse"
-              value={rse}
-              onChange={(e) => setRse(e.target.value)}
-              type="number"
-              step="0.01"
-              placeholder="0.10"
-            />
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="ventilationType">Type de ventilation</Label>
-          <Select 
-            value={ventilationType}
-            onValueChange={(value: VentilationType) => setVentilationType(value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Sélectionner ventilation" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="caso1">Légèrement ventilé (Caso 1)</SelectItem>
-              <SelectItem value="caso2">Très ventilé (Caso 2)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="ratio">Ratio Ah-nh / Anh-e</Label>
-          <Input
-            id="ratio"
-            value={ratioValue.toString()}
-            onChange={(e) => setRatioValue(parseFloat(e.target.value) || 0)}
-            type="number"
-            step="0.01"
-          />
-          <p className="text-xs text-gray-500">
-            Rapport entre surface isolée et surface totale de l'enveloppe thermique
-          </p>
-        </div>
-        
         <div className="pt-4 space-y-2 border-t">
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500">Coefficient B avant:</span>
-            <span className="font-medium">{bCoefficientBefore.toFixed(2)}</span>
-          </div>
-          
-          <div className="flex justify-between items-center">
-            <span className="text-sm text-gray-500">Coefficient B après:</span>
-            <span className="font-medium">{bCoefficientAfter.toFixed(2)}</span>
-          </div>
-          
           <div className="flex justify-between items-center">
             <span className="text-sm text-gray-500">Amélioration U-value:</span>
             <span className="font-medium">{improvementPercent.toFixed(1)}%</span>
