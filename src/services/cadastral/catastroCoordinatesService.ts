@@ -3,12 +3,14 @@ import { GeoCoordinates } from '../geoCoordinatesService';
 import { getCadastralDataByCoordinatesREST } from '../catastroRestService';
 import { getFromCache, saveToCache, getCache } from './catastroCache';
 import { CatastroData } from '../catastroTypes';
+import { saveCadastralData } from '../supabaseService';
 
 // Fonction principale pour récupérer les données cadastrales à partir de coordonnées
 export const getCadastralInfoFromCoordinates = async (
   latitude: number, 
   longitude: number, 
-  forceRefresh = false
+  forceRefresh = false,
+  clientId?: string // Ajout optionnel de l'ID client pour sauvegarder dans Supabase
 ): Promise<CatastroData> => {
   // Validation des coordonnées
   if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
@@ -39,8 +41,29 @@ export const getCadastralInfoFromCoordinates = async (
   
   // Si les données sont valides, les mettre en cache
   if (cadastralData && !cadastralData.error) {
+    // Mettre en cache local
     saveToCache(cacheKey, cadastralData);
-    console.log("Données cadastrales mises en cache:", cadastralData);
+    console.log("Données cadastrales mises en cache local:", cadastralData);
+    
+    // Si un clientId est fourni, sauvegarder dans Supabase également
+    if (clientId) {
+      try {
+        const supabaseCadastralData = {
+          client_id: clientId,
+          utm_coordinates: cadastralData.utmCoordinates,
+          cadastral_reference: cadastralData.cadastralReference,
+          climate_zone: cadastralData.climateZone,
+          api_source: cadastralData.apiSource
+        };
+        
+        const savedData = await saveCadastralData(supabaseCadastralData);
+        if (savedData) {
+          console.log("Données cadastrales sauvegardées dans Supabase:", savedData);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la sauvegarde des données cadastrales dans Supabase:", error);
+      }
+    }
   } else if (cadastralData.error) {
     console.error('Erreur API Catastro:', cadastralData.error);
     
@@ -60,7 +83,7 @@ export const getCadastralInfoFromCoordinates = async (
 };
 
 // Fonction pour forcer un rafraîchissement des données
-export const refreshCadastralData = async (coordinates: GeoCoordinates): Promise<CatastroData> => {
+export const refreshCadastralData = async (coordinates: GeoCoordinates, clientId?: string): Promise<CatastroData> => {
   try {
     if (!coordinates || !coordinates.lat || !coordinates.lng) {
       throw new Error("Coordonnées invalides pour le rafraîchissement des données");
@@ -76,7 +99,7 @@ export const refreshCadastralData = async (coordinates: GeoCoordinates): Promise
     console.log(`Cache supprimé pour les coordonnées: ${lat}, ${lng}`);
     
     // Récupérer de nouvelles données
-    return await getCadastralInfoFromCoordinates(lat, lng, true);
+    return await getCadastralInfoFromCoordinates(lat, lng, true, clientId);
   } catch (error) {
     console.error('Erreur lors du rafraîchissement des données cadastrales:', error);
     return {
