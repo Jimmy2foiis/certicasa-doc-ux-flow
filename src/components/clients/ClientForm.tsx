@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef, useEffect } from "react";
 import { Form } from "@/components/ui/form";
-import { useGoogleMapsAutocomplete } from "@/hooks/useGoogleMapsAutocomplete";
 import { useCoordinates } from "@/hooks/useCoordinates";
 import { clientSchema, ClientFormValues } from "./schemas/clientSchema";
 import { Client } from "@/services/supabaseService";
@@ -51,20 +50,10 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
     form.trigger("address");
   };
   
-  // Initialize Google Maps Autocomplete
-  const { isLoading, error, apiAvailable, initAutocomplete } = useGoogleMapsAutocomplete({
-    inputRef: addressInputRef,
-    initialAddress: form.getValues("address"),
-    onAddressSelected: handleAddressSelected,
-    onCoordinatesSelected: setClientCoordinates
-  });
-
-  // Initialize autocomplete when component mounts
-  useEffect(() => {
-    if (addressInputRef.current && apiAvailable) {
-      initAutocomplete();
-    }
-  }, [apiAvailable, initAutocomplete]);
+  const handleCoordinatesSelected = (coords: {lat: number, lng: number}) => {
+    console.log("Coordonnées sélectionnées:", coords);
+    setClientCoordinates(coords);
+  };
 
   const handleCreateClient = async (data: ClientFormValues) => {
     try {
@@ -113,9 +102,8 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
         <AddressField 
           control={form.control}
           inputRef={addressInputRef}
-          isLoading={isLoading}
-          apiAvailable={apiAvailable}
-          error={error}
+          onAddressSelected={handleAddressSelected}
+          onCoordinatesSelected={handleCoordinatesSelected}
         />
         
         <ClientIdFields control={form.control} />
