@@ -14,12 +14,24 @@ export const getCadastralDataByCoordinatesREST = async (
   try {
     // Création de l'URL avec paramètres
     const url = new URL(OVC_COORDENADAS_URL);
-    url.searchParams.append("SRS", "EPSG:4326"); // WGS84 (GPS standard)
-    url.searchParams.append("Coordenada_X", longitude.toString());
-    url.searchParams.append("Coordenada_Y", latitude.toString());
+    
+    // Important: Les paramètres doivent être strings et utiliser le format exact attendu par l'API
+    // SRS est le système de référence spatial (EPSG:4326 = WGS84)
+    url.searchParams.append("SRS", "EPSG:4326"); 
+    
+    // Coordonnées X et Y doivent être inversées pour l'API espagnole: X=longitude, Y=latitude
+    // Important: Les valeurs décimales doivent utiliser le point comme séparateur
+    const longitudeStr = longitude.toString().replace(',', '.');
+    const latitudeStr = latitude.toString().replace(',', '.');
+    
+    url.searchParams.append("Coordenada_X", longitudeStr);
+    url.searchParams.append("Coordenada_Y", latitudeStr);
+    
+    // Logs pour le débogage
+    console.log(`Appel API REST Catastro par coordonnées: ${url.toString()}`);
+    console.log(`Paramètres envoyés: X=${longitudeStr}, Y=${latitudeStr}`);
     
     // Appel à l'API
-    console.log(`Appel API REST Catastro par coordonnées: ${url.toString()}`);
     const response = await fetch(url.toString());
     
     // Vérifier le code de statut
@@ -29,6 +41,7 @@ export const getCadastralDataByCoordinatesREST = async (
     
     // Parser la réponse JSON
     const data = await response.json();
+    console.log("Réponse API Catastro:", JSON.stringify(data));
     
     return parseCoordinatesResponse(data);
     
@@ -76,6 +89,7 @@ export const getCadastralDataByAddressREST = async (address: string): Promise<Ca
     
     // Parser la réponse JSON
     const data = await response.json();
+    console.log("Réponse API Catastro par adresse:", JSON.stringify(data));
     
     return parseAddressResponse(data, province);
     

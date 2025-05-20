@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { GeoCoordinates } from '@/services/geoCoordinatesService';
 
 // Étendre l'interface Window pour inclure la fonction gm_authFailure
@@ -31,7 +31,6 @@ interface UseGoogleMapsAutocompleteResult {
 
 /**
  * Hook personnalisé pour l'autocomplétion d'adresses avec l'API Google Maps Places
- * Utilise la dernière version de l'API Google Maps Autocomplete
  */
 export const useGoogleMapsAutocomplete = ({
   inputRef,
@@ -46,25 +45,41 @@ export const useGoogleMapsAutocomplete = ({
   const { toast } = useToast();
 
   const initAutocomplete = useCallback(() => {
-    if (!window.google || !window.google.maps || !window.google.maps.places || !inputRef.current) {
+    // Vérifier que l'API Google Maps et l'élément input sont disponibles
+    if (!window.google || !window.google.maps || !window.google.maps.places) {
+      console.error("L'API Google Maps n'est pas chargée correctement");
       setError("Impossible d'initialiser Google Maps. Vérifiez votre connexion internet.");
       return;
     }
     
+    if (!inputRef.current) {
+      console.error("Référence à l'élément input manquante");
+      return;
+    }
+    
     try {
-      // Créer l'objet autocomplete de Google Maps avec restriction au pays (Espagne)
+      console.log("Initialisation de l'autocomplétion Google Maps");
+      
+      // Pour gérer l'avertissement de dépréciation de Autocomplete, nous continuons à l'utiliser
+      // mais nous sommes conscients qu'il faudra migrer vers PlaceAutocompleteElement à l'avenir
       autocompleteRef.current = new window.google.maps.places.Autocomplete(
         inputRef.current,
         { 
           types: ['address'],
           componentRestrictions: { country: 'es' }, // Restreindre aux adresses espagnoles
-          fields: ['formatted_address', 'geometry', 'place_id'] // Optimisation pour ne récupérer que les champs nécessaires
+          fields: ['formatted_address', 'geometry', 'place_id', 'address_components'] // Optimisation pour ne récupérer que les champs nécessaires
         }
       );
       
       // Écouter les changements lorsqu'une adresse est sélectionnée
       autocompleteRef.current.addListener('place_changed', () => {
         const place = autocompleteRef.current.getPlace();
+        
+        if (!place.geometry) {
+          // L'utilisateur n'a pas sélectionné une suggestion valide
+          setError("Veuillez sélectionner une adresse dans la liste des suggestions");
+          return;
+        }
         
         if (!place.formatted_address) {
           setError("Adresse incomplète. Veuillez sélectionner une adresse dans la liste.");
@@ -73,6 +88,17 @@ export const useGoogleMapsAutocomplete = ({
         
         // Récupérer les détails complets de l'adresse
         const fullAddress = place.formatted_address;
+        console.log("Adresse formatée sélectionnée:", fullAddress);
+        
+        // Vérifier que l'adresse contient bien "España" ou "Spain"
+        const addressContainsSpain = place.address_components?.some((component: any) => 
+          component.types.includes("country") && 
+          (component.short_name === "ES" || component.long_name.includes("Spain") || component.long_name.includes("España"))
+        );
+        
+        if (!addressContainsSpain) {
+          console.warn("L'adresse sélectionnée pourrait être en dehors de l'Espagne:", fullAddress);
+        }
         
         // Récupérer les coordonnées précises
         if (place.geometry && place.geometry.location) {
@@ -106,12 +132,14 @@ export const useGoogleMapsAutocomplete = ({
       
       // Définir une fonction globale que le script Google Maps appellera
       window.initGoogleMapsAutocomplete = () => {
+        console.log("Le script Google Maps est chargé et prêt");
         setIsLoading(false);
         initAutocomplete();
       };
       
       // Gérer les erreurs d'API Google Maps
       window.gm_authFailure = () => {
+        console.error("Erreur d'authentification Google Maps API");
         setApiAvailable(false);
         setError("L'API Google Maps n'est pas autorisée pour ce domaine. L'autocomplétion des adresses n'est pas disponible.");
         toast({
@@ -133,14 +161,17 @@ export const useGoogleMapsAutocomplete = ({
         
         // Gérer les erreurs de chargement du script
         script.onerror = () => {
+          console.error("Erreur lors du chargement du script Google Maps");
           setIsLoading(false);
           setApiAvailable(false);
           setError("Impossible de charger l'API Google Maps. Vérifiez votre connexion internet ou votre clé API.");
         };
         
         document.head.appendChild(script);
+        console.log("Script Google Maps inséré dans le document");
       } else if (window.google && window.google.maps && window.google.maps.places) {
         // Si le script est déjà chargé, initialiser directement
+        console.log("Google Maps déjà chargé, initialisation directe");
         setIsLoading(false);
         initAutocomplete();
       }

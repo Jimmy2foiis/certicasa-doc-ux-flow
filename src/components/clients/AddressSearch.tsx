@@ -5,7 +5,7 @@ import { AddressError } from "@/components/ui/address-error";
 import { ApiStatus } from "@/components/address/ApiStatus";
 import { useGoogleMapsAutocomplete } from "@/hooks/useGoogleMapsAutocomplete";
 import { GeoCoordinates, getCoordinatesFromAddress } from "@/services/geoCoordinatesService";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AddressSearchProps {
   initialAddress: string;
@@ -33,7 +33,16 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
     setLocalError(null);
     
     try {
+      // Vérifier si l'adresse est en Espagne
+      if (!selectedAddress.toLowerCase().includes('espagne') && 
+          !selectedAddress.toLowerCase().includes('spain') && 
+          !selectedAddress.toLowerCase().includes('españa')) {
+        console.log("Adresse potentiellement hors d'Espagne:", selectedAddress);
+        // On continue quand même, l'API pourra donner une erreur plus spécifique
+      }
+      
       // Toujours obtenir les coordonnées à partir de l'adresse
+      console.log("Obtention des coordonnées pour l'adresse:", selectedAddress);
       const coordinates = await getCoordinatesFromAddress(selectedAddress);
       
       if (!coordinates) {
@@ -47,6 +56,7 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
       
       // Transmettre immédiatement les coordonnées pour déclencher l'appel au Catastro
       if (onCoordinatesChange) {
+        console.log("Transmission des coordonnées au composant parent:", coordinates);
         onCoordinatesChange(coordinates);
       }
       
@@ -132,6 +142,13 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
         apiAvailable={apiAvailable} 
         message={isProcessing ? "Géocodage de l'adresse en cours..." : undefined} 
       />
+
+      {/* Information pour l'utilisateur */}
+      {!errorToShow && !isProcessing && address && (
+        <p className="text-xs text-gray-500 italic">
+          Pour de meilleurs résultats, assurez-vous que l'adresse est complète et inclut la ville, code postal et pays (Espagne).
+        </p>
+      )}
     </div>
   );
 };

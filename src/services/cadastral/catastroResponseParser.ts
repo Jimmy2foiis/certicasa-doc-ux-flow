@@ -6,8 +6,22 @@ import { CatastroData } from "../catastroService";
  * Parse la réponse JSON de l'API Catastro obtenue par coordonnées
  */
 export const parseCoordinatesResponse = (data: any): CatastroData => {
-  if (data.consultaRccoorResult && data.consultaRccoorResult.coordenadas) {
-    const coordInfo = data.consultaRccoorResult.coordenadas;
+  console.log('Structure de réponse API Catastro:', JSON.stringify(data));
+  
+  // Vérifier si la réponse contient une erreur formattée
+  if (data.Consulta_RCCOORResult && data.Consulta_RCCOORResult.control && data.Consulta_RCCOORResult.control.cuerr === 1) {
+    // Format d'erreur spécifique
+    if (data.Consulta_RCCOORResult.lerr && data.Consulta_RCCOORResult.lerr[0]) {
+      const errorCode = data.Consulta_RCCOORResult.lerr[0].cod;
+      const errorDesc = data.Consulta_RCCOORResult.lerr[0].des;
+      throw new Error(`Erreur Catastro (${errorCode}): ${errorDesc}`);
+    }
+    throw new Error("Erreur non spécifiée dans la réponse du Catastro");
+  }
+  
+  // Format attendu pour les données de coordonnées
+  if (data.Consulta_RCCOORResult && data.Consulta_RCCOORResult.coordenadas) {
+    const coordInfo = data.Consulta_RCCOORResult.coordenadas;
     let cadastralReference = "";
     let utmCoordinates = "";
     let province = "";
@@ -46,13 +60,7 @@ export const parseCoordinatesResponse = (data: any): CatastroData => {
     };
   }
   
-  // Gestion des erreurs de l'API
-  if (data.consultaRccoorResult && data.consultaRccoorResult.lerr) {
-    const errorCode = data.consultaRccoorResult.lerr.err.cod;
-    const errorDesc = data.consultaRccoorResult.lerr.err.des;
-    throw new Error(`Erreur Catastro (${errorCode}): ${errorDesc}`);
-  }
-  
+  // Aucun format reconnu
   throw new Error("Format de réponse du Catastro non reconnu");
 };
 
@@ -60,6 +68,19 @@ export const parseCoordinatesResponse = (data: any): CatastroData => {
  * Parse la réponse JSON de l'API Catastro obtenue par adresse
  */
 export const parseAddressResponse = (data: any, province: string): CatastroData => {
+  console.log('Structure de réponse API Catastro par adresse:', JSON.stringify(data));
+  
+  // Vérifier si la réponse contient une erreur formattée
+  if (data.consulta_dnplocResult && data.consulta_dnplocResult.control && data.consulta_dnplocResult.control.cuerr === 1) {
+    // Format d'erreur spécifique
+    if (data.consulta_dnplocResult.lerr && data.consulta_dnplocResult.lerr.err) {
+      const errorCode = data.consulta_dnplocResult.lerr.err.cod;
+      const errorDesc = data.consulta_dnplocResult.lerr.err.des;
+      throw new Error(`Erreur Catastro (${errorCode}): ${errorDesc}`);
+    }
+    throw new Error("Erreur non spécifiée dans la réponse du Catastro");
+  }
+  
   if (data.consulta_dnplocResult && data.consulta_dnplocResult.lrcdnp) {
     const resultInfo = data.consulta_dnplocResult.lrcdnp;
     let cadastralReference = "";
@@ -85,12 +106,6 @@ export const parseAddressResponse = (data: any, province: string): CatastroData 
     };
   }
   
-  // Gestion des erreurs de l'API
-  if (data.consulta_dnplocResult && data.consulta_dnplocResult.lerr) {
-    const errorCode = data.consulta_dnplocResult.lerr.err.cod;
-    const errorDesc = data.consulta_dnplocResult.lerr.err.des;
-    throw new Error(`Erreur Catastro (${errorCode}): ${errorDesc}`);
-  }
-  
+  // Aucun format reconnu
   throw new Error("Format de réponse du Catastro non reconnu");
 };

@@ -10,6 +10,18 @@ export const getCadastralInfoFromCoordinates = async (
   longitude: number, 
   forceRefresh = false
 ): Promise<CatastroData> => {
+  // Validation des coordonnées
+  if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
+    console.error("Coordonnées invalides:", { latitude, longitude });
+    return {
+      utmCoordinates: '',
+      cadastralReference: '',
+      climateZone: '',
+      apiSource: 'ERROR',
+      error: 'Coordonnées GPS invalides'
+    };
+  }
+  
   const cacheKey = `coord_${latitude}_${longitude}`;
   
   // Vérifier dans le cache d'abord (sauf si forceRefresh)
@@ -28,6 +40,7 @@ export const getCadastralInfoFromCoordinates = async (
   // Si les données sont valides, les mettre en cache
   if (cadastralData && !cadastralData.error) {
     saveToCache(cacheKey, cadastralData);
+    console.log("Données cadastrales mises en cache:", cadastralData);
   } else if (cadastralData.error) {
     console.error('Erreur API Catastro:', cadastralData.error);
     
@@ -49,6 +62,10 @@ export const getCadastralInfoFromCoordinates = async (
 // Fonction pour forcer un rafraîchissement des données
 export const refreshCadastralData = async (coordinates: GeoCoordinates): Promise<CatastroData> => {
   try {
+    if (!coordinates || !coordinates.lat || !coordinates.lng) {
+      throw new Error("Coordonnées invalides pour le rafraîchissement des données");
+    }
+    
     const { lat, lng } = coordinates;
     const cacheKey = `coord_${lat}_${lng}`;
     
@@ -56,9 +73,10 @@ export const refreshCadastralData = async (coordinates: GeoCoordinates): Promise
     const cache = getCache();
     delete cache[cacheKey];
     localStorage.setItem('catastro_cache', JSON.stringify(cache));
+    console.log(`Cache supprimé pour les coordonnées: ${lat}, ${lng}`);
     
     // Récupérer de nouvelles données
-    return await getCadastralInfoFromCoordinates(lat, lng);
+    return await getCadastralInfoFromCoordinates(lat, lng, true);
   } catch (error) {
     console.error('Erreur lors du rafraîchissement des données cadastrales:', error);
     return {
@@ -68,5 +86,15 @@ export const refreshCadastralData = async (coordinates: GeoCoordinates): Promise
       apiSource: 'ERROR',
       error: error instanceof Error ? error.message : 'Erreur inconnue'
     };
+  }
+};
+
+// Fonction pour supprimer tout le cache
+export const clearCadastralCache = (): void => {
+  try {
+    localStorage.removeItem('catastro_cache');
+    console.log('Cache cadastral entièrement supprimé');
+  } catch (error) {
+    console.error('Erreur lors de la suppression du cache cadastral:', error);
   }
 };
