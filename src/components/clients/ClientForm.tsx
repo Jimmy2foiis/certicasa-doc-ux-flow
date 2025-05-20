@@ -2,24 +2,19 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef, useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { AddressInput } from "@/components/address/AddressInput";
-import { ApiStatus } from "@/components/address/ApiStatus";
+import { Form } from "@/components/ui/form";
 import { useGoogleMapsAutocomplete } from "@/hooks/useGoogleMapsAutocomplete";
 import { useCoordinates } from "@/hooks/useCoordinates";
 import { clientSchema, ClientFormValues } from "./schemas/clientSchema";
-import { DialogFooter } from "@/components/ui/dialog";
 import { Client } from "@/services/supabaseService";
-import { Loader2 } from "lucide-react";
+
+// Import form field components
+import { NameField } from "./form-fields/NameField";
+import { EmailField } from "./form-fields/EmailField";
+import { PhoneField } from "./form-fields/PhoneField";
+import { AddressField } from "./form-fields/AddressField";
+import { ClientIdFields } from "./form-fields/ClientIdFields";
+import { FormActions } from "./form-fields/FormActions";
 
 interface ClientFormProps {
   onSubmit: (data: Client) => Promise<void>;
@@ -89,133 +84,24 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleCreateClient)} className="space-y-4 py-2">
-        <FormField
+        <NameField control={form.control} />
+        <EmailField control={form.control} />
+        <PhoneField control={form.control} />
+        
+        <AddressField 
           control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Nom <span className="text-red-500">*</span>
-              </FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          inputRef={addressInputRef}
+          isLoading={isLoading}
+          apiAvailable={apiAvailable}
+          error={error}
         />
         
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+        <ClientIdFields control={form.control} />
+        
+        <FormActions 
+          onCancel={onCancel}
+          isSubmitting={isSubmitting}
         />
-        
-        <FormField
-          control={form.control}
-          name="phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Téléphone</FormLabel>
-              <FormControl>
-                <Input {...field} placeholder="Ex: +34 612 345 678" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem className="relative">
-              <FormLabel>Adresse</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <AddressInput
-                    ref={addressInputRef}
-                    {...field}
-                    isLoading={isLoading}
-                    placeholder="Saisissez une adresse espagnole..."
-                  />
-                </div>
-              </FormControl>
-              {error && (
-                <div className="text-red-500 text-xs mt-1">{error}</div>
-              )}
-              <ApiStatus 
-                isLoading={isLoading}
-                apiAvailable={apiAvailable}
-                className="mt-1"
-                message={isLoading ? "Chargement de la recherche d'adresse..." : undefined}
-              />
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="nif"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>NIF</FormLabel>
-                <FormControl>
-                  <Input {...field} placeholder="Ex: A12345678" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Type</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        
-        <DialogFooter className="pt-4">
-          <Button 
-            variant="outline" 
-            type="button" 
-            onClick={onCancel}
-            disabled={isSubmitting}
-          >
-            Annuler
-          </Button>
-          <Button 
-            type="submit"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Création...
-              </>
-            ) : (
-              'Créer le client'
-            )}
-          </Button>
-        </DialogFooter>
       </form>
     </Form>
   );
