@@ -20,6 +20,11 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
   
+  // Mettre à jour l'adresse locale si l'initialAddress change
+  useEffect(() => {
+    setAddress(initialAddress);
+  }, [initialAddress]);
+  
   const initAutocomplete = useCallback(() => {
     if (!window.google || !inputRef.current) return;
     
@@ -68,9 +73,6 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddress(e.target.value);
-    // Ne pas appeler onAddressChange ici pour éviter de déclencher des mises à jour
-    // lors de la frappe, seulement quand une adresse est sélectionnée ou l'utilisateur
-    // arrête de taper pendant un certain temps
   };
   
   const handleBlur = () => {
