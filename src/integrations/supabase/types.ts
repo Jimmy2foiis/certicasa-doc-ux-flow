@@ -9,6 +9,27 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      cadastral_cache: {
+        Row: {
+          coordinate_key: string
+          data: Json
+          id: string
+          timestamp: string
+        }
+        Insert: {
+          coordinate_key: string
+          data: Json
+          id?: string
+          timestamp?: string
+        }
+        Update: {
+          coordinate_key?: string
+          data?: Json
+          id?: string
+          timestamp?: string
+        }
+        Relationships: []
+      }
       cadastral_data: {
         Row: {
           api_source: string | null
@@ -154,6 +175,36 @@ export type Database = {
         }
         Relationships: []
       }
+      document_templates: {
+        Row: {
+          content: string | null
+          date_uploaded: string
+          id: string
+          last_modified: string
+          name: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          content?: string | null
+          date_uploaded?: string
+          id?: string
+          last_modified?: string
+          name: string
+          type: string
+          user_id?: string | null
+        }
+        Update: {
+          content?: string | null
+          date_uploaded?: string
+          id?: string
+          last_modified?: string
+          name?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           client_id: string | null
@@ -242,6 +293,54 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_calculations: {
+        Row: {
+          calculation_data: Json | null
+          client_id: string | null
+          date: string
+          id: string
+          improvement: number | null
+          project_id: string | null
+          surface: number | null
+          type: string | null
+        }
+        Insert: {
+          calculation_data?: Json | null
+          client_id?: string | null
+          date?: string
+          id?: string
+          improvement?: number | null
+          project_id?: string | null
+          surface?: number | null
+          type?: string | null
+        }
+        Update: {
+          calculation_data?: Json | null
+          client_id?: string | null
+          date?: string
+          id?: string
+          improvement?: number | null
+          project_id?: string | null
+          surface?: number | null
+          type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_calculations_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_calculations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]

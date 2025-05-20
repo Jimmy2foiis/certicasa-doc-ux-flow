@@ -15,16 +15,11 @@ export const useDocumentTemplateUpload = () => {
     resetUploadedFiles
   } = useFileUpload();
 
-  // Use our notification hook
+  // Utiliser notre hook de notification
   useTemplateNotification();
 
-  // Use the template storage hook
+  // Utiliser le hook de stockage des modèles
   const { saveAllTemplates } = useTemplateStorage(resetUploadedFiles);
-
-  // Wrapper to save all templates
-  const saveAllTemplatesToLibrary = () => {
-    saveAllTemplates(uploadedFiles);
-  };
 
   return {
     uploadedFiles,
@@ -34,6 +29,6 @@ export const useDocumentTemplateUpload = () => {
     confirmDeleteFile,
     handleDeleteFile,
     cancelDelete,
-    saveAllTemplates: saveAllTemplatesToLibrary
+    saveAllTemplates
   };
 };

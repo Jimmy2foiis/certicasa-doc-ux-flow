@@ -1,27 +1,35 @@
 
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { DOCUMENT_TEMPLATES_KEY } from "@/components/documents/DocumentTemplateUpload";
+import { supabase } from '@/integrations/supabase/client';
 
 export const useTemplateNotification = () => {
   const { toast } = useToast();
 
-  // Load existing templates from localStorage on load and show notification
+  // Charger les modèles existants depuis Supabase et afficher une notification
   useEffect(() => {
-    try {
-      const storedTemplates = localStorage.getItem(DOCUMENT_TEMPLATES_KEY);
-      if (storedTemplates) {
-        const existingTemplates = JSON.parse(storedTemplates);
-        if (existingTemplates.length > 0) {
+    const fetchTemplates = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('document_templates')
+          .select('*');
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data && data.length > 0) {
           toast({
             title: "Modèles disponibles",
-            description: `${existingTemplates.length} modèle(s) sont disponibles dans votre bibliothèque.`,
+            description: `${data.length} modèle(s) sont disponibles dans votre bibliothèque.`,
           });
         }
+      } catch (error) {
+        console.error("Erreur lors du chargement initial des modèles:", error);
       }
-    } catch (error) {
-      console.error("Erreur lors du chargement initial des modèles:", error);
-    }
+    };
+    
+    fetchTemplates();
   }, [toast]);
 
   return { toast };

@@ -1,6 +1,5 @@
 
 import { useEffect } from "react";
-import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, 
   AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
@@ -10,11 +9,10 @@ import TemplateUploadArea from "./TemplateUploadArea";
 import TemplateFileItem from "./TemplateFileItem";
 import { useDocumentTemplateUpload } from "@/hooks/useDocumentTemplateUpload";
 
-// Clé localStorage pour stocker les modèles de documents
+// Clé de référence pour les modèles de documents (maintenu pour compatibilité)
 export const DOCUMENT_TEMPLATES_KEY = 'document_templates';
 
 const DocumentTemplateUpload = () => {
-  const { toast } = useToast();
   const {
     uploadedFiles,
     uploading,
@@ -25,25 +23,6 @@ const DocumentTemplateUpload = () => {
     cancelDelete,
     saveAllTemplates
   } = useDocumentTemplateUpload();
-
-  // Charger les modèles existants depuis le localStorage au chargement
-  useEffect(() => {
-    // Nous les chargeons juste pour afficher un message d'information
-    try {
-      const storedTemplates = localStorage.getItem(DOCUMENT_TEMPLATES_KEY);
-      if (storedTemplates) {
-        const existingTemplates = JSON.parse(storedTemplates);
-        if (existingTemplates.length > 0) {
-          toast({
-            title: "Modèles disponibles",
-            description: `${existingTemplates.length} modèle(s) sont disponibles dans votre bibliothèque.`,
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Erreur lors du chargement initial des modèles:", error);
-    }
-  }, [toast]);
 
   return (
     <Card>

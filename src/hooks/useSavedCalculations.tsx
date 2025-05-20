@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { getCadastralDataForClient } from "@/services/supabaseService";
+import { supabase } from '@/integrations/supabase/client';
 
 interface SavedCalculation {
   id: string;
@@ -15,30 +16,51 @@ interface SavedCalculation {
   calculationData: any;
 }
 
-// Clé pour le stockage local des calculs (utilisé pendant la transition)
-const SAVED_CALCULATIONS_KEY = 'saved_calculations';
-
 export const useSavedCalculations = (clientId: string) => {
   const { toast } = useToast();
   
-  // État pour stocker les calculs sauvegardés (temporaire, à remplacer par Supabase)
+  // État pour stocker les calculs sauvegardés
   const [savedCalculations, setSavedCalculations] = useState<SavedCalculation[]>([]);
 
-  // Fonction pour récupérer les calculs sauvegardés du localStorage
-  const loadSavedCalculations = useCallback(() => {
+  // Fonction pour récupérer les calculs sauvegardés depuis Supabase
+  const loadSavedCalculations = useCallback(async () => {
     try {
-      // Note: Dans une future version, cette fonction devrait être adaptée pour utiliser Supabase
-      const savedData = localStorage.getItem(SAVED_CALCULATIONS_KEY);
-      if (savedData) {
-        const allCalculations = JSON.parse(savedData) as SavedCalculation[];
-        // Filtrer pour ne montrer que les calculs du client actuel
-        const clientCalculations = allCalculations.filter(calc => calc.clientId === clientId);
-        setSavedCalculations(clientCalculations);
+      const { data, error } = await supabase
+        .from('saved_calculations')
+        .select('*')
+        .eq('client_id', clientId);
+      
+      if (error) {
+        throw error;
+      }
+      
+      if (data) {
+        // Convertir du format Supabase au format local
+        const formattedCalculations: SavedCalculation[] = data.map(calc => ({
+          id: calc.id,
+          projectId: calc.project_id || '',
+          projectName: calc.calculation_data?.projectName || 'Projet sans nom',
+          clientId: calc.client_id || '',
+          type: calc.type || '',
+          surface: calc.surface || 0,
+          date: new Date(calc.date).toLocaleDateString('fr-FR'),
+          improvement: calc.improvement || 0,
+          calculationData: calc.calculation_data || {}
+        }));
+        
+        setSavedCalculations(formattedCalculations);
+      } else {
+        setSavedCalculations([]);
       }
     } catch (error) {
       console.error("Erreur lors du chargement des calculs sauvegardés:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les calculs sauvegardés.",
+        variant: "destructive",
+      });
     }
-  }, [clientId]);
+  }, [clientId, toast]);
 
   // Charger les calculs sauvegardés et les données cadastrales au montage du composant
   useEffect(() => {

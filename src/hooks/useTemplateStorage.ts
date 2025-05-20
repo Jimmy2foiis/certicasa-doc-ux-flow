@@ -1,35 +1,55 @@
 
 import { useToast } from "@/hooks/use-toast";
-import { DOCUMENT_TEMPLATES_KEY } from "@/components/documents/DocumentTemplateUpload";
+import { supabase } from '@/integrations/supabase/client';
 import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
 import { UploadedFile } from "@/components/documents/TemplateFileItem";
 
 export const useTemplateStorage = (resetUploadedFiles: () => void) => {
   const { toast } = useToast();
-
-  // Load templates from localStorage
-  const loadTemplatesFromStorage = (): DocumentTemplate[] => {
-    try {
-      const storedTemplates = localStorage.getItem(DOCUMENT_TEMPLATES_KEY);
-      if (storedTemplates) {
-        return JSON.parse(storedTemplates);
-      }
-    } catch (error) {
-      console.error("Erreur lors du chargement des modèles:", error);
-    }
-    return [];
-  };
   
-  // Save templates to localStorage
-  const saveTemplateToStorage = (templates: DocumentTemplate[]) => {
+  // Convertir les fichiers téléversés en modèles de documents et les enregistrer dans Supabase
+  const saveAllTemplates = async (uploadedFiles: UploadedFile[]) => {
     try {
-      localStorage.setItem(DOCUMENT_TEMPLATES_KEY, JSON.stringify(templates));
+      // Filtrer les fichiers complètement téléversés
+      const filesToSave = uploadedFiles.filter(file => file.status === 'complete');
       
-      // Trigger storage event to update other tabs
-      window.dispatchEvent(new StorageEvent('storage', {
-        key: DOCUMENT_TEMPLATES_KEY
+      if (filesToSave.length === 0) {
+        toast({
+          title: "Avertissement",
+          description: "Aucun fichier valide à enregistrer.",
+        });
+        return;
+      }
+      
+      // Préparer les données pour Supabase
+      const now = new Date().toISOString();
+      
+      const templates = filesToSave.map(file => ({
+        name: file.name.replace(/\.[^/.]+$/, ""), // Enlever l'extension
+        type: file.name.split('.').pop() || "unknown",
+        content: null, // Le contenu pourrait être ajouté si nécessaire
+        last_modified: now,
+        date_uploaded: now
       }));
       
+      // Insérer dans Supabase
+      const { data, error } = await supabase
+        .from('document_templates')
+        .insert(templates)
+        .select();
+      
+      if (error) {
+        throw error;
+      }
+      
+      // Notification de succès
+      toast({
+        title: "Modèles enregistrés",
+        description: `${templates.length} modèle(s) ont été ajoutés à la bibliothèque.`,
+      });
+      
+      // Réinitialiser l'état pour permettre de nouveaux téléversements
+      resetUploadedFiles();
     } catch (error) {
       console.error("Erreur lors de la sauvegarde des modèles:", error);
       toast({
@@ -39,41 +59,6 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
       });
     }
   };
-  
-  const saveAllTemplates = (uploadedFiles: UploadedFile[]) => {
-    // Convert uploaded files to document templates
-    const now = new Date().toLocaleDateString('fr-FR');
-    
-    const newTemplates: DocumentTemplate[] = uploadedFiles
-      .filter(file => file.status === 'complete')
-      .map(file => ({
-        id: file.id,
-        name: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
-        type: file.name.split('.').pop() || "unknown",
-        lastModified: now,
-        dateUploaded: now
-      }));
-    
-    // Load existing templates and add new ones
-    const existingTemplates = loadTemplatesFromStorage();
-    const mergedTemplates = [...existingTemplates, ...newTemplates];
-    
-    // Save to localStorage
-    saveTemplateToStorage(mergedTemplates);
-    
-    // Notification
-    toast({
-      title: "Modèles enregistrés",
-      description: `${newTemplates.length} modèle(s) ont été ajoutés à la bibliothèque.`,
-    });
-    
-    // Reset state to allow new uploads
-    resetUploadedFiles();
-  };
 
-  return {
-    loadTemplatesFromStorage,
-    saveTemplateToStorage,
-    saveAllTemplates
-  };
+  return { saveAllTemplates };
 };

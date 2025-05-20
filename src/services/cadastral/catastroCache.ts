@@ -1,23 +1,9 @@
 
 import { CatastroData } from "../catastroService";
+import { supabase } from '@/integrations/supabase/client';
 
-// Clé pour le cache localStorage
-const CATASTRO_CACHE_KEY = 'cadastral_cache';
-const CACHE_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 heures en millisecondes
-
-interface CacheItem {
-  timestamp: number;
-  data: CatastroData;
-}
-
-interface CoordinateKey {
-  lat: number;
-  lng: number;
-}
-
-interface CadastralCache {
-  [key: string]: CacheItem;
-}
+// Constante pour la durée d'expiration du cache (24 heures en millisecondes)
+const CACHE_EXPIRY_TIME = 24 * 60 * 60 * 1000;
 
 // Génère une clé de cache unique pour des coordonnées
 const generateCacheKey = (lat: number, lng: number): string => {
@@ -27,25 +13,39 @@ const generateCacheKey = (lat: number, lng: number): string => {
 };
 
 // Vérifie si une entrée de cache est encore valide
-const isCacheValid = (cacheItem: CacheItem): boolean => {
+const isCacheValid = (timestamp: string): boolean => {
+  const cacheTime = new Date(timestamp).getTime();
   const now = Date.now();
-  return (now - cacheItem.timestamp) < CACHE_EXPIRY_TIME;
+  return (now - cacheTime) < CACHE_EXPIRY_TIME;
 };
 
-// Récupère les données du cache
-export const getCachedCadastralData = (lat: number, lng: number): CatastroData | null => {
+// Récupère les données du cache Supabase
+export const getCachedCadastralData = async (lat: number, lng: number): Promise<CatastroData | null> => {
   try {
     const cacheKey = generateCacheKey(lat, lng);
-    const cacheString = localStorage.getItem(CATASTRO_CACHE_KEY);
     
-    if (!cacheString) return null;
+    const { data, error } = await supabase
+      .from('cadastral_cache')
+      .select('*')
+      .eq('coordinate_key', cacheKey)
+      .single();
     
-    const cache: CadastralCache = JSON.parse(cacheString);
-    const cacheItem = cache[cacheKey];
+    if (error) {
+      console.log("Aucune donnée en cache pour cette coordonnée");
+      return null;
+    }
     
-    if (cacheItem && isCacheValid(cacheItem)) {
+    if (data && isCacheValid(data.timestamp)) {
       console.log(`Données cadastrales récupérées du cache pour ${lat}, ${lng}`);
-      return cacheItem.data;
+      return data.data as CatastroData;
+    }
+    
+    // Si les données sont expirées, on les supprime
+    if (data) {
+      await supabase
+        .from('cadastral_cache')
+        .delete()
+        .eq('coordinate_key', cacheKey);
     }
     
     return null;
@@ -55,23 +55,49 @@ export const getCachedCadastralData = (lat: number, lng: number): CatastroData |
   }
 };
 
-// Stocke des données dans le cache
-export const setCachedCadastralData = (lat: number, lng: number, data: CatastroData): void => {
+// Stocke des données dans le cache Supabase
+export const setCachedCadastralData = async (lat: number, lng: number, data: CatastroData): Promise<void> => {
   try {
     const cacheKey = generateCacheKey(lat, lng);
-    let cache: CadastralCache = {};
     
-    const cacheString = localStorage.getItem(CATASTRO_CACHE_KEY);
-    if (cacheString) {
-      cache = JSON.parse(cacheString);
+    // Vérifier si l'entrée existe déjà
+    const { data: existingData, error: checkError } = await supabase
+      .from('cadastral_cache')
+      .select('id')
+      .eq('coordinate_key', cacheKey)
+      .single();
+    
+    if (checkError && checkError.code !== 'PGRST116') {  // PGRST116 = not found
+      console.error("Erreur lors de la vérification du cache:", checkError);
     }
     
-    cache[cacheKey] = {
-      timestamp: Date.now(),
-      data
-    };
+    // Mise à jour ou insertion
+    if (existingData) {
+      const { error: updateError } = await supabase
+        .from('cadastral_cache')
+        .update({
+          data: data,
+          timestamp: new Date().toISOString()
+        })
+        .eq('id', existingData.id);
+      
+      if (updateError) {
+        throw updateError;
+      }
+    } else {
+      const { error: insertError } = await supabase
+        .from('cadastral_cache')
+        .insert([{
+          coordinate_key: cacheKey,
+          data: data,
+          timestamp: new Date().toISOString()
+        }]);
+      
+      if (insertError) {
+        throw insertError;
+      }
+    }
     
-    localStorage.setItem(CATASTRO_CACHE_KEY, JSON.stringify(cache));
     console.log(`Données cadastrales mises en cache pour ${lat}, ${lng}`);
   } catch (error) {
     console.error("Erreur lors de la mise en cache des données cadastrales:", error);
@@ -79,9 +105,17 @@ export const setCachedCadastralData = (lat: number, lng: number, data: CatastroD
 };
 
 // Efface le cache
-export const clearCadastralCache = (): void => {
+export const clearCadastralCache = async (): Promise<void> => {
   try {
-    localStorage.removeItem(CATASTRO_CACHE_KEY);
+    const { error } = await supabase
+      .from('cadastral_cache')
+      .delete()
+      .gte('id', '0');  // Condition toujours vraie pour tout supprimer
+    
+    if (error) {
+      throw error;
+    }
+    
     console.log("Cache cadastral effacé");
   } catch (error) {
     console.error("Erreur lors de l'effacement du cache cadastral:", error);

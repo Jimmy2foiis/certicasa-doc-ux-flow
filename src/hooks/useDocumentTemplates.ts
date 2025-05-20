@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { DOCUMENT_TEMPLATES_KEY } from '@/components/documents/DocumentTemplateUpload';
 import { useToast } from "@/components/ui/use-toast";
 
@@ -9,7 +10,7 @@ export interface DocumentTemplate {
   type: string;
   lastModified: string;
   dateUploaded: string;
-  content?: string; // Contenu du fichier pour l'aperçu
+  content?: string;
 }
 
 export const useDocumentTemplates = () => {
@@ -20,34 +21,31 @@ export const useDocumentTemplates = () => {
   // Charger les templates au montage du composant
   useEffect(() => {
     loadTemplates();
-    
-    // Écouter les changements de localStorage
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === DOCUMENT_TEMPLATES_KEY) {
-        loadTemplates();
-      }
-    };
-    
-    // Écouter également un événement personnalisé pour les changements dans le même onglet
-    const handleCustomStorageEvent = () => {
-      loadTemplates();
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('storage', handleCustomStorageEvent);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('storage', handleCustomStorageEvent);
-    };
   }, []);
 
-  // Charger les modèles depuis le localStorage
-  const loadTemplates = () => {
+  // Charger les modèles depuis Supabase
+  const loadTemplates = async () => {
     setLoading(true);
     try {
-      const storedTemplates = localStorage.getItem(DOCUMENT_TEMPLATES_KEY);
-      if (storedTemplates) {
-        setTemplates(JSON.parse(storedTemplates));
+      const { data, error } = await supabase
+        .from('document_templates')
+        .select('*');
+      
+      if (error) {
+        throw error;
+      }
+
+      if (data) {
+        // Convertir du format Supabase au format local
+        const formattedTemplates: DocumentTemplate[] = data.map(template => ({
+          id: template.id,
+          name: template.name,
+          type: template.type,
+          lastModified: new Date(template.last_modified).toLocaleDateString('fr-FR'),
+          dateUploaded: new Date(template.date_uploaded).toLocaleDateString('fr-FR'),
+          content: template.content
+        }));
+        setTemplates(formattedTemplates);
       } else {
         setTemplates([]);
       }
@@ -64,32 +62,81 @@ export const useDocumentTemplates = () => {
   };
 
   // Ajouter un nouveau modèle
-  const addTemplate = (template: DocumentTemplate) => {
-    const updatedTemplates = [...templates, template];
-    setTemplates(updatedTemplates);
-    localStorage.setItem(DOCUMENT_TEMPLATES_KEY, JSON.stringify(updatedTemplates));
-    
-    // Déclencher un événement pour mettre à jour d'autres onglets
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: DOCUMENT_TEMPLATES_KEY
-    }));
+  const addTemplate = async (template: DocumentTemplate) => {
+    try {
+      // Convertir au format Supabase
+      const supabaseTemplate = {
+        name: template.name,
+        type: template.type,
+        content: template.content,
+        last_modified: new Date().toISOString(),
+        date_uploaded: new Date().toISOString()
+      };
+
+      const { data, error } = await supabase
+        .from('document_templates')
+        .insert([supabaseTemplate])
+        .select();
+
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.length > 0) {
+        // Ajouter le nouveau modèle avec l'ID généré par Supabase
+        const newTemplate = {
+          ...template,
+          id: data[0].id,
+          lastModified: new Date(data[0].last_modified).toLocaleDateString('fr-FR'),
+          dateUploaded: new Date(data[0].date_uploaded).toLocaleDateString('fr-FR')
+        };
+        
+        setTemplates(prevTemplates => [...prevTemplates, newTemplate]);
+        
+        toast({
+          title: "Modèle ajouté",
+          description: "Le modèle a été ajouté avec succès."
+        });
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'ajout du modèle:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'ajouter le modèle. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Supprimer un modèle
-  const removeTemplate = (templateId: string) => {
-    const updatedTemplates = templates.filter(template => template.id !== templateId);
-    setTemplates(updatedTemplates);
-    localStorage.setItem(DOCUMENT_TEMPLATES_KEY, JSON.stringify(updatedTemplates));
-    
-    // Déclencher un événement pour mettre à jour d'autres onglets
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: DOCUMENT_TEMPLATES_KEY
-    }));
-    
-    toast({
-      title: "Modèle supprimé",
-      description: "Le modèle a été supprimé avec succès.",
-    });
+  const removeTemplate = async (templateId: string) => {
+    try {
+      const { error } = await supabase
+        .from('document_templates')
+        .delete()
+        .eq('id', templateId);
+
+      if (error) {
+        throw error;
+      }
+
+      // Mettre à jour l'état local après suppression
+      setTemplates(prevTemplates => 
+        prevTemplates.filter(template => template.id !== templateId)
+      );
+      
+      toast({
+        title: "Modèle supprimé",
+        description: "Le modèle a été supprimé avec succès.",
+      });
+    } catch (error) {
+      console.error("Erreur lors de la suppression du modèle:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le modèle. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
   };
 
   return { templates, loading, addTemplate, removeTemplate, refreshTemplates: loadTemplates };
