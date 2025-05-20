@@ -115,7 +115,7 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
       </TableCell>
       <TableCell>
         <Input
-          value={rValue.toFixed(2)}
+          value={rValue.toFixed(3)}
           readOnly
           className="h-8 bg-gray-50"
         />

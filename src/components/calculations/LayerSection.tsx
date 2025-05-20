@@ -8,7 +8,12 @@ import { Material } from "@/data/materials";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { VentilationType, getBCoefficientTableData, bCoefficientTable } from "@/utils/calculationUtils";
+import { 
+  VentilationType, 
+  getBCoefficientTableData, 
+  bCoefficientTable, 
+  calculateUpValue 
+} from "@/utils/calculationUtils";
 import { useState } from "react";
 
 interface Layer extends Material {
@@ -60,6 +65,9 @@ const LayerSection = ({
 }: LayerSectionProps) => {
   const [showBCoefficientTable, setShowBCoefficientTable] = useState(false);
   const bCoefficientTableData = getBCoefficientTableData();
+  
+  // Calcul du Up (transmittance avant coefficient b)
+  const upValue = calculateUpValue(totalR);
   
   return (
     <div className="space-y-4">
@@ -206,14 +214,22 @@ const LayerSection = ({
         </Table>
         
         <div className="p-3 bg-gray-50 border-t">
-          <div className="flex justify-between items-center">
-            <div>
+          <div className="flex flex-col space-y-2">
+            <div className="flex justify-between items-center">
               <span className="text-sm text-gray-500">Résistance thermique totale (avec Rsi + Rse):</span>
-              <span className="ml-2 font-medium">{totalR.toFixed(2)} m²K/W</span>
+              <span className="ml-2 font-medium">{totalR.toFixed(3)} m²K/W</span>
             </div>
-            <div>
-              <span className="text-sm text-gray-500">Transmittance U:</span>
-              <span className="ml-2 font-medium">{uValue.toFixed(2)} W/m²K</span>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-500">Up (transmittance avant coefficient b):</span>
+              <span className="ml-2 font-medium">{upValue.toFixed(3)} W/m²K</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-500">Coefficient b:</span>
+              <span className="ml-2 font-medium">{bCoefficient.toFixed(3)}</span>
+            </div>
+            <div className="flex justify-between items-center font-semibold">
+              <span className="text-sm">Uf (transmittance finale):</span>
+              <span className="ml-2">{uValue.toFixed(3)} W/m²K</span>
             </div>
           </div>
         </div>

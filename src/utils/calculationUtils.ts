@@ -42,12 +42,19 @@ export const calculateBCoefficient = ({ ratio, ventilationType, isAfterWork = fa
   }
 };
 
+// Calcul de la résistance thermique totale (somme des R)
 export const calculateThermalResistance = (layers: any[], rsiRse: number = 0.17): number => {
   return layers.reduce((sum, layer) => sum + layer.r, rsiRse);
 };
 
-export const calculateUValue = (thermalResistance: number, bCoefficient: number): number => {
-  return (1 / thermalResistance) * bCoefficient;
+// Calcul du Up (transmittance avant coefficient b)
+export const calculateUpValue = (thermalResistance: number): number => {
+  return 1 / thermalResistance;
+};
+
+// Calcul du Uf (transmittance finale avec coefficient b)
+export const calculateUfValue = (upValue: number, bCoefficient: number): number => {
+  return upValue * bCoefficient;
 };
 
 export const getBCoefficientTableData = () => {
