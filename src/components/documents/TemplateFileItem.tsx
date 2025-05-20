@@ -3,10 +3,18 @@ import { FileCheck, FileText, AlertCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
-export interface UploadedFile extends File {
+export interface UploadedFile {
   id: string;
+  name: string;
+  size: number;
+  type: string;
+  lastModified: number;
   progress: number;
   status: 'uploading' | 'complete' | 'error';
+  slice: Function;
+  stream?: Function;
+  text?: Function;
+  arrayBuffer?: Function;
 }
 
 interface TemplateFileItemProps {
@@ -15,6 +23,17 @@ interface TemplateFileItemProps {
 }
 
 const TemplateFileItem = ({ file, onDelete }: TemplateFileItemProps) => {
+  // Formater la taille du fichier
+  const formatFileSize = (bytes: number): string => {
+    if (isNaN(bytes) || bytes === 0) return "0 KB";
+    
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
   return (
     <div
       className={`flex flex-col border rounded-md p-3 ${
@@ -37,7 +56,7 @@ const TemplateFileItem = ({ file, onDelete }: TemplateFileItemProps) => {
           <div>
             <p className="font-medium text-sm">{file.name}</p>
             <p className="text-xs text-gray-500">
-              {(file.size / 1024).toFixed(1)} KB
+              {formatFileSize(file.size)}
             </p>
           </div>
         </div>

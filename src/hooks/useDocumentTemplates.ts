@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { DOCUMENT_TEMPLATES_KEY } from '@/components/documents/DocumentTemplateUpload';
+import { useToast } from "@/components/ui/use-toast";
 
 export interface DocumentTemplate {
   id: string;
@@ -13,6 +14,7 @@ export interface DocumentTemplate {
 export const useDocumentTemplates = () => {
   const [templates, setTemplates] = useState<DocumentTemplate[]>([]);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   // Charger les templates au montage du composant
   useEffect(() => {
@@ -25,9 +27,16 @@ export const useDocumentTemplates = () => {
       }
     };
     
+    // Écouter également un événement personnalisé pour les changements dans le même onglet
+    const handleCustomStorageEvent = () => {
+      loadTemplates();
+    };
+    
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('storage', handleCustomStorageEvent);
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('storage', handleCustomStorageEvent);
     };
   }, []);
 
@@ -44,6 +53,11 @@ export const useDocumentTemplates = () => {
     } catch (error) {
       console.error("Erreur lors du chargement des modèles:", error);
       setTemplates([]);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les modèles. Veuillez rafraîchir la page.",
+        variant: "destructive",
+      });
     }
     setLoading(false);
   };
@@ -53,6 +67,11 @@ export const useDocumentTemplates = () => {
     const updatedTemplates = [...templates, template];
     setTemplates(updatedTemplates);
     localStorage.setItem(DOCUMENT_TEMPLATES_KEY, JSON.stringify(updatedTemplates));
+    
+    // Déclencher un événement pour mettre à jour d'autres onglets
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: DOCUMENT_TEMPLATES_KEY
+    }));
   };
 
   // Supprimer un modèle
@@ -60,6 +79,11 @@ export const useDocumentTemplates = () => {
     const updatedTemplates = templates.filter(template => template.id !== templateId);
     setTemplates(updatedTemplates);
     localStorage.setItem(DOCUMENT_TEMPLATES_KEY, JSON.stringify(updatedTemplates));
+    
+    // Déclencher un événement pour mettre à jour d'autres onglets
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: DOCUMENT_TEMPLATES_KEY
+    }));
   };
 
   return { templates, loading, addTemplate, removeTemplate, refreshTemplates: loadTemplates };

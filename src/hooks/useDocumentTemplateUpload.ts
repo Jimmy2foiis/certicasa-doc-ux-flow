@@ -25,12 +25,22 @@ export const useDocumentTemplateUpload = () => {
       const fileExt = file.name.split('.').pop()?.toLowerCase();
       
       if (fileExt === 'docx' || fileExt === 'pdf') {
-        validFiles.push({
-          ...file,
+        // Créer une copie du fichier avec les propriétés supplémentaires
+        const uploadedFile: UploadedFile = {
           id: `${file.name}-${Date.now()}`,
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          lastModified: file.lastModified,
           progress: 0,
-          status: 'uploading'
-        });
+          status: 'uploading',
+          slice: file.slice,
+          stream: file.stream?.bind(file),
+          text: file.text?.bind(file),
+          arrayBuffer: file.arrayBuffer?.bind(file),
+        };
+        
+        validFiles.push(uploadedFile);
       } else {
         invalidFiles.push(file.name);
       }
@@ -139,6 +149,12 @@ export const useDocumentTemplateUpload = () => {
   const saveTemplateToStorage = (templates: DocumentTemplate[]) => {
     try {
       localStorage.setItem(DOCUMENT_TEMPLATES_KEY, JSON.stringify(templates));
+      
+      // Déclencher un événement de stockage pour mettre à jour d'autres onglets
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: DOCUMENT_TEMPLATES_KEY
+      }));
+      
     } catch (error) {
       console.error("Erreur lors de la sauvegarde des modèles:", error);
       toast({

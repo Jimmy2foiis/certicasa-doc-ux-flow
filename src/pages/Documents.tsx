@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import DocumentGeneration from "@/components/documents/DocumentGeneration";
@@ -14,7 +14,14 @@ import GenerateTabContent from "@/components/documents/GenerateTabContent";
 const Documents = () => {
   const [activeTab, setActiveTab] = useState("library");
   const [searchQuery, setSearchQuery] = useState("");
-  const { templates, loading } = useDocumentTemplates();
+  const { templates, loading, refreshTemplates } = useDocumentTemplates();
+  
+  // Rafraîchir les templates lorsque l'onglet "library" est activé
+  useEffect(() => {
+    if (activeTab === "library") {
+      refreshTemplates();
+    }
+  }, [activeTab, refreshTemplates]);
   
   // Filtrer les templates selon la recherche
   const filteredTemplates = templates.filter(template => 
