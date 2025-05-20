@@ -98,7 +98,7 @@ const LayerSection = ({
             <Button 
               variant="outline" 
               size="sm" 
-              className="h-8"
+              className="h-8 bg-[#8B5CF6] text-white hover:bg-[#7C3AED] border-[#8B5CF6]"
               onClick={onAddSouflr47}
             >
               <Plus className="h-3.5 w-3.5 mr-1" />
@@ -253,7 +253,9 @@ const LayerSection = ({
               <span className="ml-2 font-medium">{bCoefficient.toFixed(3)}</span>
             </div>
             <div className="flex justify-between items-center font-semibold">
-              <span className="text-sm">Uf (transmittance finale):</span>
+              <span className="text-sm">
+                {isAfterWork ? "Uf (transmittance après coefficient b)" : "Ui (transmittance après coefficient b)"}:
+              </span>
               <span className="ml-2">{uValue.toFixed(3)} W/m²K</span>
             </div>
           </div>
