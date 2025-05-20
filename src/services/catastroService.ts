@@ -1,10 +1,29 @@
+
 /**
- * Service pour interagir avec l'API du Catastro Español (Sede Electrónica del Catastro)
- * Version modifiée pour simuler les données sans appel API direct
+ * Service pour interagir avec l'API officielle du Catastro Español (Sede Electrónica del Catastro)
  */
 
-// Conversion de l'adresse en coordonnées géographiques via Google Maps Geocoding
-export const getCoordinatesFromAddress = async (address: string): Promise<{lat: number, lng: number} | null> => {
+import { fetchViaProxy } from './proxyService';
+
+// Interface pour les données de retour de l'API Catastro
+interface CatastroData {
+  cadastralReference: string;
+  address: string;
+  utmCoordinates: string;
+  climateZone: string;
+  error?: string;
+}
+
+// Interface pour les coordonnées géographiques
+interface GeoCoordinates {
+  lat: number;
+  lng: number;
+}
+
+/**
+ * Conversion de l'adresse en coordonnées géographiques via Google Maps Geocoding
+ */
+export const getCoordinatesFromAddress = async (address: string): Promise<GeoCoordinates | null> => {
   try {
     // Vérifier que l'API Google Maps est disponible
     if (!window.google || !window.google.maps || !window.google.maps.Geocoder) {
@@ -34,120 +53,9 @@ export const getCoordinatesFromAddress = async (address: string): Promise<{lat: 
   }
 };
 
-// Interface pour les données de retour de l'API Catastro
-interface CatastroData {
-  cadastralReference: string;
-  address: string;
-  utmCoordinates: string;
-  climateZone: string;
-  error?: string;
-}
-
-// Base de données simulée de références cadastrales par ville
-const mockCadastralDatabase: Record<string, { reference: string, utmCoordinates: string, climateZone: string }> = {
-  "madrid": {
-    reference: "9872023VK4797B0001WX",
-    utmCoordinates: "441234.56, 4478765.43",
-    climateZone: "D3"
-  },
-  "barcelona": {
-    reference: "0123456DF2802S0001PQ",
-    utmCoordinates: "431234.78, 4581456.21",
-    climateZone: "C2"
-  },
-  "sevilla": {
-    reference: "5432109TG3453N0001ZR",
-    utmCoordinates: "235678.12, 4141234.56",
-    climateZone: "B4"
-  },
-  "valencia": {
-    reference: "7654321YJ2775H0001LM",
-    utmCoordinates: "725436.89, 4373210.45",
-    climateZone: "B3"
-  },
-  "malaga": {
-    reference: "2345678UF7624N0001SB",
-    utmCoordinates: "354678.12, 4064532.78",
-    climateZone: "A3"
-  },
-  "bilbao": {
-    reference: "9876543VN0987F0001HG",
-    utmCoordinates: "506789.34, 4789012.56",
-    climateZone: "C1"
-  },
-  "zaragoza": {
-    reference: "1234567XM7123A0001JK",
-    utmCoordinates: "676543.21, 4612345.67",
-    climateZone: "D3"
-  },
-  "default": {
-    reference: "0000000XX0000X0000XX",
-    utmCoordinates: "500000.00, 4500000.00",
-    climateZone: "C3"
-  }
-};
-
 /**
- * Fonction simulée pour obtenir les données cadastrales à partir d'une adresse
- * Cette fonction évite l'appel API direct qui échoue à cause des restrictions CORS
+ * Formatage de la requête SOAP pour l'API Catastro
  */
-export const getCadastralDataFromAddress = async (address: string): Promise<CatastroData> => {
-  try {
-    // Simuler un délai réseau
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    
-    // 1. Obtenir les coordonnées géographiques à partir de l'adresse
-    const coordinates = await getCoordinatesFromAddress(address);
-    
-    if (!coordinates) {
-      return {
-        cadastralReference: "",
-        address: "",
-        utmCoordinates: "",
-        climateZone: "",
-        error: "Impossible de géocoder l'adresse"
-      };
-    }
-    
-    // 2. Extraire la ville à partir de l'adresse pour la simulation
-    let cityKey = "default";
-    const lowerAddress = address.toLowerCase();
-    
-    // Détecter la ville mentionnée dans l'adresse
-    for (const city of Object.keys(mockCadastralDatabase)) {
-      if (lowerAddress.includes(city)) {
-        cityKey = city;
-        break;
-      }
-    }
-    
-    // 3. Simuler les données cadastrales basées sur la ville
-    const mockData = mockCadastralDatabase[cityKey] || mockCadastralDatabase.default;
-    
-    // 4. Retourner les données simulées
-    return {
-      cadastralReference: mockData.reference,
-      address: address,
-      utmCoordinates: mockData.utmCoordinates,
-      climateZone: mockData.climateZone,
-      error: undefined
-    };
-  } catch (error) {
-    console.error("Erreur lors de la simulation des données cadastrales:", error);
-    return {
-      cadastralReference: "",
-      address: "",
-      utmCoordinates: "",
-      climateZone: "",
-      error: `Erreur lors de la récupération des données cadastrales: ${error instanceof Error ? error.message : String(error)}`
-    };
-  }
-};
-
-// Les fonctions suivantes sont conservées pour référence mais ne sont pas utilisées
-// dans cette version simulée pour éviter les problèmes CORS
-
-// Formatage de la requête SOAP pour l'API Catastro (non utilisé)
 const createSoapEnvelope = (lat: number, lng: number): string => {
   return `
     <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cat="http://catastro.meh.es/">
@@ -156,8 +64,8 @@ const createSoapEnvelope = (lat: number, lng: number): string => {
         <cat:Consulta_RCCOOR_DGC>
           <cat:coor>
             <cat:coord>
-              <cat:latitud>${lat}</latitud>
-              <cat:longitud>${lng}</longitud>
+              <cat:latitud>${lat}</cat:latitud>
+              <cat:longitud>${lng}</cat:longitud>
             </cat:coord>
           </cat:coor>
         </cat:Consulta_RCCOOR_DGC>
@@ -166,7 +74,9 @@ const createSoapEnvelope = (lat: number, lng: number): string => {
   `;
 };
 
-// Fonction pour analyser la réponse XML du Catastro (non utilisée)
+/**
+ * Fonction pour analyser la réponse XML du Catastro
+ */
 const parseCatastroResponse = (xmlString: string): CatastroData => {
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(xmlString, "text/xml");
@@ -200,12 +110,11 @@ const parseCatastroResponse = (xmlString: string): CatastroData => {
     const utmY = utmYNode ? utmYNode.textContent || "" : "";
     const utmCoordinates = (utmX && utmY) ? `${utmX}, ${utmY}` : "";
     
-    // Déterminer la zone climatique espagnole (simulation)
-    // Cela devrait être déterminé par un service supplémentaire basé sur la province ou le code postal
+    // Déterminer la zone climatique espagnole en fonction de la province
     const provinciaNode = xmlDoc.querySelector("np");
     const provincia = provinciaNode ? provinciaNode.textContent || "" : "";
     
-    // Simplification pour la démonstration - devrait être basé sur la réglementation CTE espagnole
+    // Zones climatiques selon la réglementation CTE espagnole
     const climateZones: Record<string, string> = {
       "MADRID": "D3",
       "BARCELONA": "C2",
@@ -218,9 +127,10 @@ const parseCatastroResponse = (xmlString: string): CatastroData => {
       "MURCIA": "B3",
       "PALMA": "B3",
       "LAS PALMAS": "A3",
+      // Ajouter d'autres provinces si nécessaire
     };
     
-    const climateZone = climateZones[provincia] || "C3"; // Zone par défaut
+    const climateZone = climateZones[provincia.toUpperCase()] || "C3"; // Zone par défaut
     
     return {
       cadastralReference,
@@ -241,13 +151,15 @@ const parseCatastroResponse = (xmlString: string): CatastroData => {
   }
 };
 
-// Interrogation de l'API Catastro à partir de coordonnées (non utilisée)
+/**
+ * Interrogation de l'API Catastro à partir de coordonnées
+ */
 export const getCadastralInfoFromCoordinates = async (lat: number, lng: number): Promise<CatastroData> => {
   try {
     const soapEnvelope = createSoapEnvelope(lat, lng);
     const apiUrl = "https://ovc.catastro.meh.es/ovcservweb/OVCSWLocalizacionRC/OVCCoordenadas.asmx";
     
-    const response = await fetch(apiUrl, {
+    const response = await fetchViaProxy(apiUrl, {
       method: "POST",
       headers: {
         "Content-Type": "text/xml;charset=UTF-8",
@@ -255,10 +167,6 @@ export const getCadastralInfoFromCoordinates = async (lat: number, lng: number):
       },
       body: soapEnvelope
     });
-    
-    if (!response.ok) {
-      throw new Error(`Erreur HTTP: ${response.status}`);
-    }
     
     const xmlText = await response.text();
     return parseCatastroResponse(xmlText);
@@ -270,6 +178,42 @@ export const getCadastralInfoFromCoordinates = async (lat: number, lng: number):
       utmCoordinates: "",
       climateZone: "",
       error: `Erreur de communication avec l'API Catastro: ${error instanceof Error ? error.message : String(error)}`
+    };
+  }
+};
+
+/**
+ * Fonction principale pour obtenir les données cadastrales à partir d'une adresse
+ */
+export const getCadastralDataFromAddress = async (address: string): Promise<CatastroData> => {
+  try {
+    // 1. Obtenir les coordonnées géographiques à partir de l'adresse
+    const coordinates = await getCoordinatesFromAddress(address);
+    
+    if (!coordinates) {
+      return {
+        cadastralReference: "",
+        address: "",
+        utmCoordinates: "",
+        climateZone: "",
+        error: "Impossible de géocoder l'adresse"
+      };
+    }
+    
+    // 2. Utiliser les coordonnées pour interroger l'API Catastro
+    const cadastralData = await getCadastralInfoFromCoordinates(coordinates.lat, coordinates.lng);
+    return {
+      ...cadastralData,
+      address: address, // Utiliser l'adresse originale pour plus de clarté
+    };
+  } catch (error) {
+    console.error("Erreur lors de la récupération des données cadastrales:", error);
+    return {
+      cadastralReference: "",
+      address: "",
+      utmCoordinates: "",
+      climateZone: "",
+      error: `Erreur lors de la récupération des données cadastrales: ${error instanceof Error ? error.message : String(error)}`
     };
   }
 };

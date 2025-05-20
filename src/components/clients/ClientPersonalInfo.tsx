@@ -1,3 +1,4 @@
+
 import { User, Mail, Phone, Building, FileText, Calendar, MapPinned, FileSpreadsheet, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AddressSearch from "./AddressSearch";
@@ -138,7 +139,7 @@ const CadastralInfo = ({
       {!loadingCadastral && !cadastralReference && (
         <Alert variant="default" className="mt-2">
           <AlertDescription className="text-xs">
-            Les données cadastrales n'ont pas pu être récupérées. Vérifiez que l'adresse est en Espagne et correctement formatée.
+            Les données cadastrales n'ont pas pu être récupérées. Vérifiez que l'adresse est en Espagne et correctement formatée, ou que le service Catastro est accessible.
           </AlertDescription>
         </Alert>
       )}
