@@ -34,7 +34,8 @@ const AddressSearch = ({
     handleFocus,
     handleBlur,
     syncAddress,
-    updateProcessingState
+    updateProcessingState,
+    setAddressWasSelectedFromDropdown
   } = useAddressSelection({
     initialAddress,
     onAddressChange,
@@ -54,7 +55,11 @@ const AddressSearch = ({
   } = useGoogleMapsAutocomplete({
     inputRef,
     initialAddress,
-    onAddressSelected: handleAddressSelected,
+    onAddressSelected: (selectedAddress) => {
+      // Set flag to true when address is selected from dropdown
+      setAddressWasSelectedFromDropdown(true);
+      handleAddressSelected(selectedAddress);
+    },
     onCoordinatesSelected: (coords) => {
       if (onCoordinatesChange) {
         onCoordinatesChange(coords);

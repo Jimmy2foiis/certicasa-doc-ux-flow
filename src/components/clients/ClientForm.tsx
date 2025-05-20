@@ -61,26 +61,12 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
     if (!isAddressProcessing) {
       setAddressSelected(true);
       setAddressWarning(null);
-      
-      // Notification visuelle pour confirmer la sélection
-      toast({
-        title: "Adresse sélectionnée",
-        description: `Adresse sélectionnée: ${address}`,
-        duration: 3000,
-      });
     }
   };
   
   const handleCoordinatesSelected = (coords: {lat: number, lng: number}) => {
     console.log("Coordonnées sélectionnées:", coords);
     setClientCoordinates(coords);
-    
-    // Notification visuelle pour confirmer les coordonnées
-    toast({
-      title: "Localisation",
-      description: "Coordonnées de l'adresse enregistrées avec succès",
-      duration: 3000,
-    });
   };
 
   const handleCreateClient = async (data: ClientFormValues) => {
@@ -122,13 +108,6 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
       console.log("Coordonnées à enregistrer:", coordinates);
       
       await onSubmit(clientData);
-      
-      toast({
-        title: "Client enregistré",
-        description: clientData.address 
-          ? `Client enregistré avec l'adresse: ${clientData.address}` 
-          : "Client enregistré sans adresse",
-      });
     } catch (error) {
       console.error("Erreur lors de la création du client:", error);
       toast({

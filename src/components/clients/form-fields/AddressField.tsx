@@ -33,15 +33,16 @@ export const AddressField = ({
             onAddressChange={(address) => {
               if (!isProcessing) {
                 field.onChange(address);
-                if (onAddressSelected) {
-                  onAddressSelected(address);
-                }
+                // Only notify parent when not typing (handled in the AddressSearch component)
               }
             }}
             onCoordinatesChange={(coords: GeoCoordinates) => {
               setClientCoordinates(coords);
               if (onCoordinatesSelected) {
                 onCoordinatesSelected(coords);
+              }
+              if (onAddressSelected) {
+                onAddressSelected(field.value);
               }
               setIsProcessing(false);
             }}

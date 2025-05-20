@@ -21,6 +21,7 @@ export function useAddressSelection({
   const [isEditing, setIsEditing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [addressWasSelectedFromDropdown, setAddressWasSelectedFromDropdown] = useState(false);
   const { toast } = useToast();
 
   // Update processing state when it changes
@@ -39,6 +40,7 @@ export function useAddressSelection({
     setIsEditing(false);
     updateProcessingState(true);
     setLocalError(null);
+    setAddressWasSelectedFromDropdown(true);
     
     try {
       // Check if address is in Spain
@@ -67,10 +69,13 @@ export function useAddressSelection({
         onCoordinatesChange(coordinates);
       }
       
-      toast({
-        title: "Adresse localisée",
-        description: "Coordonnées GPS obtenues avec succès",
-      });
+      // Only show toast notification if address was selected from dropdown
+      if (addressWasSelectedFromDropdown) {
+        toast({
+          title: "Adresse localisée",
+          description: "Coordonnées GPS obtenues avec succès",
+        });
+      }
       
       updateProcessingState(false);
       
@@ -78,15 +83,18 @@ export function useAddressSelection({
       console.error("Erreur lors du géocodage de l'adresse:", error);
       setLocalError("Erreur de géolocalisation. Vérifiez que l'adresse est complète et en Espagne.");
       
-      toast({
-        title: "Erreur de géolocalisation",
-        description: "Impossible d'obtenir les coordonnées pour cette adresse",
-        variant: "destructive",
-      });
+      // Only show toast error if address was selected from dropdown
+      if (addressWasSelectedFromDropdown) {
+        toast({
+          title: "Erreur de géolocalisation",
+          description: "Impossible d'obtenir les coordonnées pour cette adresse",
+          variant: "destructive",
+        });
+      }
       
       updateProcessingState(false);
     }
-  }, [address, isEditing, onAddressChange, onCoordinatesChange, toast, updateProcessingState]);
+  }, [address, isEditing, onAddressChange, onCoordinatesChange, toast, updateProcessingState, addressWasSelectedFromDropdown]);
   
   // Debounced version to avoid too many API calls
   const debouncedHandleAddressSelected = useCallback(
@@ -100,6 +108,7 @@ export function useAddressSelection({
     setAddress(newValue);
     setIsEditing(true);
     setLocalError(null);
+    setAddressWasSelectedFromDropdown(false);
     
     if (!isProcessing) {
       onAddressChange(newValue);
@@ -112,6 +121,8 @@ export function useAddressSelection({
 
   const handleBlur = useCallback(() => {
     if (address !== initialAddress && !isProcessing) {
+      // Don't show notification on blur
+      setAddressWasSelectedFromDropdown(false);
       debouncedHandleAddressSelected(address);
     }
     setIsEditing(false);
@@ -136,6 +147,7 @@ export function useAddressSelection({
     handleFocus,
     handleBlur,
     syncAddress,
-    updateProcessingState
+    updateProcessingState,
+    setAddressWasSelectedFromDropdown
   };
 }
