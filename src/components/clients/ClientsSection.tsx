@@ -26,11 +26,10 @@ const ClientsSection = () => {
     try {
       setLoading(true);
       
-      // Obtenir tous les clients (la fonction getClients combine déjà les sources)
+      // Obtenir tous les clients (la fonction getClients gère maintenant les erreurs RLS)
       const allClients = await getClients();
       
       // Créer un Map pour éliminer les doublons potentiels
-      // (utiliser un ID comme clé garantit l'unicité)
       const uniqueClientsMap = new Map<string, Client>();
       
       allClients.forEach(client => {
@@ -48,7 +47,7 @@ const ClientsSection = () => {
       console.error("Erreur lors du chargement des clients:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de charger les clients depuis la base de données.",
+        description: "Impossible de charger les clients. Les données locales seront utilisées.",
         variant: "destructive",
       });
     } finally {
@@ -80,6 +79,13 @@ const ClientsSection = () => {
         });
         
         // Recharger la liste des clients
+        await loadClients();
+      } else {
+        toast({
+          title: "Attention",
+          description: "Le client a été supprimé localement mais pas dans la base de données.",
+          variant: "warning",
+        });
         await loadClients();
       }
     } catch (error) {

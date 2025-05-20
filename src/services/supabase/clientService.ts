@@ -11,10 +11,14 @@ export const getClients = async (): Promise<Client[]> => {
   
   if (error) {
     console.error('Erreur lors de la récupération des clients:', error);
-    return [];
+    
+    // Si c'est une erreur RLS ou autre, on utilise uniquement les clients locaux
+    const localClientsString = localStorage.getItem('local_clients');
+    const localClients = localClientsString ? JSON.parse(localClientsString) : [];
+    return localClients;
   }
   
-  // Récupérer également les clients stockés localement
+  // Si Supabase a réussi, on combine avec les clients locaux
   const localClientsString = localStorage.getItem('local_clients');
   const localClients = localClientsString ? JSON.parse(localClientsString) : [];
   
@@ -51,7 +55,22 @@ export const getClientById = async (clientId: string): Promise<Client | null> =>
 
 export const createClientRecord = async (clientData: Client): Promise<Client | null> => {
   try {
-    // Essayer d'abord de créer dans Supabase
+    // Toujours stocker localement d'abord pour éviter la perte de données
+    const localClient = {
+      ...clientData,
+      id: `local_${Date.now()}`,
+      created_at: new Date().toISOString(),
+      status: "Actif"
+    };
+    
+    // Stocker localement
+    const existingClients = localStorage.getItem('local_clients');
+    const clients = existingClients ? JSON.parse(existingClients) : [];
+    clients.push(localClient);
+    localStorage.setItem('local_clients', JSON.stringify(clients));
+    console.log('Client créé localement:', localClient);
+    
+    // Essayer de créer dans Supabase ensuite (mais continuer même en cas d'échec)
     const { data, error } = await supabase
       .from('clients')
       .insert([clientData])
@@ -59,30 +78,23 @@ export const createClientRecord = async (clientData: Client): Promise<Client | n
     
     if (error) {
       console.error('Erreur lors de la création du client dans Supabase:', error);
-      
-      // Si c'est une erreur RLS (401/403) ou autre erreur, on stocke UNIQUEMENT en local
-      const localClient = {
-        ...clientData,
-        id: `local_${Date.now()}`,
-        created_at: new Date().toISOString(),
-        status: "Actif"
-      };
-      
-      // Stocker localement
-      const existingClients = localStorage.getItem('local_clients');
-      const clients = existingClients ? JSON.parse(existingClients) : [];
-      clients.push(localClient);
-      localStorage.setItem('local_clients', JSON.stringify(clients));
-      
-      console.log('Client créé localement:', localClient);
+      // On retourne le client local puisque Supabase a échoué
       return localClient;
     }
     
-    // Si Supabase a réussi, on retourne le client créé et on NE STOCKE PAS en local
+    // Si Supabase a réussi, on supprime le client local et on retourne le client Supabase
+    const updatedClients = clients.filter((c: Client) => c.id !== localClient.id);
+    localStorage.setItem('local_clients', JSON.stringify(updatedClients));
     console.log('Client créé dans Supabase:', data?.[0]);
-    return data?.[0] || null;
+    return data?.[0] || localClient;
   } catch (error) {
     console.error('Exception lors de la création du client:', error);
+    // En cas d'erreur, on retourne le dernier client local créé
+    const localClientsString = localStorage.getItem('local_clients');
+    if (localClientsString) {
+      const localClients = JSON.parse(localClientsString);
+      return localClients[localClients.length - 1] || null;
+    }
     return null;
   }
 };
@@ -121,6 +133,26 @@ export const updateClientRecord = async (clientId: string, clientData: Partial<C
   
   if (error) {
     console.error('Erreur lors de la mise à jour du client:', error);
+    // Stocker localement en cas d'échec Supabase
+    try {
+      const client = await getClientById(clientId);
+      if (client) {
+        const localClient = {
+          ...client,
+          ...clientData,
+          id: `local_${Date.now()}`,
+        };
+        
+        const localClientsString = localStorage.getItem('local_clients');
+        const localClients = localClientsString ? JSON.parse(localClientsString) : [];
+        localClients.push(localClient);
+        localStorage.setItem('local_clients', JSON.stringify(localClients));
+        
+        return localClient;
+      }
+    } catch (localError) {
+      console.error('Erreur lors du stockage local du client mis à jour:', localError);
+    }
     return null;
   }
   
@@ -152,7 +184,19 @@ export const deleteClientRecord = async (clientId: string): Promise<boolean> => 
     .eq('id', clientId);
   
   if (error) {
-    console.error('Erreur lors de la suppression du client:', error);
+    console.error('Erreur lors de la suppression du client dans Supabase:', error);
+    // Marquer comme supprimé localement
+    try {
+      const client = await getClientById(clientId);
+      if (client) {
+        const localClientsToDeleteString = localStorage.getItem('local_clients_to_delete') || '[]';
+        const localClientsToDelete = JSON.parse(localClientsToDeleteString);
+        localClientsToDelete.push(clientId);
+        localStorage.setItem('local_clients_to_delete', JSON.stringify(localClientsToDelete));
+      }
+    } catch (localError) {
+      console.error('Erreur lors du marquage local du client comme supprimé:', localError);
+    }
     return false;
   }
   
