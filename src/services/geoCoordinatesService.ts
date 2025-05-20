@@ -98,3 +98,32 @@ export const getAddressFromCoordinates = async (coordinates: GeoCoordinates): Pr
     return null;
   }
 };
+
+/**
+ * Convert GPS coordinates (latitude/longitude) to UTM format
+ * Returns a formatted string representation of UTM coordinates
+ * @param latitude - The latitude in decimal degrees
+ * @param longitude - The longitude in decimal degrees
+ * @returns Formatted UTM coordinates as a string or empty string if conversion fails
+ */
+export const getFormattedUTMCoordinates = (latitude: number, longitude: number): string => {
+  try {
+    if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
+      return "";
+    }
+    
+    // This is a simplified implementation for demo purposes
+    // In a real implementation, you would use a library like proj4js for proper UTM conversion
+    // or integrate with a GIS service
+    
+    // Format UTM coordinates for Spain (UTM Zone 30N - most of Spain)
+    // This is a placeholder implementation
+    const easting = Math.round(500000 + longitude * 111320 * Math.cos(latitude * Math.PI / 180));
+    const northing = Math.round(latitude * 111320);
+    
+    return `UTM 30N E: ${easting} N: ${northing}`;
+  } catch (error) {
+    console.error("Error converting to UTM coordinates:", error);
+    return "";
+  }
+};
