@@ -4,8 +4,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { Material } from "@/data/materials";
+import { useState, useEffect } from "react";
+import { Material, predefinedMaterials } from "@/data/materials";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Layer extends Material {
   isNew?: boolean;
@@ -33,6 +34,26 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
   };
   
   const rValue = calculateR();
+
+  // Mise à jour du matériau sélectionné
+  const handleMaterialSelect = (materialId: string) => {
+    const selectedMaterial = predefinedMaterials.find(m => m.id === materialId);
+    if (selectedMaterial) {
+      setName(selectedMaterial.name);
+      setThickness(selectedMaterial.thickness.toString());
+      setLambda(selectedMaterial.lambda.toString());
+      
+      if (onUpdate) {
+        onUpdate({
+          ...layer,
+          name: selectedMaterial.name,
+          thickness: selectedMaterial.thickness,
+          lambda: selectedMaterial.lambda,
+          r: selectedMaterial.r
+        });
+      }
+    }
+  };
 
   const handleUpdate = (field: string, value: string) => {
     let updatedLayer: Layer;
@@ -62,11 +83,16 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
   return (
     <TableRow className={cn(isNew && "bg-green-50")}>
       <TableCell>
-        <Input
-          value={name}
-          onChange={(e) => handleUpdate("name", e.target.value)}
-          className="h-8"
-        />
+        <Select onValueChange={handleMaterialSelect} defaultValue="">
+          <SelectTrigger className="h-8">
+            <SelectValue placeholder={name} />
+          </SelectTrigger>
+          <SelectContent>
+            {predefinedMaterials.map((material) => (
+              <SelectItem key={material.id} value={material.id}>{material.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </TableCell>
       <TableCell>
         <Input

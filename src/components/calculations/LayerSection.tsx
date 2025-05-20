@@ -20,6 +20,7 @@ interface LayerSectionProps {
   onDeleteLayer: (id: string) => void;
   showImprovement?: boolean;
   improvementPercent?: number;
+  bCoefficient: number;
 }
 
 const LayerSection = ({
@@ -31,13 +32,15 @@ const LayerSection = ({
   onUpdateLayer,
   onDeleteLayer,
   showImprovement = false,
-  improvementPercent = 0
+  improvementPercent = 0,
+  bCoefficient
 }: LayerSectionProps) => {
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
-        <div className="flex items-center">
+        <div className="flex items-center flex-wrap">
           <h3 className="font-medium">{title}</h3>
+          <Badge variant="outline" className="ml-2">Coefficient B: {bCoefficient.toFixed(2)}</Badge>
           {showImprovement && (
             <>
               <ArrowRight className="h-4 w-4 mx-2 text-green-600" />
@@ -49,7 +52,7 @@ const LayerSection = ({
           variant="outline" 
           size="sm" 
           className="h-8"
-          onClick={() => onAddLayer({ id: "default", name: "Sélectionnez un matériau", thickness: 10, lambda: 0.5, r: 0.02 })}
+          onClick={() => onAddLayer({ id: Date.now().toString(), name: "Sélectionnez un matériau", thickness: 10, lambda: 0.5, r: 0.02 })}
         >
           <Plus className="h-3.5 w-3.5 mr-1" />
           Ajouter couche

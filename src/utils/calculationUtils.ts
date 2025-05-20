@@ -42,8 +42,8 @@ export const calculateBCoefficient = ({ ratio, ventilationType, isAfterWork = fa
   }
 };
 
-export const calculateThermalResistance = (layers: any[]): number => {
-  return layers.reduce((sum, layer) => sum + layer.r, 0.17); // 0.17 pour Rsi + Rse
+export const calculateThermalResistance = (layers: any[], rsiRse: number = 0.17): number => {
+  return layers.reduce((sum, layer) => sum + layer.r, rsiRse);
 };
 
 export const calculateUValue = (thermalResistance: number, bCoefficient: number): number => {

@@ -1,13 +1,6 @@
 
 import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import MaterialSelector from "./MaterialSelector";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { predefinedMaterials, Material } from "@/data/materials";
 import { calculateBCoefficient, calculateThermalResistance, calculateUValue, VentilationType } from "@/utils/calculationUtils";
 import ProjectInfo from "./ProjectInfo";
@@ -39,7 +32,10 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
   const [projectType, setProjectType] = useState("RES010");
   const [ventilationType, setVentilationType] = useState<VentilationType>("caso1");
   const [surfaceArea, setSurfaceArea] = useState("127");
+  const [roofArea, setRoofArea] = useState("150");
   const [ratioValue, setRatioValue] = useState(0.85);
+  const [rsi, setRsi] = useState("0.10");
+  const [rse, setRse] = useState("0.10");
   
   // Calcul du coefficient B
   const bCoefficientBefore = calculateBCoefficient({
@@ -54,12 +50,15 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
     isAfterWork: true
   });
 
+  const rsiRseValue = parseFloat(rsi) + parseFloat(rse);
+  const rsiRseFallback = isNaN(rsiRseValue) ? 0.17 : rsiRseValue;
+
   // Calcul de la résistance thermique totale avant
-  const totalRBefore = calculateThermalResistance(beforeLayers);
+  const totalRBefore = calculateThermalResistance(beforeLayers, rsiRseFallback);
   const uValueBefore = calculateUValue(totalRBefore, bCoefficientBefore);
   
   // Calcul de la résistance thermique totale après
-  const totalRAfter = calculateThermalResistance(afterLayers);
+  const totalRAfter = calculateThermalResistance(afterLayers, rsiRseFallback);
   const uValueAfter = calculateUValue(totalRAfter, bCoefficientAfter);
   
   // Calcul du pourcentage d'amélioration
@@ -103,6 +102,8 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
           setProjectType={setProjectType}
           surfaceArea={surfaceArea}
           setSurfaceArea={setSurfaceArea}
+          roofArea={roofArea}
+          setRoofArea={setRoofArea}
           ventilationType={ventilationType}
           setVentilationType={setVentilationType}
           ratioValue={ratioValue}
@@ -111,20 +112,14 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
           bCoefficientAfter={bCoefficientAfter}
           improvementPercent={improvementPercent}
           meetsRequirements={meetsRequirements}
+          rsi={rsi}
+          setRsi={setRsi}
+          rse={rse}
+          setRse={setRse}
         />
 
-        {/* Material Selector */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold">Matériaux</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <MaterialSelector onSelectMaterial={(material) => addLayer("after", material)} />
-          </CardContent>
-        </Card>
-
         {/* Thermal Calculations */}
-        <Card className="lg:col-span-7">
+        <Card className="lg:col-span-9">
           <CardHeader className="pb-2">
             <CardTitle className="text-lg font-semibold">Module de Calcul</CardTitle>
             <CardDescription>
@@ -138,6 +133,7 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
               layers={beforeLayers}
               totalR={totalRBefore}
               uValue={uValueBefore}
+              bCoefficient={bCoefficientBefore}
               onAddLayer={(material) => addLayer("before", material)}
               onUpdateLayer={(updatedLayer) => updateLayer("before", updatedLayer)}
               onDeleteLayer={(id) => setBeforeLayers(beforeLayers.filter(l => l.id !== id))}
@@ -149,6 +145,7 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
               layers={afterLayers}
               totalR={totalRAfter}
               uValue={uValueAfter}
+              bCoefficient={bCoefficientAfter}
               onAddLayer={(material) => addLayer("after", material)}
               onUpdateLayer={(updatedLayer) => updateLayer("after", updatedLayer)}
               onDeleteLayer={(id) => setAfterLayers(afterLayers.filter(l => l.id !== id))}

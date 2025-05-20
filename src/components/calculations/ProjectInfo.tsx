@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +13,8 @@ interface ProjectInfoProps {
   setProjectType: (value: string) => void;
   surfaceArea: string;
   setSurfaceArea: (value: string) => void;
+  roofArea: string;
+  setRoofArea: (value: string) => void;
   ventilationType: VentilationType;
   setVentilationType: (value: VentilationType) => void;
   ratioValue: number;
@@ -22,6 +23,10 @@ interface ProjectInfoProps {
   bCoefficientAfter: number;
   improvementPercent: number;
   meetsRequirements: boolean;
+  rsi: string;
+  setRsi: (value: string) => void;
+  rse: string;
+  setRse: (value: string) => void;
 }
 
 const ProjectInfo = ({
@@ -29,6 +34,8 @@ const ProjectInfo = ({
   setProjectType,
   surfaceArea,
   setSurfaceArea,
+  roofArea,
+  setRoofArea,
   ventilationType,
   setVentilationType,
   ratioValue,
@@ -36,7 +43,11 @@ const ProjectInfo = ({
   bCoefficientBefore,
   bCoefficientAfter,
   improvementPercent,
-  meetsRequirements
+  meetsRequirements,
+  rsi,
+  setRsi,
+  rse,
+  setRse
 }: ProjectInfoProps) => {
   return (
     <Card className="lg:col-span-3">
@@ -68,6 +79,41 @@ const ProjectInfo = ({
             onChange={(e) => setSurfaceArea(e.target.value)}
             type="number"
           />
+        </div>
+        
+        <div className="space-y-2">
+          <Label htmlFor="roofArea">Superficie de la toiture (m²)</Label>
+          <Input
+            id="roofArea"
+            value={roofArea}
+            onChange={(e) => setRoofArea(e.target.value)}
+            type="number"
+          />
+        </div>
+        
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="rsi">RSI (m²K/W)</Label>
+            <Input
+              id="rsi"
+              value={rsi}
+              onChange={(e) => setRsi(e.target.value)}
+              type="number"
+              step="0.01"
+              placeholder="0.10"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="rse">RSE (m²K/W)</Label>
+            <Input
+              id="rse"
+              value={rse}
+              onChange={(e) => setRse(e.target.value)}
+              type="number"
+              step="0.01"
+              placeholder="0.10"
+            />
+          </div>
         </div>
         
         <div className="space-y-2">
