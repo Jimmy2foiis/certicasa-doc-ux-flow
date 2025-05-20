@@ -4,7 +4,7 @@ import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import ClientsSection from "@/components/clients/ClientsSection";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/services/supabaseService";
+import { supabase } from "@/services/supabase/supabaseClient";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ShieldAlert } from "lucide-react";
@@ -24,7 +24,7 @@ const Clients = () => {
           setDatabaseConnected(true);
           toast({
             title: "Base de données connectée",
-            description: "Connexion Supabase établie avec succès. Les données cadastrales seront synchronisées.",
+            description: "Connexion Supabase établie avec succès. Les données clients seront synchronisées.",
             duration: 5000,
           });
         } else {

@@ -181,13 +181,13 @@ const ClientsSection = () => {
       ) : (
         <Card>
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-4">
-            <CardTitle className="text-xl font-semibold">Clientes</CardTitle>
+            <CardTitle className="text-xl font-semibold">Clients</CardTitle>
             
             <Dialog open={openDialog} onOpenChange={setOpenDialog}>
               <DialogTrigger asChild>
                 <Button className="bg-green-600 hover:bg-green-700">
                   <UserPlus className="h-4 w-4 mr-2" />
-                  <span>Nuevo Cliente</span>
+                  <span>Nouveau Client</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[425px]">
@@ -278,7 +278,7 @@ const ClientsSection = () => {
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
                 <Input
                   type="search"
-                  placeholder="Buscar cliente..."
+                  placeholder="Rechercher un client..."
                   className="pl-9 w-full max-w-sm"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -288,41 +288,41 @@ const ClientsSection = () => {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="flex items-center">
-                      Estado
+                      Statut
                       <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem>Todos</DropdownMenuItem>
-                    <DropdownMenuItem>Activos</DropdownMenuItem>
-                    <DropdownMenuItem>Inactivos</DropdownMenuItem>
+                    <DropdownMenuItem>Tous</DropdownMenuItem>
+                    <DropdownMenuItem>Actifs</DropdownMenuItem>
+                    <DropdownMenuItem>Inactifs</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="flex items-center">
-                      Ciudad
+                      Ville
                       <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem>Todas</DropdownMenuItem>
+                    <DropdownMenuItem>Toutes</DropdownMenuItem>
                     <DropdownMenuItem>Madrid</DropdownMenuItem>
-                    <DropdownMenuItem>Barcelona</DropdownMenuItem>
-                    <DropdownMenuItem>Valencia</DropdownMenuItem>
+                    <DropdownMenuItem>Barcelone</DropdownMenuItem>
+                    <DropdownMenuItem>Valence</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="flex items-center">
-                      Tipo
+                      Type
                       <ChevronDown className="ml-2 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
-                    <DropdownMenuItem>Todos</DropdownMenuItem>
+                    <DropdownMenuItem>Tous</DropdownMenuItem>
                     <DropdownMenuItem>RES010</DropdownMenuItem>
                     <DropdownMenuItem>RES020</DropdownMenuItem>
                   </DropdownMenuContent>
@@ -334,12 +334,12 @@ const ClientsSection = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Nombre</TableHead>
+                    <TableHead>Nom</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Teléfono</TableHead>
-                    <TableHead>Proyectos</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
+                    <TableHead>Téléphone</TableHead>
+                    <TableHead>Projets</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -382,8 +382,8 @@ const ClientsSection = () => {
                         <TableCell>{client.phone}</TableCell>
                         <TableCell>{client.projects || 0}</TableCell>
                         <TableCell>
-                          <Badge variant={client.status === "Activo" ? "success" : "outline"}>
-                            {client.status || "Activo"}
+                          <Badge variant={client.status === "Actif" ? "success" : "outline"}>
+                            {client.status === "Activo" ? "Actif" : client.status || "Actif"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -396,7 +396,7 @@ const ClientsSection = () => {
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem className="flex items-center">
                                 <Edit className="mr-2 h-4 w-4" />
-                                <span>Editar</span>
+                                <span>Modifier</span>
                               </DropdownMenuItem>
                               <DropdownMenuItem 
                                 className="flex items-center text-red-600" 
@@ -406,7 +406,7 @@ const ClientsSection = () => {
                                 }}
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
-                                <span>Eliminar</span>
+                                <span>Supprimer</span>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
