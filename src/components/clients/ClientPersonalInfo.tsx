@@ -2,6 +2,8 @@
 import { User, Mail, Phone, Building, FileText, Calendar, MapPinned, FileSpreadsheet, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AddressSearch from "./AddressSearch";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ClientPersonalInfoProps {
   client: any;
@@ -96,7 +98,13 @@ const CadastralInfo = ({
         <MapPinned className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
         <div>
           <p className="font-medium text-sm">UTM30:</p>
-          <span>{loadingCadastral ? "Chargement..." : utmCoordinates}</span>
+          {loadingCadastral ? (
+            <span className="text-gray-500">Chargement des coordonnées...</span>
+          ) : utmCoordinates ? (
+            <span>{utmCoordinates}</span>
+          ) : (
+            <span className="text-amber-600 text-sm">Non disponible</span>
+          )}
         </div>
       </div>
       
@@ -104,7 +112,13 @@ const CadastralInfo = ({
         <FileSpreadsheet className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
         <div>
           <p className="font-medium text-sm">Référence cadastrale:</p>
-          <span>{loadingCadastral ? "Chargement..." : cadastralReference}</span>
+          {loadingCadastral ? (
+            <span className="text-gray-500">Chargement des données cadastrales...</span>
+          ) : cadastralReference ? (
+            <span className="font-mono">{cadastralReference}</span>
+          ) : (
+            <span className="text-amber-600 text-sm">Non disponible</span>
+          )}
         </div>
       </div>
       
@@ -112,9 +126,23 @@ const CadastralInfo = ({
         <MapPin className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
         <div>
           <p className="font-medium text-sm">Zone climatique:</p>
-          <span>{loadingCadastral ? "Chargement..." : climateZone}</span>
+          {loadingCadastral ? (
+            <span className="text-gray-500">Chargement de la zone climatique...</span>
+          ) : climateZone ? (
+            <span>{climateZone}</span>
+          ) : (
+            <span className="text-amber-600 text-sm">Non disponible</span>
+          )}
         </div>
       </div>
+      
+      {!loadingCadastral && !cadastralReference && (
+        <Alert variant="warning" className="mt-2">
+          <AlertDescription className="text-xs">
+            Les données cadastrales n'ont pas pu être récupérées. Vérifiez que l'adresse est en Espagne et correctement formatée.
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 };
