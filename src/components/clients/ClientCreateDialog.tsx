@@ -4,10 +4,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, MapPin, Loader2, Info } from "lucide-react";
+import { UserPlus, MapPin, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { createClientRecord } from "@/services/supabaseService";
-import { AddressInput } from "@/components/address/AddressInput";
+import { createClientRecord, Client } from "@/services/supabaseService";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -64,7 +63,17 @@ const ClientCreateDialog = ({ onClientCreated }: ClientCreateDialogProps) => {
 
   const handleCreateClient = async (data: ClientFormValues) => {
     try {
-      const createdClient = await createClientRecord(data);
+      // Create a Client object ensuring name is not undefined
+      const clientData: Client = {
+        name: data.name, // This is required and validated by zod
+        email: data.email || undefined,
+        phone: data.phone || undefined,
+        address: data.address || undefined,
+        nif: data.nif || undefined,
+        type: data.type || "010",
+      };
+      
+      const createdClient = await createClientRecord(clientData);
       
       if (createdClient) {
         toast({
