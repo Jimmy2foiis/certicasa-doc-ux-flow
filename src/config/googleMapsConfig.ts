@@ -4,7 +4,7 @@
  */
 
 // La clé API est stockée dans les variables d'environnement
-export const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'YOUR_DEFAULT_API_KEY';
+export const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'AIzaSyBoHmcKb2Bgf1PUxNTnsTAjMa0RgYx-HoQ';
 
 // Options par défaut pour l'autocomplétion
 export const DEFAULT_AUTOCOMPLETE_OPTIONS = {
