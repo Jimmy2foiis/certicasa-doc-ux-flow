@@ -1,43 +1,52 @@
 
-import { useState } from 'react';
-import { useToast } from "@/hooks/use-toast";
-import { DocumentTemplate } from '@/hooks/useDocumentTemplates';
+import { useState } from "react";
+import { DocumentTemplate } from "./useDocumentTemplates";
+import { useToast } from "@/components/ui/use-toast";
 
-export const useTemplateActions = (setActiveTab?: (tab: string) => void) => {
+interface UseTemplateActionsReturn {
+  previewTemplate: DocumentTemplate | null;
+  showPreview: boolean;
+  handlePreview: (template: DocumentTemplate) => void;
+  closePreview: () => void;
+  handleUseTemplate: (template: DocumentTemplate) => void;
+}
+
+export const useTemplateActions = (
+  setActiveTab: (tab: string) => void
+): UseTemplateActionsReturn => {
   const [previewTemplate, setPreviewTemplate] = useState<DocumentTemplate | null>(null);
   const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
 
-  // Gérer l'aperçu d'un template
   const handlePreview = (template: DocumentTemplate) => {
     setPreviewTemplate(template);
     setShowPreview(true);
-    
-    toast({
-      title: "Aperçu du modèle",
-      description: `Visualisation du modèle "${template.name}"`,
-    });
   };
 
-  // Fermer l'aperçu
   const closePreview = () => {
     setShowPreview(false);
-    setPreviewTemplate(null);
+    // Attendre que l'animation du dialogue se termine avant de réinitialiser le template
+    setTimeout(() => setPreviewTemplate(null), 300);
   };
 
-  // Utiliser un template
   const handleUseTemplate = (template: DocumentTemplate) => {
-    // Naviguer vers l'onglet de génération si setActiveTab existe
-    if (setActiveTab) {
-      setActiveTab('generate');
+    // Stocker temporairement le template sélectionné (dans sessionStorage, pas localStorage)
+    try {
+      sessionStorage.setItem('selectedTemplate', JSON.stringify(template));
+      closePreview();
+      setActiveTab("generate");
       
       toast({
         title: "Modèle sélectionné",
-        description: `Le modèle "${template.name}" a été sélectionné pour la génération de document.`,
+        description: `"${template.name}" est prêt pour la génération de document.`,
       });
-      
-      // Sauvegarder le modèle sélectionné dans sessionStorage pour le récupérer dans l'onglet de génération
-      sessionStorage.setItem('selectedTemplate', JSON.stringify(template));
+    } catch (error) {
+      console.error("Erreur lors de la sélection du template:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sélectionner ce modèle. Veuillez réessayer.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -46,6 +55,6 @@ export const useTemplateActions = (setActiveTab?: (tab: string) => void) => {
     showPreview,
     handlePreview,
     closePreview,
-    handleUseTemplate
+    handleUseTemplate,
   };
 };

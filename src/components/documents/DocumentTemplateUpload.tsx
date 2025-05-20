@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import TemplateUploadArea from "./TemplateUploadArea";
 import TemplateFileItem from "./TemplateFileItem";
 import { useDocumentTemplateUpload } from "@/hooks/useDocumentTemplateUpload";
+import { supabase } from "@/integrations/supabase/client";
 
 // Clé de référence pour les modèles de documents (maintenu pour compatibilité)
 export const DOCUMENT_TEMPLATES_KEY = 'document_templates';
@@ -24,6 +25,16 @@ const DocumentTemplateUpload = () => {
     saveAllTemplates
   } = useDocumentTemplateUpload();
   
+  // Vérifier l'état d'authentification pour le débogage
+  useEffect(() => {
+    const checkAuthState = async () => {
+      const { data } = await supabase.auth.getSession();
+      console.log("État d'authentification actuel:", data.session ? "Connecté" : "Non connecté");
+    };
+    
+    checkAuthState();
+  }, []);
+
   // Pour le débogage
   useEffect(() => {
     console.log("État actuel des fichiers téléversés:", uploadedFiles);
