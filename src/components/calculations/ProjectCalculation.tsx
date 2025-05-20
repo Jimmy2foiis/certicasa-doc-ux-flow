@@ -1,8 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { predefinedMaterials, Material } from "@/data/materials";
-import { calculateBCoefficient, calculateThermalResistance, calculateUValue, VentilationType, calculateRatioFromAreas } from "@/utils/calculationUtils";
+import { calculateBCoefficient, calculateThermalResistance, calculateUpValue, calculateUfValue, VentilationType, calculateRatioFromAreas } from "@/utils/calculationUtils";
 import ProjectInfo from "./ProjectInfo";
 import LayerSection from "./LayerSection";
 
@@ -80,11 +79,13 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
 
   // Calcul de la résistance thermique totale avant
   const totalRBefore = calculateThermalResistance(beforeLayers, rsiRseBeforeFallback);
-  const uValueBefore = calculateUValue(totalRBefore, bCoefficientBefore);
+  const upValueBefore = calculateUpValue(totalRBefore);
+  const uValueBefore = calculateUfValue(upValueBefore, bCoefficientBefore);
   
   // Calcul de la résistance thermique totale après
   const totalRAfter = calculateThermalResistance(afterLayers, rsiRseAfterFallback);
-  const uValueAfter = calculateUValue(totalRAfter, bCoefficientAfter);
+  const upValueAfter = calculateUpValue(totalRAfter);
+  const uValueAfter = calculateUfValue(upValueAfter, bCoefficientAfter);
   
   // Calcul du pourcentage d'amélioration
   const improvementPercent = ((uValueBefore - uValueAfter) / uValueBefore) * 100;
