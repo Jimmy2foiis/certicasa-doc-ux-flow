@@ -4,7 +4,7 @@ import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import ClientsSection from "@/components/clients/ClientsSection";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/services/supabase/supabaseClient";
+import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ShieldAlert, AlertTriangle } from "lucide-react";
