@@ -18,12 +18,12 @@ const Index = () => {
         <main className="flex-1 overflow-y-auto p-4">
           <Tabs defaultValue="dashboard" className="w-full">
             <TabsList className="mb-6 bg-white p-1 shadow-sm rounded-md">
-              <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-              <TabsTrigger value="clients">Clientes</TabsTrigger>
-              <TabsTrigger value="calculations">Cálculos</TabsTrigger>
-              <TabsTrigger value="documents">Documentos</TabsTrigger>
-              <TabsTrigger value="workflow">Flujo de trabajo</TabsTrigger>
-              <TabsTrigger value="billing">Facturación</TabsTrigger>
+              <TabsTrigger value="dashboard">Tableau de bord</TabsTrigger>
+              <TabsTrigger value="clients">Clients</TabsTrigger>
+              <TabsTrigger value="calculations">Calculs</TabsTrigger>
+              <TabsTrigger value="documents">Documents</TabsTrigger>
+              <TabsTrigger value="workflow">Suivi de projet</TabsTrigger>
+              <TabsTrigger value="billing">Facturation</TabsTrigger>
             </TabsList>
             <TabsContent value="dashboard">
               <Dashboard />

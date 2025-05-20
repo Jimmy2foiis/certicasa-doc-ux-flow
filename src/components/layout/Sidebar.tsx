@@ -13,14 +13,14 @@ import {
 import { NavLink } from "react-router-dom";
 
 const navItems = [
-  { icon: LayoutDashboard, label: "Dashboard", value: "/" },
-  { icon: Users, label: "Clientes", value: "/clients" },
-  { icon: Calculator, label: "Cálculos", value: "/calculations" },
-  { icon: FileText, label: "Documentos", value: "/documents" },
-  { icon: GitBranch, label: "Flujo de trabajo", value: "/workflow" },
-  { icon: Receipt, label: "Facturación", value: "/billing" },
-  { icon: Settings, label: "Ajustes", value: "/settings" },
-  { icon: HelpCircle, label: "Ayuda", value: "/help" },
+  { icon: LayoutDashboard, label: "Tableau de bord", value: "/" },
+  { icon: Users, label: "Clients", value: "/clients" },
+  { icon: Calculator, label: "Calculs", value: "/calculations" },
+  { icon: FileText, label: "Documents", value: "/documents" },
+  { icon: GitBranch, label: "Suivi de projet", value: "/workflow" },
+  { icon: Receipt, label: "Facturation", value: "/billing" },
+  { icon: Settings, label: "Paramètres", value: "/settings" },
+  { icon: HelpCircle, label: "Aide", value: "/help" },
 ];
 
 const Sidebar = () => {

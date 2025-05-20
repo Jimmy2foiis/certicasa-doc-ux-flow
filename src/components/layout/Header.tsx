@@ -12,7 +12,7 @@ const Header = () => {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
           <Input
             type="search"
-            placeholder="Buscar..."
+            placeholder="Rechercher..."
             className="pl-9 w-full md:w-64 rounded-md border-gray-300"
           />
         </div>
@@ -29,7 +29,7 @@ const Header = () => {
           className="flex items-center gap-2 border border-gray-300"
         >
           <User size={18} />
-          <span className="hidden md:inline">Mi Cuenta</span>
+          <span className="hidden md:inline">Mon Compte</span>
         </Button>
       </div>
     </header>
