@@ -14,6 +14,7 @@ import {
 import { clientDocuments } from "@/data/mock";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import GenerateDocumentButton from "../documents/GenerateDocumentButton";
 
 interface DocumentsTabContentProps {
   clientId?: string;
@@ -61,6 +62,14 @@ const DocumentsTabContent = ({ clientId }: DocumentsTabContentProps) => {
     generated: filteredDocuments.filter(doc => doc.status === "Generado").length,
     pending: filteredDocuments.filter(doc => doc.status === "Pendiente").length
   };
+  
+  // Récupérer le nom du client pour l'utiliser avec GenerateDocumentButton
+  const clientName = "Client"; // Dans un vrai cas, récupérer depuis les props ou context
+  
+  const handleDocumentGenerated = (docId: string) => {
+    // Dans un cas réel, on actualiserait la liste des documents
+    console.log("Document généré avec ID:", docId);
+  };
 
   return (
     <Card>
@@ -82,9 +91,11 @@ const DocumentsTabContent = ({ clientId }: DocumentsTabContentProps) => {
                 className="pl-9 w-full sm:w-64"
               />
             </div>
-            <Button>
-              <Plus className="h-4 w-4 mr-1" /> Nouveau document
-            </Button>
+            <GenerateDocumentButton 
+              clientId={clientId} 
+              clientName={clientName}
+              onDocumentGenerated={handleDocumentGenerated} 
+            />
           </div>
         </div>
         <div className="flex flex-wrap gap-2 mt-2">

@@ -36,6 +36,20 @@ const ClientDetailsView = ({ clientId, onBack }: ClientDetailsViewProps) => {
     setShowCalculations(true);
   };
   
+  // Fonction pour gérer la génération d'un document
+  const handleDocumentGenerated = (documentId: string) => {
+    toast({
+      title: "Document généré",
+      description: `Document ajouté au dossier client de ${client?.name}`,
+      duration: 3000
+    });
+    
+    // Si on n'est pas déjà sur l'onglet documents, y naviguer
+    if (activeTab !== "documents") {
+      setActiveTab("documents");
+    }
+  };
+  
   if (!client) return null;
 
   if (showCalculations) {
@@ -56,6 +70,7 @@ const ClientDetailsView = ({ clientId, onBack }: ClientDetailsViewProps) => {
         onBack={onBack} 
         clientId={clientId} 
         clientName={client.name}
+        onDocumentGenerated={handleDocumentGenerated}
       />
 
       <ClientDetailsTabs 

@@ -7,9 +7,10 @@ interface ClientDetailsHeaderProps {
   onBack: () => void;
   clientId?: string;
   clientName?: string;
+  onDocumentGenerated?: (documentId: string) => void;
 }
 
-const ClientDetailsHeader = ({ onBack, clientId, clientName }: ClientDetailsHeaderProps) => {
+const ClientDetailsHeader = ({ onBack, clientId, clientName, onDocumentGenerated }: ClientDetailsHeaderProps) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div className="flex items-center">
@@ -21,7 +22,13 @@ const ClientDetailsHeader = ({ onBack, clientId, clientName }: ClientDetailsHead
       </div>
       <div className="flex gap-2">
         <Button variant="outline">Modifier</Button>
-        {clientId && <GenerateDocumentButton clientId={clientId} clientName={clientName} />}
+        {clientId && (
+          <GenerateDocumentButton 
+            clientId={clientId} 
+            clientName={clientName} 
+            onDocumentGenerated={onDocumentGenerated}
+          />
+        )}
         <Button className="bg-green-600 hover:bg-green-700">Nouveau Projet</Button>
       </div>
     </div>

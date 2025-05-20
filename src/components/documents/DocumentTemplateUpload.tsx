@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Upload, FileText, Plus, FileCheck, Trash2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -15,11 +14,34 @@ interface UploadedFile extends File {
   status: 'uploading' | 'complete' | 'error';
 }
 
+export interface DocumentTemplate {
+  id: string;
+  name: string;
+  type: string;
+  lastModified: string;
+  dateUploaded: string;
+}
+
+// Clé localStorage pour stocker les modèles de documents
+export const DOCUMENT_TEMPLATES_KEY = 'document_templates';
+
 const DocumentTemplateUpload = () => {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [uploading, setUploading] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Charger les modèles existants depuis le localStorage au chargement
+  useEffect(() => {
+    // Nous les chargeons juste pour afficher un message d'information
+    const existingTemplates = loadTemplatesFromStorage();
+    if (existingTemplates.length > 0) {
+      toast({
+        title: "Modèles disponibles",
+        description: `${existingTemplates.length} modèle(s) sont disponibles dans votre bibliothèque.`,
+      });
+    }
+  }, [toast]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -129,15 +151,63 @@ const DocumentTemplateUpload = () => {
   const cancelDelete = () => {
     setFileToDelete(null);
   };
+
+  // Charger les modèles depuis le localStorage
+  const loadTemplatesFromStorage = (): DocumentTemplate[] => {
+    try {
+      const storedTemplates = localStorage.getItem(DOCUMENT_TEMPLATES_KEY);
+      if (storedTemplates) {
+        return JSON.parse(storedTemplates);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement des modèles:", error);
+    }
+    return [];
+  };
+  
+  // Enregistrer les modèles dans le localStorage
+  const saveTemplateToStorage = (templates: DocumentTemplate[]) => {
+    try {
+      localStorage.setItem(DOCUMENT_TEMPLATES_KEY, JSON.stringify(templates));
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde des modèles:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder les modèles. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
+  };
   
   const saveAllTemplates = () => {
-    // This would normally save to a database or cloud storage
-    // For now we'll just simulate success
+    // Convertir les fichiers téléversés en modèles de documents
+    const now = new Date().toLocaleDateString('fr-FR');
     
+    const newTemplates: DocumentTemplate[] = uploadedFiles
+      .filter(file => file.status === 'complete')
+      .map(file => ({
+        id: file.id,
+        name: file.name.replace(/\.[^/.]+$/, ""), // Enlever l'extension
+        type: file.name.split('.').pop() || "unknown",
+        lastModified: now,
+        dateUploaded: now
+      }));
+    
+    // Charger les modèles existants et ajouter les nouveaux
+    const existingTemplates = loadTemplatesFromStorage();
+    const mergedTemplates = [...existingTemplates, ...newTemplates];
+    
+    // Sauvegarder dans localStorage
+    saveTemplateToStorage(mergedTemplates);
+    
+    // Notification
     toast({
       title: "Modèles enregistrés",
-      description: `${uploadedFiles.length} modèle(s) ont été enregistrés dans la bibliothèque de documents.`,
+      description: `${newTemplates.length} modèle(s) ont été ajoutés à la bibliothèque.`,
     });
+    
+    // Réinitialiser l'état pour permettre de nouveaux téléversements
+    setUploadedFiles([]);
   };
 
   return (
