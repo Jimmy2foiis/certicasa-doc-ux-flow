@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { AddressInput } from "@/components/address/AddressInput";
 import { AddressError } from "@/components/ui/address-error";
 import { ApiStatus } from "@/components/address/ApiStatus";
-import { useGoogleMapsAutocomplete } from "@/hooks/useGoogleMapsAutocomplete";
+import { useGoogleMapsAutocomplete } from "@/hooks/googleMaps/useGoogleMapsAutocomplete";
 import { GeoCoordinates, getCoordinatesFromAddress } from "@/services/geoCoordinatesService";
 import { useToast } from "@/components/ui/use-toast";
 
