@@ -82,6 +82,7 @@ export const getCachedCadastralData = async (lat: number, lng: number): Promise<
     
     if (data && isCacheValid(data.timestamp)) {
       console.log(`Données cadastrales récupérées du cache pour ${lat}, ${lng}`);
+      
       // Conversion sécurisée du JSONB stocké vers CatastroData
       const cachedData = data.data as Record<string, any>;
       
@@ -143,7 +144,7 @@ export const setCachedCadastralData = async (lat: number, lng: number, data: Cat
       const { error: updateError } = await supabase
         .from('cadastral_cache')
         .update({
-          data: jsonData,
+          data: jsonData as Json,
           timestamp: new Date().toISOString()
         })
         .eq('id', existingData.id);
@@ -156,7 +157,7 @@ export const setCachedCadastralData = async (lat: number, lng: number, data: Cat
         .from('cadastral_cache')
         .insert({
           coordinate_key: cacheKey,
-          data: jsonData,
+          data: jsonData as Json,
           timestamp: new Date().toISOString()
         });
       

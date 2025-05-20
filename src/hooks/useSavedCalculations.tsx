@@ -26,6 +26,21 @@ export const useSavedCalculations = (clientId: string) => {
   // Fonction pour récupérer les calculs sauvegardés depuis Supabase
   const loadSavedCalculations = useCallback(async () => {
     try {
+      // Vérifier si l'ID client commence par "local_" pour gérer les données locales
+      if (clientId.startsWith('local_')) {
+        // Récupérer depuis le localStorage
+        const localData = localStorage.getItem('saved_calculations');
+        if (localData) {
+          const allCalculations = JSON.parse(localData);
+          const clientCalculations = allCalculations.filter((calc: any) => calc.clientId === clientId);
+          setSavedCalculations(clientCalculations);
+        } else {
+          setSavedCalculations([]);
+        }
+        return;
+      }
+      
+      // Si ce n'est pas un ID local, récupérer depuis Supabase
       const { data, error } = await supabase
         .from('saved_calculations')
         .select('*')
@@ -64,6 +79,22 @@ export const useSavedCalculations = (clientId: string) => {
         description: "Impossible de charger les calculs sauvegardés.",
         variant: "destructive",
       });
+      // En cas d'erreur, on essaie de récupérer depuis le localStorage
+      try {
+        const localData = localStorage.getItem('saved_calculations');
+        if (localData) {
+          const allCalculations = JSON.parse(localData);
+          const clientCalculations = allCalculations.filter((calc: any) => calc.clientId === clientId);
+          setSavedCalculations(clientCalculations);
+          toast({
+            title: "Information",
+            description: "Utilisation des calculs stockés localement.",
+            duration: 3000,
+          });
+        }
+      } catch (e) {
+        console.error("Impossible de récupérer les données locales:", e);
+      }
     }
   }, [clientId, toast]);
 
