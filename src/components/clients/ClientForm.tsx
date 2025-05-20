@@ -46,7 +46,7 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
   // Handle address selection from Google Maps autocomplete
   const handleAddressSelected = (address: string) => {
     console.log("Adresse sélectionnée:", address);
-    form.setValue("address", address);
+    form.setValue("address", address, { shouldValidate: true, shouldDirty: true });
     form.trigger("address");
   };
   

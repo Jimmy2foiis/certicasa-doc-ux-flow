@@ -40,7 +40,7 @@ export const useGoogleMapsAutocomplete = ({
 }: UseGoogleMapsAutocompleteOptions): UseGoogleMapsAutocompleteResult => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [apiAvailable, setApiAvailable] = useState(true);
+  const [apiAvailable, setApiAvailable] = useState(false); // Commencez à false jusqu'à ce que l'API soit confirmée
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const autocompleteRef = useRef<any>(null);
   const { toast } = useToast();
@@ -48,21 +48,23 @@ export const useGoogleMapsAutocomplete = ({
 
   // Cette fonction initialise l'autocomplétion Google Maps
   const initAutocomplete = useCallback(() => {
-    // Éviter les initialisations multiples
-    if (isInitializedRef.current) {
-      console.log("Autocomplete déjà initialisé, ignoré");
-      return;
-    }
-
-    // Vérifier que l'API Google Maps et l'élément input sont disponibles
+    // Si l'API n'est pas chargée, ne rien faire
     if (!window.google || !window.google.maps || !window.google.maps.places) {
       console.error("L'API Google Maps n'est pas chargée correctement");
       setError("Impossible d'initialiser Google Maps. Vérifiez votre connexion internet.");
+      setApiAvailable(false);
+      return;
+    }
+
+    // Si l'élément input n'est pas disponible, ne rien faire
+    if (!inputRef.current) {
+      console.error("Référence à l'élément input manquante");
       return;
     }
     
-    if (!inputRef.current) {
-      console.error("Référence à l'élément input manquante");
+    // Si autocomplete est déjà initialisé pour cet input, ne pas le refaire
+    if (isInitializedRef.current && autocompleteRef.current) {
+      console.log("Autocomplete déjà initialisé pour cet élément");
       return;
     }
     
@@ -136,37 +138,49 @@ export const useGoogleMapsAutocomplete = ({
     }
   }, [inputRef, onAddressSelected, onCoordinatesSelected]);
   
-  // Charger le script Google Maps une seule fois
+  // Charger le script Google Maps
   useEffect(() => {
-    // Définir une fonction globale que le script Google Maps appellera
-    window.initGoogleMapsAutocomplete = () => {
-      console.log("Le script Google Maps est chargé et prêt");
-      setIsLoading(false);
-      setScriptLoaded(true);
-      
-      // Ne pas initialiser automatiquement ici, laissez le composant appeler initAutocomplete
-    };
-    
-    // Gérer les erreurs d'API Google Maps
-    window.gm_authFailure = () => {
-      console.error("Erreur d'authentification Google Maps API");
-      setApiAvailable(false);
-      setError("L'API Google Maps n'est pas autorisée pour ce domaine. L'autocomplétion des adresses n'est pas disponible.");
-      toast({
-        title: "Erreur Google Maps API",
-        description: "Clé API non autorisée pour ce domaine. Veuillez vérifier votre configuration dans la console Google Cloud.",
-        variant: "destructive",
-        duration: 10000,
-      });
-      setIsLoading(false);
-    };
-    
+    if (scriptLoaded) {
+      return; // Le script est déjà chargé, pas besoin de continuer
+    }
+
     const loadGoogleMapsScript = () => {
+      // Si le script est déjà chargé
+      if (window.google && window.google.maps && window.google.maps.places) {
+        console.log("Google Maps déjà chargé, initialisation disponible");
+        setIsLoading(false);
+        setScriptLoaded(true);
+        setApiAvailable(true);
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
       
+      // Définir une fonction globale que le script Google Maps appellera
+      window.initGoogleMapsAutocomplete = () => {
+        console.log("Le script Google Maps est chargé et prêt");
+        setIsLoading(false);
+        setScriptLoaded(true);
+        setApiAvailable(true);
+      };
+      
+      // Gérer les erreurs d'API Google Maps
+      window.gm_authFailure = () => {
+        console.error("Erreur d'authentification Google Maps API");
+        setApiAvailable(false);
+        setError("L'API Google Maps n'est pas autorisée pour ce domaine. L'autocomplétion des adresses n'est pas disponible.");
+        toast({
+          title: "Erreur Google Maps API",
+          description: "Clé API non autorisée pour ce domaine. Veuillez vérifier votre configuration dans la console Google Cloud.",
+          variant: "destructive",
+          duration: 10000,
+        });
+        setIsLoading(false);
+      };
+      
       // Vérifier si le script n'est pas déjà chargé
-      if (!document.getElementById('google-maps-script') && !window.google) {
+      if (!document.getElementById('google-maps-script')) {
         const script = document.createElement('script');
         script.id = 'google-maps-script';
         script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGoogleMapsAutocomplete&v=weekly`;
@@ -178,34 +192,32 @@ export const useGoogleMapsAutocomplete = ({
           console.error("Erreur lors du chargement du script Google Maps");
           setIsLoading(false);
           setApiAvailable(false);
+          setScriptLoaded(false);
           setError("Impossible de charger l'API Google Maps. Vérifiez votre connexion internet ou votre clé API.");
         };
         
         document.head.appendChild(script);
         console.log("Script Google Maps inséré dans le document");
-      } else if (window.google && window.google.maps && window.google.maps.places) {
-        // Si le script est déjà chargé, initialiser directement
-        console.log("Google Maps déjà chargé, initialisation disponible");
-        setIsLoading(false);
-        setScriptLoaded(true);
       }
     };
     
     loadGoogleMapsScript();
     
-    return () => {
-      if (autocompleteRef.current && window.google && window.google.maps) {
-        window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
-      }
-      
-      // Ne pas nettoyer les fonctions globales car elles pourraient être utilisées par d'autres instances
-    };
-  }, [toast]);
+  }, [scriptLoaded, toast]);
+
+  // Tenter d'initialiser l'autocomplete lorsque le script est chargé et l'API disponible
+  useEffect(() => {
+    if (scriptLoaded && apiAvailable && inputRef.current && !isInitializedRef.current) {
+      console.log("Script chargé et API disponible - initialisation de l'autocomplete");
+      initAutocomplete();
+    }
+  }, [scriptLoaded, apiAvailable, inputRef, initAutocomplete]);
 
   // Nettoyer les écouteurs d'événements lors du démontage
   useEffect(() => {
     return () => {
       if (autocompleteRef.current && window.google && window.google.maps) {
+        console.log("Nettoyage des écouteurs d'événements autocomplete");
         window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
         isInitializedRef.current = false;
       }
@@ -215,7 +227,7 @@ export const useGoogleMapsAutocomplete = ({
   return {
     isLoading,
     error,
-    apiAvailable: apiAvailable && scriptLoaded,
+    apiAvailable,
     initAutocomplete
   };
 };

@@ -6,6 +6,7 @@ import { Control } from "react-hook-form";
 import { ClientFormValues } from "../schemas/clientSchema";
 import { useEffect, useRef } from "react";
 import { useGoogleMapsAutocomplete } from "@/hooks/useGoogleMapsAutocomplete";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AddressFieldProps {
   control: Control<ClientFormValues>;
@@ -29,6 +30,7 @@ export const AddressField = ({
   // Créer une référence interne si aucune n'est fournie
   const internalInputRef = useRef<HTMLInputElement>(null);
   const actualInputRef = externalInputRef || internalInputRef;
+  const { toast } = useToast();
   
   // Utiliser le hook pour l'autocomplétion Google Maps directement dans le composant
   const { isLoading: isLoadingAutocomplete, error: autocompleteError, apiAvailable: isApiAvailable, initAutocomplete } = 
@@ -36,36 +38,39 @@ export const AddressField = ({
       inputRef: actualInputRef,
       initialAddress: "",
       onAddressSelected: (address) => {
+        console.log("AddressField: Adresse sélectionnée:", address);
         if (onAddressSelected) {
           onAddressSelected(address);
         }
       },
-      onCoordinatesSelected: onCoordinatesSelected
+      onCoordinatesSelected: (coordinates) => {
+        console.log("AddressField: Coordonnées sélectionnées:", coordinates);
+        if (onCoordinatesSelected) {
+          onCoordinatesSelected(coordinates);
+        }
+      }
     });
 
   // Initialiser l'autocomplétion quand le composant est monté
   useEffect(() => {
     if (actualInputRef.current && isApiAvailable) {
       console.log("AddressField: Initialisation de l'autocomplétion");
-      initAutocomplete();
+      try {
+        initAutocomplete();
+      } catch (error) {
+        console.error("Erreur lors de l'initialisation de l'autocomplétion:", error);
+        toast({
+          title: "Erreur d'autocomplétion",
+          description: "Impossible d'initialiser l'autocomplétion Google Maps",
+          variant: "destructive",
+        });
+      }
     }
-  }, [isApiAvailable, initAutocomplete]);
+  }, [isApiAvailable, initAutocomplete, toast]);
 
   // Combiner les états de chargement et d'erreur
   const combinedLoading = isLoading || isLoadingAutocomplete;
   const combinedError = error || autocompleteError;
-
-  // Fonction pour initialiser l'autocomplétion au clic
-  const handleInputClick = () => {
-    console.log("Champ d'adresse cliqué");
-    if (actualInputRef.current) {
-      actualInputRef.current.focus();
-      // Forcer l'initialisation de l'autocomplétion au clic
-      if (isApiAvailable) {
-        initAutocomplete();
-      }
-    }
-  };
 
   return (
     <FormField
@@ -84,9 +89,22 @@ export const AddressField = ({
                 value={field.value || ""}
                 onChange={(e) => {
                   field.onChange(e);
-                  field.value = e.target.value;
+                  console.log("AddressField: Valeur changée:", e.target.value);
                 }}
-                onClick={handleInputClick}
+                onClick={() => {
+                  console.log("Champ d'adresse cliqué");
+                  if (actualInputRef.current) {
+                    actualInputRef.current.focus();
+                    // Forcer l'initialisation de l'autocomplétion au clic
+                    if (isApiAvailable) {
+                      try {
+                        initAutocomplete();
+                      } catch (error) {
+                        console.error("Erreur lors de l'initialisation de l'autocomplétion au clic:", error);
+                      }
+                    }
+                  }
+                }}
               />
             </div>
           </FormControl>
