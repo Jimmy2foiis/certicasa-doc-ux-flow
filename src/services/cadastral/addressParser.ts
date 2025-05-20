@@ -1,160 +1,167 @@
 
-// Normalize and parse Spanish addresses for the Catastro API
+/**
+ * Module de parsing d'adresses pour le Cadastre espagnol
+ * Permet de structurer une adresse libre en composants compatibles avec l'API Catastro
+ */
 
-// Liste des types de voies courantes et leurs abréviations pour le Catastro
-export const ROAD_TYPES: Record<string, string> = {
-  "CALLE": "CL",
-  "AVENIDA": "AV",
-  "PLAZA": "PZ",
-  "PASEO": "PS",
-  "RONDA": "RD",
-  "CARRETERA": "CR",
-  "TRAVESIA": "TR",
-  "CUESTA": "CU",
-  "PASAJE": "PJ",
-  "CAMINO": "CM",
-  // Versions courtes et variations
-  "CL": "CL",
-  "C/": "CL",
-  "C.": "CL",
-  "AV": "AV",
-  "AVD": "AV",
-  "AVDA": "AV",
-  "PZ": "PZ",
-  "PZA": "PZ",
-  "PS": "PS",
-  "PSO": "PS",
-  "RD": "RD",
-  "RDA": "RD",
-  "CR": "CR",
-  "CTRA": "CR",
-  "TR": "TR",
-  "TRAV": "TR",
+// Structure d'adresse analysée
+export interface ParsedAddress {
+  roadType: string;
+  roadName: string;
+  number: string;
+  municipality: string;
+  province: string;
+}
+
+// Mapping des types de voies en espagnol
+const roadTypesMapping: Record<string, string> = {
+  'CALLE': 'CL',
+  'AVENIDA': 'AV',
+  'PLAZA': 'PZ',
+  'PASEO': 'PS',
+  'CARRETERA': 'CR',
+  'CAMINO': 'CM',
+  'RAMBLA': 'RB',
+  'GRAN VÍA': 'GV',
+  'TRAVESÍA': 'TR',
+  'VÍA': 'VI',
 };
 
-// Normalise le nom de province pour le Catastro
-export const normalizeProvince = (provinceName: string): string => {
-  const name = provinceName.toUpperCase().trim();
-  
-  // Mappings spécifiques pour certaines provinces
+/**
+ * Normaliser le nom de province pour qu'il soit conforme aux standards du Catastro
+ */
+export const normalizeProvince = (province: string): string => {
+  // Table de correspondance pour les provinces communes
   const provinceMapping: Record<string, string> = {
-    "ALAVA": "ARABA/ÁLAVA",
-    "ÁLAVA": "ARABA/ÁLAVA",
-    "ARABA": "ARABA/ÁLAVA",
-    "BALEARES": "ILLES BALEARS",
-    "ISLAS BALEARES": "ILLES BALEARS",
-    "MALLORCA": "ILLES BALEARS",
-    "ORENSE": "OURENSE",
-    "LA CORUÑA": "A CORUÑA",
-    "CORUÑA": "A CORUÑA",
-    "GERONA": "GIRONA",
-    "LERIDA": "LLEIDA"
+    'MADRID': 'MADRID',
+    'BARCELONA': 'BARCELONA',
+    'VALENCIA': 'VALENCIA',
+    'SEVILLA': 'SEVILLA',
+    'ALICANTE': 'ALICANTE',
+    'MÁLAGA': 'MALAGA',
+    'MURCIA': 'MURCIA',
   };
   
-  return provinceMapping[name] || name;
+  const normalizedProvince = province.normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")  // Retirer les accents
+    .toUpperCase()
+    .trim();
+  
+  return provinceMapping[normalizedProvince] || normalizedProvince;
 };
 
-// Extraction des composants d'adresse à partir d'une adresse complète
-export const parseAddress = (address: string): { 
-  province: string; 
-  municipality: string; 
-  roadType: string; 
-  roadName: string; 
-  number: string;
-} => {
-  // Normalisation de l'adresse
-  address = address.trim()
-    .replace(/\s+/g, ' ')
-    .replace(/,\s*/g, ', ')
+/**
+ * Parser complet d'adresses espagnoles
+ * Extrait les composants structurés d'une adresse pour l'API Catastro
+ */
+export const parseAddress = (address: string): ParsedAddress => {
+  // Normaliser l'adresse
+  const normalizedAddress = address
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, ""); // Enlève les accents
+    .replace(/[\u0300-\u036f]/g, "")  // Retirer les accents
+    .toUpperCase()
+    .trim();
   
-  // Extraction par analyse basique (peut être améliorée pour des cas spécifiques)
-  let province = "MADRID"; // Par défaut, si non détecté
-  let municipality = "MADRID"; // Par défaut, si non détecté
-  let roadType = "CL"; // Par défaut CALLE
+  // Variables par défaut
+  let roadType = "";
   let roadName = "";
   let number = "";
+  let municipality = "";
+  let province = "MADRID"; // Par défaut, si on ne trouve pas la province
   
-  // Séparation par virgules pour extraire la ville/province
-  const parts = address.split(',');
-  
-  if (parts.length > 1) {
-    // Dernière partie est généralement code postal + ville
-    const lastPart = parts[parts.length - 1].trim();
-    
-    // Extraction du code postal et de la ville
-    const postalCodeMatch = lastPart.match(/\d{5}/);
-    if (postalCodeMatch) {
-      const postalParts = lastPart.split(postalCodeMatch[0]);
-      if (postalParts.length > 1) {
-        // La municipalité est généralement après le code postal
-        municipality = postalParts[1].trim().toUpperCase();
-        province = municipality; // Par défaut, mais peut être ajusté selon le CP
-      }
-    } else {
-      municipality = lastPart.toUpperCase();
-      province = municipality;
-    }
-    
-    // La rue est dans la première partie
-    const streetPart = parts[0].trim();
-    
-    // Extraction du type de voie et du nom
-    for (const [typeName, code] of Object.entries(ROAD_TYPES)) {
-      if (streetPart.toUpperCase().startsWith(typeName)) {
-        roadType = code;
-        roadName = streetPart.substring(typeName.length).trim().toUpperCase();
-        break;
-      }
-    }
-    
-    // Si aucun type de voie n'a été trouvé, on prend toute la rue
-    if (!roadName) {
-      roadName = streetPart.toUpperCase();
-      // Extraction du numéro de rue si présent à la fin
-      const numberMatch = roadName.match(/\s+(\d+)\s*$/);
-      if (numberMatch) {
-        number = numberMatch[1];
-        roadName = roadName.substring(0, roadName.lastIndexOf(numberMatch[0])).trim();
-      }
-    } else {
-      // Extraction du numéro de rue si déjà séparé
-      const numberMatch = roadName.match(/\s+(\d+)\s*$/);
-      if (numberMatch) {
-        number = numberMatch[1];
-        roadName = roadName.substring(0, roadName.lastIndexOf(numberMatch[0])).trim();
-      }
-    }
-  } else {
-    // Si pas de virgule, on essaie quand même d'analyser
-    const streetPart = address.trim();
-    
-    for (const [typeName, code] of Object.entries(ROAD_TYPES)) {
-      if (streetPart.toUpperCase().startsWith(typeName)) {
-        roadType = code;
-        roadName = streetPart.substring(typeName.length).trim().toUpperCase();
-        break;
-      }
-    }
-    
-    if (!roadName) {
-      roadName = streetPart.toUpperCase();
-    }
-    
-    // Extraction du numéro
-    const numberMatch = roadName.match(/\s+(\d+)\s*$/);
-    if (numberMatch) {
-      number = numberMatch[1];
-      roadName = roadName.substring(0, roadName.lastIndexOf(numberMatch[0])).trim();
+  // Chercher une province dans l'adresse
+  for (const provinceName in provinceMapping) {
+    if (normalizedAddress.includes(provinceName)) {
+      province = provinceMapping[provinceName];
+      break;
     }
   }
   
+  // Essayer de détecter la municipalité
+  // Format typique: "..., 28006 MADRID, ESPAÑA"
+  const postalCodeRegex = /\d{5}\s+([A-ZÀÁÂÄÃÅĄĆÈÉÊËĘÌÍÎÏŁŃÒÓÔÖÕØÙÚÛÜŸÝŻŹÑÇŠŽĆĐ\s]+)/i;
+  const postalMatch = normalizedAddress.match(postalCodeRegex);
+  
+  if (postalMatch && postalMatch[1]) {
+    municipality = postalMatch[1].split(',')[0].trim();
+  }
+  
+  // Si pas de municipalité détectée, mais une province oui, utiliser comme municipalité
+  if (!municipality && province) {
+    municipality = province;
+  }
+  
+  // Extraire le type de voie et le nom
+  for (const typeKey in roadTypesMapping) {
+    if (normalizedAddress.includes(typeKey)) {
+      roadType = roadTypesMapping[typeKey];
+      
+      // Extraire le nom de la voie après le type
+      const typeIndex = normalizedAddress.indexOf(typeKey);
+      const afterType = normalizedAddress.substring(typeIndex + typeKey.length).trim();
+      
+      // Extraire jusqu'à la virgule, le numéro ou fin de chaîne
+      const endNameIndex = Math.min(
+        afterType.indexOf(',') > -1 ? afterType.indexOf(',') : Infinity,
+        afterType.search(/\d+/) > -1 ? afterType.search(/\d+/) : Infinity
+      );
+      
+      roadName = endNameIndex < Infinity 
+        ? afterType.substring(0, endNameIndex).trim() 
+        : afterType.trim();
+      
+      break;
+    }
+  }
+  
+  // Si aucun type n'est détecté, utiliser CL par défaut
+  if (!roadType) {
+    roadType = "CL";
+    
+    // Extraire le premier mot comme nom de voie
+    const firstComma = normalizedAddress.indexOf(',');
+    if (firstComma > -1) {
+      roadName = normalizedAddress.substring(0, firstComma).trim();
+    } else {
+      roadName = normalizedAddress.trim();
+    }
+  }
+  
+  // Extraire le numéro (après le nom de rue)
+  const numberMatch = normalizedAddress.match(/\b(\d+)\b/);
+  if (numberMatch) {
+    number = numberMatch[1];
+  }
+  
   return {
-    province: normalizeProvince(province),
-    municipality,
     roadType,
     roadName,
-    number
+    number,
+    municipality: municipality || "MADRID",
+    province: province || "MADRID"
   };
+};
+
+// Table de correspondance pour les provinces
+const provinceMapping: Record<string, string> = {
+  'MADRID': 'MADRID',
+  'BARCELONA': 'BARCELONA',
+  'VALENCIA': 'VALENCIA',
+  'SEVILLA': 'SEVILLA',
+  'ALICANTE': 'ALICANTE',
+  'MÁLAGA': 'MALAGA',
+  'MURCIA': 'MURCIA',
+  'ZARAGOZA': 'ZARAGOZA',
+  'BILBAO': 'VIZCAYA',
+  'VIZCAYA': 'VIZCAYA',
+  'LA CORUÑA': 'A CORUÑA',
+  'A CORUÑA': 'A CORUÑA',
+  'PALMA': 'ILLES BALEARS',
+  'MALLORCA': 'ILLES BALEARS',
+  'ISLAS BALEARES': 'ILLES BALEARS',
+  'ILLES BALEARS': 'ILLES BALEARS',
+  'LAS PALMAS': 'LAS PALMAS',
+  'GRAN CANARIA': 'LAS PALMAS',
+  'TENERIFE': 'SANTA CRUZ DE TENERIFE',
+  'SANTA CRUZ DE TENERIFE': 'SANTA CRUZ DE TENERIFE',
 };

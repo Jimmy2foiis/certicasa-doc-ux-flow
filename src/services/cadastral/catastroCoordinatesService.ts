@@ -1,123 +1,128 @@
 
-import { GeoCoordinates } from '../geoCoordinatesService';
-import { getCadastralDataByCoordinatesREST } from '../catastroRestService';
-import { getFromCache, saveToCache, getCache } from './catastroCache';
+import { GeoCoordinates, getFormattedUTMCoordinates } from '../geoCoordinatesService';
+import { getCadastralDataByCoordinatesREST } from './catastroApiService';
+import { getCachedCadastralData, setCachedCadastralData } from './catastroCache';
+import { getClimateZoneByProvince, getClimateZoneByAddress } from '../climateZoneService';
 import { CatastroData } from '../catastroTypes';
-import { saveCadastralData } from '../supabaseService';
 
-// Fonction principale pour récupérer les données cadastrales à partir de coordonnées
+/**
+ * Fonction principale pour obtenir les informations cadastrales à partir de coordonnées GPS
+ * Utilise le cache local pour éviter des appels API répétés
+ */
 export const getCadastralInfoFromCoordinates = async (
   latitude: number, 
-  longitude: number, 
-  forceRefresh = false,
-  clientId?: string // Ajout optionnel de l'ID client pour sauvegarder dans Supabase
+  longitude: number
 ): Promise<CatastroData> => {
-  // Validation des coordonnées
-  if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
-    console.error("Coordonnées invalides:", { latitude, longitude });
-    return {
-      utmCoordinates: '',
-      cadastralReference: '',
-      climateZone: '',
-      apiSource: 'ERROR',
-      error: 'Coordonnées GPS invalides'
-    };
-  }
-  
-  const cacheKey = `coord_${latitude}_${longitude}`;
-  
-  // Vérifier dans le cache d'abord (sauf si forceRefresh)
-  if (!forceRefresh) {
-    const cachedData = getFromCache(cacheKey);
+  try {
+    console.log(`Recherche de données cadastrales pour les coordonnées: ${latitude}, ${longitude}`);
+    
+    // Vérifier si les données sont dans le cache
+    const cachedData = getCachedCadastralData(latitude, longitude);
     if (cachedData) {
-      console.log('Données cadastrales récupérées du cache pour les coordonnées:', latitude, longitude);
+      console.log("Données cadastrales trouvées dans le cache");
       return cachedData;
     }
-  }
-  
-  // Récupérer les données fraîches
-  console.log(`Appel à l'API Catastro avec coordonnées: lat=${latitude}, lng=${longitude}`);
-  const cadastralData = await getCadastralDataByCoordinatesREST(latitude, longitude);
-  
-  // Si les données sont valides, les mettre en cache
-  if (cadastralData && !cadastralData.error) {
-    // Mettre en cache local
-    saveToCache(cacheKey, cadastralData);
-    console.log("Données cadastrales mises en cache local:", cadastralData);
     
-    // Si un clientId est fourni, sauvegarder dans Supabase également
-    if (clientId) {
-      try {
-        const supabaseCadastralData = {
-          client_id: clientId,
-          utm_coordinates: cadastralData.utmCoordinates,
-          cadastral_reference: cadastralData.cadastralReference,
-          climate_zone: cadastralData.climateZone,
-          api_source: cadastralData.apiSource
-        };
-        
-        const savedData = await saveCadastralData(supabaseCadastralData);
-        if (savedData) {
-          console.log("Données cadastrales sauvegardées dans Supabase:", savedData);
-        }
-      } catch (error) {
-        console.error("Erreur lors de la sauvegarde des données cadastrales dans Supabase:", error);
+    console.log("Données cadastrales non trouvées dans le cache, appel à l'API REST...");
+    
+    // Obtenir les coordonnées UTM à partir des coordonnées GPS
+    const utmCoordinates = getFormattedUTMCoordinates(latitude, longitude);
+    console.log(`Coordonnées UTM calculées: ${utmCoordinates}`);
+    
+    // Récupérer les données cadastrales via l'API REST
+    const cadastralData = await getCadastralDataByCoordinatesREST(latitude, longitude);
+    
+    // Si l'API ne retourne pas de coordonnées UTM, utiliser celles calculées localement
+    if (!cadastralData.utmCoordinates && utmCoordinates) {
+      cadastralData.utmCoordinates = utmCoordinates;
+    }
+    
+    // Si l'API ne retourne pas de zone climatique, essayer de la détecter par d'autres moyens
+    if (!cadastralData.climateZone || cadastralData.climateZone === "N/A") {
+      // Tenter de déterminer la zone climatique à partir de la position géographique
+      let climateZone = "";
+      
+      // Espagne continentale - zones climatiques approximatives par coordonnées
+      // Nord/Nord-ouest (zones C1, C2)
+      if (latitude > 42.0) {
+        climateZone = longitude < -6.0 ? "C1" : "C2";
+      }
+      // Centre/Nord-est (zones D1, D2, D3)
+      else if (latitude > 40.0) {
+        if (longitude < -4.0) climateZone = "D3";
+        else if (longitude < 0) climateZone = "D2";
+        else climateZone = "D1";
+      }
+      // Centre/Sud (zones A3, A4, B3, B4)
+      else {
+        if (longitude < -6.0) climateZone = latitude > 38.0 ? "C4" : "A4";
+        else if (longitude < -3.0) climateZone = latitude > 38.0 ? "B4" : "A4";
+        else climateZone = latitude > 38.0 ? "B3" : "A3";
+      }
+      
+      if (climateZone) {
+        cadastralData.climateZone = climateZone;
       }
     }
-  } else if (cadastralData.error) {
-    console.error('Erreur API Catastro:', cadastralData.error);
     
-    // En cas d'erreur, essayer de déterminer au moins la zone climatique approximative
-    // basée sur la latitude/longitude (si possible)
+    // Mise en cache des résultats
+    setCachedCadastralData(latitude, longitude, cadastralData);
+    
+    return cadastralData;
+    
+  } catch (error) {
+    console.error("Erreur lors de la récupération des informations cadastrales:", error);
+    
+    // Retourner au moins les coordonnées UTM calculées en cas d'erreur
+    const utmCoordinates = getFormattedUTMCoordinates(latitude, longitude);
+    
     return {
-      utmCoordinates: '',
-      cadastralReference: '',
-      // Utilise la latitude pour estimer la province/zone climatique
-      climateZone: latitude > 40 ? 'D3' : 'B3', // Estimation très approximative
-      apiSource: 'FALLBACK',
-      error: cadastralData.error
+      cadastralReference: "",
+      utmCoordinates,
+      climateZone: "",
+      apiSource: "REST",
+      error: error instanceof Error ? error.message : "Erreur inconnue"
     };
   }
-  
-  return cadastralData;
 };
 
-// Fonction pour forcer un rafraîchissement des données
-export const refreshCadastralData = async (coordinates: GeoCoordinates, clientId?: string): Promise<CatastroData> => {
+/**
+ * Fonction pour rafraîchir les données cadastrales (ignorer le cache)
+ */
+export const refreshCadastralData = async (coordinates: GeoCoordinates): Promise<CatastroData> => {
   try {
-    if (!coordinates || !coordinates.lat || !coordinates.lng) {
-      throw new Error("Coordonnées invalides pour le rafraîchissement des données");
+    console.log(`Rafraîchissement des données cadastrales pour: ${coordinates.lat}, ${coordinates.lng}`);
+    
+    // Obtenir les coordonnées UTM à partir des coordonnées GPS
+    const utmCoordinates = getFormattedUTMCoordinates(coordinates.lat, coordinates.lng);
+    
+    // Récupérer les données cadastrales via l'API REST
+    const cadastralData = await getCadastralDataByCoordinatesREST(
+      coordinates.lat, 
+      coordinates.lng
+    );
+    
+    // Si l'API ne retourne pas de coordonnées UTM, utiliser celles calculées localement
+    if (!cadastralData.utmCoordinates && utmCoordinates) {
+      cadastralData.utmCoordinates = utmCoordinates;
     }
     
-    const { lat, lng } = coordinates;
-    const cacheKey = `coord_${lat}_${lng}`;
+    // Mise en cache des résultats rafraîchis
+    setCachedCadastralData(coordinates.lat, coordinates.lng, cadastralData);
     
-    // Supprimer du cache si existe
-    const cache = getCache();
-    delete cache[cacheKey];
-    localStorage.setItem('catastro_cache', JSON.stringify(cache));
-    console.log(`Cache supprimé pour les coordonnées: ${lat}, ${lng}`);
+    return cadastralData;
     
-    // Récupérer de nouvelles données
-    return await getCadastralInfoFromCoordinates(lat, lng, true, clientId);
   } catch (error) {
-    console.error('Erreur lors du rafraîchissement des données cadastrales:', error);
+    console.error("Erreur lors du rafraîchissement des données cadastrales:", error);
+    
+    const utmCoordinates = getFormattedUTMCoordinates(coordinates.lat, coordinates.lng);
+    
     return {
-      utmCoordinates: '',
-      cadastralReference: '',
-      climateZone: '',
-      apiSource: 'ERROR',
-      error: error instanceof Error ? error.message : 'Erreur inconnue'
+      cadastralReference: "",
+      utmCoordinates,
+      climateZone: "",
+      apiSource: "REST",
+      error: error instanceof Error ? error.message : "Erreur inconnue"
     };
-  }
-};
-
-// Fonction pour supprimer tout le cache
-export const clearCadastralCache = (): void => {
-  try {
-    localStorage.removeItem('catastro_cache');
-    console.log('Cache cadastral entièrement supprimé');
-  } catch (error) {
-    console.error('Erreur lors de la suppression du cache cadastral:', error);
   }
 };

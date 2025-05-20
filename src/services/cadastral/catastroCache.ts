@@ -1,68 +1,89 @@
 
-import { CatastroData } from "../catastroTypes";
+import { CatastroData } from "../catastroService";
 
 // Clé pour le cache localStorage
-const CATASTRAL_CACHE_KEY = 'catastro_cache';
+const CATASTRO_CACHE_KEY = 'cadastral_cache';
+const CACHE_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 heures en millisecondes
 
-// Structure du cache
 interface CacheItem {
   timestamp: number;
   data: CatastroData;
 }
 
-interface CatastralCache {
+interface CoordinateKey {
+  lat: number;
+  lng: number;
+}
+
+interface CadastralCache {
   [key: string]: CacheItem;
 }
 
-// Durée du cache en millisecondes (24 heures)
-const CACHE_DURATION = 24 * 60 * 60 * 1000;
+// Génère une clé de cache unique pour des coordonnées
+const generateCacheKey = (lat: number, lng: number): string => {
+  // Arrondir à 6 décimales pour éviter de stocker des clés similaires
+  // mais conserver assez de précision pour l'usage cadastral
+  return `${lat.toFixed(6)}_${lng.toFixed(6)}`;
+};
 
-// Fonction pour sauvegarder les données dans le cache
-export const saveToCache = (key: string, data: CatastroData): void => {
+// Vérifie si une entrée de cache est encore valide
+const isCacheValid = (cacheItem: CacheItem): boolean => {
+  const now = Date.now();
+  return (now - cacheItem.timestamp) < CACHE_EXPIRY_TIME;
+};
+
+// Récupère les données du cache
+export const getCachedCadastralData = (lat: number, lng: number): CatastroData | null => {
   try {
-    const cache = getCache();
-    cache[key] = {
+    const cacheKey = generateCacheKey(lat, lng);
+    const cacheString = localStorage.getItem(CATASTRO_CACHE_KEY);
+    
+    if (!cacheString) return null;
+    
+    const cache: CadastralCache = JSON.parse(cacheString);
+    const cacheItem = cache[cacheKey];
+    
+    if (cacheItem && isCacheValid(cacheItem)) {
+      console.log(`Données cadastrales récupérées du cache pour ${lat}, ${lng}`);
+      return cacheItem.data;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Erreur lors de la récupération du cache cadastral:", error);
+    return null;
+  }
+};
+
+// Stocke des données dans le cache
+export const setCachedCadastralData = (lat: number, lng: number, data: CatastroData): void => {
+  try {
+    const cacheKey = generateCacheKey(lat, lng);
+    let cache: CadastralCache = {};
+    
+    const cacheString = localStorage.getItem(CATASTRO_CACHE_KEY);
+    if (cacheString) {
+      cache = JSON.parse(cacheString);
+    }
+    
+    cache[cacheKey] = {
       timestamp: Date.now(),
       data
     };
-    localStorage.setItem(CATASTRAL_CACHE_KEY, JSON.stringify(cache));
-  } catch (error) {
-    console.error('Erreur lors de la sauvegarde dans le cache:', error);
-  }
-};
-
-// Fonction pour récupérer le cache complet
-export const getCache = (): CatastralCache => {
-  try {
-    const cache = localStorage.getItem(CATASTRAL_CACHE_KEY);
-    return cache ? JSON.parse(cache) : {};
-  } catch (error) {
-    console.error('Erreur lors de la récupération du cache:', error);
-    return {};
-  }
-};
-
-// Fonction pour récupérer des données du cache
-export const getFromCache = (key: string): CatastroData | null => {
-  try {
-    const cache = getCache();
-    const item = cache[key];
     
-    if (item && (Date.now() - item.timestamp) < CACHE_DURATION) {
-      return item.data;
-    }
-    return null;
+    localStorage.setItem(CATASTRO_CACHE_KEY, JSON.stringify(cache));
+    console.log(`Données cadastrales mises en cache pour ${lat}, ${lng}`);
   } catch (error) {
-    console.error('Erreur lors de la récupération depuis le cache:', error);
-    return null;
+    console.error("Erreur lors de la mise en cache des données cadastrales:", error);
   }
 };
 
-// Fonction pour vider le cache
+// Efface le cache
 export const clearCadastralCache = (): void => {
   try {
-    localStorage.removeItem(CATASTRAL_CACHE_KEY);
+    localStorage.removeItem(CATASTRO_CACHE_KEY);
+    console.log("Cache cadastral effacé");
   } catch (error) {
-    console.error('Erreur lors de la suppression du cache:', error);
+    console.error("Erreur lors de l'effacement du cache cadastral:", error);
   }
 };

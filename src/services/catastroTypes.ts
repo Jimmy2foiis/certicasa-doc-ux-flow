@@ -1,9 +1,11 @@
 
-// Interface pour les données cadastrales
+/**
+ * Type pour les données cadastrales
+ */
 export interface CatastroData {
-  utmCoordinates: string;
   cadastralReference: string;
+  utmCoordinates: string;
   climateZone: string;
   apiSource?: string;
-  error: string | null;
+  error?: string | null;
 }
