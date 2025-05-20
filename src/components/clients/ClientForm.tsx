@@ -1,7 +1,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Form } from "@/components/ui/form";
 import { useCoordinates } from "@/hooks/useCoordinates";
 import { clientSchema, ClientFormValues } from "./schemas/clientSchema";
@@ -15,6 +15,8 @@ import { AddressField } from "./form-fields/AddressField";
 import { ClientIdFields } from "./form-fields/ClientIdFields";
 import { FormActions } from "./form-fields/FormActions";
 import { useToast } from "@/components/ui/use-toast";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ClientFormProps {
   onSubmit: (data: Client) => Promise<void>;
@@ -27,6 +29,8 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
   const addressInputRef = useRef<HTMLInputElement>(null);
   const { coordinates, setClientCoordinates } = useCoordinates();
   const { toast } = useToast();
+  const [addressSelected, setAddressSelected] = useState(false);
+  const [addressWarning, setAddressWarning] = useState<string | null>(null);
   
   // Initialize form with react-hook-form and zod validation
   const form = useForm<ClientFormValues>({
@@ -42,22 +46,57 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
   });
 
   console.log("Valeurs initiales du formulaire:", initialValues);
+  console.log("État actuel des coordonnées:", coordinates);
+
+  // Si une adresse initiale existe, considérer qu'elle a été sélectionnée
+  useEffect(() => {
+    if (initialValues?.address) {
+      setAddressSelected(true);
+    }
+  }, [initialValues?.address]);
 
   // Handle address selection from Google Maps autocomplete
   const handleAddressSelected = (address: string) => {
     console.log("Adresse sélectionnée:", address);
     form.setValue("address", address, { shouldValidate: true, shouldDirty: true });
     form.trigger("address");
+    setAddressSelected(true);
+    setAddressWarning(null);
+    
+    // Notification visuelle pour confirmer la sélection
+    toast({
+      title: "Adresse sélectionnée",
+      description: `Adresse sélectionnée: ${address}`,
+      duration: 3000,
+    });
   };
   
   const handleCoordinatesSelected = (coords: {lat: number, lng: number}) => {
     console.log("Coordonnées sélectionnées:", coords);
     setClientCoordinates(coords);
+    
+    // Notification visuelle pour confirmer les coordonnées
+    toast({
+      title: "Localisation",
+      description: "Coordonnées de l'adresse enregistrées avec succès",
+      duration: 3000,
+    });
   };
 
   const handleCreateClient = async (data: ClientFormValues) => {
     try {
       console.log("Données du formulaire soumises:", data);
+      
+      // Vérifier si l'adresse a été sélectionnée via Google Maps
+      if (data.address && !addressSelected) {
+        setAddressWarning("Pour une meilleure précision, veuillez sélectionner une adresse dans les suggestions Google Maps.");
+        toast({
+          title: "Attention",
+          description: "L'adresse n'a pas été sélectionnée dans les suggestions. Les coordonnées pourraient ne pas être précises.",
+          variant: "warning",
+          duration: 5000,
+        });
+      }
       
       // Create a Client object ensuring name is not undefined
       const clientData: Client = {
@@ -74,6 +113,8 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
       }
       
       console.log("Données client à envoyer:", clientData);
+      console.log("Coordonnées à enregistrer:", coordinates);
+      
       await onSubmit(clientData);
       
       toast({
@@ -105,6 +146,15 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
           onAddressSelected={handleAddressSelected}
           onCoordinatesSelected={handleCoordinatesSelected}
         />
+        
+        {addressWarning && (
+          <Alert variant="warning" className="py-2">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="text-xs">
+              {addressWarning}
+            </AlertDescription>
+          </Alert>
+        )}
         
         <ClientIdFields control={form.control} />
         
