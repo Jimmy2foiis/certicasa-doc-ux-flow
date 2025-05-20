@@ -1,14 +1,5 @@
-
 import { Badge } from "@/components/ui/badge";
-
-export type DocumentStatus = 
-  | "generated" 
-  | "ready" 
-  | "pending" 
-  | "missing" 
-  | "action-required" 
-  | "error"
-  | "linked";
+import { DocumentStatus } from "@/models/documents";
 
 interface DocumentStatusBadgeProps {
   status: DocumentStatus;
