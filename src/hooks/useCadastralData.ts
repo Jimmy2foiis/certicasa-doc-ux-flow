@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { getCadastralDataFromAddress } from '../services/catastroService';
+import { getCadastralDataFromAddress, type CatastroData } from '../services/catastroService';
 
 interface CadastralData {
   utmCoordinates: string;
