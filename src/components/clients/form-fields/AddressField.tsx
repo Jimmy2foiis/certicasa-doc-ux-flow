@@ -1,3 +1,4 @@
+
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AddressInput } from "@/components/address/AddressInput";
 import { ApiStatus } from "@/components/address/ApiStatus";
@@ -6,6 +7,8 @@ import { useGoogleMapsAutocomplete } from "@/hooks/googleMaps/useGoogleMapsAutoc
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { Control } from "react-hook-form";
+import { ClientFormValues } from "../schemas/clientSchema";
 
 interface AddressFieldProps {
   control: Control<ClientFormValues>;

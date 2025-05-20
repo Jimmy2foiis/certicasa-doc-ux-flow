@@ -12,6 +12,7 @@ declare global {
           Autocomplete: typeof google.maps.places.Autocomplete;
         };
         LatLng: typeof google.maps.LatLng;
+        Geocoder: typeof google.maps.Geocoder;
       };
     };
     gm_authFailure?: () => void;
