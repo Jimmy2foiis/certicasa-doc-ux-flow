@@ -194,7 +194,7 @@ const LayerSection = ({
           <TableHeader>
             <TableRow>
               <TableHead>Matériau</TableHead>
-              <TableHead className="w-[200px]">Épaisseur (mm)</TableHead>
+              <TableHead className="w-[200px]">Épaisseur (m)</TableHead>
               <TableHead className="w-[120px]">λ (W/mK)</TableHead>
               <TableHead className="w-[120px]">R (m²K/W)</TableHead>
               <TableHead className="w-[80px]"></TableHead>

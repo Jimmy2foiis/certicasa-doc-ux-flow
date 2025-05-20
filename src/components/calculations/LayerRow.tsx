@@ -21,10 +21,13 @@ interface LayerRowProps {
 
 const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) => {
   const [name, setName] = useState(layer.name);
+  // Stocke l'épaisseur en millimètres en interne
   const [thickness, setThickness] = useState(layer.thickness.toString());
+  // Stocke l'épaisseur en mètres pour l'affichage et l'édition
+  const [thicknessInMeters, setThicknessInMeters] = useState((layer.thickness / 1000).toString());
   const [lambda, setLambda] = useState(layer.lambda.toString());
   
-  // Calcul R = e / λ (e en mètres, division par 1000)
+  // Calcul R = e / λ (e en mètres)
   const calculateR = () => {
     if (lambda === "-") return layer.r;
     const lambdaValue = parseFloat(lambda);
@@ -34,7 +37,31 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
   };
   
   const rValue = calculateR();
-  const thicknessInMeters = parseFloat(thickness) / 1000;
+
+  // Synchronisation des valeurs d'épaisseur (mm <-> m)
+  useEffect(() => {
+    // Mise à jour de l'épaisseur en mètres quand l'épaisseur en mm change
+    setThicknessInMeters((parseFloat(thickness) / 1000).toFixed(3));
+  }, [thickness]);
+
+  // Met à jour l'épaisseur en mm quand l'utilisateur modifie l'épaisseur en mètres
+  const handleThicknessInMetersChange = (value: string) => {
+    setThicknessInMeters(value);
+    // Convertir en mm pour le stockage interne
+    const thicknessInMm = Math.round(parseFloat(value) * 1000);
+    if (!isNaN(thicknessInMm)) {
+      setThickness(thicknessInMm.toString());
+      
+      if (onUpdate) {
+        const updatedLayer = { 
+          ...layer, 
+          thickness: thicknessInMm,
+          r: lambda !== "-" && !isNaN(parseFloat(lambda)) ? thicknessInMm / 1000 / parseFloat(lambda) : layer.r
+        };
+        onUpdate(updatedLayer);
+      }
+    }
+  };
 
   // Mise à jour du matériau sélectionné
   const handleMaterialSelect = (materialId: string) => {
@@ -42,6 +69,7 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
     if (selectedMaterial) {
       setName(selectedMaterial.name);
       setThickness(selectedMaterial.thickness.toString());
+      setThicknessInMeters((selectedMaterial.thickness / 1000).toFixed(3));
       setLambda(selectedMaterial.lambda.toString());
       
       if (onUpdate) {
@@ -62,11 +90,6 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
     if (field === "name") {
       setName(value);
       updatedLayer = { ...layer, name: value };
-    } else if (field === "thickness") {
-      setThickness(value);
-      const thicknessValue = parseFloat(value);
-      const r = !isNaN(thicknessValue) && lambda !== "-" ? thicknessValue / 1000 / parseFloat(lambda.toString()) : layer.r;
-      updatedLayer = { ...layer, thickness: thicknessValue, r };
     } else if (field === "lambda") {
       setLambda(value);
       const lambdaValue = value === "-" ? "-" : parseFloat(value);
@@ -99,11 +122,13 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
         <div className="flex items-center space-x-2">
           <Input
             type="number"
-            value={thickness}
-            onChange={(e) => handleUpdate("thickness", e.target.value)}
+            value={thicknessInMeters}
+            onChange={(e) => handleThicknessInMetersChange(e.target.value)}
             className="h-8"
+            step="0.001"
+            min="0.001"
           />
-          <span className="text-xs text-gray-500">({thicknessInMeters.toFixed(3)} m)</span>
+          <span className="text-xs text-gray-500">m</span>
         </div>
       </TableCell>
       <TableCell>
