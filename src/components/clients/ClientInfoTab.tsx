@@ -97,7 +97,9 @@ const ClientInfoTab = ({
         gpsCoordinates={coordinates}
       />
 
-      <ClientTabsContainer onShowCalculation={onShowCalculation} />
+      <div className="lg:col-span-2">
+        <ClientTabsContainer onShowCalculation={onShowCalculation} />
+      </div>
     </div>
   );
 };
