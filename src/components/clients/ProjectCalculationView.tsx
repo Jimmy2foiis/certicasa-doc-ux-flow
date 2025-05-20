@@ -30,6 +30,11 @@ const ProjectCalculationView = ({
   onBack, 
   onSave 
 }: ProjectCalculationViewProps) => {
+  // Find the calculation data if we're editing an existing calculation
+  const calculationData = currentProjectId
+    ? savedCalculations.find(c => c.projectId === currentProjectId)?.calculationData
+    : undefined;
+    
   return (
     <div className="space-y-4">
       <div className="flex items-center">
@@ -46,10 +51,7 @@ const ProjectCalculationView = ({
       <ProjectCalculation 
         clientId={clientId} 
         projectId={currentProjectId}
-        savedData={currentProjectId 
-          ? savedCalculations.find(c => c.projectId === currentProjectId)?.calculationData 
-          : undefined
-        }
+        savedData={calculationData}
         onSave={onSave}
       />
     </div>

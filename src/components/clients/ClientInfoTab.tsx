@@ -1,4 +1,3 @@
-
 import { 
   Building, 
   Mail, 
@@ -24,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { clientDocuments } from "@/data/mock";
+import { useState } from "react";
 
 interface ClientInfoTabProps {
   client: any;
@@ -31,6 +31,7 @@ interface ClientInfoTabProps {
   cadastralReference: string;
   climateZone: string;
   loadingCadastral: boolean;
+  onShowCalculation?: (projectId?: string) => void;
 }
 
 const ClientInfoTab = ({ 
@@ -38,7 +39,8 @@ const ClientInfoTab = ({
   utmCoordinates, 
   cadastralReference, 
   climateZone,
-  loadingCadastral 
+  loadingCadastral,
+  onShowCalculation
 }: ClientInfoTabProps) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -173,6 +175,7 @@ const ClientInfoTab = ({
                           <Button 
                             size="sm" 
                             className="bg-blue-600 hover:bg-blue-700"
+                            onClick={() => onShowCalculation && onShowCalculation(`project_${project}`)}
                           >
                             Calculs
                           </Button>
@@ -231,6 +234,7 @@ const ClientInfoTab = ({
                           <Button 
                             size="sm" 
                             className="bg-blue-600 hover:bg-blue-700"
+                            onClick={() => onShowCalculation && onShowCalculation(`project_${calc}`)}
                           >
                             Voir détails
                           </Button>
@@ -246,7 +250,10 @@ const ClientInfoTab = ({
                       <p className="text-sm text-gray-500 text-center mb-4">
                         Créer un nouveau calcul énergétique pour ce client
                       </p>
-                      <Button className="bg-green-600 hover:bg-green-700">
+                      <Button 
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => onShowCalculation && onShowCalculation()}
+                      >
                         Créer un calcul
                       </Button>
                     </CardContent>

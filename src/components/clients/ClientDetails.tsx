@@ -47,10 +47,11 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
   const [showCalculations, setShowCalculations] = useState(false);
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [savedCalculations, setSavedCalculations] = useState<SavedCalculation[]>([]);
+  const [activeTab, setActiveTab] = useState("client-info");
   const { toast } = useToast();
   
   // Adresse du client pour obtenir les données cadastrales
-  const clientAddress = client ? "Rue Serrano 120, 28006 Madrid" : ""; // Remplacer par l'adresse réelle du client quand disponible
+  const clientAddress = client ? "Rue Serrano 120, 28006 Madrid" : ""; 
   const { utmCoordinates, cadastralReference, climateZone, isLoading: loadingCadastral } = useCadastralData(clientAddress);
 
   // Fonction pour récupérer les calculs sauvegardés du localStorage
@@ -138,15 +139,9 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
     }
   };
   
-  // Ouvrir un calcul existant
-  const openCalculation = (calculation: SavedCalculation) => {
-    setCurrentProjectId(calculation.projectId);
-    setShowCalculations(true);
-  };
-  
-  // Créer un nouveau calcul
-  const createNewCalculation = () => {
-    setCurrentProjectId(null);
+  // Ouvrir un calcul existant ou en créer un nouveau
+  const handleShowCalculation = (projectId?: string) => {
+    setCurrentProjectId(projectId || null);
     setShowCalculations(true);
   };
   
@@ -179,7 +174,11 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
         </div>
       </div>
 
-      <Tabs defaultValue="client-info" className="w-full">
+      <Tabs 
+        value={activeTab} 
+        onValueChange={setActiveTab}
+        className="w-full"
+      >
         <TabsList className="mb-6 bg-white p-1 shadow-sm rounded-md">
           <TabsTrigger value="client-info" className="flex items-center gap-1">
             <User className="h-4 w-4" />
@@ -213,7 +212,8 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
             utmCoordinates={utmCoordinates} 
             cadastralReference={cadastralReference} 
             climateZone={climateZone} 
-            loadingCadastral={loadingCadastral} 
+            loadingCadastral={loadingCadastral}
+            onShowCalculation={handleShowCalculation}
           />
         </TabsContent>
 
@@ -225,8 +225,8 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
           <CalculationsTab 
             clientId={clientId} 
             savedCalculations={savedCalculations} 
-            onOpenCalculation={openCalculation} 
-            onCreateNewCalculation={createNewCalculation} 
+            onOpenCalculation={handleShowCalculation} 
+            onCreateNewCalculation={() => handleShowCalculation()} 
           />
         </TabsContent>
 
