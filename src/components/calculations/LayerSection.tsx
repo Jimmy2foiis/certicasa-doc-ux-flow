@@ -40,6 +40,8 @@ interface LayerSectionProps {
   setVentilationType: (value: VentilationType) => void;
   ratioValue: number;
   setRatioValue: (value: number) => void;
+  onAddSouflr47?: () => void;  // Nouvelle prop pour ajouter SOUFL'R 47
+  lockVentilationType?: boolean; // Nouvelle prop pour verrouiller le type de ventilation
 }
 
 const LayerSection = ({
@@ -61,7 +63,9 @@ const LayerSection = ({
   ventilationType,
   setVentilationType,
   ratioValue,
-  setRatioValue
+  setRatioValue,
+  onAddSouflr47,
+  lockVentilationType = false
 }: LayerSectionProps) => {
   const [showBCoefficientTable, setShowBCoefficientTable] = useState(false);
   const bCoefficientTableData = getBCoefficientTableData();
@@ -89,15 +93,28 @@ const LayerSection = ({
             </>
           )}
         </div>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="h-8"
-          onClick={() => onAddLayer({ id: Date.now().toString(), name: "Sélectionnez un matériau", thickness: 10, lambda: 0.5, r: 0.02 })}
-        >
-          <Plus className="h-3.5 w-3.5 mr-1" />
-          Ajouter couche
-        </Button>
+        <div className="flex gap-2">
+          {isAfterWork && onAddSouflr47 && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-8"
+              onClick={onAddSouflr47}
+            >
+              <Plus className="h-3.5 w-3.5 mr-1" />
+              Ajouter SOUFL'R 47
+            </Button>
+          )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-8"
+            onClick={() => onAddLayer({ id: Date.now().toString(), name: "Sélectionnez un matériau", thickness: 10, lambda: 0.5, r: 0.02 })}
+          >
+            <Plus className="h-3.5 w-3.5 mr-1" />
+            Ajouter couche
+          </Button>
+        </div>
       </div>
       
       {/* RSI et RSE */}
@@ -132,16 +149,24 @@ const LayerSection = ({
           <Label htmlFor={`ventilation-${isAfterWork ? 'after' : 'before'}`}>Type de ventilation</Label>
           <Select 
             value={ventilationType}
-            onValueChange={(value: VentilationType) => setVentilationType(value)}
+            onValueChange={(value: VentilationType) => !lockVentilationType && setVentilationType(value)}
+            disabled={lockVentilationType}
           >
             <SelectTrigger id={`ventilation-${isAfterWork ? 'after' : 'before'}`}>
               <SelectValue placeholder="Sélectionner ventilation" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="caso1">Légèrement ventilé (Caso 1)</SelectItem>
-              <SelectItem value="caso2">Très ventilé (Caso 2)</SelectItem>
+              {!lockVentilationType && (
+                <SelectItem value="caso2">Très ventilé (Caso 2)</SelectItem>
+              )}
             </SelectContent>
           </Select>
+          {lockVentilationType && (
+            <p className="text-xs text-muted-foreground mt-1">
+              En après travaux, seul le Caso 1 (légèrement ventilé) est applicable.
+            </p>
+          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor={`ratio-${isAfterWork ? 'after' : 'before'}`}>Ratio Combles/Toiture: {ratioValue.toFixed(2)}</Label>

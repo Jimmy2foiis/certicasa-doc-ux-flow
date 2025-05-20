@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { predefinedMaterials, Material } from "@/data/materials";
@@ -21,6 +22,16 @@ const initialLayers: Layer[] = [
   { id: "5", name: "Enduit de plâtre", thickness: 15, lambda: 0.3, r: 0.05 }
 ];
 
+// Définition du matériau SOUFL'R 47
+const souflr47Material: Layer = {
+  id: "souflr47",
+  name: "SOUFL'R 47",
+  thickness: 259, // 259 mm = 0.259 m
+  lambda: 0.047,
+  r: 5.51, // 0.259 / 0.047 ≈ 5.51
+  isNew: true
+};
+
 const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
   const [beforeLayers, setBeforeLayers] = useState<Layer[]>(initialLayers);
   const [afterLayers, setAfterLayers] = useState<Layer[]>([
@@ -34,7 +45,8 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
   
   // Séparation des états pour les configurations avant et après
   const [ventilationBefore, setVentilationBefore] = useState<VentilationType>("caso1");
-  const [ventilationAfter, setVentilationAfter] = useState<VentilationType>("caso2");
+  // Pour l'après travaux, CASO 1 est imposé et non modifiable
+  const [ventilationAfter] = useState<VentilationType>("caso1");
   
   const [ratioBefore, setRatioBefore] = useState(0.85);
   const [ratioAfter, setRatioAfter] = useState(0.85);
@@ -44,6 +56,27 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
   
   const [rsiAfter, setRsiAfter] = useState("0.10");
   const [rseAfter, setRseAfter] = useState("0.10");
+  
+  // Synchronisation des couches "avant travaux" vers "après travaux"
+  useEffect(() => {
+    setAfterLayers(prevAfterLayers => {
+      // Pour chaque modification dans beforeLayers, on met à jour afterLayers
+      // tout en préservant les couches spécifiques à afterLayers
+      const existingBeforeLayerIds = new Set(beforeLayers.map(layer => layer.id));
+      
+      // On conserve les couches spécifiques à afterLayers (celles qui n'existaient pas dans beforeLayers)
+      const specificAfterLayers = prevAfterLayers.filter(
+        layer => !layer.id.startsWith("1") && 
+                !layer.id.startsWith("2") && 
+                !layer.id.startsWith("3") && 
+                !layer.id.startsWith("4") && 
+                !layer.id.startsWith("5")
+      );
+      
+      // On fusionne les couches de beforeLayers avec les couches spécifiques à afterLayers
+      return [...beforeLayers, ...specificAfterLayers];
+    });
+  }, [beforeLayers]);
   
   // Calculate ratios automatically when surface areas change
   useEffect(() => {
@@ -105,6 +138,15 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
     } else {
       setAfterLayers([...afterLayers, newLayer]);
     }
+  };
+  
+  // Fonction spécifique pour ajouter le matériau SOUFL'R 47
+  const addSouflr47 = () => {
+    const newSouflr = {
+      ...souflr47Material,
+      id: Date.now().toString()
+    };
+    setAfterLayers([...afterLayers, newSouflr]);
   };
   
   const updateLayer = (layerSet: "before" | "after", updatedLayer: Layer) => {
@@ -181,9 +223,11 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
               rse={rseAfter}
               setRse={setRseAfter}
               ventilationType={ventilationAfter}
-              setVentilationType={setVentilationAfter}
+              setVentilationType={() => {}} // Fonction vide car non modifiable en après travaux
               ratioValue={ratioAfter}
               setRatioValue={setRatioAfter}
+              onAddSouflr47={addSouflr47} // Nouvelle prop pour ajouter SOUFL'R 47
+              lockVentilationType={true} // Nouvelle prop pour verrouiller le type de ventilation
             />
           </CardContent>
         </Card>
