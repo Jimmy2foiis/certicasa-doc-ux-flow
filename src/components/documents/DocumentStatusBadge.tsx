@@ -1,3 +1,4 @@
+
 import { Badge } from "@/components/ui/badge";
 import { DocumentStatus } from "@/models/documents";
 
@@ -13,58 +14,58 @@ const DocumentStatusBadge = ({ status, customLabel }: DocumentStatusBadgeProps) 
         return { 
           label: customLabel || "Généré", 
           variant: "success" as const,
-          emoji: "🟢"
+          icon: "✓"
         };
       case "ready":
         return { 
           label: customLabel || "Prêt à générer", 
           variant: "default" as const,
-          emoji: "🔵"
+          icon: "→"
         };
       case "pending":
         return { 
           label: customLabel || "En attente", 
           variant: "outline" as const,
-          emoji: "🟡"
+          icon: "⏱"
         };
       case "missing":
         return { 
           label: customLabel || "Manquant", 
           variant: "outline" as const,
-          emoji: "⚪️"
+          icon: "○"
         };
       case "action-required":
         return { 
           label: customLabel || "Action requise", 
           variant: "outline" as const,
-          emoji: "🟠"
+          icon: "!"
         };
       case "error":
         return { 
           label: customLabel || "Erreur", 
           variant: "destructive" as const,
-          emoji: "🔴"
+          icon: "✗"
         };
       case "linked":
         return { 
           label: customLabel || "Fichier lié", 
           variant: "success" as const,
-          emoji: "🟢"
+          icon: "✓"
         };
       default:
         return { 
           label: "Inconnu", 
           variant: "outline" as const,
-          emoji: "⚪️"
+          icon: "?"
         };
     }
   };
 
-  const { label, variant, emoji } = getStatusDetails(status);
+  const { label, variant, icon } = getStatusDetails(status);
 
   return (
-    <Badge variant={variant} className="flex items-center gap-1.5">
-      <span>{emoji}</span>
+    <Badge variant={variant} className="flex items-center gap-1.5 font-normal">
+      <span>{icon}</span>
       <span>{label}</span>
     </Badge>
   );

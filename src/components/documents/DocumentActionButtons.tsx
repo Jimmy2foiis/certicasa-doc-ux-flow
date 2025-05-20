@@ -72,56 +72,56 @@ const DocumentActionButtons = ({ documentType, status, onAction }: DocumentActio
     switch (action) {
       case "view":
         return (
-          <Button key="view" variant="ghost" size="sm" onClick={() => onAction("view")}>
-            <Eye className="h-4 w-4 mr-1" /> Voir
+          <Button key="view" variant="outline" size="sm" className="h-8" onClick={() => onAction("view")}>
+            <Eye className="h-3.5 w-3.5 mr-1" /> Voir
           </Button>
         );
       case "download":
         return (
-          <Button key="download" variant="ghost" size="sm" onClick={() => onAction("download")}>
-            <Download className="h-4 w-4 mr-1" /> Télécharger
+          <Button key="download" variant="outline" size="sm" className="h-8" onClick={() => onAction("download")}>
+            <Download className="h-3.5 w-3.5 mr-1" /> Télécharger
           </Button>
         );
       case "generate":
         return (
-          <Button key="generate" variant="default" size="sm" onClick={() => onAction("generate")}>
-            <FileText className="h-4 w-4 mr-1" /> Générer
+          <Button key="generate" variant="default" size="sm" className="h-8" onClick={() => onAction("generate")}>
+            <FileText className="h-3.5 w-3.5 mr-1" /> Générer
           </Button>
         );
       case "regenerate":
         return (
-          <Button key="regenerate" variant="default" size="sm" onClick={() => onAction("regenerate")}>
-            <RefreshCw className="h-4 w-4 mr-1" /> Régénérer
+          <Button key="regenerate" variant="default" size="sm" className="h-8" onClick={() => onAction("regenerate")}>
+            <RefreshCw className="h-3.5 w-3.5 mr-1" /> Régénérer
           </Button>
         );
       case "refresh-ocr":
         return (
-          <Button key="refresh-ocr" variant="outline" size="sm" onClick={() => onAction("refresh-ocr")}>
-            <RefreshCcw className="h-4 w-4 mr-1" /> MàJ OCR
+          <Button key="refresh-ocr" variant="ghost" size="sm" className="h-8" onClick={() => onAction("refresh-ocr")}>
+            <RefreshCcw className="h-3.5 w-3.5 mr-1" /> MàJ OCR
           </Button>
         );
       case "update-cee":
         return (
-          <Button key="update-cee" variant="outline" size="sm" onClick={() => onAction("update-cee")}>
-            <RefreshCcw className="h-4 w-4 mr-1" /> MàJ CEE
+          <Button key="update-cee" variant="ghost" size="sm" className="h-8" onClick={() => onAction("update-cee")}>
+            <RefreshCcw className="h-3.5 w-3.5 mr-1" /> MàJ CEE
           </Button>
         );
       case "link-files":
         return (
-          <Button key="link-files" variant="outline" size="sm" onClick={() => onAction("link-files")}>
-            <Link className="h-4 w-4 mr-1" /> Lier Fichiers
+          <Button key="link-files" variant="outline" size="sm" className="h-8" onClick={() => onAction("link-files")}>
+            <Link className="h-3.5 w-3.5 mr-1" /> Lier Fichiers
           </Button>
         );
       case "link-photos":
         return (
-          <Button key="link-photos" variant="outline" size="sm" onClick={() => onAction("link-photos")}>
-            <Plus className="h-4 w-4 mr-1" /> Ajouter Photos
+          <Button key="link-photos" variant="outline" size="sm" className="h-8" onClick={() => onAction("link-photos")}>
+            <Plus className="h-3.5 w-3.5 mr-1" /> Ajouter Photos
           </Button>
         );
       case "link-dni":
         return (
-          <Button key="link-dni" variant="outline" size="sm" onClick={() => onAction("link-dni")}>
-            <Link className="h-4 w-4 mr-1" /> Lier DNI
+          <Button key="link-dni" variant="outline" size="sm" className="h-8" onClick={() => onAction("link-dni")}>
+            <Link className="h-3.5 w-3.5 mr-1" /> Lier DNI
           </Button>
         );
       default:

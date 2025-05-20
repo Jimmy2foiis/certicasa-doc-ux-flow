@@ -28,9 +28,9 @@ const DocumentsTabContent = ({ clientId, clientName = "Client", projectType = "R
   }, [projectType, updateProjectType]);
 
   return (
-    <Card>
+    <Card className="shadow-sm">
       <DocumentsCardHeader clientName={clientName} projectType={projectType} />
-      <CardContent>
+      <CardContent className="pt-6">
         <DocumentsTable 
           documents={adminDocuments} 
           onDocumentAction={handleDocumentAction} 
