@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, ArrowRight } from "lucide-react";
+import { Plus, ArrowRight, Table as TableIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import LayerRow from "./LayerRow";
 import { Material } from "@/data/materials";
@@ -66,7 +66,12 @@ const LayerSection = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
         <div className="flex items-center flex-wrap">
           <h3 className="font-medium">{title}</h3>
-          <Badge variant="outline" className="ml-2 cursor-pointer" onClick={() => setShowBCoefficientTable(!showBCoefficientTable)}>
+          <Badge 
+            variant="outline" 
+            className="ml-2 cursor-pointer flex items-center gap-1" 
+            onClick={() => setShowBCoefficientTable(!showBCoefficientTable)}
+          >
+            <TableIcon className="h-3 w-3" />
             Coefficient B: {bCoefficient.toFixed(2)}
           </Badge>
           {showImprovement && (
@@ -131,7 +136,7 @@ const LayerSection = ({
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor={`ratio-${isAfterWork ? 'after' : 'before'}`}>Ratio Ah-nh / Anh-e</Label>
+          <Label htmlFor={`ratio-${isAfterWork ? 'after' : 'before'}`}>Ratio Combles/Toiture: {ratioValue.toFixed(2)}</Label>
           <Input
             id={`ratio-${isAfterWork ? 'after' : 'before'}`}
             value={ratioValue.toString()}
@@ -148,8 +153,10 @@ const LayerSection = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Ratio Ah-nh/Anh-e</TableHead>
-                <TableHead>Coefficient B {isAfterWork ? "(après)" : "(avant)"}</TableHead>
+                <TableHead>Ratio Combles/Toiture</TableHead>
+                <TableHead>
+                  Coefficient B {isAfterWork ? "(après)" : "(avant)"} - {ventilationType === "caso1" ? "Légèrement ventilé" : "Très ventilé"}
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -179,7 +186,7 @@ const LayerSection = ({
           <TableHeader>
             <TableRow>
               <TableHead>Matériau</TableHead>
-              <TableHead className="w-[120px]">Épaisseur (mm)</TableHead>
+              <TableHead className="w-[200px]">Épaisseur (mm)</TableHead>
               <TableHead className="w-[120px]">λ (W/mK)</TableHead>
               <TableHead className="w-[120px]">R (m²K/W)</TableHead>
               <TableHead className="w-[80px]"></TableHead>

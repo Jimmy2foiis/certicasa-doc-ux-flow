@@ -59,3 +59,8 @@ export const getBCoefficientTableData = () => {
     caso2AfterWork: item.caso2AfterWork.toFixed(2)
   }));
 };
+
+export const calculateRatioFromAreas = (comblesArea: number, toitureArea: number): number => {
+  if (!toitureArea || toitureArea <= 0) return 0;
+  return comblesArea / toitureArea;
+};

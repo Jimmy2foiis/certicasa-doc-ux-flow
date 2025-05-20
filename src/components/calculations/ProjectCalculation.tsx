@@ -1,8 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { predefinedMaterials, Material } from "@/data/materials";
-import { calculateBCoefficient, calculateThermalResistance, calculateUValue, VentilationType } from "@/utils/calculationUtils";
+import { calculateBCoefficient, calculateThermalResistance, calculateUValue, VentilationType, calculateRatioFromAreas } from "@/utils/calculationUtils";
 import ProjectInfo from "./ProjectInfo";
 import LayerSection from "./LayerSection";
 
@@ -45,6 +45,18 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
   
   const [rsiAfter, setRsiAfter] = useState("0.10");
   const [rseAfter, setRseAfter] = useState("0.10");
+  
+  // Calculate ratios automatically when surface areas change
+  useEffect(() => {
+    const comblesArea = parseFloat(surfaceArea);
+    const toitureArea = parseFloat(roofArea);
+    
+    if (!isNaN(comblesArea) && !isNaN(toitureArea) && toitureArea > 0) {
+      const calculatedRatio = calculateRatioFromAreas(comblesArea, toitureArea);
+      setRatioBefore(calculatedRatio);
+      setRatioAfter(calculatedRatio);
+    }
+  }, [surfaceArea, roofArea]);
   
   // Calcul du coefficient B avant
   const bCoefficientBefore = calculateBCoefficient({

@@ -34,6 +34,7 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
   };
   
   const rValue = calculateR();
+  const thicknessInMeters = parseFloat(thickness) / 1000;
 
   // Mise à jour du matériau sélectionné
   const handleMaterialSelect = (materialId: string) => {
@@ -95,12 +96,15 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
         </Select>
       </TableCell>
       <TableCell>
-        <Input
-          type="number"
-          value={thickness}
-          onChange={(e) => handleUpdate("thickness", e.target.value)}
-          className="h-8"
-        />
+        <div className="flex items-center space-x-2">
+          <Input
+            type="number"
+            value={thickness}
+            onChange={(e) => handleUpdate("thickness", e.target.value)}
+            className="h-8"
+          />
+          <span className="text-xs text-gray-500">({thicknessInMeters.toFixed(3)} m)</span>
+        </div>
       </TableCell>
       <TableCell>
         <Input
