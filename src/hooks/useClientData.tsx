@@ -1,8 +1,10 @@
+
 import { useState, useEffect, useCallback } from "react";
-import { clientsData } from "@/data/mock";
+import { clientsData } from "@/data/mock"; // Nous utiliserons temporairement les données mock pendant la migration
 import { useCadastralData } from "@/hooks/useCadastralData";
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
 import { useToast } from "@/components/ui/use-toast";
+import { saveCadastralData, getCadastralDataForClient } from "@/services/supabaseService";
 
 interface SavedCalculation {
   id: string;
@@ -67,13 +69,23 @@ export const useClientData = (clientId: string) => {
     setCoordinates(newCoordinates);
   }, []);
   
-  // Fonction pour rafraîchir les données cadastrales
+  // Fonction pour rafraîchir les données cadastrales et les sauvegarder dans Supabase
   const handleRefreshCadastralData = useCallback(async () => {
     try {
       await refreshCadastralData();
+      
+      // Sauvegarder les nouvelles données dans Supabase
+      if (utmCoordinates || cadastralReference || climateZone) {
+        await saveCadastralData(clientId, {
+          utmCoordinates,
+          cadastralReference,
+          climateZone
+        });
+      }
+      
       toast({
         title: "Données cadastrales rafraîchies",
-        description: "Les données cadastrales ont été mises à jour avec succès.",
+        description: "Les données cadastrales ont été mises à jour avec succès et sauvegardées dans la base de données.",
         duration: 3000,
       });
     } catch (error) {
@@ -85,9 +97,9 @@ export const useClientData = (clientId: string) => {
         duration: 5000,
       });
     }
-  }, [refreshCadastralData, toast]);
+  }, [refreshCadastralData, toast, clientId, utmCoordinates, cadastralReference, climateZone]);
 
-  // Charger les calculs sauvegardés au montage du composant
+  // Charger les calculs sauvegardés et les données cadastrales au montage du composant
   useEffect(() => {
     loadSavedCalculations();
     
@@ -95,6 +107,20 @@ export const useClientData = (clientId: string) => {
     if (client) {
       setClientAddress((client as any).address || "Rue Serrano 120, 28006 Madrid");
     }
+    
+    // Récupérer les données cadastrales existantes depuis Supabase
+    const loadCadastralDataFromSupabase = async () => {
+      try {
+        const supabaseData = await getCadastralDataForClient(clientId);
+        if (supabaseData) {
+          console.log("Données cadastrales chargées depuis Supabase:", supabaseData);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des données cadastrales depuis Supabase:", error);
+      }
+    };
+    
+    loadCadastralDataFromSupabase();
   }, [clientId, client, loadSavedCalculations]);
 
   // Afficher les erreurs cadastrales dans un toast
