@@ -1,5 +1,5 @@
 
-import { User, Mail, Phone, Building, FileText, Calendar } from "lucide-react";
+import { User, Mail, Phone, Building, FileText, Calendar, MapPinned, FileSpreadsheet, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AddressSearch from "./AddressSearch";
 
@@ -90,8 +90,6 @@ const CadastralInfo = ({
   climateZone: string;
   loadingCadastral: boolean;
 }) => {
-  const { MapPinned, FileSpreadsheet, MapPin } = require("lucide-react");
-  
   return (
     <div className="space-y-2 mt-4 border-t pt-4">
       <div className="flex">
