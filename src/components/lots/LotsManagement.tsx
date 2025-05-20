@@ -1,263 +1,253 @@
 
-import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Table, 
+  TableBody, 
+  TableCell, 
+  TableHead, 
+  TableHeader, 
+  TableRow 
 } from "@/components/ui/table";
-import {
+import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
 import { 
-  Search, 
-  Plus, 
-  Eye, 
-  Download, 
-  MoreHorizontal, 
-  Edit, 
-  ChevronDown,
-  Users,
-  Upload
-} from "lucide-react";
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogFooter, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
+import { FileText, MoreVertical, Plus, Search, Download } from "lucide-react";
+import { useState } from "react";
 
-// Données fictives pour les lots
-const lotsData = [
+// Définition des types
+type LotStatus = "preparation" | "envoye" | "validation" | "valide" | "rejete";
+
+interface Lot {
+  id: string;
+  nom: string;
+  delegataire: string;
+  nbClients: number;
+  dateDepot: string;
+  status: LotStatus;
+}
+
+// Données de démonstration
+const mockLots: Lot[] = [
   {
     id: "lot-001",
-    name: "Lot Paris Mai 2025",
+    nom: "Lot Madrid Centre",
     delegataire: "Eiffage",
-    nombreClients: 12,
-    dateDépôt: "15/05/2025",
-    statut: "En validation",
+    nbClients: 5,
+    dateDepot: "2025-04-15",
+    status: "validation"
   },
   {
     id: "lot-002",
-    name: "Lot Lyon Avril 2025",
+    nom: "Lot Barcelone Sud",
     delegataire: "Certinergie",
-    nombreClients: 8,
-    dateDépôt: "28/04/2025",
-    statut: "Validé",
+    nbClients: 8,
+    dateDepot: "2025-04-10",
+    status: "envoye"
   },
   {
     id: "lot-003",
-    name: "Lot Marseille Mars 2025",
+    nom: "Lot Séville Est",
     delegataire: "Eiffage",
-    nombreClients: 15,
-    dateDépôt: "10/03/2025",
-    statut: "Rejeté",
+    nbClients: 3,
+    dateDepot: "2025-04-05",
+    status: "valide"
   },
   {
     id: "lot-004",
-    name: "Lot Bordeaux Mai 2025",
+    nom: "Lot Valence Ouest",
     delegataire: "Certinergie",
-    nombreClients: 6,
-    dateDépôt: "05/05/2025",
-    statut: "En préparation",
+    nbClients: 6,
+    dateDepot: "2025-04-01",
+    status: "rejete"
   },
   {
     id: "lot-005",
-    name: "Lot Lille Avril 2025",
+    nom: "Lot Madrid Nord",
     delegataire: "Eiffage",
-    nombreClients: 9,
-    dateDépôt: "20/04/2025",
-    statut: "Envoyé",
+    nbClients: 4,
+    dateDepot: "2025-03-28",
+    status: "preparation"
   }
 ];
 
+// Fonction pour obtenir la couleur et le texte selon le statut
+const getStatusBadge = (status: LotStatus) => {
+  switch (status) {
+    case "preparation":
+      return { color: "gray", label: "En préparation" };
+    case "envoye":
+      return { color: "blue", label: "Envoyé" };
+    case "validation":
+      return { color: "yellow", label: "En validation" };
+    case "valide":
+      return { color: "green", label: "Validé" };
+    case "rejete":
+      return { color: "red", label: "Rejeté" };
+  }
+};
+
 const LotsManagement = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  
-  const filteredLots = lotsData.filter(lot => 
-    lot.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    lot.delegataire.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-  
-  const getStatusBadgeVariant = (statut: string) => {
-    switch (statut) {
-      case "En préparation":
-        return "outline";
-      case "Envoyé":
-        return "default";
-      case "En validation":
-        return "secondary";
-      case "Validé":
-        return "success";
-      case "Rejeté":
-        return "destructive";
-      default:
-        return "outline";
+  const [search, setSearch] = useState("");
+  const [filteredLots, setFilteredLots] = useState<Lot[]>(mockLots);
+
+  const handleSearch = (term: string) => {
+    setSearch(term);
+    if (!term.trim()) {
+      setFilteredLots(mockLots);
+      return;
     }
+    
+    const filtered = mockLots.filter(lot => 
+      lot.nom.toLowerCase().includes(term.toLowerCase()) ||
+      lot.delegataire.toLowerCase().includes(term.toLowerCase())
+    );
+    setFilteredLots(filtered);
   };
-  
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 className="text-2xl font-bold">Dépôt des Lots</h1>
-        <Button className="bg-green-600 hover:bg-green-700">
-          <Plus className="mr-2 h-4 w-4" />
-          Nouveau Lot
-        </Button>
-      </div>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Gestion des lots déposés</CardTitle>
-          <CardDescription>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold">Dépôt des Lots</h1>
+          <p className="text-gray-500">
             Gérez les lots de projets déposés auprès des délégataires CAE
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-          <div className="flex flex-col md:flex-row justify-between mb-6 gap-4">
-            <div className="relative max-w-md">
+          </p>
+        </div>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau Lot
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Créer un nouveau lot</DialogTitle>
+              <DialogDescription>
+                Entrez les détails du nouveau lot à déposer auprès d'un délégataire.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">
+                  Nom
+                </Label>
+                <Input id="name" className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="delegataire" className="text-right">
+                  Délégataire
+                </Label>
+                <Select>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Sélectionner un délégataire" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="eiffage">Eiffage</SelectItem>
+                    <SelectItem value="certinergie">Certinergie</SelectItem>
+                    <SelectItem value="autre">Autre</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit">Créer lot</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-center">
+            <CardTitle>Lots de Projets</CardTitle>
+            <div className="relative w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
               <Input
                 type="search"
                 placeholder="Rechercher un lot..."
-                className="pl-9 w-full max-w-sm"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 w-full rounded-md border-gray-300"
+                value={search}
+                onChange={(e) => handleSearch(e.target.value)}
               />
             </div>
-            <div className="flex space-x-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center">
-                    Délégataire
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem>Tous</DropdownMenuItem>
-                  <DropdownMenuItem>Eiffage</DropdownMenuItem>
-                  <DropdownMenuItem>Certinergie</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="flex items-center">
-                    Statut
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem>Tous</DropdownMenuItem>
-                  <DropdownMenuItem>En préparation</DropdownMenuItem>
-                  <DropdownMenuItem>Envoyé</DropdownMenuItem>
-                  <DropdownMenuItem>En validation</DropdownMenuItem>
-                  <DropdownMenuItem>Validé</DropdownMenuItem>
-                  <DropdownMenuItem>Rejeté</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
           </div>
-
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom du lot</TableHead>
-                  <TableHead>Délégataire</TableHead>
-                  <TableHead>Clients</TableHead>
-                  <TableHead>Date dépôt</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredLots.map((lot) => (
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nom du lot</TableHead>
+                <TableHead>Délégataire</TableHead>
+                <TableHead className="text-center">Clients</TableHead>
+                <TableHead className="text-center">Date dépôt</TableHead>
+                <TableHead className="text-center">Statut</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredLots.map((lot) => {
+                const statusBadge = getStatusBadge(lot.status);
+                return (
                   <TableRow key={lot.id}>
-                    <TableCell className="font-medium">{lot.name}</TableCell>
+                    <TableCell className="font-medium">{lot.nom}</TableCell>
                     <TableCell>{lot.delegataire}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-2 text-gray-500" />
-                        {lot.nombreClients}
-                      </div>
+                    <TableCell className="text-center">{lot.nbClients}</TableCell>
+                    <TableCell className="text-center">
+                      {new Date(lot.dateDepot).toLocaleDateString('fr-FR')}
                     </TableCell>
-                    <TableCell>{lot.dateDépôt}</TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusBadgeVariant(lot.statut)}>
-                        {lot.statut}
+                    <TableCell className="text-center">
+                      <Badge variant={statusBadge.color as any}>
+                        {statusBadge.label}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end space-x-2">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem className="flex items-center">
-                              <Users className="mr-2 h-4 w-4" />
-                              <span>Gérer les clients</span>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem className="flex items-center">
-                              <Upload className="mr-2 h-4 w-4" />
-                              <span>Changer le statut</span>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem className="cursor-pointer">
+                            <FileText className="mr-2 h-4 w-4" />
+                            <span>Voir détails</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer">
+                            <Download className="mr-2 h-4 w-4" />
+                            <span>Exporter ZIP</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Instructions pour les délégataires</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="p-4 bg-blue-50 rounded-md">
-              <h3 className="font-medium text-blue-800">Processus de validation</h3>
-              <p className="text-sm text-blue-700 mt-1">
-                Les lots soumis aux délégataires CAE suivent un processus de validation en 5 étapes :
-                En préparation → Envoyé → En validation → Validé/Rejeté
-              </p>
-            </div>
-            
-            <div className="p-4 bg-amber-50 rounded-md">
-              <h3 className="font-medium text-amber-800">⚠️ Attention</h3>
-              <p className="text-sm text-amber-700 mt-1">
-                Le statut des clients est automatiquement synchronisé avec celui de leur lot.
-                Si un lot est rejeté, tous les clients du lot seront marqués en statut "Rejeté".
-              </p>
-            </div>
-          </div>
+                );
+              })}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>
