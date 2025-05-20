@@ -9,9 +9,10 @@ import CalculationHandler from "./CalculationHandler";
 interface ClientDetailsViewProps {
   clientId: string;
   onBack: () => void;
+  onClientUpdated?: () => void;
 }
 
-const ClientDetailsView = ({ clientId, onBack }: ClientDetailsViewProps) => {
+const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsViewProps) => {
   const { 
     client, 
     clientAddress, 
@@ -95,7 +96,9 @@ const ClientDetailsView = ({ clientId, onBack }: ClientDetailsViewProps) => {
         onBack={onBack} 
         clientId={clientId} 
         clientName={client.name}
+        client={client}
         onDocumentGenerated={handleDocumentGenerated}
+        onClientUpdated={onClientUpdated}
       />
 
       <ClientDetailsTabs 

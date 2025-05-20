@@ -17,11 +17,31 @@ export const ClientTabsContainer = ({ onShowCalculation }: ClientTabsContainerPr
   return (
     <Card>
       <Tabs defaultValue="projects" onValueChange={setCurrentTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="projects">Projets</TabsTrigger>
-          <TabsTrigger value="calculations">Calculs</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="signatures">Signatures</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 bg-muted/20">
+          <TabsTrigger 
+            value="projects" 
+            className={`${currentTab === "projects" ? "bg-primary text-primary-foreground" : ""} transition-all`}
+          >
+            Projets
+          </TabsTrigger>
+          <TabsTrigger 
+            value="calculations" 
+            className={`${currentTab === "calculations" ? "bg-primary text-primary-foreground" : ""} transition-all`}
+          >
+            Calculs
+          </TabsTrigger>
+          <TabsTrigger 
+            value="documents" 
+            className={`${currentTab === "documents" ? "bg-primary text-primary-foreground" : ""} transition-all`}
+          >
+            Documents
+          </TabsTrigger>
+          <TabsTrigger 
+            value="signatures" 
+            className={`${currentTab === "signatures" ? "bg-primary text-primary-foreground" : ""} transition-all`}
+          >
+            Signatures
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="projects" className="p-4">

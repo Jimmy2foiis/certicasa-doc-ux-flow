@@ -8,7 +8,21 @@ interface ClientDetailsProps {
 }
 
 const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
-  return <ClientDetailsView clientId={clientId} onBack={onBack} />;
+  const [refreshData, setRefreshData] = useState(0);
+  
+  // Fonction pour déclencher un rafraîchissement des données
+  const handleClientUpdated = () => {
+    setRefreshData(prev => prev + 1);
+  };
+  
+  return (
+    <ClientDetailsView 
+      clientId={clientId} 
+      onBack={onBack} 
+      key={`client-view-${refreshData}`} 
+      onClientUpdated={handleClientUpdated}
+    />
+  );
 };
 
 export default ClientDetails;
