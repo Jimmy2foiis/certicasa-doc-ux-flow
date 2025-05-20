@@ -12,7 +12,7 @@ export interface GeoCoordinates {
 
 /**
  * Conversion de l'adresse en coordonnées géographiques via Google Maps Geocoding
- * Optimisé pour les adresses espagnoles
+ * Optimisé pour les adresses espagnoles avec la dernière version de l'API
  */
 export const getCoordinatesFromAddress = async (address: string): Promise<GeoCoordinates | null> => {
   try {
@@ -29,6 +29,7 @@ export const getCoordinatesFromAddress = async (address: string): Promise<GeoCoo
     console.log(`Adresse normalisée pour géocodage: ${normalizedAddress}`);
     
     // Options de géocodage avec restriction au pays (Espagne)
+    // Utilisation des options recommandées dans la dernière documentation Google
     const geocodingOptions = {
       address: normalizedAddress,
       region: 'es', // Code de région pour l'Espagne

@@ -29,6 +29,10 @@ interface UseGoogleMapsAutocompleteResult {
   initAutocomplete: () => void;
 }
 
+/**
+ * Hook personnalisé pour l'autocomplétion d'adresses avec l'API Google Maps Places
+ * Utilise la dernière version de l'API Google Maps Autocomplete
+ */
 export const useGoogleMapsAutocomplete = ({
   inputRef,
   initialAddress,
@@ -53,7 +57,8 @@ export const useGoogleMapsAutocomplete = ({
         inputRef.current,
         { 
           types: ['address'],
-          componentRestrictions: { country: 'es' } // Restreindre aux adresses espagnoles
+          componentRestrictions: { country: 'es' }, // Restreindre aux adresses espagnoles
+          fields: ['formatted_address', 'geometry', 'place_id'] // Optimisation pour ne récupérer que les champs nécessaires
         }
       );
       
@@ -122,7 +127,7 @@ export const useGoogleMapsAutocomplete = ({
       if (!document.getElementById('google-maps-script')) {
         const script = document.createElement('script');
         script.id = 'google-maps-script';
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGoogleMapsAutocomplete`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGoogleMapsAutocomplete&v=weekly`;
         script.async = true;
         script.defer = true;
         
@@ -150,6 +155,7 @@ export const useGoogleMapsAutocomplete = ({
       
       // Nettoyer la fonction globale
       delete window.gm_authFailure;
+      delete window.initGoogleMapsAutocomplete;
     };
   }, [initAutocomplete, toast]);
 

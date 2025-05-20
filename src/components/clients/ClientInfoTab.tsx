@@ -23,7 +23,7 @@ interface ClientInfoTabProps {
   loadingCadastral: boolean;
   onShowCalculation?: (projectId?: string) => void;
   onAddressChange?: (newAddress: string) => void;
-  onCoordinatesChange?: (coordinates: GeoCoordinates) => void; // Nouvelle prop pour les coordonnées
+  onCoordinatesChange?: (coordinates: GeoCoordinates) => void; // Prop pour les coordonnées
 }
 
 const ClientInfoTab = ({ 

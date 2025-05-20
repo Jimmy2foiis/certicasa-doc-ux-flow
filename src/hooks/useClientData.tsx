@@ -28,10 +28,10 @@ export const useClientData = (clientId: string) => {
     client ? (client as any).address || "Rue Serrano 120, 28006 Madrid" : ""
   );
   
-  // État pour stocker les coordonnées
+  // État pour stocker les coordonnées (priorisées pour la récupération des données cadastrales)
   const [coordinates, setCoordinates] = useState<GeoCoordinates | undefined>(undefined);
   
-  // Utiliser les coordonnées directes si disponibles
+  // Utiliser les coordonnées directes si disponibles (méthode recommandée pour plus de précision)
   const { utmCoordinates, cadastralReference, climateZone, isLoading: loadingCadastral } = useCadastralData(
     clientAddress, 
     coordinates, 
@@ -53,7 +53,7 @@ export const useClientData = (clientId: string) => {
     }
   };
   
-  // Mettre à jour les coordonnées
+  // Mettre à jour les coordonnées (obtenues via Google Maps Geocoding API)
   const setClientCoordinates = (newCoordinates: GeoCoordinates) => {
     console.log("Mise à jour des coordonnées client:", newCoordinates);
     setCoordinates(newCoordinates);

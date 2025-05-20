@@ -7,6 +7,9 @@ interface AddressInputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   isLoading?: boolean;
 }
 
+/**
+ * Composant d'entrée d'adresse réutilisable avec icône et indicateur de chargement
+ */
 export const AddressInput = forwardRef<HTMLInputElement, AddressInputProps>(
   ({ isLoading, ...props }, ref) => {
     return (

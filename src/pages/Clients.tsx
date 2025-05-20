@@ -9,10 +9,10 @@ const Clients = () => {
   const { toast } = useToast();
   
   useEffect(() => {
-    // Afficher une notification concernant l'intégration de l'API Catastro
+    // Afficher une notification concernant l'intégration de l'API Catastro et Google Maps
     toast({
-      title: "API Catastro Español",
-      description: "L'application est maintenant connectée à l'API officielle du Catastro Español pour récupérer les données cadastrales authentiques basées sur l'adresse.",
+      title: "API Catastro & Google Maps",
+      description: "L'application utilise la dernière version de Google Maps Geocoding API pour géolocaliser les adresses et l'API du Catastro Español pour les données cadastrales.",
       duration: 8000,
     });
   }, [toast]);

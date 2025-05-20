@@ -46,6 +46,7 @@ export const useCadastralData = (
         let cadastralInfo: CatastroData;
 
         // Si on a des coordonnées directes et l'option est activée, on les utilise directement
+        // Cette approche est plus fiable car elle évite une étape de géocodage supplémentaire
         if (coordinates && useDirectCoordinates) {
           console.log('Récupération des données cadastrales avec coordonnées directes:', coordinates);
           cadastralInfo = await getCadastralInfoFromCoordinates(coordinates.lat, coordinates.lng);

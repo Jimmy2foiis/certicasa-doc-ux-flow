@@ -12,6 +12,11 @@ interface AddressSearchProps {
   onCoordinatesChange?: (coordinates: GeoCoordinates) => void;
 }
 
+/**
+ * Composant de recherche d'adresse avec autocomplétion Google Maps
+ * Ce composant gère l'interaction avec l'API Google Maps et transmet les coordonnées 
+ * géographiques obtenues au parent pour mise à jour des données cadastrales
+ */
 const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }: AddressSearchProps) => {
   const [address, setAddress] = useState(initialAddress);
   const [isEditing, setIsEditing] = useState(false);
@@ -21,6 +26,7 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
   const handleAddressSelected = (selectedAddress: string) => {
     setAddress(selectedAddress);
     setIsEditing(false);
+    onAddressChange(selectedAddress);
   };
   
   // Utiliser notre hook personnalisé pour Google Maps
@@ -28,10 +34,15 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
     inputRef,
     initialAddress,
     onAddressSelected: handleAddressSelected,
-    onCoordinatesSelected: onCoordinatesChange
+    onCoordinatesSelected: (coords) => {
+      if (onCoordinatesChange) {
+        onCoordinatesChange(coords);
+        console.log("Coordonnées transmises au parent:", coords);
+      }
+    }
   });
   
-  // Corrected: Using useEffect instead of useState to update address when initialAddress changes
+  // Mettre à jour l'adresse affichée quand initialAddress change
   useEffect(() => {
     if (!isEditing) {
       setAddress(initialAddress);
