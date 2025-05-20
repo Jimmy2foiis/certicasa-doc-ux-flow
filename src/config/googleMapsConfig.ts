@@ -1,22 +1,17 @@
 
 /**
- * Configuration for Google Maps API
+ * Configuration de l'API Google Maps
  */
 
-// Google Maps API key - this is a publishable key so it's safe to be in the code
-export const GOOGLE_MAPS_API_KEY = "AIzaSyBoHmcKb2Bgf1PUxNTnsTAjMa0RgYx-HoQ";
+// La clé API est stockée dans les variables d'environnement
+export const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
-// Google Maps script loading configuration
-export const GOOGLE_MAPS_SCRIPT_CONFIG = {
-  url: `https://maps.googleapis.com/maps/api/js`,
-  libraries: ['places'],
-  version: 'weekly',
-  callback: 'initGoogleMapsAutocomplete',
+// Options par défaut pour l'autocomplétion
+export const DEFAULT_AUTOCOMPLETE_OPTIONS = {
+  componentRestrictions: { country: 'es' }, // Limiter aux adresses en Espagne
+  fields: ['address_components', 'formatted_address', 'geometry', 'name'],
+  types: ['address']
 };
 
-// Autocomplete configuration
-export const AUTOCOMPLETE_OPTIONS = {
-  types: ['address'],
-  componentRestrictions: { country: 'es' }, // Spain only
-  fields: ['formatted_address', 'geometry', 'place_id', 'address_components']
-};
+// Durée du cache pour les résultats de géocodage (en ms)
+export const GEOCODING_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 heures
