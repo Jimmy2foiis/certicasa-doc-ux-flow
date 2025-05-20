@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { clientsData } from "@/data/mock";
 import { useCadastralData } from "@/hooks/useCadastralData";
@@ -44,8 +43,7 @@ export const useClientData = (clientId: string) => {
     refreshData: refreshCadastralData
   } = useCadastralData(
     clientAddress, 
-    coordinates, 
-    { useDirectCoordinates: !!coordinates }
+    coordinates
   );
 
   // Fonction pour récupérer les calculs sauvegardés du localStorage
