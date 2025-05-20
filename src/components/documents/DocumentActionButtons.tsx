@@ -1,7 +1,7 @@
 
 import { Eye, Download, RefreshCw, RefreshCcw, Link, FileText, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DocumentStatus } from "./DocumentStatusBadge";
+import { DocumentStatus } from "@/models/documents";
 
 type ActionType = 
   | "view" 
