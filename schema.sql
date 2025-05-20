@@ -70,21 +70,60 @@ CREATE TABLE IF NOT EXISTS documents (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
--- Create Row Level Security (RLS) policies
--- These will be simplified for now and should be adjusted based on your authentication setup
+-- Enable Row Level Security (RLS) on all tables
 ALTER TABLE clients ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cadastral_data ENABLE ROW LEVEL SECURITY;
 ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 ALTER TABLE calculations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
 
--- Create a basic policy that allows all authenticated users to access these tables
--- In a production environment, you would want more granular control
-CREATE POLICY "All users can access clients" ON clients FOR ALL TO authenticated USING (true);
-CREATE POLICY "All users can access cadastral_data" ON cadastral_data FOR ALL TO authenticated USING (true);
-CREATE POLICY "All users can access projects" ON projects FOR ALL TO authenticated USING (true);
-CREATE POLICY "All users can access calculations" ON calculations FOR ALL TO authenticated USING (true);
-CREATE POLICY "All users can access documents" ON documents FOR ALL TO authenticated USING (true);
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "All users can access clients" ON clients;
+DROP POLICY IF EXISTS "All users can access cadastral_data" ON cadastral_data;
+DROP POLICY IF EXISTS "All users can access projects" ON projects;
+DROP POLICY IF EXISTS "All users can access calculations" ON calculations;
+DROP POLICY IF EXISTS "All users can access documents" ON documents;
+
+-- CREATE POLICIES FOR CLIENTS TABLE - FULL CRUD ACCESS
+-- Policy for SELECT operations
+CREATE POLICY "Anyone can select clients" ON clients 
+  FOR SELECT USING (true);
+
+-- Policy for INSERT operations
+CREATE POLICY "Anyone can insert clients" ON clients 
+  FOR INSERT WITH CHECK (true);
+
+-- Policy for UPDATE operations
+CREATE POLICY "Anyone can update clients" ON clients 
+  FOR UPDATE USING (true) WITH CHECK (true);
+
+-- Policy for DELETE operations
+CREATE POLICY "Anyone can delete clients" ON clients 
+  FOR DELETE USING (true);
+
+-- POLICIES FOR CADASTRAL_DATA TABLE
+CREATE POLICY "Anyone can read cadastral data" ON cadastral_data FOR SELECT USING (true);
+CREATE POLICY "Anyone can insert cadastral data" ON cadastral_data FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update cadastral data" ON cadastral_data FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Anyone can delete cadastral data" ON cadastral_data FOR DELETE USING (true);
+
+-- POLICIES FOR PROJECTS TABLE
+CREATE POLICY "Anyone can read projects" ON projects FOR SELECT USING (true);
+CREATE POLICY "Anyone can insert projects" ON projects FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update projects" ON projects FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Anyone can delete projects" ON projects FOR DELETE USING (true);
+
+-- POLICIES FOR CALCULATIONS TABLE
+CREATE POLICY "Anyone can read calculations" ON calculations FOR SELECT USING (true);
+CREATE POLICY "Anyone can insert calculations" ON calculations FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update calculations" ON calculations FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Anyone can delete calculations" ON calculations FOR DELETE USING (true);
+
+-- POLICIES FOR DOCUMENTS TABLE
+CREATE POLICY "Anyone can read documents" ON documents FOR SELECT USING (true);
+CREATE POLICY "Anyone can insert documents" ON documents FOR INSERT WITH CHECK (true);
+CREATE POLICY "Anyone can update documents" ON documents FOR UPDATE USING (true) WITH CHECK (true);
+CREATE POLICY "Anyone can delete documents" ON documents FOR DELETE USING (true);
 
 -- Add indexes for performance
 CREATE INDEX IF NOT EXISTS idx_clients_email ON clients(email);
