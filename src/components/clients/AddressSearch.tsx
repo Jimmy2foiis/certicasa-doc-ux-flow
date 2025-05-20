@@ -6,7 +6,7 @@ import { ApiStatus } from "@/components/address/ApiStatus";
 import { useGoogleMapsAutocomplete } from "@/hooks/googleMaps/useGoogleMapsAutocomplete";
 import { GeoCoordinates, getCoordinatesFromAddress } from "@/services/geoCoordinatesService";
 import { useToast } from "@/components/ui/use-toast";
-import debounce from 'lodash/debounce';
+import { debounce } from "lodash"; // Updated import to use full lodash package
 
 interface AddressSearchProps {
   initialAddress: string;
