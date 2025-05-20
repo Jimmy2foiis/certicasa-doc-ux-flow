@@ -1,93 +1,111 @@
-
-import { ArrowLeft, Save, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import GenerateDocumentButton from "../documents/GenerateDocumentButton";
 import { useState } from "react";
+import { ArrowLeft, Edit, FileText } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ClientForm } from "./ClientForm";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { updateClientRecord } from "@/services/supabaseService";
+import ClientDocumentGenerator from "@/components/documents/ClientDocumentGenerator";
 
 interface ClientDetailsHeaderProps {
   onBack: () => void;
-  clientId?: string;
-  clientName?: string;
-  client?: any;
+  clientId: string;
+  clientName: string;
+  client: any; // The full client object
   onDocumentGenerated?: (documentId: string) => void;
   onClientUpdated?: () => void;
 }
 
-const ClientDetailsHeader = ({ 
-  onBack, 
-  clientId, 
-  clientName, 
-  client, 
+const ClientDetailsHeader = ({
+  onBack,
+  clientId,
+  clientName,
+  client,
   onDocumentGenerated,
-  onClientUpdated 
+  onClientUpdated,
 }: ClientDetailsHeaderProps) => {
-  const [isSaving, setSaving] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const { toast } = useToast();
-  
-  const handleSave = async () => {
-    if (!clientId || !client) return;
+
+  // Function to handle client updates
+  const handleClientUpdated = () => {
+    setShowEditDialog(false);
     
-    setSaving(true);
-    try {
-      await updateClientRecord(clientId, client);
-      toast({
-        title: "Modifications enregistrées",
-        description: "Les informations du client ont été mises à jour avec succès.",
-        duration: 3000
-      });
-      if (onClientUpdated) {
-        onClientUpdated();
-      }
-    } catch (error) {
-      console.error("Erreur lors de la sauvegarde des modifications:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'enregistrement des modifications.",
-        variant: "destructive",
-        duration: 5000
-      });
-    } finally {
-      setSaving(false);
+    if (onClientUpdated) {
+      onClientUpdated();
     }
+    
+    toast({
+      title: "Client modifié",
+      description: "Les informations du client ont été mises à jour.",
+      duration: 3000,
+    });
   };
 
-  const handleCreateProject = () => {
-    // Cette fonction sera implémentée ultérieurement
+  // Function to handle document generation
+  const handleDocumentGenerated = (documentId: string) => {
+    if (onDocumentGenerated) {
+      onDocumentGenerated(documentId);
+    }
+    
     toast({
-      title: "Création de projet",
-      description: "Fonctionnalité en cours d'implémentation...",
-      duration: 3000
+      title: "Document généré",
+      description: `Document créé pour ${clientName}`,
+      duration: 3000,
     });
   };
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <div className="flex items-center">
-        <Button variant="ghost" onClick={onBack} className="mr-2">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Retour
+        <Button
+          variant="ghost"
+          size="icon"
+          className="mr-2"
+          onClick={onBack}
+        >
+          <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h2 className="text-2xl font-semibold">Fiche Client</h2>
+        <div>
+          <h1 className="text-2xl font-bold">{clientName}</h1>
+          <div className="flex items-center gap-2">
+            <Badge variant={client?.status === "Actif" ? "default" : "secondary"}>
+              {client?.status || "Actif"}
+            </Badge>
+            <span className="text-sm text-gray-500">
+              {client?.type || "Client particulier"}
+            </span>
+          </div>
+        </div>
       </div>
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={handleSave} disabled={isSaving}>
-          <Save className="h-4 w-4 mr-2" />
-          {isSaving ? "Enregistrement..." : "Enregistrer"}
+      
+      <div className="flex items-center gap-2 self-end md:self-auto">
+        <ClientDocumentGenerator
+          clientId={clientId}
+          clientName={clientName}
+          clientData={{
+            client: client,
+            // Other data will be fetched in the component
+          }}
+          onDocumentGenerated={handleDocumentGenerated}
+        />
+        
+        <Button variant="outline" onClick={() => setShowEditDialog(true)}>
+          <Edit className="mr-2 h-4 w-4" /> Modifier
         </Button>
-        {clientId && (
-          <GenerateDocumentButton 
-            clientId={clientId} 
-            clientName={clientName} 
-            onDocumentGenerated={onDocumentGenerated}
+      </div>
+
+      {/* Edit Client Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <ClientForm
+            initialData={client}
+            clientId={clientId}
+            onSubmitSuccess={handleClientUpdated}
+            submitButtonText="Enregistrer les modifications"
           />
-        )}
-        <Button className="bg-green-600 hover:bg-green-700" onClick={handleCreateProject}>
-          <Plus className="h-4 w-4 mr-2" />
-          Nouveau Projet
-        </Button>
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
