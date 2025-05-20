@@ -1,10 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { AdministrativeDocument, DocumentStatus } from "@/models/documents";
 
 export const useAdministrativeDocuments = (clientId?: string, clientName?: string) => {
   const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState<string | null>(null);
   
   // Document list state
   const [adminDocuments, setAdminDocuments] = useState<AdministrativeDocument[]>([
@@ -78,8 +80,55 @@ export const useAdministrativeDocuments = (clientId?: string, clientName?: strin
     },
   ]);
 
+  // Filtrer les documents selon la recherche et le filtre actif
+  const filteredDocuments = useMemo(() => {
+    let result = [...adminDocuments];
+    
+    // Appliquer la recherche textuelle
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(doc => 
+        doc.name.toLowerCase().includes(query) || 
+        doc.description.toLowerCase().includes(query) ||
+        (doc.statusLabel && doc.statusLabel.toLowerCase().includes(query))
+      );
+    }
+    
+    // Appliquer le filtre de statut
+    if (activeFilter) {
+      switch(activeFilter) {
+        case 'generated':
+          result = result.filter(doc => doc.status === "generated" || doc.status === "linked");
+          break;
+        case 'ready':
+          result = result.filter(doc => doc.status === "ready");
+          break;
+        case 'pending':
+          result = result.filter(doc => doc.status === "pending" || doc.status === "action-required");
+          break;
+        case 'missing':
+          result = result.filter(doc => doc.status === "missing");
+          break;
+      }
+    }
+    
+    // Toujours trier par ordre
+    return result.sort((a, b) => a.order - b.order);
+  }, [adminDocuments, searchQuery, activeFilter]);
+
+  // Fonction pour filtrer les documents
+  const filterDocuments = (filter: string | null) => {
+    setActiveFilter(filter);
+  };
+
   // Update document type in the documents list when project type changes
   const updateProjectType = (projectType: string) => {
+    if (!projectType) return;
+    
+    // Éviter les mises à jour inutiles
+    const currentFicha = adminDocuments.find(doc => doc.type === "ficha");
+    if (currentFicha && currentFicha.name === `Ficha ${projectType}`) return;
+    
     setAdminDocuments(prev => 
       prev.map(doc => 
         doc.type === "ficha" 
@@ -163,6 +212,10 @@ export const useAdministrativeDocuments = (clientId?: string, clientName?: strin
 
   return {
     adminDocuments,
+    filteredDocuments,
+    searchQuery,
+    setSearchQuery,
+    filterDocuments,
     handleDocumentAction,
     handleExportAll,
     updateProjectType
