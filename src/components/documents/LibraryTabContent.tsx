@@ -2,10 +2,11 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Eye, FileUp } from "lucide-react";
-import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
+import { FileText, Eye, FileUp, Trash2 } from "lucide-react";
+import { DocumentTemplate, useDocumentTemplates } from "@/hooks/useDocumentTemplates";
 import { useTemplateActions } from "@/hooks/useTemplateActions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface LibraryTabContentProps {
   loading: boolean;
@@ -18,6 +19,9 @@ const LibraryTabContent = ({
   filteredTemplates,
   setActiveTab 
 }: LibraryTabContentProps) => {
+  const { removeTemplate } = useDocumentTemplates();
+  const [templateToDelete, setTemplateToDelete] = React.useState<string | null>(null);
+  
   const {
     previewTemplate,
     showPreview,
@@ -25,6 +29,24 @@ const LibraryTabContent = ({
     closePreview,
     handleUseTemplate
   } = useTemplateActions(setActiveTab);
+
+  // Fonction pour confirmer la suppression
+  const confirmDelete = (templateId: string) => {
+    setTemplateToDelete(templateId);
+  };
+
+  // Fonction pour effectuer la suppression
+  const handleDelete = () => {
+    if (templateToDelete) {
+      removeTemplate(templateToDelete);
+      setTemplateToDelete(null);
+    }
+  };
+
+  // Fonction pour annuler la suppression
+  const cancelDelete = () => {
+    setTemplateToDelete(null);
+  };
 
   return (
     <Card>
@@ -57,6 +79,14 @@ const LibraryTabContent = ({
                     onClick={() => handlePreview(template)}
                   >
                     <Eye className="h-4 w-4 mr-1" /> Aperçu
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    size="sm"
+                    onClick={() => confirmDelete(template.id)}
+                    className="text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" /> Supprimer
                   </Button>
                   <Button 
                     size="sm"
@@ -124,6 +154,24 @@ const LibraryTabContent = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Dialogue de confirmation de suppression */}
+      <AlertDialog open={!!templateToDelete} onOpenChange={() => templateToDelete ? cancelDelete() : null}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer ce modèle de document ? Cette action ne peut pas être annulée.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelDelete}>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

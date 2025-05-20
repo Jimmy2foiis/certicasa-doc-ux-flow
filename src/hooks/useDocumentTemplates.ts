@@ -9,6 +9,7 @@ export interface DocumentTemplate {
   type: string;
   lastModified: string;
   dateUploaded: string;
+  content?: string; // Contenu du fichier pour l'aperçu
 }
 
 export const useDocumentTemplates = () => {
@@ -84,6 +85,11 @@ export const useDocumentTemplates = () => {
     window.dispatchEvent(new StorageEvent('storage', {
       key: DOCUMENT_TEMPLATES_KEY
     }));
+    
+    toast({
+      title: "Modèle supprimé",
+      description: "Le modèle a été supprimé avec succès.",
+    });
   };
 
   return { templates, loading, addTemplate, removeTemplate, refreshTemplates: loadTemplates };
