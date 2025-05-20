@@ -45,7 +45,7 @@ export const getClients = async () => {
   return data;
 };
 
-export const createClient = async (clientData: any) => {
+export const createClientRecord = async (clientData: any) => {
   const { data, error } = await supabase
     .from('clients')
     .insert([clientData])

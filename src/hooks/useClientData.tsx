@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { clientsData } from "@/data/mock"; // Nous utiliserons temporairement les données mock pendant la migration
 import { useCadastralData } from "@/hooks/useCadastralData";
