@@ -31,6 +31,7 @@ import {
   Trash2,
   UserPlus,
   Loader2,
+  MapPin,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { getClients, createClientRecord, deleteClientRecord, Client } from "@/services/supabaseService";
@@ -46,6 +47,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { AddressInput } from "@/components/address/AddressInput";
 
 const ClientsSection = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,6 +56,9 @@ const ClientsSection = () => {
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const { toast } = useToast();
+  const [addressLoading, setAddressLoading] = useState(false);
+  const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   
   // Formulaire nouveau client
   const [newClient, setNewClient] = useState({
@@ -199,6 +204,44 @@ const ClientsSection = () => {
     const { name, value } = e.target;
     setNewClient(prev => ({ ...prev, [name]: value }));
   };
+  
+  // Gérer l'adresse avec autocomplétion
+  const handleAddressChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setNewClient(prev => ({ ...prev, address: value }));
+    
+    if (value.length >= 3) {
+      setAddressLoading(true);
+      setShowSuggestions(true);
+      
+      try {
+        // Simuler une recherche d'adresse (à remplacer par l'API réelle)
+        // Ici on pourrait utiliser l'API Google Maps Autocomplete si disponible
+        setTimeout(() => {
+          const mockSuggestions = [
+            `${value}, Calle Principal, Madrid, España`,
+            `${value}, Avenida Central, Barcelona, España`,
+            `${value}, Calle Mayor, Valencia, España`,
+            `${value}, Plaza Principal, Sevilla, España`,
+          ];
+          setAddressSuggestions(mockSuggestions);
+          setAddressLoading(false);
+        }, 500);
+      } catch (error) {
+        console.error("Erreur lors de la recherche d'adresse:", error);
+        setAddressLoading(false);
+        setShowSuggestions(false);
+      }
+    } else {
+      setAddressSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+  
+  const selectAddressSuggestion = (address: string) => {
+    setNewClient(prev => ({ ...prev, address }));
+    setShowSuggestions(false);
+  };
 
   return (
     <>
@@ -261,13 +304,37 @@ const ClientsSection = () => {
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="address" className="text-right">Adresse</Label>
-                    <Input
-                      id="address"
-                      name="address"
-                      value={newClient.address}
-                      onChange={handleInputChange}
-                      className="col-span-3"
-                    />
+                    <div className="col-span-3 relative">
+                      <div className="relative">
+                        <MapPin className="absolute left-2.5 top-2.5 h-5 w-5 text-gray-400" />
+                        {addressLoading && <Loader2 className="absolute right-2.5 top-2.5 h-5 w-5 text-gray-400 animate-spin" />}
+                        <Input
+                          id="address"
+                          name="address"
+                          value={newClient.address}
+                          onChange={handleAddressChange}
+                          className="pl-10"
+                          placeholder="Saisissez une adresse..."
+                        />
+                      </div>
+                      
+                      {showSuggestions && addressSuggestions.length > 0 && (
+                        <div className="absolute mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 z-10 max-h-60 overflow-auto">
+                          {addressSuggestions.map((suggestion, index) => (
+                            <div
+                              key={index}
+                              className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                              onClick={() => selectAddressSuggestion(suggestion)}
+                            >
+                              <div className="flex items-start">
+                                <MapPin className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0 text-gray-400" />
+                                <span>{suggestion}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <div className="grid grid-cols-4 items-center gap-4">
                     <Label htmlFor="nif" className="text-right">NIF</Label>
