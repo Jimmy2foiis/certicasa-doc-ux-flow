@@ -19,41 +19,57 @@ import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ClientFormProps {
-  onSubmit: (data: Client) => Promise<void>;
-  onCancel: () => void;
+  onSubmit?: (data: Client) => Promise<void>;
+  onCancel?: () => void;
   initialValues?: Partial<ClientFormValues>;
   isSubmitting?: boolean;
+  clientId?: string;
+  client?: any;
+  onSubmitSuccess?: () => void;
+  submitButtonText?: string;
 }
 
-export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = false }: ClientFormProps) => {
+export const ClientForm = ({ 
+  onSubmit, 
+  onCancel, 
+  initialValues, 
+  isSubmitting = false, 
+  clientId,
+  client,
+  onSubmitSuccess,
+  submitButtonText 
+}: ClientFormProps) => {
   const { coordinates, setClientCoordinates } = useCoordinates();
   const { toast } = useToast();
   const [addressSelected, setAddressSelected] = useState(false);
   const [addressWarning, setAddressWarning] = useState<string | null>(null);
   const [isAddressProcessing, setIsAddressProcessing] = useState(false);
   
+  // Use client prop if provided, otherwise use initialValues
+  const formInitialValues = client || initialValues;
+  
   // Initialize form with react-hook-form and zod validation
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
-      name: initialValues?.name || "",
-      email: initialValues?.email || "",
-      phone: initialValues?.phone || "",
-      address: initialValues?.address || "",
-      nif: initialValues?.nif || "",
-      type: initialValues?.type || "010"
+      name: formInitialValues?.name || "",
+      email: formInitialValues?.email || "",
+      phone: formInitialValues?.phone || "",
+      address: formInitialValues?.address || "",
+      nif: formInitialValues?.nif || "",
+      type: formInitialValues?.type || "010"
     }
   });
 
-  console.log("Valeurs initiales du formulaire:", initialValues);
+  console.log("Valeurs initiales du formulaire:", formInitialValues);
   console.log("État actuel des coordonnées:", coordinates);
 
   // Si une adresse initiale existe, considérer qu'elle a été sélectionnée
   useEffect(() => {
-    if (initialValues?.address) {
+    if (formInitialValues?.address) {
       setAddressSelected(true);
     }
-  }, [initialValues?.address]);
+  }, [formInitialValues?.address]);
 
   // Handle address selection from Google Maps autocomplete
   const handleAddressSelected = (address: string) => {
@@ -107,7 +123,16 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
       console.log("Données client à envoyer:", clientData);
       console.log("Coordonnées à enregistrer:", coordinates);
       
-      await onSubmit(clientData);
+      // If onSubmit is provided, call it with client data
+      if (onSubmit) {
+        await onSubmit(clientData);
+      }
+      
+      // If onSubmitSuccess is provided, call it
+      if (onSubmitSuccess) {
+        onSubmitSuccess();
+      }
+      
     } catch (error) {
       console.error("Erreur lors de la création du client:", error);
       toast({
@@ -145,6 +170,7 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
         <FormActions 
           onCancel={onCancel}
           isSubmitting={isSubmitting || isAddressProcessing}
+          submitText={submitButtonText}
         />
       </form>
     </Form>

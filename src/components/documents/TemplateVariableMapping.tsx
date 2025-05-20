@@ -131,9 +131,10 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
           setTemplateTags(initialTags);
           console.log("Created initial mapping:", initialTags);
         } else if (mappingData) {
-          // Use existing mapping
-          setTemplateTags(mappingData.mappings);
-          console.log("Loaded existing mapping:", mappingData.mappings);
+          // Use existing mapping - ensure we properly parse the JSON if needed
+          const mappings = mappingData.mappings as TemplateTag[];
+          setTemplateTags(mappings);
+          console.log("Loaded existing mapping:", mappings);
         }
       } catch (error) {
         console.error("Error loading template mapping:", error);
