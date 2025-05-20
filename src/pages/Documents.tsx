@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import DocumentGeneration from "@/components/documents/DocumentGeneration";
@@ -15,6 +15,20 @@ const Documents = () => {
   const [activeTab, setActiveTab] = useState("library");
   const [searchQuery, setSearchQuery] = useState("");
   const { templates, loading, refreshTemplates } = useDocumentTemplates();
+  
+  // Fonction pour changer l'onglet, partagée globalement
+  const changeToLibraryTab = useCallback(() => {
+    setActiveTab("library");
+  }, []);
+  
+  // Mettre à disposition la fonction pour changer d'onglet
+  useEffect(() => {
+    (window as any).changeToLibraryTab = changeToLibraryTab;
+    
+    return () => {
+      delete (window as any).changeToLibraryTab;
+    };
+  }, [changeToLibraryTab]);
   
   // Rafraîchir les templates lorsque l'onglet "library" est activé
   useEffect(() => {
