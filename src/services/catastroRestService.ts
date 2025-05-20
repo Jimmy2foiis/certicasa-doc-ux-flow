@@ -1,372 +1,333 @@
 
-/**
- * Service pour interagir avec l'API REST du Catastro Español (Sede Electrónica del Catastro)
- * Cette implémentation utilise les endpoints REST/JSON modernes au lieu de SOAP
- */
+import { getClimateZoneByProvince } from "./climateZoneService";
+import { CatastroData } from "./catastroService";
 
-import { fetchViaProxy } from './proxyService';
-import { GeoCoordinates } from './geoCoordinatesService';
+// URL du service REST du Catastro espagnol pour les demandes par coordonnées
+const OVC_COORDENADAS_URL = 
+  "https://ovc.catastro.meh.es/OVCServWeb/OVCWcfCallejero/COVCCoordenadas.svc/json/Consulta_RCCOOR";
 
-// Types pour les réponses de l'API REST
-export interface CatastroRestResponse {
-  error?: string;
-  cadastralReference?: string;
-  address?: string;
-  utmCoordinates?: string;
-  climateZone?: string;
-  municipality?: string;
-  province?: string;
-}
+// URL du service REST du Catastro pour les demandes par adresse structurée
+const OVC_CALLEJERO_DNPLOC_URL = 
+  "https://ovc.catastro.meh.es/OVCServWeb/OVCWcfCallejero/COVCCallejero.svc/json/Consulta_DNPLOC";
 
-// URLs des endpoints REST
-const CATASTRO_REST_ENDPOINTS = {
-  // Consultation par coordonnées
-  COORDINATES: "https://ovc.catastro.meh.es/OVCServWeb/OVCWcfCallejero/COVCCoordenadas.svc/json/Consulta_RCCOOR",
-  // Consultation par adresse structurée
-  ADDRESS: "https://ovc.catastro.meh.es/OVCServWeb/OVCWcfCallejero/COVCCallejero.svc/json/Consulta_DNPLOC",
-  // Consultation par référence cadastrale
-  REFERENCE: "https://ovc.catastro.meh.es/OVCServWeb/OVCWcfCallejero/COVCCallejero.svc/json/Consulta_DNPRC"
-};
+// URL du service REST du Catastro pour les demandes par référence cadastrale
+const OVC_CALLEJERO_DNPRC_URL = 
+  "https://ovc.catastro.meh.es/OVCServWeb/OVCWcfCallejero/COVCCallejero.svc/json/Consulta_DNPRC";
 
-// Liste des serveurs proxy alternatifs
-const ALTERNATIVE_PROXIES = [
-  "https://corsproxy.io/?",
-  "https://cors-anywhere.herokuapp.com/",
-  "https://api.allorigins.win/raw?url="
-];
-
-/**
- * Table de correspondance des types de voie pour l'API Catastro
- * Page 22 de la documentation officielle
- */
-const ROAD_TYPE_MAPPING: Record<string, string> = {
+// Liste des types de voies courantes et leurs abréviations pour le Catastro
+const ROAD_TYPES: Record<string, string> = {
   "CALLE": "CL",
   "AVENIDA": "AV",
   "PLAZA": "PZ",
   "PASEO": "PS",
-  "CARRETERA": "CR",
-  "CAMINO": "CM",
-  "PASAJE": "PJ",
   "RONDA": "RD",
+  "CARRETERA": "CR",
   "TRAVESIA": "TR",
-  // Ajouter d'autres types selon la documentation
+  "CUESTA": "CU",
+  "PASAJE": "PJ",
+  "CAMINO": "CM",
+  // Versions courtes et variations
+  "CL": "CL",
+  "C/": "CL",
+  "C.": "CL",
+  "AV": "AV",
+  "AVD": "AV",
+  "AVDA": "AV",
+  "PZ": "PZ",
+  "PZA": "PZ",
+  "PS": "PS",
+  "PSO": "PS",
+  "RD": "RD",
+  "RDA": "RD",
+  "CR": "CR",
+  "CTRA": "CR",
+  "TR": "TR",
+  "TRAV": "TR",
 };
 
-/**
- * Analyser l'adresse pour extraire les composants nécessaires à l'API REST
- * (province, municipalité, type de voie, nom de voie, numéro)
- */
-export const parseAddressComponents = (address: string): {
-  province: string;
-  municipality: string;
-  roadType: string;
-  roadName: string;
+// Normalise le nom de province pour le Catastro
+const normalizeProvince = (provinceName: string): string => {
+  const name = provinceName.toUpperCase().trim();
+  
+  // Mappings spécifiques pour certaines provinces
+  const provinceMapping: Record<string, string> = {
+    "ALAVA": "ARABA/ÁLAVA",
+    "ÁLAVA": "ARABA/ÁLAVA",
+    "ARABA": "ARABA/ÁLAVA",
+    "BALEARES": "ILLES BALEARS",
+    "ISLAS BALEARES": "ILLES BALEARS",
+    "MALLORCA": "ILLES BALEARS",
+    "ORENSE": "OURENSE",
+    "LA CORUÑA": "A CORUÑA",
+    "CORUÑA": "A CORUÑA",
+    "GERONA": "GIRONA",
+    "LERIDA": "LLEIDA"
+  };
+  
+  return provinceMapping[name] || name;
+};
+
+// Extraction des composants d'adresse à partir d'une adresse complète
+export const parseAddress = (address: string): { 
+  province: string; 
+  municipality: string; 
+  roadType: string; 
+  roadName: string; 
   number: string;
-} | null => {
-  try {
-    // Nettoyer l'adresse
-    let cleanAddress = address
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toUpperCase();
+} => {
+  // Normalisation de l'adresse
+  address = address.trim()
+    .replace(/\s+/g, ' ')
+    .replace(/,\s*/g, ', ')
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // Enlève les accents
+  
+  // Extraction par analyse basique (peut être améliorée pour des cas spécifiques)
+  let province = "MADRID"; // Par défaut, si non détecté
+  let municipality = "MADRID"; // Par défaut, si non détecté
+  let roadType = "CL"; // Par défaut CALLE
+  let roadName = "";
+  let number = "";
+  
+  // Séparation par virgules pour extraire la ville/province
+  const parts = address.split(',');
+  
+  if (parts.length > 1) {
+    // Dernière partie est généralement code postal + ville
+    const lastPart = parts[parts.length - 1].trim();
     
-    // Supprimer "ESPAÑA" ou "SPAIN" s'ils sont présents
-    cleanAddress = cleanAddress.replace(/,?\s*ESPA(Ñ|N)A$|,?\s*SPAIN$/i, "");
-    
-    // Tentative basique d'extraction des composants
-    // Format attendu approximatif: TYPE_VOIE NOM_VOIE NUMERO, VILLE, PROVINCE
-    
-    // Extraire la province (supposée être après la dernière virgule)
-    const parts = cleanAddress.split(",");
-    let province = parts.length > 1 ? parts[parts.length - 1].trim() : "MADRID";
-    
-    // Extraire la municipalité (supposée être l'avant-dernière partie après virgule)
-    let municipality = parts.length > 2 ? parts[parts.length - 2].trim() : province;
-    
-    // Si pas de virgule, utiliser des heuristiques simples
-    if (parts.length <= 1) {
-      // Par défaut, utiliser Madrid
-      province = "MADRID";
-      municipality = "MADRID";
+    // Extraction du code postal et de la ville
+    const postalCodeMatch = lastPart.match(/\d{5}/);
+    if (postalCodeMatch) {
+      const postalParts = lastPart.split(postalCodeMatch[0]);
+      if (postalParts.length > 1) {
+        // La municipalité est généralement après le code postal
+        municipality = postalParts[1].trim().toUpperCase();
+        province = municipality; // Par défaut, mais peut être ajusté selon le CP
+      }
+    } else {
+      municipality = lastPart.toUpperCase();
+      province = municipality;
     }
     
-    // Extraire l'adresse de rue (première partie)
+    // La rue est dans la première partie
     const streetPart = parts[0].trim();
-    const streetMatch = streetPart.match(/^([A-Za-z\s]+)\s+([A-Za-z\s]+)\s+(\d+.*)$/i);
     
-    if (!streetMatch) {
-      console.error("Format d'adresse non reconnu:", address);
-      return null;
-    }
-    
-    const potentialRoadType = streetMatch[1].trim();
-    const roadName = streetMatch[2].trim();
-    const number = streetMatch[3].trim();
-    
-    // Mapper le type de voie à son abréviation
-    let roadType = "CL"; // Par défaut "Calle"
-    for (const [key, value] of Object.entries(ROAD_TYPE_MAPPING)) {
-      if (potentialRoadType.toUpperCase().includes(key)) {
-        roadType = value;
+    // Extraction du type de voie et du nom
+    for (const [typeName, code] of Object.entries(ROAD_TYPES)) {
+      if (streetPart.toUpperCase().startsWith(typeName)) {
+        roadType = code;
+        roadName = streetPart.substring(typeName.length).trim().toUpperCase();
         break;
       }
     }
     
-    return {
-      province,
-      municipality,
-      roadType,
-      roadName,
-      number
-    };
-  } catch (error) {
-    console.error("Erreur lors de l'analyse de l'adresse:", error);
-    return null;
-  }
-};
-
-/**
- * Récupérer les données cadastrales à partir des coordonnées géographiques (méthode la plus fiable)
- */
-export const getCadastralDataByCoordinates = async (
-  lat: number, 
-  lng: number
-): Promise<CatastroRestResponse> => {
-  try {
-    // Préparer les paramètres pour l'API REST
-    const params = new URLSearchParams({
-      'SRS': 'EPSG:4326', // WGS84 (coordonnées standard GPS)
-      'Coordenada_X': lng.toString(), // Longitude
-      'Coordenada_Y': lat.toString() // Latitude
-    });
+    // Si aucun type de voie n'a été trouvé, on prend toute la rue
+    if (!roadName) {
+      roadName = streetPart.toUpperCase();
+      // Extraction du numéro de rue si présent à la fin
+      const numberMatch = roadName.match(/\s+(\d+)\s*$/);
+      if (numberMatch) {
+        number = numberMatch[1];
+        roadName = roadName.substring(0, roadName.lastIndexOf(numberMatch[0])).trim();
+      }
+    } else {
+      // Extraction du numéro de rue si déjà séparé
+      const numberMatch = roadName.match(/\s+(\d+)\s*$/);
+      if (numberMatch) {
+        number = numberMatch[1];
+        roadName = roadName.substring(0, roadName.lastIndexOf(numberMatch[0])).trim();
+      }
+    }
+  } else {
+    // Si pas de virgule, on essaie quand même d'analyser
+    const streetPart = address.trim();
     
-    // Construire l'URL avec les paramètres
-    const apiUrl = `${CATASTRO_REST_ENDPOINTS.COORDINATES}?${params.toString()}`;
-    console.log("URL API Catastro REST (coordonnées):", apiUrl);
-    
-    // Essayer avec différents proxies en cas d'échec
-    for (const proxy of [null, ...ALTERNATIVE_PROXIES]) {
-      try {
-        const url = proxy ? `${proxy}${encodeURIComponent(apiUrl)}` : apiUrl;
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log("Réponse API Catastro REST:", data);
-        
-        // Analyser la réponse JSON
-        if (data.consulta_coordenadasResponse?.control?.cuerr) {
-          const error = data.consulta_coordenadasResponse.control.cuerr;
-          throw new Error(`Erreur API Catastro: ${error}`);
-        }
-        
-        // Extraire la référence cadastrale
-        const rcList = data.consulta_coordenadasResponse?.coordenadas?.coord;
-        if (!rcList || rcList.length === 0) {
-          throw new Error("Aucune référence cadastrale trouvée pour ces coordonnées");
-        }
-        
-        // Prendre la première référence cadastrale trouvée
-        const firstResult = rcList[0];
-        const refCatastral = firstResult.pc?.pc1 || '';
-        const municipio = firstResult.municipio?.nm || '';
-        const provincia = firstResult.provincia?.np || '';
-        
-        // Déterminer la zone climatique (à implémenter selon les besoins)
-        const climateZone = await getClimateZoneFromProvince(provincia);
-        
-        return {
-          cadastralReference: refCatastral,
-          municipality: municipio,
-          province: provincia,
-          climateZone
-        };
-      } catch (proxyError) {
-        console.warn(`Erreur avec le proxy ${proxy || 'direct'}:`, proxyError);
-        // Continuer avec le proxy suivant
-        if (proxy === ALTERNATIVE_PROXIES[ALTERNATIVE_PROXIES.length - 1]) {
-          throw proxyError; // Dernier proxy, propager l'erreur
-        }
+    for (const [typeName, code] of Object.entries(ROAD_TYPES)) {
+      if (streetPart.toUpperCase().startsWith(typeName)) {
+        roadType = code;
+        roadName = streetPart.substring(typeName.length).trim().toUpperCase();
+        break;
       }
     }
     
-    throw new Error("Tous les services proxy ont échoué");
-  } catch (error) {
-    console.error("Erreur lors de la récupération des données cadastrales par coordonnées:", error);
-    return {
-      error: `Erreur: ${error instanceof Error ? error.message : String(error)}`
-    };
-  }
-};
-
-/**
- * Récupérer les données cadastrales à partir d'une adresse structurée
- */
-export const getCadastralDataByAddress = async (address: string): Promise<CatastroRestResponse> => {
-  try {
-    // Analyser l'adresse en composants
-    const addressComponents = parseAddressComponents(address);
-    
-    if (!addressComponents) {
-      throw new Error("Impossible d'analyser correctement l'adresse");
+    if (!roadName) {
+      roadName = streetPart.toUpperCase();
     }
     
-    const { province, municipality, roadType, roadName, number } = addressComponents;
+    // Extraction du numéro
+    const numberMatch = roadName.match(/\s+(\d+)\s*$/);
+    if (numberMatch) {
+      number = numberMatch[1];
+      roadName = roadName.substring(0, roadName.lastIndexOf(numberMatch[0])).trim();
+    }
+  }
+  
+  return {
+    province: normalizeProvince(province),
+    municipality,
+    roadType,
+    roadName,
+    number
+  };
+};
+
+// Fonction pour obtenir des données cadastrales par coordonnées
+export const getCadastralDataByCoordinatesREST = async (
+  latitude: number,
+  longitude: number
+): Promise<CatastroData> => {
+  try {
+    // Création de l'URL avec paramètres
+    const url = new URL(OVC_COORDENADAS_URL);
+    url.searchParams.append("SRS", "EPSG:4326"); // WGS84 (GPS standard)
+    url.searchParams.append("Coordenada_X", longitude.toString());
+    url.searchParams.append("Coordenada_Y", latitude.toString());
     
-    // Préparer les paramètres pour l'API REST
-    const params = new URLSearchParams({
-      'Provincia': province,
-      'Municipio': municipality,
-      'TipoVia': roadType,
-      'NombreVia': roadName,
-      'Numero': number
-    });
+    // Appel à l'API
+    console.log(`Appel API REST Catastro par coordonnées: ${url.toString()}`);
+    const response = await fetch(url.toString());
     
-    // Construire l'URL avec les paramètres
-    const apiUrl = `${CATASTRO_REST_ENDPOINTS.ADDRESS}?${params.toString()}`;
-    console.log("URL API Catastro REST (adresse):", apiUrl);
+    // Vérifier le code de statut
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
     
-    // Essayer avec différents proxies en cas d'échec
-    for (const proxy of [null, ...ALTERNATIVE_PROXIES]) {
-      try {
-        const url = proxy ? `${proxy}${encodeURIComponent(apiUrl)}` : apiUrl;
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log("Réponse API Catastro REST (adresse):", data);
-        
-        // Analyser la réponse JSON
-        if (data.consulta_dnplocResponse?.control?.cuerr) {
-          const error = data.consulta_dnplocResponse.control.cuerr;
-          throw new Error(`Erreur API Catastro: ${error}`);
-        }
-        
-        // Extraire la référence cadastrale
-        const lerrs = data.consulta_dnplocResponse?.lerrs?.lerr;
-        if (lerrs && lerrs.length > 0) {
-          throw new Error(`Erreur: ${lerrs[0].txt || 'Erreur inconnue'}`);
-        }
-        
-        const items = data.consulta_dnplocResponse?.lrcdnploc?.rcdnp;
-        if (!items || items.length === 0) {
-          throw new Error("Aucune référence cadastrale trouvée pour cette adresse");
-        }
-        
-        // Prendre la première référence cadastrale trouvée
-        const firstResult = items[0];
-        const refCatastral = firstResult.rc?.pc1 || '';
-        
-        // Récupérer les informations supplémentaires via la référence
-        if (refCatastral) {
-          return await getCadastralDataByReference(refCatastral);
-        } else {
-          throw new Error("Référence cadastrale non trouvée dans la réponse");
-        }
-      } catch (proxyError) {
-        console.warn(`Erreur avec le proxy ${proxy || 'direct'}:`, proxyError);
-        if (proxy === ALTERNATIVE_PROXIES[ALTERNATIVE_PROXIES.length - 1]) {
-          throw proxyError; // Dernier proxy, propager l'erreur
+    // Parser la réponse JSON
+    const data = await response.json();
+    
+    // Analyser les données de réponse
+    if (data.consultaRccoorResult && data.consultaRccoorResult.coordenadas) {
+      const coordInfo = data.consultaRccoorResult.coordenadas;
+      let cadastralReference = "";
+      let utmCoordinates = "";
+      let province = "";
+      
+      // Récupération de la référence cadastrale
+      if (coordInfo.coord && coordInfo.coord.pc) {
+        cadastralReference = coordInfo.coord.pc.pc1 || "";
+        if (coordInfo.coord.pc.pc2) {
+          cadastralReference += coordInfo.coord.pc.pc2;
         }
       }
-    }
-    
-    throw new Error("Tous les services proxy ont échoué");
-  } catch (error) {
-    console.error("Erreur lors de la récupération des données cadastrales par adresse:", error);
-    return {
-      error: `Erreur: ${error instanceof Error ? error.message : String(error)}`
-    };
-  }
-};
-
-/**
- * Récupérer les données cadastrales à partir d'une référence cadastrale
- */
-export const getCadastralDataByReference = async (reference: string): Promise<CatastroRestResponse> => {
-  try {
-    if (!reference || reference.trim() === '') {
-      throw new Error("Référence cadastrale non fournie");
-    }
-    
-    // Préparer les paramètres
-    const params = new URLSearchParams({
-      'RefCat': reference.trim()
-    });
-    
-    // Construire l'URL avec les paramètres
-    const apiUrl = `${CATASTRO_REST_ENDPOINTS.REFERENCE}?${params.toString()}`;
-    console.log("URL API Catastro REST (référence):", apiUrl);
-    
-    // Essayer avec différents proxies en cas d'échec
-    for (const proxy of [null, ...ALTERNATIVE_PROXIES]) {
-      try {
-        const url = proxy ? `${proxy}${encodeURIComponent(apiUrl)}` : apiUrl;
-        const response = await fetch(url);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log("Réponse API Catastro REST (référence):", data);
-        
-        // Analyser la réponse JSON
-        if (data.consulta_dnprcResponse?.control?.cuerr) {
-          const error = data.consulta_dnprcResponse.control.cuerr;
-          throw new Error(`Erreur API Catastro: ${error}`);
-        }
-        
-        const lerrs = data.consulta_dnprcResponse?.lerrs?.lerr;
-        if (lerrs && lerrs.length > 0) {
-          throw new Error(`Erreur: ${lerrs[0].txt || 'Erreur inconnue'}`);
-        }
-        
-        // Extraire les données
-        const result = data.consulta_dnprcResponse;
-        const municipio = result?.bico?.bi?.idbi?.muni?.nm || '';
-        const provincia = result?.bico?.bi?.idbi?.muni?.np || '';
-        
-        // Déterminer la zone climatique
-        const climateZone = await getClimateZoneFromProvince(provincia);
-        
-        return {
-          cadastralReference: reference,
-          municipality: municipio,
-          province: provincia,
-          climateZone,
-          // Note: Les coordonnées UTM ne sont pas directement disponibles dans cette réponse
-          // Il faudrait un appel supplémentaire pour les obtenir
-        };
-      } catch (proxyError) {
-        console.warn(`Erreur avec le proxy ${proxy || 'direct'}:`, proxyError);
-        if (proxy === ALTERNATIVE_PROXIES[ALTERNATIVE_PROXIES.length - 1]) {
-          throw proxyError; // Dernier proxy, propager l'erreur
+      
+      // Récupération des coordonnées UTM
+      if (coordInfo.coord && coordInfo.coord.geo) {
+        const xUtm = coordInfo.coord.geo.xcen || "";
+        const yUtm = coordInfo.coord.geo.ycen || "";
+        if (xUtm && yUtm) {
+          utmCoordinates = `X: ${xUtm}, Y: ${yUtm}`;
         }
       }
+      
+      // Récupération de la province si disponible
+      if (coordInfo.lpro) {
+        province = coordInfo.lpro;
+      }
+      
+      // Zone climatique est définie par la province en Espagne
+      const climateZone = getClimateZoneByProvince(province);
+      
+      return {
+        cadastralReference,
+        utmCoordinates,
+        climateZone,
+        apiSource: "REST",
+        error: null
+      };
     }
     
-    throw new Error("Tous les services proxy ont échoué");
+    // Gestion des erreurs de l'API
+    if (data.consultaRccoorResult && data.consultaRccoorResult.lerr) {
+      const errorCode = data.consultaRccoorResult.lerr.err.cod;
+      const errorDesc = data.consultaRccoorResult.lerr.err.des;
+      throw new Error(`Erreur Catastro (${errorCode}): ${errorDesc}`);
+    }
+    
+    throw new Error("Format de réponse du Catastro non reconnu");
   } catch (error) {
-    console.error("Erreur lors de la récupération des données cadastrales par référence:", error);
+    console.error("Erreur lors de la récupération des données cadastrales REST:", error);
     return {
-      error: `Erreur: ${error instanceof Error ? error.message : String(error)}`
+      cadastralReference: "",
+      utmCoordinates: "",
+      climateZone: "",
+      apiSource: "REST",
+      error: error instanceof Error ? error.message : "Erreur inconnue"
     };
   }
 };
 
-/**
- * Récupère la zone climatique à partir de la province
- * (Méthode utilitaire réutilisée du service existant)
- */
-const getClimateZoneFromProvince = async (province: string): Promise<string> => {
-  // Import dynamique pour éviter les dépendances circulaires
-  const { getClimateZoneByProvince } = await import('./climateZoneService');
-  return getClimateZoneByProvince(province);
+// Fonction pour obtenir des données cadastrales à partir d'une adresse structurée
+export const getCadastralDataByAddressREST = async (address: string): Promise<CatastroData> => {
+  try {
+    // Parser l'adresse pour extraire les composants
+    const { province, municipality, roadType, roadName, number } = parseAddress(address);
+    
+    // Création de l'URL avec paramètres
+    const url = new URL(OVC_CALLEJERO_DNPLOC_URL);
+    url.searchParams.append("Provincia", province);
+    url.searchParams.append("Municipio", municipality);
+    url.searchParams.append("TipoVia", roadType);
+    url.searchParams.append("NombreVia", roadName);
+    
+    if (number) {
+      url.searchParams.append("Numero", number);
+    }
+    
+    // Appel à l'API
+    console.log(`Appel API REST Catastro par adresse: ${url.toString()}`);
+    const response = await fetch(url.toString());
+    
+    // Vérifier le code de statut
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP: ${response.status}`);
+    }
+    
+    // Parser la réponse JSON
+    const data = await response.json();
+    
+    // Analyser les données de réponse
+    if (data.consulta_dnplocResult && data.consulta_dnplocResult.lrcdnp) {
+      const resultInfo = data.consulta_dnplocResult.lrcdnp;
+      let cadastralReference = "";
+      let utmCoordinates = "";
+      
+      // Récupération de la référence cadastrale
+      if (resultInfo.rcdnp && resultInfo.rcdnp.pc) {
+        cadastralReference = resultInfo.rcdnp.pc.pc1 || "";
+        if (resultInfo.rcdnp.pc.pc2) {
+          cadastralReference += resultInfo.rcdnp.pc.pc2;
+        }
+      }
+      
+      // Zone climatique est définie par la province en Espagne
+      const climateZone = getClimateZoneByProvince(province);
+      
+      return {
+        cadastralReference,
+        utmCoordinates, // À compléter dans un autre appel si nécessaire
+        climateZone,
+        apiSource: "REST",
+        error: null
+      };
+    }
+    
+    // Gestion des erreurs de l'API
+    if (data.consulta_dnplocResult && data.consulta_dnplocResult.lerr) {
+      const errorCode = data.consulta_dnplocResult.lerr.err.cod;
+      const errorDesc = data.consulta_dnplocResult.lerr.err.des;
+      throw new Error(`Erreur Catastro (${errorCode}): ${errorDesc}`);
+    }
+    
+    throw new Error("Format de réponse du Catastro non reconnu");
+  } catch (error) {
+    console.error("Erreur lors de la récupération des données cadastrales REST par adresse:", error);
+    return {
+      cadastralReference: "",
+      utmCoordinates: "",
+      climateZone: "",
+      apiSource: "REST",
+      error: error instanceof Error ? error.message : "Erreur inconnue"
+    };
+  }
 };
