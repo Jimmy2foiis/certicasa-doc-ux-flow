@@ -1,5 +1,6 @@
 
 import { GoogleMapsCoordinates } from "@/types/googleMaps";
+import { GOOGLE_MAPS_API_KEY } from "@/config/googleMapsConfig";
 
 /**
  * Interface defining geographic coordinates and associated methods
@@ -31,8 +32,12 @@ export const getCoordinatesFromAddress = async (address: string): Promise<GeoCoo
     return geocodingCache[address].coordinates;
   }
 
-  // Use Google Maps Geocoding API
+  // Check if Google Maps API is loaded and available
   if (!window.google || !window.google.maps) {
+    if (!GOOGLE_MAPS_API_KEY) {
+      console.error('Google Maps API key is missing. Please check your environment configuration.');
+      return null;
+    }
     console.error('Google Maps API not loaded');
     return null;
   }
@@ -74,7 +79,12 @@ export const getCoordinatesFromAddress = async (address: string): Promise<GeoCoo
  * @returns Promise resolving to the formatted address or null if reverse geocoding failed
  */
 export const getAddressFromCoordinates = async (coordinates: GeoCoordinates): Promise<string | null> => {
+  // Check if Google Maps API is loaded and available
   if (!window.google || !window.google.maps) {
+    if (!GOOGLE_MAPS_API_KEY) {
+      console.error('Google Maps API key is missing. Please check your environment configuration.');
+      return null;
+    }
     console.error('Google Maps API not loaded');
     return null;
   }

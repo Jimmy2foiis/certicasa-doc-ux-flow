@@ -13,8 +13,10 @@ export const loadGoogleMapsApi = (): Promise<void> => {
       return;
     }
 
-    if (!GOOGLE_MAPS_API_KEY) {
-      console.error('Clé API Google Maps non disponible');
+    // Vérification de la disponibilité de la clé API
+    const apiKey = GOOGLE_MAPS_API_KEY;
+    if (!apiKey || apiKey === 'YOUR_DEFAULT_API_KEY') {
+      console.error('Clé API Google Maps non disponible ou non configurée');
       reject(new Error('Clé API Google Maps non disponible'));
       return;
     }
@@ -35,7 +37,7 @@ export const loadGoogleMapsApi = (): Promise<void> => {
 
     // Créer et ajouter le script à la page
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&callback=initGoogleMapsAutocomplete`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMapsAutocomplete`;
     script.async = true;
     script.defer = true;
     
