@@ -29,8 +29,11 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
         type: file.name.split('.').pop() || "unknown",
         content: null, // Le contenu pourrait être ajouté si nécessaire
         last_modified: now,
-        date_uploaded: now
+        date_uploaded: now,
+        user_id: null // Champ optionnel, on le laisse à null pour le moment
       }));
+      
+      console.log("Tentative d'enregistrement des modèles:", templates);
       
       // Insérer dans Supabase
       const { data, error } = await supabase
@@ -39,8 +42,11 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
         .select();
       
       if (error) {
+        console.error("Erreur lors de la sauvegarde des modèles:", error);
         throw error;
       }
+      
+      console.log("Modèles enregistrés avec succès:", data);
       
       // Notification de succès
       toast({
@@ -57,6 +63,11 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
         description: "Impossible de sauvegarder les modèles. Veuillez réessayer.",
         variant: "destructive",
       });
+      
+      // Afficher plus de détails dans la console pour le débogage
+      if (error instanceof Error) {
+        console.error("Détails de l'erreur:", error.message);
+      }
     }
   };
 

@@ -23,6 +23,11 @@ const DocumentTemplateUpload = () => {
     cancelDelete,
     saveAllTemplates
   } = useDocumentTemplateUpload();
+  
+  // Pour le débogage
+  useEffect(() => {
+    console.log("État actuel des fichiers téléversés:", uploadedFiles);
+  }, [uploadedFiles]);
 
   return (
     <Card>
@@ -77,7 +82,12 @@ const DocumentTemplateUpload = () => {
             <p className="text-sm text-gray-500">
               {uploadedFiles.length} modèle(s) téléversé(s)
             </p>
-            <Button onClick={() => saveAllTemplates(uploadedFiles)}>
+            <Button 
+              onClick={() => {
+                console.log("Tentative de sauvegarde des modèles:", uploadedFiles);
+                saveAllTemplates(uploadedFiles);
+              }}
+            >
               Enregistrer dans la bibliothèque
             </Button>
           </div>

@@ -29,11 +29,12 @@ export const useDocumentTemplates = () => {
         .select('*');
       
       if (error) {
+        console.error("Erreur Supabase:", error);
         throw error;
       }
 
-      if (data) {
-        console.log(`${data.length} modèles trouvés dans Supabase`);
+      if (data && data.length > 0) {
+        console.log(`${data.length} modèles trouvés dans Supabase:`, data);
         // Convertir du format Supabase au format local
         const formattedTemplates: DocumentTemplate[] = data.map(template => ({
           id: template.id,
@@ -96,16 +97,20 @@ export const useDocumentTemplates = () => {
         date_uploaded: new Date().toISOString()
       };
 
+      console.log("Tentative d'ajout du modèle:", supabaseTemplate);
+
       const { data, error } = await supabase
         .from('document_templates')
         .insert([supabaseTemplate])
         .select();
 
       if (error) {
+        console.error("Erreur Supabase lors de l'ajout du modèle:", error);
         throw error;
       }
 
       if (data && data.length > 0) {
+        console.log("Modèle ajouté avec succès:", data[0]);
         // Ajouter le nouveau modèle avec l'ID généré par Supabase
         const newTemplate = {
           ...template,
@@ -134,15 +139,20 @@ export const useDocumentTemplates = () => {
   // Supprimer un modèle
   const removeTemplate = async (templateId: string) => {
     try {
+      console.log("Tentative de suppression du modèle:", templateId);
+      
       const { error } = await supabase
         .from('document_templates')
         .delete()
         .eq('id', templateId);
 
       if (error) {
+        console.error("Erreur Supabase lors de la suppression du modèle:", error);
         throw error;
       }
 
+      console.log("Modèle supprimé avec succès");
+      
       // Mettre à jour l'état local après suppression
       setTemplates(prevTemplates => 
         prevTemplates.filter(template => template.id !== templateId)
