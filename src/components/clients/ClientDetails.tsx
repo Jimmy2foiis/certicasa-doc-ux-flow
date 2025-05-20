@@ -1,3 +1,4 @@
+
 import { 
   ArrowLeft, 
   Building, 
@@ -11,7 +12,9 @@ import {
   Home,
   Receipt,
   BarChart,
-  Calculator
+  Calculator,
+  MapPinned,
+  FileSpreadsheet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +30,7 @@ import { clientsData, clientDocuments } from "@/data/mock";
 import { useState, useEffect } from "react";
 import ProjectCalculation from "../calculations/ProjectCalculation";
 import { useToast } from "@/components/ui/use-toast";
+import { useCadastralData } from "@/hooks/useCadastralData";
 
 interface ClientDetailsProps {
   clientId: string;
@@ -54,6 +58,10 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [savedCalculations, setSavedCalculations] = useState<SavedCalculation[]>([]);
   const { toast } = useToast();
+  
+  // Adresse du client pour obtenir les données cadastrales
+  const clientAddress = client ? "Rue Serrano 120, 28006 Madrid" : ""; // Remplacer par l'adresse réelle du client quand disponible
+  const { utmCoordinates, cadastralReference, climateZone, isLoading: loadingCadastral } = useCadastralData(clientAddress);
   
   // Fonction pour récupérer les calculs sauvegardés du localStorage
   const loadSavedCalculations = () => {
@@ -258,6 +266,34 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
                       <MapPin className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
                       <span>Rue Serrano 120, 28006 Madrid</span>
                     </div>
+                    
+                    {/* Nouvelles informations cadastrales */}
+                    <div className="space-y-2 mt-4 border-t pt-4">
+                      <div className="flex">
+                        <MapPinned className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
+                        <div>
+                          <p className="font-medium text-sm">UTM30:</p>
+                          <span>{loadingCadastral ? "Chargement..." : utmCoordinates}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex">
+                        <FileSpreadsheet className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
+                        <div>
+                          <p className="font-medium text-sm">Référence cadastrale:</p>
+                          <span>{loadingCadastral ? "Chargement..." : cadastralReference}</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex">
+                        <MapPin className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
+                        <div>
+                          <p className="font-medium text-sm">Zone climatique:</p>
+                          <span>{loadingCadastral ? "Chargement..." : climateZone}</span>
+                        </div>
+                      </div>
+                    </div>
+                    
                     <div className="flex">
                       <Building className="h-5 w-5 text-gray-500 mr-3" />
                       <span>NIF: {client.nif || "X-1234567-Z"}</span>
