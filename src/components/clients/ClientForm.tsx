@@ -1,4 +1,3 @@
-
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef, useEffect, useState } from "react";
@@ -93,7 +92,7 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
         toast({
           title: "Attention",
           description: "L'adresse n'a pas été sélectionnée dans les suggestions. Les coordonnées pourraient ne pas être précises.",
-          variant: "warning",
+          variant: "destructive",
           duration: 5000,
         });
       }
