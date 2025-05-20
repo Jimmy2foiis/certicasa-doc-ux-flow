@@ -1,6 +1,6 @@
-
 import { useState, useEffect, useCallback } from 'react';
-import { getCadastralDataFromAddress, getCadastralInfoFromCoordinates, refreshCadastralData, clearCadastralCache, type CatastroData, type GeoCoordinates } from '../services/catastroService';
+import { getCadastralDataFromAddress, getCadastralInfoFromCoordinates, refreshCadastralData, clearCadastralCache, type CatastroData } from '../services/catastroService';
+import { type GeoCoordinates } from '../services/geoCoordinatesService';
 
 interface CadastralData {
   utmCoordinates: string;

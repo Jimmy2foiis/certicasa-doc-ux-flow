@@ -14,6 +14,7 @@ import DocumentsTabContent from "./DocumentsTabContent";
 import SignaturesTabContent from "./SignaturesTabContent";
 import { useToast } from "@/components/ui/use-toast"; 
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
+import { ClientTabsContainer } from "./ClientTabsContainer";
 
 interface ClientInfoTabProps {
   client: any;
@@ -83,52 +84,20 @@ const ClientInfoTab = ({
   
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <Card className="lg:col-span-1">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold">Informations Personnelles</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ClientPersonalInfo 
-            client={client} 
-            address={address}
-            onAddressChange={handleAddressChange}
-            onCoordinatesChange={handleCoordinatesChange}
-            utmCoordinates={utmCoordinates}
-            cadastralReference={cadastralReference}
-            climateZone={climateZone}
-            apiSource={apiSource}
-            loadingCadastral={loadingCadastral}
-            onRefreshCadastralData={handleRefreshCadastralData}
-          />
-        </CardContent>
-      </Card>
+      <ClientInfoCard 
+        client={client}
+        address={address}
+        onAddressChange={handleAddressChange}
+        onCoordinatesChange={handleCoordinatesChange}
+        utmCoordinates={utmCoordinates}
+        cadastralReference={cadastralReference}
+        climateZone={climateZone}
+        apiSource={apiSource}
+        loadingCadastral={loadingCadastral}
+        onRefreshCadastralData={handleRefreshCadastralData}
+      />
 
-      <div className="lg:col-span-2">
-        <Tabs defaultValue="projects">
-          <TabsList className="w-full">
-            <TabsTrigger value="projects" className="flex-1">Projets</TabsTrigger>
-            <TabsTrigger value="calculations" className="flex-1">Calculs</TabsTrigger>
-            <TabsTrigger value="documents" className="flex-1">Documents</TabsTrigger>
-            <TabsTrigger value="signatures" className="flex-1">Signatures</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="projects" className="mt-4">
-            <ProjectsTabContent onShowCalculation={onShowCalculation} />
-          </TabsContent>
-          
-          <TabsContent value="calculations" className="mt-4">
-            <CalculationsTabContent onShowCalculation={onShowCalculation} />
-          </TabsContent>
-          
-          <TabsContent value="documents" className="mt-4">
-            <DocumentsTabContent />
-          </TabsContent>
-          
-          <TabsContent value="signatures" className="mt-4">
-            <SignaturesTabContent />
-          </TabsContent>
-        </Tabs>
-      </div>
+      <ClientTabsContainer onShowCalculation={onShowCalculation} />
     </div>
   );
 };
