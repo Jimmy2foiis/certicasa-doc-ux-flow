@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { MapPin, Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddressSearchProps {
   initialAddress: string;
@@ -14,6 +14,7 @@ declare global {
   interface Window {
     google?: any;
     gm_authFailure?: () => void;
+    initGoogleMapsAutocomplete?: () => void; // Add missing property declaration
   }
 }
 
@@ -28,6 +29,7 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiAvailable, setApiAvailable] = useState(true);
+  const { toast } = useToast(); // Get the toast function from the useToast hook
   
   // Mettre à jour l'adresse locale si l'initialAddress change
   useEffect(() => {
@@ -130,7 +132,7 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
       // Nettoyer la fonction globale
       delete window.gm_authFailure;
     };
-  }, [initAutocomplete]);
+  }, [initAutocomplete, toast]); // Add toast to the dependency array
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddress(e.target.value);
