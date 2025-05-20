@@ -58,7 +58,7 @@ export const useCadastralData = (
     try {
       console.log('Récupération des données cadastrales avec les coordonnées :', coordinates);
       
-      // Log détaillé des coordonnées
+      // Log détaillé des coordonnées pour le débogage
       console.log(`Données envoyées à l'API Catastro: lat=${coordinates.lat}, lng=${coordinates.lng}`);
       
       // Toujours utiliser la méthode par coordonnées qui est plus fiable
@@ -89,6 +89,11 @@ export const useCadastralData = (
         toast({
           title: "Données cadastrales récupérées",
           description: `Référence: ${cadastralInfo.cadastralReference.substring(0, 10)}... - Zone: ${cadastralInfo.climateZone}`,
+        });
+      } else if (cadastralInfo.utmCoordinates) {
+        toast({
+          title: "Données UTM récupérées",
+          description: `Coordonnées UTM: ${cadastralInfo.utmCoordinates}`,
         });
       }
     } catch (err) {

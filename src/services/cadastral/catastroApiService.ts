@@ -1,5 +1,5 @@
 
-import { CatastroData } from "../catastroService";
+import { CatastroData } from "../catastroTypes";
 import { OVC_COORDENADAS_URL, OVC_CALLEJERO_DNPLOC_URL } from "./catastroEndpoints";
 import { parseAddress } from "./addressParser";
 import { parseCoordinatesResponse, parseAddressResponse } from "./catastroResponseParser";
@@ -19,10 +19,18 @@ export const getCadastralDataByCoordinatesREST = async (
     // SRS est le système de référence spatial (EPSG:4326 = WGS84)
     url.searchParams.append("SRS", "EPSG:4326"); 
     
-    // Coordonnées X et Y doivent être inversées pour l'API espagnole: X=longitude, Y=latitude
+    // CORRECTION: Inversion des paramètres - X doit être longitude, Y latitude
     // Important: Les valeurs décimales doivent utiliser le point comme séparateur
     const longitudeStr = longitude.toString().replace(',', '.');
     const latitudeStr = latitude.toString().replace(',', '.');
+    
+    // CORRECTION: Vérifier que les coordonnées ne sont pas undefined ou null
+    if (!longitudeStr || longitudeStr === "undefined" || longitudeStr === "null") {
+      throw new Error("La coordonnée X (longitude) est manquante ou invalide");
+    }
+    if (!latitudeStr || latitudeStr === "undefined" || latitudeStr === "null") {
+      throw new Error("La coordonnée Y (latitude) est manquante ou invalide");
+    }
     
     url.searchParams.append("Coordenada_X", longitudeStr);
     url.searchParams.append("Coordenada_Y", latitudeStr);

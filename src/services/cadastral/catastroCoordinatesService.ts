@@ -16,6 +16,11 @@ export const getCadastralInfoFromCoordinates = async (
   try {
     console.log(`Recherche de données cadastrales pour les coordonnées: ${latitude}, ${longitude}`);
     
+    // Validation des coordonnées pour éviter les appels API inutiles
+    if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
+      throw new Error("Coordonnées GPS invalides ou manquantes");
+    }
+    
     // Vérifier si les données sont dans le cache
     const cachedData = getCachedCadastralData(latitude, longitude);
     if (cachedData) {
@@ -91,6 +96,11 @@ export const getCadastralInfoFromCoordinates = async (
  */
 export const refreshCadastralData = async (coordinates: GeoCoordinates): Promise<CatastroData> => {
   try {
+    // Validation des coordonnées
+    if (!coordinates || !coordinates.lat || !coordinates.lng) {
+      throw new Error("Coordonnées GPS invalides ou manquantes");
+    }
+    
     console.log(`Rafraîchissement des données cadastrales pour: ${coordinates.lat}, ${coordinates.lng}`);
     
     // Obtenir les coordonnées UTM à partir des coordonnées GPS
@@ -115,7 +125,7 @@ export const refreshCadastralData = async (coordinates: GeoCoordinates): Promise
   } catch (error) {
     console.error("Erreur lors du rafraîchissement des données cadastrales:", error);
     
-    const utmCoordinates = getFormattedUTMCoordinates(coordinates.lat, coordinates.lng);
+    const utmCoordinates = coordinates ? getFormattedUTMCoordinates(coordinates.lat, coordinates.lng) : "";
     
     return {
       cadastralReference: "",
