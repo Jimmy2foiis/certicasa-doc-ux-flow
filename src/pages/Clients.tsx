@@ -7,11 +7,14 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, ShieldAlert, AlertTriangle } from "lucide-react";
+import { CheckCircle2, ShieldAlert, AlertTriangle, Map } from "lucide-react";
+import { AddressAutocompleteTest } from "@/components/address/AddressAutocompleteTest";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 const Clients = () => {
   const { toast } = useToast();
   const [databaseConnected, setDatabaseConnected] = useState<boolean | null>(null);
+  const [showAutocompleteTest, setShowAutocompleteTest] = useState(false);
   
   useEffect(() => {
     // Vérifier la connexion Supabase
@@ -68,6 +71,27 @@ const Clients = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
         <main className="flex-1 overflow-y-auto p-4">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-semibold">Gestion des Clients</h1>
+            <Dialog open={showAutocompleteTest} onOpenChange={setShowAutocompleteTest}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Map size={16} />
+                  <span>Tester l'autocomplétion d'adresse</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Test d'autocomplétion d'adresse</DialogTitle>
+                  <DialogDescription>
+                    Utilisez cet outil pour tester le fonctionnement de l'autocomplétion Google Maps
+                  </DialogDescription>
+                </DialogHeader>
+                <AddressAutocompleteTest />
+              </DialogContent>
+            </Dialog>
+          </div>
+
           {databaseConnected === false && (
             <Alert variant="destructive" className="mb-4">
               <AlertTriangle className="h-4 w-4" />
