@@ -51,6 +51,7 @@ const Sidebar = () => {
                       : "text-gray-700 hover:bg-gray-100"
                   )
                 }
+                end={item.value === "/"} // Pour éviter que le lien racine soit toujours actif
               >
                 <item.icon className="h-5 w-5 mr-2 md:mr-3 flex-shrink-0" />
                 <span className="hidden md:inline">{item.label}</span>
