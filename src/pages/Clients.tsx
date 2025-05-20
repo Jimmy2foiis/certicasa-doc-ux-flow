@@ -1,4 +1,5 @@
 
+import { useEffect } from "react";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import ClientsSection from "@/components/clients/ClientsSection";
@@ -6,6 +7,15 @@ import { useToast } from "@/components/ui/use-toast";
 
 const Clients = () => {
   const { toast } = useToast();
+  
+  useEffect(() => {
+    // Afficher une notification concernant la clé API Google Maps
+    toast({
+      title: "Google Maps API",
+      description: "L'autocomplétion des adresses utilise une clé API de démonstration avec des limitations. Pour une utilisation complète, vous devrez configurer votre propre clé API Google Maps.",
+      duration: 10000,
+    });
+  }, [toast]);
   
   return (
     <div className="flex h-screen bg-gray-50">
