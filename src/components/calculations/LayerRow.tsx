@@ -17,15 +17,16 @@ interface Layer {
 interface LayerRowProps {
   layer: Layer;
   onDelete: () => void;
+  onUpdate?: (updatedLayer: Layer) => void;
   isNew?: boolean;
 }
 
-const LayerRow = ({ layer, onDelete, isNew = false }: LayerRowProps) => {
+const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) => {
   const [material, setMaterial] = useState(layer.material);
   const [thickness, setThickness] = useState(layer.thickness.toString());
   const [lambda, setLambda] = useState(layer.lambda.toString());
   
-  // Calcular R = e / λ (e en metros, por eso dividimos por 1000)
+  // Calcul R = e / λ (e en mètres, division par 1000)
   const calculateR = () => {
     if (lambda === "-") return layer.r;
     const lambdaValue = parseFloat(lambda);
@@ -35,13 +36,38 @@ const LayerRow = ({ layer, onDelete, isNew = false }: LayerRowProps) => {
   };
   
   const rValue = calculateR();
+
+  const handleUpdate = (field: string, value: string) => {
+    let updatedLayer: Layer;
+    
+    if (field === "material") {
+      setMaterial(value);
+      updatedLayer = { ...layer, material: value };
+    } else if (field === "thickness") {
+      setThickness(value);
+      const thicknessValue = parseFloat(value);
+      const r = !isNaN(thicknessValue) && lambda !== "-" ? thicknessValue / 1000 / parseFloat(lambda.toString()) : layer.r;
+      updatedLayer = { ...layer, thickness: thicknessValue, r };
+    } else if (field === "lambda") {
+      setLambda(value);
+      const lambdaValue = value === "-" ? "-" : parseFloat(value);
+      const r = value !== "-" && !isNaN(parseFloat(value)) ? parseFloat(thickness) / 1000 / parseFloat(value) : layer.r;
+      updatedLayer = { ...layer, lambda: lambdaValue, r };
+    } else {
+      return;
+    }
+    
+    if (onUpdate) {
+      onUpdate(updatedLayer);
+    }
+  };
   
   return (
     <TableRow className={cn(isNew && "bg-green-50")}>
       <TableCell>
         <Input
           value={material}
-          onChange={(e) => setMaterial(e.target.value)}
+          onChange={(e) => handleUpdate("material", e.target.value)}
           className="h-8"
         />
       </TableCell>
@@ -49,14 +75,14 @@ const LayerRow = ({ layer, onDelete, isNew = false }: LayerRowProps) => {
         <Input
           type="number"
           value={thickness}
-          onChange={(e) => setThickness(e.target.value)}
+          onChange={(e) => handleUpdate("thickness", e.target.value)}
           className="h-8"
         />
       </TableCell>
       <TableCell>
         <Input
           value={lambda}
-          onChange={(e) => setLambda(e.target.value)}
+          onChange={(e) => handleUpdate("lambda", e.target.value)}
           className="h-8"
         />
       </TableCell>
