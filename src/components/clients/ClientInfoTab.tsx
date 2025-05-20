@@ -1,3 +1,4 @@
+
 import { 
   Building, 
   Mail, 
@@ -24,6 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { clientDocuments } from "@/data/mock";
 import { useState } from "react";
+import AddressSearch from "./AddressSearch";
 
 interface ClientInfoTabProps {
   client: any;
@@ -32,6 +34,7 @@ interface ClientInfoTabProps {
   climateZone: string;
   loadingCadastral: boolean;
   onShowCalculation?: (projectId?: string) => void;
+  onAddressChange?: (newAddress: string) => void;
 }
 
 const ClientInfoTab = ({ 
@@ -40,8 +43,21 @@ const ClientInfoTab = ({
   cadastralReference, 
   climateZone,
   loadingCadastral,
-  onShowCalculation
+  onShowCalculation,
+  onAddressChange
 }: ClientInfoTabProps) => {
+  // Adresse par défaut du client
+  const [address, setAddress] = useState(client.address || "Rue Serrano 120, 28006 Madrid");
+  
+  // Gestionnaire de changement d'adresse
+  const handleAddressChange = (newAddress: string) => {
+    setAddress(newAddress);
+    // Propager le changement d'adresse au composant parent pour mettre à jour les données cadastrales
+    if (onAddressChange) {
+      onAddressChange(newAddress);
+    }
+  };
+  
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <Card className="lg:col-span-1">
@@ -71,9 +87,12 @@ const ClientInfoTab = ({
                 <Phone className="h-5 w-5 text-gray-500 mr-3" />
                 <span>{client.phone}</span>
               </div>
-              <div className="flex">
-                <MapPin className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
-                <span>Rue Serrano 120, 28006 Madrid</span>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-gray-500">Adresse</p>
+                <AddressSearch 
+                  initialAddress={address} 
+                  onAddressChange={handleAddressChange} 
+                />
               </div>
               
               {/* Informations cadastrales */}

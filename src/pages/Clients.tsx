@@ -2,8 +2,11 @@
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import ClientsSection from "@/components/clients/ClientsSection";
+import { useToast } from "@/components/ui/use-toast";
 
 const Clients = () => {
+  const { toast } = useToast();
+  
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />

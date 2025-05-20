@@ -50,9 +50,22 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
   const [activeTab, setActiveTab] = useState("client-info");
   const { toast } = useToast();
   
-  // Adresse du client pour obtenir les données cadastrales
-  const clientAddress = client ? "Rue Serrano 120, 28006 Madrid" : ""; 
+  // État pour stocker l'adresse du client actuelle
+  const [clientAddress, setClientAddress] = useState(client ? client.address || "Rue Serrano 120, 28006 Madrid" : ""); 
   const { utmCoordinates, cadastralReference, climateZone, isLoading: loadingCadastral } = useCadastralData(clientAddress);
+
+  // Fonction pour mettre à jour l'adresse et rafraîchir les données cadastrales
+  const handleAddressChange = (newAddress: string) => {
+    setClientAddress(newAddress);
+    // Le hook useCadastralData se déclenchera automatiquement avec la nouvelle adresse
+    
+    // Afficher une notification
+    toast({
+      title: "Adresse mise à jour",
+      description: "Les données cadastrales sont en cours de mise à jour...",
+      duration: 3000
+    });
+  };
 
   // Fonction pour récupérer les calculs sauvegardés du localStorage
   const loadSavedCalculations = () => {
@@ -72,7 +85,12 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
   // Charger les calculs sauvegardés au montage du composant
   useEffect(() => {
     loadSavedCalculations();
-  }, [clientId]);
+    
+    // Initialiser l'adresse du client
+    if (client) {
+      setClientAddress(client.address || "Rue Serrano 120, 28006 Madrid");
+    }
+  }, [clientId, client]);
 
   // Fonction pour sauvegarder un nouveau calcul
   const saveCalculation = (calculationData: any) => {
@@ -149,7 +167,7 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
 
   if (showCalculations) {
     return <ProjectCalculationView 
-      client={client} 
+      client={{...client, climateZone}} 
       clientId={clientId}
       currentProjectId={currentProjectId}
       savedCalculations={savedCalculations}
@@ -214,6 +232,7 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
             climateZone={climateZone} 
             loadingCadastral={loadingCadastral}
             onShowCalculation={handleShowCalculation}
+            onAddressChange={handleAddressChange}
           />
         </TabsContent>
 
