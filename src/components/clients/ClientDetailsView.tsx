@@ -52,7 +52,11 @@ const ClientDetailsView = ({ clientId, onBack }: ClientDetailsViewProps) => {
 
   return (
     <div className="space-y-6">
-      <ClientDetailsHeader onBack={onBack} />
+      <ClientDetailsHeader 
+        onBack={onBack} 
+        clientId={clientId} 
+        clientName={client.name}
+      />
 
       <ClientDetailsTabs 
         clientId={clientId}
