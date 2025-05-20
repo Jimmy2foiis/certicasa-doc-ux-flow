@@ -53,6 +53,7 @@ const ProjectCalculationView = ({
         projectId={currentProjectId}
         savedData={calculationData}
         onSave={onSave}
+        clientClimateZone={client.climateZone || "B3"} // Ajout de la zone climatique du client
       />
     </div>
   );

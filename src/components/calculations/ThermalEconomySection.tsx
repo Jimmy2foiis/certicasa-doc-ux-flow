@@ -44,8 +44,10 @@ const ThermalEconomySection = ({
   const [cherryEnabled, setCherryEnabled] = useState(false);
   const [delegate, setDelegate] = useState<"Eiffage" | "GreenFlex">("Eiffage");
   
-  // Get coefficient G based on climate zone
-  const gCoefficient = climateZoneCoefficients[climateZone] || 46; // Default to C3 if not found
+  // Get coefficient G based on climate zone - default to the given zone or C3 if not found
+  const gCoefficient = climateZone && climateZoneCoefficients[climateZone] 
+    ? climateZoneCoefficients[climateZone] 
+    : 46; // Default to C3 coefficient if not found
   
   // Get multiplier based on delegate
   const multiplier = delegateMultipliers[delegate];

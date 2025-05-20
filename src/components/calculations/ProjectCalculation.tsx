@@ -14,6 +14,7 @@ interface ProjectCalculationProps {
   projectId?: string | null;
   savedData?: any;
   onSave?: (calculationData: any) => void;
+  clientClimateZone?: string; // Ajout de la propriété pour la zone climatique du client
 }
 
 interface Layer extends Material {
@@ -38,7 +39,13 @@ const souflr47Material: Layer = {
   isNew: true
 };
 
-const ProjectCalculation = ({ clientId, projectId, savedData, onSave }: ProjectCalculationProps) => {
+const ProjectCalculation = ({ 
+  clientId, 
+  projectId, 
+  savedData, 
+  onSave, 
+  clientClimateZone 
+}: ProjectCalculationProps) => {
   const [beforeLayers, setBeforeLayers] = useState<Layer[]>(initialLayers);
   const [afterLayers, setAfterLayers] = useState<Layer[]>([...initialLayers]);
   
@@ -59,7 +66,8 @@ const ProjectCalculation = ({ clientId, projectId, savedData, onSave }: ProjectC
   const [rseAfter, setRseAfter] = useState("0.10");
   
   // Get climate zone from cadastral data (for demo purposes)
-  const { climateZone } = useCadastralData(clientId ? `Client ID ${clientId}` : "123 Demo Street");
+  const { climateZone: fetchedClimateZone } = useCadastralData(clientId ? `Client ID ${clientId}` : "123 Demo Street");
+  const effectiveClimateZone = clientClimateZone || fetchedClimateZone || "C3";
   
   // Charger les données sauvegardées si disponibles
   useEffect(() => {
@@ -200,7 +208,7 @@ const ProjectCalculation = ({ clientId, projectId, savedData, onSave }: ProjectC
         uValueAfter,
         improvementPercent,
         meetsRequirements,
-        climateZone
+        climateZone: effectiveClimateZone // Use the effective climate zone for saving
       };
       
       onSave(calculationData);
@@ -287,12 +295,12 @@ const ProjectCalculation = ({ clientId, projectId, savedData, onSave }: ProjectC
               onCopyBeforeToAfter={copyBeforeToAfter}
             />
             
-            {/* Thermal Economy Section - NEW */}
+            {/* Thermal Economy Section */}
             <ThermalEconomySection 
               surfaceArea={parseFloat(surfaceArea) || 0}
               uValueBefore={uValueBefore}
               uValueAfter={uValueAfter}
-              climateZone={climateZone}
+              climateZone={effectiveClimateZone}
               projectType={projectType}
             />
             
