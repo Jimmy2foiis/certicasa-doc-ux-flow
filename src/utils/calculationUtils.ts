@@ -8,7 +8,7 @@ interface BCoefficient {
   caso2AfterWork: number;
 }
 
-const bCoefficientTable: BCoefficient[] = [
+export const bCoefficientTable: BCoefficient[] = [
   { min: 0, max: 0.25, caso1: 0.94, caso2: 0.97, caso1AfterWork: 0.99, caso2AfterWork: 1.00 },
   { min: 0.25, max: 0.50, caso1: 0.85, caso2: 0.92, caso1AfterWork: 0.97, caso2AfterWork: 0.99 },
   { min: 0.50, max: 0.75, caso1: 0.77, caso2: 0.87, caso1AfterWork: 0.96, caso2AfterWork: 0.98 },
