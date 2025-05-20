@@ -4,6 +4,7 @@ import { clientsData } from "@/data/mock"; // Pour la transition, on garde tempo
 import { 
   getClientById,
   getProjectsForClient,
+  updateClientRecord,
   Project,
   Client
 } from "@/services/supabaseService";
@@ -70,6 +71,39 @@ export const useClientInfo = (clientId: string) => {
     }
   }, [clientId]);
 
+  // Fonction pour mettre à jour l'adresse du client
+  const updateClientAddress = useCallback(async (newAddress: string) => {
+    if (!client || newAddress === client.address) return;
+    
+    console.log("Mise à jour de l'adresse client:", newAddress);
+    setClientAddress(newAddress);
+    
+    try {
+      // Mettre à jour l'adresse dans Supabase
+      const updatedClient = await updateClientRecord(clientId, { address: newAddress });
+      if (updatedClient) {
+        setClient((prev) => prev ? {...prev, address: newAddress} : null);
+        toast({
+          title: "Adresse mise à jour",
+          description: "L'adresse du client a été mise à jour avec succès.",
+        });
+      } else {
+        toast({
+          title: "Avertissement",
+          description: "L'adresse a été mise à jour localement mais pas dans la base de données.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de l'adresse client:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de mettre à jour l'adresse dans la base de données.",
+        variant: "destructive",
+      });
+    }
+  }, [client, clientId, toast]);
+
   // Charger le client et les projets au montage du composant
   useEffect(() => {
     const loadSupabaseData = async () => {
@@ -86,7 +120,7 @@ export const useClientInfo = (clientId: string) => {
   return {
     client,
     clientAddress,
-    setClientAddress,
+    setClientAddress: updateClientAddress,
     projects,
     loadProjectsFromSupabase
   };

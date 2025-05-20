@@ -15,6 +15,7 @@ import { PhoneField } from "./form-fields/PhoneField";
 import { AddressField } from "./form-fields/AddressField";
 import { ClientIdFields } from "./form-fields/ClientIdFields";
 import { FormActions } from "./form-fields/FormActions";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ClientFormProps {
   onSubmit: (data: Client) => Promise<void>;
@@ -26,6 +27,7 @@ interface ClientFormProps {
 export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = false }: ClientFormProps) => {
   const addressInputRef = useRef<HTMLInputElement>(null);
   const { coordinates, setClientCoordinates } = useCoordinates();
+  const { toast } = useToast();
   
   // Initialize form with react-hook-form and zod validation
   const form = useForm<ClientFormValues>({
@@ -40,8 +42,11 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
     }
   });
 
+  console.log("Valeurs initiales du formulaire:", initialValues);
+
   // Handle address selection from Google Maps autocomplete
   const handleAddressSelected = (address: string) => {
+    console.log("Adresse sélectionnée:", address);
     form.setValue("address", address);
     form.trigger("address");
   };
@@ -63,6 +68,8 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
 
   const handleCreateClient = async (data: ClientFormValues) => {
     try {
+      console.log("Données du formulaire soumises:", data);
+      
       // Create a Client object ensuring name is not undefined
       const clientData: Client = {
         name: data.name, // This is required and validated by zod
@@ -73,9 +80,26 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
         type: data.type || "010",
       };
       
+      if (!clientData.address && data.address) {
+        clientData.address = data.address;
+      }
+      
+      console.log("Données client à envoyer:", clientData);
       await onSubmit(clientData);
+      
+      toast({
+        title: "Client enregistré",
+        description: clientData.address 
+          ? `Client enregistré avec l'adresse: ${clientData.address}` 
+          : "Client enregistré sans adresse",
+      });
     } catch (error) {
       console.error("Erreur lors de la création du client:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer le client",
+        variant: "destructive",
+      });
     }
   };
 

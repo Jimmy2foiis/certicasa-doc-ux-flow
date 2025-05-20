@@ -34,6 +34,11 @@ export const AddressField = ({
                 {...field}
                 isLoading={isLoading}
                 placeholder="Saisissez une adresse espagnole..."
+                value={field.value || ""}
+                onChange={(e) => {
+                  field.onChange(e);
+                  field.value = e.target.value;
+                }}
               />
             </div>
           </FormControl>

@@ -64,6 +64,9 @@ export const getClientById = async (clientId: string): Promise<Client | null> =>
 };
 
 export const createClientRecord = async (clientData: Client): Promise<Client | null> => {
+  // S'assurer que les données d'adresse sont présentes
+  console.log('Création du client avec les données:', clientData);
+  
   // Créer un client local avec un ID temporaire
   const localClient = {
     ...clientData,
@@ -122,6 +125,8 @@ export const createClientRecord = async (clientData: Client): Promise<Client | n
 };
 
 export const updateClientRecord = async (clientId: string, clientData: Partial<Client>): Promise<Client | null> => {
+  console.log('Mise à jour du client:', clientId, 'avec données:', clientData);
+  
   try {
     // Vérifier s'il s'agit d'un client local
     if (clientId.startsWith('local_')) {
@@ -130,7 +135,10 @@ export const updateClientRecord = async (clientId: string, clientData: Partial<C
         const localClients = JSON.parse(localClientsString);
         const updatedClients = localClients.map((client: Client) => {
           if (client.id === clientId) {
-            return { ...client, ...clientData };
+            // S'assurer que l'adresse est bien mise à jour
+            const updatedClient = { ...client, ...clientData };
+            console.log('Client local mis à jour:', updatedClient);
+            return updatedClient;
           }
           return client;
         });
@@ -175,6 +183,7 @@ export const updateClientRecord = async (clientId: string, clientData: Partial<C
       return null;
     }
     
+    console.log('Client mis à jour dans Supabase:', data?.[0]);
     return data?.[0] || null;
   } catch (error) {
     console.error('Exception lors de la mise à jour du client:', error);
