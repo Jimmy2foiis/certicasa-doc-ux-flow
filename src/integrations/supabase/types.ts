@@ -208,6 +208,7 @@ export type Database = {
       documents: {
         Row: {
           client_id: string | null
+          content: string | null
           created_at: string | null
           file_path: string | null
           id: string
@@ -218,6 +219,7 @@ export type Database = {
         }
         Insert: {
           client_id?: string | null
+          content?: string | null
           created_at?: string | null
           file_path?: string | null
           id?: string
@@ -228,6 +230,7 @@ export type Database = {
         }
         Update: {
           client_id?: string | null
+          content?: string | null
           created_at?: string | null
           file_path?: string | null
           id?: string
@@ -341,6 +344,38 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      template_mappings: {
+        Row: {
+          created_at: string
+          id: string
+          mappings: Json
+          template_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mappings?: Json
+          template_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mappings?: Json
+          template_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "template_mappings_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: true
+            referencedRelation: "document_templates"
             referencedColumns: ["id"]
           },
         ]

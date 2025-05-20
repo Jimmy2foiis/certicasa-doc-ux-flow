@@ -115,7 +115,7 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
         // Try to get existing mapping from Supabase
         const { data: mappingData, error } = await supabase
           .from('template_mappings')
-          .select('mappings')
+          .select('*')
           .eq('template_id', template.id)
           .single();
         
