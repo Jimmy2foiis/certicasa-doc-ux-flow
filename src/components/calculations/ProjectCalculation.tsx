@@ -34,10 +34,8 @@ const souflr47Material: Layer = {
 
 const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
   const [beforeLayers, setBeforeLayers] = useState<Layer[]>(initialLayers);
-  const [afterLayers, setAfterLayers] = useState<Layer[]>([
-    ...initialLayers,
-    { id: "6", name: "Isolant EPS", thickness: 80, lambda: 0.031, r: 2.58, isNew: true }
-  ]);
+  // Removed the EPS layer from initial afterLayers
+  const [afterLayers, setAfterLayers] = useState<Layer[]>([...initialLayers]);
   
   const [projectType, setProjectType] = useState("RES010");
   const [surfaceArea, setSurfaceArea] = useState("127");
@@ -57,26 +55,10 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
   const [rsiAfter, setRsiAfter] = useState("0.10");
   const [rseAfter, setRseAfter] = useState("0.10");
   
-  // Synchronisation des couches "avant travaux" vers "après travaux"
+  // Synchronisation des couches "avant travaux" vers "après travaux" - uniquement au chargement initial
   useEffect(() => {
-    setAfterLayers(prevAfterLayers => {
-      // Pour chaque modification dans beforeLayers, on met à jour afterLayers
-      // tout en préservant les couches spécifiques à afterLayers
-      const existingBeforeLayerIds = new Set(beforeLayers.map(layer => layer.id));
-      
-      // On conserve les couches spécifiques à afterLayers (celles qui n'existaient pas dans beforeLayers)
-      const specificAfterLayers = prevAfterLayers.filter(
-        layer => !layer.id.startsWith("1") && 
-                !layer.id.startsWith("2") && 
-                !layer.id.startsWith("3") && 
-                !layer.id.startsWith("4") && 
-                !layer.id.startsWith("5")
-      );
-      
-      // On fusionne les couches de beforeLayers avec les couches spécifiques à afterLayers
-      return [...beforeLayers, ...specificAfterLayers];
-    });
-  }, [beforeLayers]);
+    setAfterLayers([...beforeLayers]);
+  }, []); // Empty dependency array means this runs only once at mount
   
   // Calculate ratios automatically when surface areas change
   useEffect(() => {
@@ -147,6 +129,14 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
       id: Date.now().toString()
     };
     setAfterLayers([...afterLayers, newSouflr]);
+  };
+  
+  // Fonction pour copier les valeurs de "Avant Travaux" vers "Après Travaux"
+  const copyBeforeToAfter = () => {
+    setAfterLayers([...beforeLayers]);
+    setRatioAfter(ratioBefore);
+    setRsiAfter(rsiBefore);
+    setRseAfter(rseBefore);
   };
   
   const updateLayer = (layerSet: "before" | "after", updatedLayer: Layer) => {
@@ -228,6 +218,7 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
               setRatioValue={setRatioAfter}
               onAddSouflr47={addSouflr47} // Nouvelle prop pour ajouter SOUFL'R 47
               lockVentilationType={true} // Nouvelle prop pour verrouiller le type de ventilation
+              onCopyBeforeToAfter={copyBeforeToAfter} // Nouvelle fonction pour copier les valeurs
             />
           </CardContent>
         </Card>

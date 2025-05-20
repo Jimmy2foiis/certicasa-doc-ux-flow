@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, ArrowRight, Table as TableIcon } from "lucide-react";
+import { Plus, ArrowRight, Table as TableIcon, Copy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import LayerRow from "./LayerRow";
 import { Material } from "@/data/materials";
@@ -40,8 +40,9 @@ interface LayerSectionProps {
   setVentilationType: (value: VentilationType) => void;
   ratioValue: number;
   setRatioValue: (value: number) => void;
-  onAddSouflr47?: () => void;  // Nouvelle prop pour ajouter SOUFL'R 47
-  lockVentilationType?: boolean; // Nouvelle prop pour verrouiller le type de ventilation
+  onAddSouflr47?: () => void;  // Prop pour ajouter SOUFL'R 47
+  lockVentilationType?: boolean; // Prop pour verrouiller le type de ventilation
+  onCopyBeforeToAfter?: () => void; // Nouvelle prop pour la fonction de copie
 }
 
 const LayerSection = ({
@@ -65,7 +66,8 @@ const LayerSection = ({
   ratioValue,
   setRatioValue,
   onAddSouflr47,
-  lockVentilationType = false
+  lockVentilationType = false,
+  onCopyBeforeToAfter
 }: LayerSectionProps) => {
   const [showBCoefficientTable, setShowBCoefficientTable] = useState(false);
   const bCoefficientTableData = getBCoefficientTableData();
@@ -94,6 +96,17 @@ const LayerSection = ({
           )}
         </div>
         <div className="flex gap-2">
+          {isAfterWork && onCopyBeforeToAfter && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-8 bg-[#FEF7CD] text-[#806520] hover:bg-[#F3E9B0] border-[#E5D8A0]"
+              onClick={onCopyBeforeToAfter}
+            >
+              <Copy className="h-3.5 w-3.5 mr-1" />
+              Copier les valeurs
+            </Button>
+          )}
           {isAfterWork && onAddSouflr47 && (
             <Button 
               variant="outline" 
