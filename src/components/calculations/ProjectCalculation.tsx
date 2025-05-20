@@ -1,12 +1,13 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { predefinedMaterials, Material } from "@/data/materials";
 import { calculateBCoefficient, calculateThermalResistance, calculateUpValue, calculateUfValue, VentilationType, calculateRatioFromAreas } from "@/utils/calculationUtils";
 import ProjectInfo from "./ProjectInfo";
 import LayerSection from "./LayerSection";
+import ThermalEconomySection from "./ThermalEconomySection";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
+import { useCadastralData } from "@/hooks/useCadastralData";
 
 interface ProjectCalculationProps {
   clientId?: string;
@@ -56,6 +57,9 @@ const ProjectCalculation = ({ clientId, projectId, savedData, onSave }: ProjectC
   
   const [rsiAfter, setRsiAfter] = useState("0.10");
   const [rseAfter, setRseAfter] = useState("0.10");
+  
+  // Get climate zone from cadastral data (for demo purposes)
+  const { climateZone } = useCadastralData(clientId ? `Client ID ${clientId}` : "123 Demo Street");
   
   // Charger les données sauvegardées si disponibles
   useEffect(() => {
@@ -195,7 +199,8 @@ const ProjectCalculation = ({ clientId, projectId, savedData, onSave }: ProjectC
         upValueAfter,
         uValueAfter,
         improvementPercent,
-        meetsRequirements
+        meetsRequirements,
+        climateZone
       };
       
       onSave(calculationData);
@@ -281,6 +286,16 @@ const ProjectCalculation = ({ clientId, projectId, savedData, onSave }: ProjectC
               onAddSouflr47={addSouflr47}
               onCopyBeforeToAfter={copyBeforeToAfter}
             />
+            
+            {/* Thermal Economy Section - NEW */}
+            <ThermalEconomySection 
+              surfaceArea={parseFloat(surfaceArea) || 0}
+              uValueBefore={uValueBefore}
+              uValueAfter={uValueAfter}
+              climateZone={climateZone}
+              projectType={projectType}
+            />
+            
           </CardContent>
         </Card>
       </div>
