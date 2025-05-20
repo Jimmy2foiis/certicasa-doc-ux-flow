@@ -1,12 +1,11 @@
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AddressInput } from "@/components/address/AddressInput";
 import { AddressError } from "@/components/ui/address-error";
 import { ApiStatus } from "@/components/address/ApiStatus";
 import { useGoogleMapsAutocomplete } from "@/hooks/googleMaps/useGoogleMapsAutocomplete";
-import { GeoCoordinates, getCoordinatesFromAddress } from "@/services/geoCoordinatesService";
-import { useToast } from "@/components/ui/use-toast";
-import { debounce } from "lodash"; // Updated import to use full lodash package
+import { GeoCoordinates } from "@/services/geoCoordinatesService";
+import { useAddressSelection } from "@/hooks/useAddressSelection";
 
 interface AddressSearchProps {
   initialAddress: string;
@@ -19,89 +18,40 @@ interface AddressSearchProps {
  * Composant de recherche d'adresse avec autocomplétion Google Maps
  * Optimisé pour toujours fournir des coordonnées GPS avant l'appel à l'API Catastro
  */
-const AddressSearch = ({ 
-  initialAddress, 
-  onAddressChange, 
+const AddressSearch = ({
+  initialAddress,
+  onAddressChange,
   onCoordinatesChange,
   onProcessingChange
 }: AddressSearchProps) => {
-  const [address, setAddress] = useState(initialAddress);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [localError, setLocalError] = useState<string | null>(null);
+  // Use our custom hook for address selection logic
+  const {
+    address, 
+    isProcessing,
+    localError,
+    handleAddressSelected,
+    handleInputChange,
+    handleFocus,
+    handleBlur,
+    syncAddress,
+    updateProcessingState
+  } = useAddressSelection({
+    initialAddress,
+    onAddressChange,
+    onCoordinatesChange,
+    onProcessingChange
+  });
+  
   const inputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
   const autocompleteInitialized = useRef(false);
   
-  // Mettre à jour l'état de traitement externe
-  useEffect(() => {
-    if (onProcessingChange) {
-      onProcessingChange(isProcessing);
-    }
-  }, [isProcessing, onProcessingChange]);
-  
-  // Gestionnaire pour la sélection d'adresse finalisée
-  const handleAddressSelected = useCallback(async (selectedAddress: string) => {
-    if (selectedAddress === address && !isEditing) return;
-    
-    setAddress(selectedAddress);
-    setIsEditing(false);
-    setIsProcessing(true);
-    setLocalError(null);
-    
-    try {
-      // Vérifier si l'adresse est en Espagne
-      if (!selectedAddress.toLowerCase().includes('espagne') && 
-          !selectedAddress.toLowerCase().includes('spain') && 
-          !selectedAddress.toLowerCase().includes('españa')) {
-        console.log("Adresse potentiellement hors d'Espagne:", selectedAddress);
-      }
-      
-      // Toujours obtenir les coordonnées à partir de l'adresse
-      console.log("Obtention des coordonnées pour l'adresse:", selectedAddress);
-      const coordinates = await getCoordinatesFromAddress(selectedAddress);
-      
-      if (!coordinates) {
-        throw new Error("Impossible d'obtenir les coordonnées GPS pour cette adresse.");
-      }
-      
-      console.log("Coordonnées obtenues pour l'adresse:", coordinates);
-      
-      // Informer le parent du changement d'adresse
-      onAddressChange(selectedAddress);
-      
-      // Transmettre immédiatement les coordonnées pour déclencher l'appel au Catastro
-      if (onCoordinatesChange) {
-        console.log("Transmission des coordonnées au composant parent:", coordinates);
-        onCoordinatesChange(coordinates);
-      }
-      
-      toast({
-        title: "Adresse localisée",
-        description: "Coordonnées GPS obtenues avec succès",
-      });
-      
-    } catch (error) {
-      console.error("Erreur lors du géocodage de l'adresse:", error);
-      setLocalError("Erreur de géolocalisation. Vérifiez que l'adresse est complète et en Espagne.");
-      
-      toast({
-        title: "Erreur de géolocalisation",
-        description: "Impossible d'obtenir les coordonnées pour cette adresse",
-        variant: "destructive",
-      });
-      setIsProcessing(false);
-    }
-  }, [address, isEditing, onAddressChange, onCoordinatesChange, toast]);
-  
-  // Version debounced du handler pour éviter les appels trop fréquents
-  const debouncedHandleAddressSelected = useCallback(
-    debounce(handleAddressSelected, 300), 
-    [handleAddressSelected]
-  );
-  
-  // Utiliser notre hook personnalisé pour Google Maps
-  const { isLoading: isLoadingGoogleMaps, error: googleMapsError, apiAvailable, initAutocomplete } = useGoogleMapsAutocomplete({
+  // Use Google Maps autocomplete hook
+  const {
+    isLoading: isLoadingGoogleMaps,
+    error: googleMapsError,
+    apiAvailable,
+    initAutocomplete
+  } = useGoogleMapsAutocomplete({
     inputRef,
     initialAddress,
     onAddressSelected: handleAddressSelected,
@@ -109,12 +59,12 @@ const AddressSearch = ({
       if (onCoordinatesChange) {
         onCoordinatesChange(coords);
         console.log("Coordonnées obtenues de l'autocomplete:", coords);
-        setIsProcessing(false);
+        updateProcessingState(false);
       }
     }
   });
-
-  // Initialiser l'autocomplétion quand le composant est monté ou quand API devient disponible
+  
+  // Initialize autocomplete when component mounts or API becomes available
   useEffect(() => {
     if (inputRef.current && apiAvailable && !autocompleteInitialized.current) {
       console.log("AddressSearch: Initialisation de l'autocomplétion");
@@ -123,45 +73,14 @@ const AddressSearch = ({
     }
   }, [apiAvailable, initAutocomplete]);
   
-  // Mettre à jour l'adresse affichée quand initialAddress change
+  // Update displayed address when initialAddress changes
   useEffect(() => {
-    if (!isEditing && initialAddress !== address) {
-      setAddress(initialAddress);
-    }
-  }, [initialAddress, isEditing, address]);
+    syncAddress();
+  }, [initialAddress, syncAddress]);
   
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    setAddress(newValue);
-    setIsEditing(true);
-    setLocalError(null); // Réinitialiser l'erreur quand l'utilisateur modifie l'adresse
-    
-    // Informer le parent du changement si ce n'est pas en cours de traitement
-    if (!isProcessing) {
-      onAddressChange(newValue);
-    }
-  };
-  
-  const handleFocus = () => {
-    setIsEditing(true);
-    // S'assurer que l'autocomplétion est activée
-    if (inputRef.current && apiAvailable && !autocompleteInitialized.current) {
-      initAutocomplete();
-      autocompleteInitialized.current = true;
-    }
-  };
-  
-  const handleBlur = () => {
-    // Quand l'utilisateur quitte le champ sans utiliser l'autocomplétion
-    if (address !== initialAddress && !isProcessing) {
-      debouncedHandleAddressSelected(address);
-    }
-    setIsEditing(false);
-  };
-
-  // Afficher l'erreur de Google Maps ou l'erreur locale
+  // Display Google Maps error or local error
   const errorToShow = googleMapsError || localError;
-
+  
   return (
     <div className="space-y-2">
       <AddressInput
@@ -176,7 +95,7 @@ const AddressSearch = ({
           console.log("Champ d'adresse cliqué");
           if (inputRef.current) {
             inputRef.current.focus();
-            // Forcer l'initialisation de l'autocomplétion au clic
+            // Force autocomplete initialization on click
             if (apiAvailable && !autocompleteInitialized.current) {
               initAutocomplete();
               autocompleteInitialized.current = true;
@@ -195,7 +114,7 @@ const AddressSearch = ({
         message={isProcessing ? "Géocodage de l'adresse en cours..." : undefined} 
       />
 
-      {/* Information pour l'utilisateur */}
+      {/* User information */}
       {!errorToShow && !isProcessing && address && (
         <p className="text-xs text-gray-500 italic">
           Pour de meilleurs résultats, sélectionnez une adresse dans les suggestions.
