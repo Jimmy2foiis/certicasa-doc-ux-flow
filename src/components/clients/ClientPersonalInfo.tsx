@@ -36,10 +36,10 @@ const ClientPersonalInfo = ({
 
       <div className="space-y-4">
         <ClientBasicInfo 
-          email={client.email} 
-          phone={client.phone} 
-          nif={client.nif} 
-          type={client.type}
+          email={client.email || ''}
+          phone={client.phone || ''}
+          nif={client.nif || ''} 
+          type={client.type || ''}
         />
         
         <div className="space-y-1">

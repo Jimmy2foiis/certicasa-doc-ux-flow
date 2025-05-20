@@ -38,24 +38,30 @@ const ClientInfoCard = ({
       <Card>
         <CardContent className="p-6">
           <div className="flex flex-col gap-6">
-            <ClientBasicInfo client={client} />
-            <ClientPersonalInfo client={client} />
-            
-            <AddressSearch 
-              initialAddress={address || ''} 
-              onAddressChange={onAddressChange} 
-              onCoordinatesChange={onCoordinatesChange}
+            <ClientBasicInfo 
+              email={client?.email || ''}
+              phone={client?.phone || ''}
+              nif={client?.nif || ''}
+              type={client?.type || ''}
             />
             
-            <CadastralInfo 
-              utmCoordinates={utmCoordinates}
-              cadastralReference={cadastralReference}
-              climateZone={climateZone}
-              apiSource={apiSource}
-              loadingCadastral={loadingCadastral}
-              gpsCoordinates={gpsCoordinates}
-              onRefresh={onRefreshCadastralData}
-            />
+            <div className="space-y-4">
+              <AddressSearch 
+                initialAddress={address || ''} 
+                onAddressChange={onAddressChange || (() => {})} 
+                onCoordinatesChange={onCoordinatesChange}
+              />
+              
+              <CadastralInfo 
+                utmCoordinates={utmCoordinates}
+                cadastralReference={cadastralReference}
+                climateZone={climateZone}
+                apiSource={apiSource}
+                loadingCadastral={loadingCadastral}
+                gpsCoordinates={gpsCoordinates}
+                onRefresh={onRefreshCadastralData}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
