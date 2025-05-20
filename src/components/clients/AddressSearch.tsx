@@ -19,11 +19,14 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
   const [address, setAddress] = useState(initialAddress);
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
+  const [isEditing, setIsEditing] = useState(false);
   
   // Mettre à jour l'adresse locale si l'initialAddress change
   useEffect(() => {
-    setAddress(initialAddress);
-  }, [initialAddress]);
+    if (!isEditing) {
+      setAddress(initialAddress);
+    }
+  }, [initialAddress, isEditing]);
   
   const initAutocomplete = useCallback(() => {
     if (!window.google || !inputRef.current) return;
@@ -42,6 +45,7 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
       
       setAddress(place.formatted_address);
       onAddressChange(place.formatted_address);
+      setIsEditing(false);
     });
   }, [onAddressChange]);
   
@@ -57,7 +61,7 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
       if (!document.getElementById('google-maps-script')) {
         const script = document.createElement('script');
         script.id = 'google-maps-script';
-        script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_API_KEY&libraries=places&callback=initGoogleMapsAutocomplete`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg&libraries=places&callback=initGoogleMapsAutocomplete`;
         script.async = true;
         script.defer = true;
         document.head.appendChild(script);
@@ -73,13 +77,21 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddress(e.target.value);
+    setIsEditing(true);
+  };
+  
+  const handleFocus = () => {
+    setIsEditing(true);
   };
   
   const handleBlur = () => {
     // Appeler onAddressChange quand l'utilisateur quitte le champ
-    if (address !== initialAddress) {
-      onAddressChange(address);
-    }
+    setTimeout(() => {
+      if (address !== initialAddress) {
+        onAddressChange(address);
+      }
+      setIsEditing(false);
+    }, 200);
   };
 
   return (
@@ -90,6 +102,7 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
         type="text"
         value={address}
         onChange={handleInputChange}
+        onFocus={handleFocus}
         onBlur={handleBlur}
         placeholder="Saisissez une adresse..."
         className="pl-10"
