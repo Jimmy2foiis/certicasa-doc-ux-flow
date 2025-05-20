@@ -5,9 +5,14 @@ import { predefinedMaterials, Material } from "@/data/materials";
 import { calculateBCoefficient, calculateThermalResistance, calculateUpValue, calculateUfValue, VentilationType, calculateRatioFromAreas } from "@/utils/calculationUtils";
 import ProjectInfo from "./ProjectInfo";
 import LayerSection from "./LayerSection";
+import { Button } from "@/components/ui/button";
+import { Save } from "lucide-react";
 
 interface ProjectCalculationProps {
   clientId?: string;
+  projectId?: string | null;
+  savedData?: any;
+  onSave?: (calculationData: any) => void;
 }
 
 interface Layer extends Material {
@@ -32,18 +37,15 @@ const souflr47Material: Layer = {
   isNew: true
 };
 
-const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
+const ProjectCalculation = ({ clientId, projectId, savedData, onSave }: ProjectCalculationProps) => {
   const [beforeLayers, setBeforeLayers] = useState<Layer[]>(initialLayers);
-  // Removed the EPS layer from initial afterLayers
   const [afterLayers, setAfterLayers] = useState<Layer[]>([...initialLayers]);
   
   const [projectType, setProjectType] = useState("RES010");
   const [surfaceArea, setSurfaceArea] = useState("127");
   const [roofArea, setRoofArea] = useState("150");
   
-  // Séparation des états pour les configurations avant et après
   const [ventilationBefore, setVentilationBefore] = useState<VentilationType>("caso1");
-  // Permettre la modification du type de ventilation après travaux
   const [ventilationAfter, setVentilationAfter] = useState<VentilationType>("caso1");
   
   const [ratioBefore, setRatioBefore] = useState(0.85);
@@ -55,10 +57,28 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
   const [rsiAfter, setRsiAfter] = useState("0.10");
   const [rseAfter, setRseAfter] = useState("0.10");
   
-  // Synchronisation des couches "avant travaux" vers "après travaux" - uniquement au chargement initial
+  // Charger les données sauvegardées si disponibles
   useEffect(() => {
-    setAfterLayers([...beforeLayers]);
-  }, []); // Empty dependency array means this runs only once at mount
+    if (savedData) {
+      // Restaurer toutes les valeurs à partir des données sauvegardées
+      if (savedData.beforeLayers) setBeforeLayers(savedData.beforeLayers);
+      if (savedData.afterLayers) setAfterLayers(savedData.afterLayers);
+      if (savedData.projectType) setProjectType(savedData.projectType);
+      if (savedData.surfaceArea) setSurfaceArea(savedData.surfaceArea);
+      if (savedData.roofArea) setRoofArea(savedData.roofArea);
+      if (savedData.ventilationBefore) setVentilationBefore(savedData.ventilationBefore);
+      if (savedData.ventilationAfter) setVentilationAfter(savedData.ventilationAfter);
+      if (savedData.ratioBefore) setRatioBefore(savedData.ratioBefore);
+      if (savedData.ratioAfter) setRatioAfter(savedData.ratioAfter);
+      if (savedData.rsiBefore) setRsiBefore(savedData.rsiBefore);
+      if (savedData.rseBefore) setRseBefore(savedData.rseBefore);
+      if (savedData.rsiAfter) setRsiAfter(savedData.rsiAfter);
+      if (savedData.rseAfter) setRseAfter(savedData.rseAfter);
+    } else {
+      // Synchronisation des couches "avant travaux" vers "après travaux" - uniquement au chargement initial
+      setAfterLayers([...beforeLayers]);
+    }
+  }, [savedData]);
   
   // Calculate ratios automatically when surface areas change
   useEffect(() => {
@@ -150,6 +170,37 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
       ));
     }
   };
+
+  // Fonction pour enregistrer les données
+  const handleSave = () => {
+    if (onSave) {
+      const calculationData = {
+        projectType,
+        surfaceArea,
+        roofArea,
+        ventilationBefore,
+        ventilationAfter,
+        ratioBefore,
+        ratioAfter,
+        rsiBefore,
+        rseBefore,
+        rsiAfter,
+        rseAfter,
+        beforeLayers,
+        afterLayers,
+        totalRBefore,
+        upValueBefore,
+        uValueBefore,
+        totalRAfter,
+        upValueAfter,
+        uValueAfter,
+        improvementPercent,
+        meetsRequirements
+      };
+      
+      onSave(calculationData);
+    }
+  };
   
   return (
     <div className="space-y-6">
@@ -168,11 +219,22 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
 
         {/* Thermal Calculations */}
         <Card className="lg:col-span-9">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg font-semibold">Module de Calcul</CardTitle>
-            <CardDescription>
-              Saisissez les matériaux et épaisseurs pour calculer la résistance thermique
-            </CardDescription>
+          <CardHeader className="pb-2 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="text-lg font-semibold">Module de Calcul</CardTitle>
+              <CardDescription>
+                Saisissez les matériaux et épaisseurs pour calculer la résistance thermique
+              </CardDescription>
+            </div>
+            {onSave && (
+              <Button 
+                onClick={handleSave} 
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                Enregistrer
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Before Work Section */}

@@ -24,17 +24,133 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { clientsData, clientDocuments } from "@/data/mock";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProjectCalculation from "../calculations/ProjectCalculation";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ClientDetailsProps {
   clientId: string;
   onBack: () => void;
 }
 
+interface SavedCalculation {
+  id: string;
+  projectId: string;
+  projectName: string;
+  clientId: string;
+  type: string;
+  surface: number;
+  date: string;
+  improvement: number;
+  calculationData: any;
+}
+
+// Clé pour le stockage local des calculs
+const SAVED_CALCULATIONS_KEY = 'saved_calculations';
+
 const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
   const client = clientsData.find(c => c.id === clientId);
   const [showCalculations, setShowCalculations] = useState(false);
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const [savedCalculations, setSavedCalculations] = useState<SavedCalculation[]>([]);
+  const { toast } = useToast();
+  
+  // Fonction pour récupérer les calculs sauvegardés du localStorage
+  const loadSavedCalculations = () => {
+    try {
+      const savedData = localStorage.getItem(SAVED_CALCULATIONS_KEY);
+      if (savedData) {
+        const allCalculations = JSON.parse(savedData) as SavedCalculation[];
+        // Filtrer pour ne montrer que les calculs du client actuel
+        const clientCalculations = allCalculations.filter(calc => calc.clientId === clientId);
+        setSavedCalculations(clientCalculations);
+      }
+    } catch (error) {
+      console.error("Erreur lors du chargement des calculs sauvegardés:", error);
+    }
+  };
+
+  // Charger les calculs sauvegardés au montage du composant
+  useEffect(() => {
+    loadSavedCalculations();
+  }, [clientId]);
+
+  // Fonction pour sauvegarder un nouveau calcul
+  const saveCalculation = (calculationData: any) => {
+    try {
+      // Générer un ID unique pour ce calcul
+      const calculationId = `calc_${Date.now()}`;
+      const projectNumber = savedCalculations.length + 1;
+      
+      const newCalculation: SavedCalculation = {
+        id: calculationId,
+        projectId: currentProjectId || `project_${projectNumber}`,
+        projectName: `Réhabilitation Énergétique #${projectNumber}`,
+        clientId: clientId,
+        type: calculationData.projectType || "RES010",
+        surface: parseFloat(calculationData.surfaceArea) || 120,
+        date: new Date().toLocaleDateString('fr-FR'),
+        improvement: calculationData.improvementPercent || 35,
+        calculationData: calculationData
+      };
+      
+      // Récupérer tous les calculs existants
+      const savedData = localStorage.getItem(SAVED_CALCULATIONS_KEY);
+      let allCalculations: SavedCalculation[] = [];
+      
+      if (savedData) {
+        allCalculations = JSON.parse(savedData);
+      }
+      
+      // Ajouter ou mettre à jour le calcul
+      const existingIndex = allCalculations.findIndex(c => 
+        c.clientId === clientId && c.projectId === newCalculation.projectId);
+      
+      if (existingIndex >= 0) {
+        allCalculations[existingIndex] = newCalculation;
+      } else {
+        allCalculations.push(newCalculation);
+      }
+      
+      // Sauvegarder dans le localStorage
+      localStorage.setItem(SAVED_CALCULATIONS_KEY, JSON.stringify(allCalculations));
+      
+      // Mettre à jour l'état local
+      loadSavedCalculations();
+      
+      // Afficher un message de succès
+      toast({
+        title: "Calcul sauvegardé",
+        description: "Les données du calcul ont été enregistrées avec succès.",
+        duration: 3000
+      });
+      
+      // Retourner à la liste des calculs
+      setShowCalculations(false);
+      setCurrentProjectId(null);
+      
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde du calcul:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la sauvegarde du calcul.",
+        variant: "destructive",
+        duration: 5000
+      });
+    }
+  };
+  
+  // Ouvrir un calcul existant
+  const openCalculation = (calculation: SavedCalculation) => {
+    setCurrentProjectId(calculation.projectId);
+    setShowCalculations(true);
+  };
+  
+  // Créer un nouveau calcul
+  const createNewCalculation = () => {
+    setCurrentProjectId(null);
+    setShowCalculations(true);
+  };
   
   if (!client) return null;
 
@@ -46,9 +162,21 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Retour
           </Button>
-          <h2 className="text-xl font-semibold">Calculs pour projet de {client.name}</h2>
+          <h2 className="text-xl font-semibold">
+            {currentProjectId 
+              ? `Modification du calcul pour ${client.name}` 
+              : `Nouveau calcul pour ${client.name}`}
+          </h2>
         </div>
-        <ProjectCalculation clientId={clientId} />
+        <ProjectCalculation 
+          clientId={clientId} 
+          projectId={currentProjectId}
+          savedData={currentProjectId 
+            ? savedCalculations.find(c => c.projectId === currentProjectId)?.calculationData 
+            : undefined
+          }
+          onSave={saveCalculation}
+        />
       </div>
     );
   }
@@ -431,11 +559,11 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
             <CardContent>
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {[1, 2].map((projectId) => (
-                    <Card key={projectId} className="overflow-hidden">
+                  {savedCalculations.map((calculation) => (
+                    <Card key={calculation.id} className="overflow-hidden">
                       <CardHeader className="bg-slate-50 pb-3">
                         <div className="flex items-center justify-between">
-                          <CardTitle className="text-lg">Projet #{projectId}</CardTitle>
+                          <CardTitle className="text-lg">{calculation.projectName}</CardTitle>
                           <Badge variant="success">Enregistré</Badge>
                         </div>
                         <CardDescription>Réhabilitation Énergétique</CardDescription>
@@ -445,19 +573,21 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
                           <div className="grid grid-cols-2 gap-2 text-sm">
                             <div>
                               <p className="text-gray-500">Type:</p>
-                              <p className="font-medium">RES{projectId === 1 ? '010' : '020'}</p>
+                              <p className="font-medium">{calculation.type}</p>
                             </div>
                             <div>
                               <p className="text-gray-500">Surface:</p>
-                              <p className="font-medium">{120 + projectId * 10} m²</p>
+                              <p className="font-medium">{calculation.surface} m²</p>
                             </div>
                             <div>
                               <p className="text-gray-500">Date:</p>
-                              <p className="font-medium">12/05/2023</p>
+                              <p className="font-medium">{calculation.date}</p>
                             </div>
                             <div>
                               <p className="text-gray-500">Amélioration:</p>
-                              <p className="font-medium">{35 + projectId * 3}%</p>
+                              <p className="font-medium">
+                                {calculation.improvement.toFixed(2)}%
+                              </p>
                             </div>
                           </div>
                           
@@ -465,7 +595,7 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
                             <Button 
                               size="sm"
                               className="bg-blue-600 hover:bg-blue-700"
-                              onClick={() => setShowCalculations(true)}
+                              onClick={() => openCalculation(calculation)}
                             >
                               <Calculator className="h-4 w-4 mr-1" />
                               Voir/Modifier
@@ -483,7 +613,7 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
                       <p className="text-sm text-gray-500">Créer un nouveau module de calcul pour ce client</p>
                       <Button 
                         className="mt-2 bg-blue-600 hover:bg-blue-700"
-                        onClick={() => setShowCalculations(true)}
+                        onClick={createNewCalculation}
                       >
                         Créer
                       </Button>
