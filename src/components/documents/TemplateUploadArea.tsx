@@ -8,9 +8,20 @@ interface TemplateUploadAreaProps {
 }
 
 const TemplateUploadArea = ({ uploading, onChange }: TemplateUploadAreaProps) => {
+  // Référence à l'élément input file
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Fonction pour déclencher le clic sur l'input file
+  const handleButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   return (
     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center bg-gray-50">
       <input
+        ref={fileInputRef}
         type="file"
         id="file-upload"
         className="hidden"
@@ -30,7 +41,11 @@ const TemplateUploadArea = ({ uploading, onChange }: TemplateUploadAreaProps) =>
         <p className="text-sm text-gray-500 mb-4">
           Format supporté: .docx, .pdf
         </p>
-        <Button disabled={uploading}>
+        <Button 
+          type="button"
+          disabled={uploading} 
+          onClick={handleButtonClick}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Sélectionner des fichiers
         </Button>
