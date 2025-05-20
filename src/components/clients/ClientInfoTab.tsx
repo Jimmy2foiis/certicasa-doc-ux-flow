@@ -1,20 +1,9 @@
 
 import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ClientPersonalInfo from "./ClientPersonalInfo";
-import ProjectsTabContent from "./ProjectsTabContent";
-import CalculationsTabContent from "./CalculationsTabContent";
-import DocumentsTabContent from "./DocumentsTabContent";
-import SignaturesTabContent from "./SignaturesTabContent";
 import { useToast } from "@/components/ui/use-toast"; 
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
 import { ClientTabsContainer } from "./ClientTabsContainer";
+import ClientInfoCard from "./ClientInfoCard";
 
 interface ClientInfoTabProps {
   client: any;
