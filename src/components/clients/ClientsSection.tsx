@@ -46,7 +46,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useState as useHookState } from "react";
 
 const ClientsSection = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -66,13 +65,23 @@ const ClientsSection = () => {
     type: "010"
   });
 
-  // Charger les clients depuis Supabase
+  // Charger les clients depuis Supabase et le stockage local
   const loadClients = async () => {
     try {
       setLoading(true);
-      const clientData = await getClients();
-      setClients(clientData);
-      console.log("Clients chargés depuis Supabase:", clientData);
+      
+      // Charger depuis Supabase
+      const remoteClients = await getClients();
+      
+      // Charger depuis le stockage local
+      const localClientsString = localStorage.getItem('local_clients');
+      const localClients = localClientsString ? JSON.parse(localClientsString) : [];
+      
+      // Combiner les deux sources
+      const allClients = [...remoteClients, ...localClients];
+      
+      setClients(allClients);
+      console.log("Clients chargés:", allClients);
     } catch (error) {
       console.error("Erreur lors du chargement des clients:", error);
       toast({
@@ -144,6 +153,26 @@ const ClientsSection = () => {
   // Gérer la suppression d'un client
   const handleDeleteClient = async (clientId: string) => {
     try {
+      // Si c'est un client local
+      if (clientId.startsWith('local_')) {
+        const localClientsString = localStorage.getItem('local_clients');
+        if (localClientsString) {
+          const localClients = JSON.parse(localClientsString);
+          const updatedClients = localClients.filter((c: Client) => c.id !== clientId);
+          localStorage.setItem('local_clients', JSON.stringify(updatedClients));
+          
+          toast({
+            title: "Client supprimé",
+            description: "Le client a été supprimé avec succès.",
+          });
+          
+          // Recharger la liste des clients
+          await loadClients();
+        }
+        return;
+      }
+      
+      // Si c'est un client dans Supabase
       const success = await deleteClientRecord(clientId);
       
       if (success) {
@@ -382,7 +411,7 @@ const ClientsSection = () => {
                         <TableCell>{client.phone}</TableCell>
                         <TableCell>{client.projects || 0}</TableCell>
                         <TableCell>
-                          <Badge variant={client.status === "Actif" ? "success" : "outline"}>
+                          <Badge variant={client.status === "Actif" || client.status === "Activo" ? "success" : "outline"}>
                             {client.status === "Activo" ? "Actif" : client.status || "Actif"}
                           </Badge>
                         </TableCell>

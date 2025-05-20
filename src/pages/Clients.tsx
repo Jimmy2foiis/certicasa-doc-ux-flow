@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/services/supabase/supabaseClient";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, ShieldAlert } from "lucide-react";
+import { CheckCircle2, ShieldAlert, AlertTriangle } from "lucide-react";
 
 const Clients = () => {
   const { toast } = useToast();
@@ -29,12 +29,21 @@ const Clients = () => {
           });
         } else {
           setDatabaseConnected(false);
-          toast({
-            title: "Erreur de connexion à la base de données",
-            description: "Impossible de se connecter à Supabase. Les données seront stockées localement.",
-            variant: "destructive",
-            duration: 8000,
-          });
+          if (error.code === '42501') { // RLS Error
+            toast({
+              title: "Attention: Problème de permissions",
+              description: "Vous n'avez pas les permissions nécessaires dans Supabase. Les clients seront stockés localement.",
+              variant: "destructive",
+              duration: 8000,
+            });
+          } else {
+            toast({
+              title: "Erreur de connexion à la base de données",
+              description: "Impossible de se connecter à Supabase. Les données seront stockées localement.",
+              variant: "destructive",
+              duration: 8000,
+            });
+          }
           console.error("Erreur Supabase:", error);
         }
       } catch (error) {
@@ -61,9 +70,9 @@ const Clients = () => {
         <main className="flex-1 overflow-y-auto p-4">
           {databaseConnected === false && (
             <Alert variant="destructive" className="mb-4">
-              <ShieldAlert className="h-4 w-4" />
+              <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                Connexion à la base de données échouée. Les données seront stockées temporairement. 
+                Problème d'accès à la base de données (permissions RLS). Les données seront stockées localement.
                 <Button variant="link" className="p-0 h-auto text-white underline ml-1" onClick={() => window.location.reload()}>
                   Réessayer
                 </Button>
