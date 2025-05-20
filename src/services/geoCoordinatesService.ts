@@ -12,6 +12,7 @@ export interface GeoCoordinates {
 
 /**
  * Conversion de l'adresse en coordonnées géographiques via Google Maps Geocoding
+ * Optimisé pour les adresses espagnoles
  */
 export const getCoordinatesFromAddress = async (address: string): Promise<GeoCoordinates | null> => {
   try {
@@ -23,16 +24,26 @@ export const getCoordinatesFromAddress = async (address: string): Promise<GeoCoo
 
     const geocoder = new window.google.maps.Geocoder();
     
+    // Options de géocodage avec restriction au pays (Espagne)
+    const geocodingOptions = {
+      address: address,
+      region: 'es', // Code de région pour l'Espagne
+      componentRestrictions: { country: 'es' } // Limiter aux résultats en Espagne
+    };
+    
     return new Promise((resolve, reject) => {
-      geocoder.geocode({ address }, (results: any, status: any) => {
+      geocoder.geocode(geocodingOptions, (results: any, status: any) => {
         if (status === "OK" && results && results.length > 0) {
           const location = results[0].geometry.location;
-          resolve({
+          const coordinates = {
             lat: location.lat(),
             lng: location.lng(),
-          });
+          };
+          
+          console.log(`Géocodage réussi pour: ${address}`, coordinates);
+          resolve(coordinates);
         } else {
-          console.error("Erreur de géocodage:", status);
+          console.error(`Erreur de géocodage pour ${address}:`, status);
           reject(null);
         }
       });
@@ -41,4 +52,18 @@ export const getCoordinatesFromAddress = async (address: string): Promise<GeoCoo
     console.error("Erreur lors de la conversion de l'adresse en coordonnées:", error);
     return null;
   }
+};
+
+/**
+ * Normalisation d'une adresse espagnole
+ */
+export const normalizeSpanishAddress = (address: string): string => {
+  if (!address) return "";
+  
+  // Si l'adresse ne se termine pas par "España" ou "Spain", ajouter "España"
+  if (!address.match(/españa|spain/i)) {
+    return `${address}, España`;
+  }
+  
+  return address;
 };

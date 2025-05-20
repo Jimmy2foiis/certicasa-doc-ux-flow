@@ -2,6 +2,8 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { FileText, FileUp, FileTextIcon } from "lucide-react";
+import GenerateDocumentButton from "./GenerateDocumentButton";
 
 interface GenerateTabContentProps {
   setActiveTab: (tab: string) => void;
@@ -12,13 +14,28 @@ const GenerateTabContent = ({ setActiveTab }: GenerateTabContentProps) => {
     <Card>
       <CardContent className="pt-6">
         <div className="text-center p-8">
-          <h2 className="text-lg font-medium mb-2">Générer des Documents</h2>
-          <p className="text-gray-500 mb-4">
-            Utilisez cette section pour générer de nouveaux documents à partir des modèles disponibles.
+          <div className="mx-auto w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+            <FileTextIcon className="h-7 w-7 text-blue-500" />
+          </div>
+          
+          <h2 className="text-xl font-medium mb-2">Générer des Documents</h2>
+          <p className="text-gray-500 mb-6 max-w-md mx-auto">
+            Utilisez cette section pour générer de nouveaux documents à partir des modèles disponibles. 
+            Vous pouvez également ajouter de nouveaux modèles.
           </p>
-          <Button onClick={() => setActiveTab("templates")}>
-            Ajouter de nouveaux modèles
-          </Button>
+          
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <GenerateDocumentButton fullWidth />
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setActiveTab("templates")}
+              className="flex items-center"
+            >
+              <FileUp className="mr-2 h-4 w-4" />
+              Ajouter des modèles
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>

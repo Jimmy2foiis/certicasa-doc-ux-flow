@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { MapPin, Loader2, AlertCircle } from "lucide-react";
@@ -14,7 +15,7 @@ declare global {
   interface Window {
     google?: any;
     gm_authFailure?: () => void;
-    initGoogleMapsAutocomplete?: () => void; // Add missing property declaration
+    initGoogleMapsAutocomplete?: () => void;
   }
 }
 
@@ -29,7 +30,7 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiAvailable, setApiAvailable] = useState(true);
-  const { toast } = useToast(); // Get the toast function from the useToast hook
+  const { toast } = useToast();
   
   // Mettre à jour l'adresse locale si l'initialAddress change
   useEffect(() => {
@@ -45,10 +46,13 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
     }
     
     try {
-      // Créer l'objet autocomplete de Google Maps
+      // Créer l'objet autocomplete de Google Maps avec restriction au pays (Espagne)
       autocompleteRef.current = new window.google.maps.places.Autocomplete(
         inputRef.current,
-        { types: ['address'] }
+        { 
+          types: ['address'],
+          componentRestrictions: { country: 'es' } // Restreindre aux adresses espagnoles
+        }
       );
       
       // Écouter les changements lorsqu'une adresse est sélectionnée
@@ -60,8 +64,18 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
           return;
         }
         
-        setAddress(place.formatted_address);
-        onAddressChange(place.formatted_address);
+        // Récupérer les détails complets de l'adresse
+        const fullAddress = place.formatted_address;
+        
+        // Récupérer les coordonnées précises
+        if (place.geometry && place.geometry.location) {
+          const lat = place.geometry.location.lat();
+          const lng = place.geometry.location.lng();
+          console.log(`Coordonnées obtenues: ${lat}, ${lng} pour l'adresse: ${fullAddress}`);
+        }
+        
+        setAddress(fullAddress);
+        onAddressChange(fullAddress);
         setIsEditing(false);
         setError(null);
       });
@@ -132,7 +146,7 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
       // Nettoyer la fonction globale
       delete window.gm_authFailure;
     };
-  }, [initAutocomplete, toast]); // Add toast to the dependency array
+  }, [initAutocomplete, toast]);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddress(e.target.value);
@@ -167,7 +181,7 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
           onChange={handleInputChange}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          placeholder="Saisissez une adresse..."
+          placeholder="Saisissez une adresse espagnole..."
           className="pl-10"
           disabled={isLoading}
         />
