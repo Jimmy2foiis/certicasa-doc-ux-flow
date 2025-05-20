@@ -1,12 +1,9 @@
 
-import { useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { DOCUMENT_TEMPLATES_KEY } from "@/components/documents/DocumentTemplateUpload";
 import { useFileUpload } from "./useFileUpload";
 import { useTemplateStorage } from "./useTemplateStorage";
+import { useTemplateNotification } from "./useTemplateNotification";
 
 export const useDocumentTemplateUpload = () => {
-  const { toast } = useToast();
   const {
     uploadedFiles,
     uploading,
@@ -18,26 +15,11 @@ export const useDocumentTemplateUpload = () => {
     resetUploadedFiles
   } = useFileUpload();
 
-  const { saveAllTemplates } = useTemplateStorage(resetUploadedFiles);
+  // Use our notification hook
+  useTemplateNotification();
 
-  // Load existing templates from localStorage on load
-  useEffect(() => {
-    // We just load them to display an information message
-    try {
-      const storedTemplates = localStorage.getItem(DOCUMENT_TEMPLATES_KEY);
-      if (storedTemplates) {
-        const existingTemplates = JSON.parse(storedTemplates);
-        if (existingTemplates.length > 0) {
-          toast({
-            title: "Modèles disponibles",
-            description: `${existingTemplates.length} modèle(s) sont disponibles dans votre bibliothèque.`,
-          });
-        }
-      }
-    } catch (error) {
-      console.error("Erreur lors du chargement initial des modèles:", error);
-    }
-  }, [toast]);
+  // Use the template storage hook
+  const { saveAllTemplates } = useTemplateStorage(resetUploadedFiles);
 
   // Wrapper to save all templates
   const saveAllTemplatesToLibrary = () => {

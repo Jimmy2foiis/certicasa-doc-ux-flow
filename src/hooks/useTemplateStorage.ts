@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { DOCUMENT_TEMPLATES_KEY } from "@/components/documents/DocumentTemplateUpload";
 import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
