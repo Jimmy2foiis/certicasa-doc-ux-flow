@@ -5,13 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { Material } from "@/data/materials";
 
-interface Layer {
-  id: string;
-  material: string;
-  thickness: number;
-  lambda: number | string;
-  r: number;
+interface Layer extends Material {
+  isNew?: boolean;
 }
 
 interface LayerRowProps {
@@ -22,7 +19,7 @@ interface LayerRowProps {
 }
 
 const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) => {
-  const [material, setMaterial] = useState(layer.material);
+  const [name, setName] = useState(layer.name);
   const [thickness, setThickness] = useState(layer.thickness.toString());
   const [lambda, setLambda] = useState(layer.lambda.toString());
   
@@ -40,9 +37,9 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
   const handleUpdate = (field: string, value: string) => {
     let updatedLayer: Layer;
     
-    if (field === "material") {
-      setMaterial(value);
-      updatedLayer = { ...layer, material: value };
+    if (field === "name") {
+      setName(value);
+      updatedLayer = { ...layer, name: value };
     } else if (field === "thickness") {
       setThickness(value);
       const thicknessValue = parseFloat(value);
@@ -66,8 +63,8 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
     <TableRow className={cn(isNew && "bg-green-50")}>
       <TableCell>
         <Input
-          value={material}
-          onChange={(e) => handleUpdate("material", e.target.value)}
+          value={name}
+          onChange={(e) => handleUpdate("name", e.target.value)}
           className="h-8"
         />
       </TableCell>
