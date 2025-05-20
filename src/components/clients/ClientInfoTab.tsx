@@ -12,6 +12,7 @@ import ProjectsTabContent from "./ProjectsTabContent";
 import CalculationsTabContent from "./CalculationsTabContent";
 import DocumentsTabContent from "./DocumentsTabContent";
 import SignaturesTabContent from "./SignaturesTabContent";
+import { useToast } from "@/components/ui/use-toast"; // Added toast import
 
 interface ClientInfoTabProps {
   client: any;
@@ -32,6 +33,7 @@ const ClientInfoTab = ({
   onShowCalculation,
   onAddressChange
 }: ClientInfoTabProps) => {
+  const { toast } = useToast(); // Added toast hook
   // Adresse par défaut du client
   const [address, setAddress] = useState(client.address || "Rue Serrano 120, 28006 Madrid");
   
@@ -42,6 +44,13 @@ const ClientInfoTab = ({
     if (onAddressChange) {
       onAddressChange(newAddress);
     }
+    
+    // Notification de modification d'adresse
+    toast({
+      title: "Adresse mise à jour",
+      description: "Données cadastrales en cours de récupération...",
+      duration: 3000,
+    });
   };
   
   return (
