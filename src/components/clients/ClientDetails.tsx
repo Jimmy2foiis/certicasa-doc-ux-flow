@@ -1,4 +1,3 @@
-
 import { 
   ArrowLeft, 
   User, 
@@ -51,7 +50,10 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
   const { toast } = useToast();
   
   // État pour stocker l'adresse du client actuelle
-  const [clientAddress, setClientAddress] = useState(client ? client.address || "Rue Serrano 120, 28006 Madrid" : ""); 
+  // Fix: Provide a default value when client.address is undefined
+  const [clientAddress, setClientAddress] = useState(
+    client ? (client as any).address || "Rue Serrano 120, 28006 Madrid" : ""
+  ); 
   const { utmCoordinates, cadastralReference, climateZone, isLoading: loadingCadastral } = useCadastralData(clientAddress);
 
   // Fonction pour mettre à jour l'adresse et rafraîchir les données cadastrales
@@ -88,7 +90,7 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
     
     // Initialiser l'adresse du client
     if (client) {
-      setClientAddress(client.address || "Rue Serrano 120, 28006 Madrid");
+      setClientAddress((client as any).address || "Rue Serrano 120, 28006 Madrid");
     }
   }, [clientId, client]);
 
