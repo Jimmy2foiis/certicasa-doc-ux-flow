@@ -103,7 +103,7 @@ const DocumentVariablesList = () => {
                     Variables de type "{category}"
                   </h3>
                   <p className="text-sm text-gray-500 mt-1">
-                    Utilisez ces variables avec la syntaxe <code>{{`{{${category}.nom_variable}}`}}</code>
+                    Utilisez ces variables avec la syntaxe <code>{`{{${category}.nom_variable}}`}</code>
                   </p>
                 </div>
                 <div className="divide-y">
@@ -111,7 +111,7 @@ const DocumentVariablesList = () => {
                     <div key={variable.name} className="flex items-center justify-between p-3 hover:bg-gray-50">
                       <div>
                         <code className="font-mono bg-gray-100 px-2 py-1 rounded text-blue-600">
-                          {{`{{${category}.${variable.name}}}`}}
+                          {`{{${category}.${variable.name}}}`}
                         </code>
                         <p className="text-sm text-gray-600 mt-1">{variable.description}</p>
                       </div>
