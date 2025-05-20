@@ -77,7 +77,7 @@ const DocumentTemplateUpload = () => {
             <p className="text-sm text-gray-500">
               {uploadedFiles.length} modèle(s) téléversé(s)
             </p>
-            <Button onClick={saveAllTemplates}>
+            <Button onClick={() => saveAllTemplates(uploadedFiles)}>
               Enregistrer dans la bibliothèque
             </Button>
           </div>

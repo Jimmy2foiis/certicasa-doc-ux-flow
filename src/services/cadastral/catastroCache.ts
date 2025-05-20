@@ -1,6 +1,7 @@
 
 import { CatastroData } from "../catastroService";
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
 
 // Constante pour la durée d'expiration du cache (24 heures en millisecondes)
 const CACHE_EXPIRY_TIME = 24 * 60 * 60 * 1000;
@@ -37,7 +38,16 @@ export const getCachedCadastralData = async (lat: number, lng: number): Promise<
     
     if (data && isCacheValid(data.timestamp)) {
       console.log(`Données cadastrales récupérées du cache pour ${lat}, ${lng}`);
-      return data.data as CatastroData;
+      // Conversion sécurisée du JSONB stocké vers CatastroData
+      const cachedData = data.data as Record<string, any>;
+      
+      return {
+        cadastralReference: cachedData.cadastralReference || '',
+        utmCoordinates: cachedData.utmCoordinates || '',
+        climateZone: cachedData.climateZone || '',
+        apiSource: cachedData.apiSource || '',
+        error: cachedData.error || null
+      };
     }
     
     // Si les données sont expirées, on les supprime
@@ -60,6 +70,15 @@ export const setCachedCadastralData = async (lat: number, lng: number, data: Cat
   try {
     const cacheKey = generateCacheKey(lat, lng);
     
+    // Préparer les données JSON pour Supabase
+    const jsonData: Record<string, any> = {
+      cadastralReference: data.cadastralReference || '',
+      utmCoordinates: data.utmCoordinates || '',
+      climateZone: data.climateZone || '',
+      apiSource: data.apiSource || '',
+      error: data.error || null
+    };
+    
     // Vérifier si l'entrée existe déjà
     const { data: existingData, error: checkError } = await supabase
       .from('cadastral_cache')
@@ -76,7 +95,7 @@ export const setCachedCadastralData = async (lat: number, lng: number, data: Cat
       const { error: updateError } = await supabase
         .from('cadastral_cache')
         .update({
-          data: data,
+          data: jsonData,
           timestamp: new Date().toISOString()
         })
         .eq('id', existingData.id);
@@ -89,7 +108,7 @@ export const setCachedCadastralData = async (lat: number, lng: number, data: Cat
         .from('cadastral_cache')
         .insert([{
           coordinate_key: cacheKey,
-          data: data,
+          data: jsonData,
           timestamp: new Date().toISOString()
         }]);
       

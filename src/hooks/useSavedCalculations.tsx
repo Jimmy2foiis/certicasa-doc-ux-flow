@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { getCadastralDataForClient } from "@/services/supabaseService";
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
 
 interface SavedCalculation {
   id: string;
@@ -36,17 +37,21 @@ export const useSavedCalculations = (clientId: string) => {
       
       if (data) {
         // Convertir du format Supabase au format local
-        const formattedCalculations: SavedCalculation[] = data.map(calc => ({
-          id: calc.id,
-          projectId: calc.project_id || '',
-          projectName: calc.calculation_data?.projectName || 'Projet sans nom',
-          clientId: calc.client_id || '',
-          type: calc.type || '',
-          surface: calc.surface || 0,
-          date: new Date(calc.date).toLocaleDateString('fr-FR'),
-          improvement: calc.improvement || 0,
-          calculationData: calc.calculation_data || {}
-        }));
+        const formattedCalculations: SavedCalculation[] = data.map(calc => {
+          const calcData = calc.calculation_data as Record<string, any> | null;
+          
+          return {
+            id: calc.id,
+            projectId: calc.project_id || '',
+            projectName: calcData?.projectName || 'Projet sans nom',
+            clientId: calc.client_id || '',
+            type: calc.type || '',
+            surface: calc.surface || 0,
+            date: new Date(calc.date).toLocaleDateString('fr-FR'),
+            improvement: calc.improvement || 0,
+            calculationData: calc.calculation_data || {}
+          };
+        });
         
         setSavedCalculations(formattedCalculations);
       } else {
