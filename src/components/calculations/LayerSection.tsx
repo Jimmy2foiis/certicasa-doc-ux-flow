@@ -162,24 +162,16 @@ const LayerSection = ({
           <Label htmlFor={`ventilation-${isAfterWork ? 'after' : 'before'}`}>Type de ventilation</Label>
           <Select 
             value={ventilationType}
-            onValueChange={(value: VentilationType) => !lockVentilationType && setVentilationType(value)}
-            disabled={lockVentilationType}
+            onValueChange={(value: VentilationType) => setVentilationType(value)}
           >
             <SelectTrigger id={`ventilation-${isAfterWork ? 'after' : 'before'}`}>
               <SelectValue placeholder="Sélectionner ventilation" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="caso1">Légèrement ventilé (Caso 1)</SelectItem>
-              {!lockVentilationType && (
-                <SelectItem value="caso2">Très ventilé (Caso 2)</SelectItem>
-              )}
+              <SelectItem value="caso2">Très ventilé (Caso 2)</SelectItem>
             </SelectContent>
           </Select>
-          {lockVentilationType && (
-            <p className="text-xs text-muted-foreground mt-1">
-              En après travaux, seul le Caso 1 (légèrement ventilé) est applicable.
-            </p>
-          )}
         </div>
         <div className="space-y-2">
           <Label htmlFor={`ratio-${isAfterWork ? 'after' : 'before'}`}>Ratio Combles/Toiture: {ratioValue.toFixed(2)}</Label>

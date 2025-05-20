@@ -43,8 +43,8 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
   
   // Séparation des états pour les configurations avant et après
   const [ventilationBefore, setVentilationBefore] = useState<VentilationType>("caso1");
-  // Pour l'après travaux, CASO 1 est imposé et non modifiable
-  const [ventilationAfter] = useState<VentilationType>("caso1");
+  // Permettre la modification du type de ventilation après travaux
+  const [ventilationAfter, setVentilationAfter] = useState<VentilationType>("caso1");
   
   const [ratioBefore, setRatioBefore] = useState(0.85);
   const [ratioAfter, setRatioAfter] = useState(0.85);
@@ -213,12 +213,11 @@ const ProjectCalculation = ({ clientId }: ProjectCalculationProps) => {
               rse={rseAfter}
               setRse={setRseAfter}
               ventilationType={ventilationAfter}
-              setVentilationType={() => {}} // Fonction vide car non modifiable en après travaux
+              setVentilationType={setVentilationAfter}
               ratioValue={ratioAfter}
               setRatioValue={setRatioAfter}
-              onAddSouflr47={addSouflr47} // Nouvelle prop pour ajouter SOUFL'R 47
-              lockVentilationType={true} // Nouvelle prop pour verrouiller le type de ventilation
-              onCopyBeforeToAfter={copyBeforeToAfter} // Nouvelle fonction pour copier les valeurs
+              onAddSouflr47={addSouflr47}
+              onCopyBeforeToAfter={copyBeforeToAfter}
             />
           </CardContent>
         </Card>
