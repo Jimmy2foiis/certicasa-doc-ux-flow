@@ -1,6 +1,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { getCadastralInfoFromCoordinates, clearCadastralCache, type CatastroData } from '../services/catastroService';
+import { 
+  getCadastralInfoFromCoordinates, 
+  refreshCadastralData, 
+  clearCadastralCache, 
+  type CatastroData 
+} from '../services/catastroService';
 import { type GeoCoordinates } from '../services/geoCoordinatesService';
 
 interface CadastralData {
