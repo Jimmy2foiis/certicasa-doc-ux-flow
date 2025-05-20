@@ -98,7 +98,7 @@ const DocumentTemplateMapping = () => {
               </Button>
             </div>
             <p className="text-sm text-gray-500">
-              Les balises seront formatées automatiquement comme {{balise}}
+              Les balises seront formatées automatiquement comme {`{{balise}}`}
             </p>
           </div>
           
