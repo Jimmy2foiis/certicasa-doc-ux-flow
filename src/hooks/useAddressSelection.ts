@@ -2,7 +2,7 @@
 import { useState, useCallback, useRef } from "react";
 import { GeoCoordinates, getCoordinatesFromAddress } from "@/services/geoCoordinatesService";
 import { useToast } from "@/hooks/use-toast";
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 
 interface UseAddressSelectionProps {
   initialAddress: string;
