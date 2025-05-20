@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { AddressInput } from "@/components/address/AddressInput";
+import { ApiStatus } from "@/components/address/ApiStatus";
+import { useGoogleMapsAutocomplete } from "@/hooks/useGoogleMapsAutocomplete";
+import { useCoordinates } from "@/hooks/useCoordinates";
 
 // Define validation schema
 const clientSchema = z.object({
@@ -44,9 +48,9 @@ interface ClientCreateDialogProps {
 const ClientCreateDialog = ({ onClientCreated }: ClientCreateDialogProps) => {
   const [openDialog, setOpenDialog] = useState(false);
   const { toast } = useToast();
-  const [addressLoading, setAddressLoading] = useState(false);
-  const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const addressInputRef = useRef<HTMLInputElement>(null);
+  const { coordinates, setClientCoordinates } = useCoordinates();
   
   // Initialize form with react-hook-form and zod validation
   const form = useForm<ClientFormValues>({
@@ -60,6 +64,28 @@ const ClientCreateDialog = ({ onClientCreated }: ClientCreateDialogProps) => {
       type: "010"
     }
   });
+
+  // Handle address selection from Google Maps autocomplete
+  const handleAddressSelected = (address: string) => {
+    form.setValue("address", address);
+    form.trigger("address");
+    setShowSuggestions(false);
+  };
+  
+  // Initialize Google Maps Autocomplete
+  const { isLoading, error, apiAvailable, initAutocomplete } = useGoogleMapsAutocomplete({
+    inputRef: addressInputRef,
+    initialAddress: form.getValues("address"),
+    onAddressSelected: handleAddressSelected,
+    onCoordinatesSelected: setClientCoordinates
+  });
+
+  // Initialize autocomplete when dialog opens
+  useEffect(() => {
+    if (openDialog && addressInputRef.current && apiAvailable) {
+      initAutocomplete();
+    }
+  }, [openDialog, apiAvailable, initAutocomplete]);
 
   const handleCreateClient = async (data: ClientFormValues) => {
     try {
@@ -96,44 +122,6 @@ const ClientCreateDialog = ({ onClientCreated }: ClientCreateDialogProps) => {
         variant: "destructive",
       });
     }
-  };
-  
-  // Handle address with autocompletion
-  const handleAddressChange = async (value: string) => {
-    form.setValue("address", value);
-    
-    if (value.length >= 3) {
-      setAddressLoading(true);
-      setShowSuggestions(true);
-      
-      try {
-        // Simulate address search (to be replaced with real API)
-        // Here we could use Google Maps Autocomplete API if available
-        setTimeout(() => {
-          const mockSuggestions = [
-            `${value}, Calle Principal, Madrid, España`,
-            `${value}, Avenida Central, Barcelona, España`,
-            `${value}, Calle Mayor, Valencia, España`,
-            `${value}, Plaza Principal, Sevilla, España`,
-          ];
-          setAddressSuggestions(mockSuggestions);
-          setAddressLoading(false);
-        }, 500);
-      } catch (error) {
-        console.error("Erreur lors de la recherche d'adresse:", error);
-        setAddressLoading(false);
-        setShowSuggestions(false);
-      }
-    } else {
-      setAddressSuggestions([]);
-      setShowSuggestions(false);
-    }
-  };
-  
-  const selectAddressSuggestion = (address: string) => {
-    form.setValue("address", address);
-    form.trigger("address");
-    setShowSuggestions(false);
   };
 
   return (
@@ -206,36 +194,23 @@ const ClientCreateDialog = ({ onClientCreated }: ClientCreateDialogProps) => {
                   <FormLabel>Adresse</FormLabel>
                   <FormControl>
                     <div className="relative">
-                      <MapPin className="absolute left-2.5 top-2.5 h-5 w-5 text-gray-400" />
-                      {addressLoading && <Loader2 className="absolute right-2.5 top-2.5 h-5 w-5 text-gray-400 animate-spin" />}
-                      <Input
+                      <AddressInput
+                        ref={addressInputRef}
                         {...field}
-                        className="pl-10"
-                        placeholder="Saisissez une adresse..."
-                        onChange={(e) => {
-                          field.onChange(e);
-                          handleAddressChange(e.target.value);
-                        }}
+                        isLoading={isLoading}
+                        placeholder="Saisissez une adresse espagnole..."
                       />
                     </div>
                   </FormControl>
-                  
-                  {showSuggestions && addressSuggestions.length > 0 && (
-                    <div className="absolute mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 z-10 max-h-60 overflow-auto">
-                      {addressSuggestions.map((suggestion, index) => (
-                        <div
-                          key={index}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                          onClick={() => selectAddressSuggestion(suggestion)}
-                        >
-                          <div className="flex items-start">
-                            <MapPin className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0 text-gray-400" />
-                            <span>{suggestion}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                  {error && (
+                    <div className="text-red-500 text-xs mt-1">{error}</div>
                   )}
+                  <ApiStatus 
+                    isLoading={isLoading}
+                    apiAvailable={apiAvailable}
+                    className="mt-1"
+                    message={isLoading ? "Chargement de la recherche d'adresse..." : undefined}
+                  />
                   <FormMessage />
                 </FormItem>
               )}
