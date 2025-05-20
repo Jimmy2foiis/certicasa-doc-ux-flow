@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { getCadastralDataFromAddress, type CatastroData } from '../services/catastroService';
+import { getCadastralDataFromAddress, getCadastralInfoFromCoordinates, type CatastroData, type GeoCoordinates } from '../services/catastroService';
 
 interface CadastralData {
   utmCoordinates: string;
@@ -10,11 +10,19 @@ interface CadastralData {
   error: string | null;
 }
 
+interface UseCadastralDataOptions {
+  useDirectCoordinates?: boolean;
+}
+
 /**
- * Hook pour récupérer les données cadastrales à partir d'une adresse
+ * Hook pour récupérer les données cadastrales à partir d'une adresse ou de coordonnées directes
  * en utilisant l'API officielle du Catastro Español
  */
-export const useCadastralData = (address: string): CadastralData => {
+export const useCadastralData = (
+  address: string, 
+  coordinates?: GeoCoordinates,
+  options: UseCadastralDataOptions = {}
+): CadastralData => {
   const [data, setData] = useState<Omit<CadastralData, 'isLoading' | 'error'>>({
     utmCoordinates: '',
     cadastralReference: '',
@@ -22,10 +30,11 @@ export const useCadastralData = (address: string): CadastralData => {
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { useDirectCoordinates = true } = options;
 
   useEffect(() => {
-    // Vérifier si l'adresse est fournie et non vide
-    if (!address || address.trim() === '') {
+    // Si pas de coordonnées ni d'adresse, on ne fait rien
+    if ((!address || address.trim() === '') && !coordinates) {
       return;
     }
 
@@ -34,10 +43,16 @@ export const useCadastralData = (address: string): CadastralData => {
       setError(null);
 
       try {
-        console.log('Fetching cadastral data for address:', address);
-        
-        // Appeler le service pour obtenir les données cadastrales
-        const cadastralInfo = await getCadastralDataFromAddress(address);
+        let cadastralInfo: CatastroData;
+
+        // Si on a des coordonnées directes et l'option est activée, on les utilise directement
+        if (coordinates && useDirectCoordinates) {
+          console.log('Récupération des données cadastrales avec coordonnées directes:', coordinates);
+          cadastralInfo = await getCadastralInfoFromCoordinates(coordinates.lat, coordinates.lng);
+        } else {
+          console.log('Récupération des données cadastrales à partir de l\'adresse:', address);
+          cadastralInfo = await getCadastralDataFromAddress(address);
+        }
         
         if (cadastralInfo.error) {
           throw new Error(cadastralInfo.error);
@@ -57,7 +72,7 @@ export const useCadastralData = (address: string): CadastralData => {
     };
 
     fetchCadastralData();
-  }, [address]);
+  }, [address, coordinates, useDirectCoordinates]);
 
   return { ...data, isLoading, error };
 };

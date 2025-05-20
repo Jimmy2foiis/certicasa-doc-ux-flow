@@ -12,7 +12,8 @@ import ProjectsTabContent from "./ProjectsTabContent";
 import CalculationsTabContent from "./CalculationsTabContent";
 import DocumentsTabContent from "./DocumentsTabContent";
 import SignaturesTabContent from "./SignaturesTabContent";
-import { useToast } from "@/components/ui/use-toast"; // Added toast import
+import { useToast } from "@/components/ui/use-toast"; 
+import { GeoCoordinates } from "@/services/geoCoordinatesService";
 
 interface ClientInfoTabProps {
   client: any;
@@ -22,6 +23,7 @@ interface ClientInfoTabProps {
   loadingCadastral: boolean;
   onShowCalculation?: (projectId?: string) => void;
   onAddressChange?: (newAddress: string) => void;
+  onCoordinatesChange?: (coordinates: GeoCoordinates) => void; // Nouvelle prop pour les coordonnées
 }
 
 const ClientInfoTab = ({ 
@@ -31,9 +33,10 @@ const ClientInfoTab = ({
   climateZone,
   loadingCadastral,
   onShowCalculation,
-  onAddressChange
+  onAddressChange,
+  onCoordinatesChange
 }: ClientInfoTabProps) => {
-  const { toast } = useToast(); // Added toast hook
+  const { toast } = useToast();
   // Adresse par défaut du client
   const [address, setAddress] = useState(client.address || "Rue Serrano 120, 28006 Madrid");
   
@@ -53,6 +56,14 @@ const ClientInfoTab = ({
     });
   };
   
+  // Gestionnaire de changement de coordonnées
+  const handleCoordinatesChange = (coordinates: GeoCoordinates) => {
+    if (onCoordinatesChange) {
+      onCoordinatesChange(coordinates);
+      console.log("Nouvelles coordonnées reçues:", coordinates);
+    }
+  };
+  
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <Card className="lg:col-span-1">
@@ -64,6 +75,7 @@ const ClientInfoTab = ({
             client={client} 
             address={address}
             onAddressChange={handleAddressChange}
+            onCoordinatesChange={handleCoordinatesChange}
             utmCoordinates={utmCoordinates}
             cadastralReference={cadastralReference}
             climateZone={climateZone}

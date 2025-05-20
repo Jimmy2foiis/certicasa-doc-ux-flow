@@ -11,28 +11,29 @@ interface GenerateTabContentProps {
 
 const GenerateTabContent = ({ setActiveTab }: GenerateTabContentProps) => {
   return (
-    <Card>
+    <Card className="bg-white shadow-md">
       <CardContent className="pt-6">
         <div className="text-center p-8">
-          <div className="mx-auto w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4">
-            <FileTextIcon className="h-7 w-7 text-blue-500" />
+          <div className="mx-auto w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center mb-4">
+            <FileTextIcon className="h-8 w-8 text-blue-500" />
           </div>
           
-          <h2 className="text-xl font-medium mb-2">Générer des Documents</h2>
-          <p className="text-gray-500 mb-6 max-w-md mx-auto">
+          <h2 className="text-2xl font-medium mb-3">Générer des Documents</h2>
+          <p className="text-gray-500 mb-8 max-w-md mx-auto">
             Utilisez cette section pour générer de nouveaux documents à partir des modèles disponibles. 
-            Vous pouvez également ajouter de nouveaux modèles.
+            Vous pouvez également ajouter de nouveaux modèles pour les documents spécifiques.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <GenerateDocumentButton fullWidth />
             
             <Button 
               variant="outline" 
               onClick={() => setActiveTab("templates")}
               className="flex items-center"
+              size="lg"
             >
-              <FileUp className="mr-2 h-4 w-4" />
+              <FileUp className="mr-2 h-5 w-5" />
               Ajouter des modèles
             </Button>
           </div>

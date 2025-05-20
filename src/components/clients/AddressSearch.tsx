@@ -1,13 +1,14 @@
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { MapPin, Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
+import { GeoCoordinates } from "@/services/geoCoordinatesService";
 
 interface AddressSearchProps {
   initialAddress: string;
   onAddressChange: (address: string) => void;
+  onCoordinatesChange?: (coordinates: GeoCoordinates) => void; // Nouvelle prop pour remonter les coordonnées
 }
 
 // Étendre l'interface Window pour inclure la fonction gm_authFailure
@@ -22,7 +23,7 @@ declare global {
 // Clé API Google Maps configurée pour cette application
 const GOOGLE_MAPS_API_KEY = "AIzaSyBoHmcKb2Bgf1PUxNTnsTAjMa0RgYx-HoQ";
 
-const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) => {
+const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }: AddressSearchProps) => {
   const [address, setAddress] = useState(initialAddress);
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<any>(null);
@@ -72,6 +73,11 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
           const lat = place.geometry.location.lat();
           const lng = place.geometry.location.lng();
           console.log(`Coordonnées obtenues: ${lat}, ${lng} pour l'adresse: ${fullAddress}`);
+          
+          // Transmettre les coordonnées au composant parent
+          if (onCoordinatesChange) {
+            onCoordinatesChange({ lat, lng });
+          }
         }
         
         setAddress(fullAddress);
@@ -86,7 +92,7 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
       setError("Erreur lors de l'initialisation de la recherche d'adresse.");
       setApiAvailable(false);
     }
-  }, [onAddressChange]);
+  }, [onAddressChange, onCoordinatesChange]);
   
   // Initialiser l'autocomplete quand le script Google Maps est chargé
   useEffect(() => {

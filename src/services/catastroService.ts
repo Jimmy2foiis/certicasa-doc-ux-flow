@@ -4,31 +4,66 @@
  */
 
 import { fetchViaProxy } from './proxyService';
-import { getCoordinatesFromAddress, normalizeSpanishAddress, type GeoCoordinates } from './geoCoordinatesService';
+import { getCoordinatesFromAddress, normalizeSpanishAddress, validateSpanishCoordinates, convertToUTM, type GeoCoordinates } from './geoCoordinatesService';
 import { createCoordinatesSoapEnvelope } from './soapRequestService';
 import { parseCatastroResponse, type CatastroData } from './cadastralParserService';
 
+const CATASTRO_API_URL = "https://ovc.catastro.meh.es/ovcservweb/OVCSWLocalizacionRC/OVCCoordenadas.asmx";
+
 /**
  * Interrogation de l'API Catastro à partir de coordonnées
+ * Utilise directement les coordonnées WGS84 (latitude/longitude)
  */
 export const getCadastralInfoFromCoordinates = async (lat: number, lng: number): Promise<CatastroData> => {
   try {
     console.log(`Interrogation API Catastro avec coordonnées: ${lat}, ${lng}`);
+    
+    // Vérification que les coordonnées sont bien en Espagne
+    if (!validateSpanishCoordinates({ lat, lng })) {
+      console.error("Coordonnées en dehors de l'Espagne:", lat, lng);
+      return {
+        cadastralReference: "",
+        address: "",
+        utmCoordinates: "",
+        climateZone: "",
+        error: "Les coordonnées fournies ne semblent pas être en Espagne."
+      };
+    }
+
+    // Création de l'enveloppe SOAP avec les coordonnées
     const soapEnvelope = createCoordinatesSoapEnvelope(lat, lng);
-    const apiUrl = "https://ovc.catastro.meh.es/ovcservweb/OVCSWLocalizacionRC/OVCCoordenadas.asmx";
     
-    const response = await fetchViaProxy(apiUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/xml;charset=UTF-8",
-        "SOAPAction": "http://catastro.meh.es/Consulta_RCCOOR_DGC"
-      },
-      body: soapEnvelope
-    });
-    
-    const xmlText = await response.text();
-    console.log("Réponse XML reçue de l'API Catastro");
-    return parseCatastroResponse(xmlText);
+    // Tentative avec le service proxy principal
+    try {
+      const response = await fetchViaProxy(CATASTRO_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/xml;charset=UTF-8",
+          "SOAPAction": "http://catastro.meh.es/Consulta_RCCOOR_DGC"
+        },
+        body: soapEnvelope
+      });
+      
+      const xmlText = await response.text();
+      console.log("Réponse XML reçue de l'API Catastro");
+      
+      // Convertir les coordonnées en UTM pour plus de précision dans les logs
+      const utmCoords = convertToUTM(lat, lng);
+      console.log(`Coordonnées UTM approximatives: X=${utmCoords.x}, Y=${utmCoords.y}`);
+      
+      // Analyse de la réponse XML
+      const result = parseCatastroResponse(xmlText);
+      
+      // Si pas d'erreur mais pas de référence cadastrale, ajouter un avertissement
+      if (!result.error && !result.cadastralReference) {
+        console.warn("Aucune référence cadastrale trouvée pour ces coordonnées:", lat, lng);
+      }
+      
+      return result;
+    } catch (proxyError) {
+      console.error("Erreur avec le service proxy principal:", proxyError);
+      throw proxyError; // Propager l'erreur pour la gestion globale
+    }
   } catch (error) {
     console.error("Erreur lors de la communication avec l'API Catastro:", error);
     return {
@@ -43,6 +78,7 @@ export const getCadastralInfoFromCoordinates = async (lat: number, lng: number):
 
 /**
  * Fonction principale pour obtenir les données cadastrales à partir d'une adresse
+ * Cette fonction fait d'abord une conversion de l'adresse en coordonnées via Google Maps
  */
 export const getCadastralDataFromAddress = async (address: string): Promise<CatastroData> => {
   try {

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { clientsData } from "@/data/mock";
 import { useCadastralData } from "@/hooks/useCadastralData";
+import { GeoCoordinates } from "@/services/geoCoordinatesService";
 
 interface SavedCalculation {
   id: string;
@@ -27,7 +28,15 @@ export const useClientData = (clientId: string) => {
     client ? (client as any).address || "Rue Serrano 120, 28006 Madrid" : ""
   );
   
-  const { utmCoordinates, cadastralReference, climateZone, isLoading: loadingCadastral } = useCadastralData(clientAddress);
+  // État pour stocker les coordonnées
+  const [coordinates, setCoordinates] = useState<GeoCoordinates | undefined>(undefined);
+  
+  // Utiliser les coordonnées directes si disponibles
+  const { utmCoordinates, cadastralReference, climateZone, isLoading: loadingCadastral } = useCadastralData(
+    clientAddress, 
+    coordinates, 
+    { useDirectCoordinates: !!coordinates }
+  );
 
   // Fonction pour récupérer les calculs sauvegardés du localStorage
   const loadSavedCalculations = () => {
@@ -42,6 +51,12 @@ export const useClientData = (clientId: string) => {
     } catch (error) {
       console.error("Erreur lors du chargement des calculs sauvegardés:", error);
     }
+  };
+  
+  // Mettre à jour les coordonnées
+  const setClientCoordinates = (newCoordinates: GeoCoordinates) => {
+    console.log("Mise à jour des coordonnées client:", newCoordinates);
+    setCoordinates(newCoordinates);
   };
 
   // Charger les calculs sauvegardés au montage du composant
@@ -58,6 +73,8 @@ export const useClientData = (clientId: string) => {
     client,
     clientAddress,
     setClientAddress,
+    coordinates,
+    setClientCoordinates,
     savedCalculations,
     loadSavedCalculations,
     utmCoordinates,

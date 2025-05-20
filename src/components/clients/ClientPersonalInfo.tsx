@@ -4,11 +4,13 @@ import { Badge } from "@/components/ui/badge";
 import AddressSearch from "./AddressSearch";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { GeoCoordinates } from "@/services/geoCoordinatesService";
 
 interface ClientPersonalInfoProps {
   client: any;
   address: string;
   onAddressChange: (newAddress: string) => void;
+  onCoordinatesChange?: (coordinates: GeoCoordinates) => void;
   utmCoordinates: string;
   cadastralReference: string;
   climateZone: string;
@@ -19,6 +21,7 @@ const ClientPersonalInfo = ({
   client,
   address,
   onAddressChange,
+  onCoordinatesChange,
   utmCoordinates,
   cadastralReference,
   climateZone,
@@ -52,6 +55,7 @@ const ClientPersonalInfo = ({
           <AddressSearch 
             initialAddress={address} 
             onAddressChange={onAddressChange} 
+            onCoordinatesChange={onCoordinatesChange}
           />
         </div>
         
