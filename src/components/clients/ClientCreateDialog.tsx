@@ -4,10 +4,39 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, MapPin, Loader2 } from "lucide-react";
+import { UserPlus, MapPin, Loader2, Info } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { createClientRecord } from "@/services/supabaseService";
 import { AddressInput } from "@/components/address/AddressInput";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+
+// Define validation schema
+const clientSchema = z.object({
+  name: z.string().min(2, { message: "Le nom doit contenir au moins 2 caractères" }),
+  email: z.string().email({ message: "Veuillez entrer un email valide" }).optional().or(z.literal('')),
+  phone: z.string()
+    .regex(/^[0-9+\s()-]{6,20}$/, { message: "Format de téléphone invalide" })
+    .optional()
+    .or(z.literal('')),
+  address: z.string().optional().or(z.literal('')),
+  nif: z.string()
+    .regex(/^[0-9A-Z]{9}$/, { message: "Le NIF doit contenir 9 caractères alphanumériques" })
+    .optional()
+    .or(z.literal('')),
+  type: z.string().optional().or(z.literal(''))
+});
+
+type ClientFormValues = z.infer<typeof clientSchema>;
 
 interface ClientCreateDialogProps {
   onClientCreated: () => Promise<void>;
@@ -20,27 +49,22 @@ const ClientCreateDialog = ({ onClientCreated }: ClientCreateDialogProps) => {
   const [addressSuggestions, setAddressSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   
-  const [newClient, setNewClient] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
-    nif: "",
-    type: "010"
+  // Initialize form with react-hook-form and zod validation
+  const form = useForm<ClientFormValues>({
+    resolver: zodResolver(clientSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      phone: "",
+      address: "",
+      nif: "",
+      type: "010"
+    }
   });
 
-  const handleCreateClient = async () => {
+  const handleCreateClient = async (data: ClientFormValues) => {
     try {
-      if (!newClient.name) {
-        toast({
-          title: "Erreur",
-          description: "Le nom du client est obligatoire.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const createdClient = await createClientRecord(newClient);
+      const createdClient = await createClientRecord(data);
       
       if (createdClient) {
         toast({
@@ -48,18 +72,11 @@ const ClientCreateDialog = ({ onClientCreated }: ClientCreateDialogProps) => {
           description: `Le client ${createdClient.name} a été créé avec succès.`,
         });
         
-        // Réinitialiser le formulaire et fermer la boîte de dialogue
-        setNewClient({
-          name: "",
-          email: "",
-          phone: "",
-          address: "",
-          nif: "",
-          type: "010"
-        });
+        // Reset form and close dialog
+        form.reset();
         setOpenDialog(false);
         
-        // Recharger la liste des clients
+        // Reload client list
         await onClientCreated();
       }
     } catch (error) {
@@ -71,25 +88,18 @@ const ClientCreateDialog = ({ onClientCreated }: ClientCreateDialogProps) => {
       });
     }
   };
-
-  // Mettre à jour les champs du formulaire
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setNewClient(prev => ({ ...prev, [name]: value }));
-  };
   
-  // Gérer l'adresse avec autocomplétion
-  const handleAddressChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = e.target;
-    setNewClient(prev => ({ ...prev, address: value }));
+  // Handle address with autocompletion
+  const handleAddressChange = async (value: string) => {
+    form.setValue("address", value);
     
     if (value.length >= 3) {
       setAddressLoading(true);
       setShowSuggestions(true);
       
       try {
-        // Simuler une recherche d'adresse (à remplacer par l'API réelle)
-        // Ici on pourrait utiliser l'API Google Maps Autocomplete si disponible
+        // Simulate address search (to be replaced with real API)
+        // Here we could use Google Maps Autocomplete API if available
         setTimeout(() => {
           const mockSuggestions = [
             `${value}, Calle Principal, Madrid, España`,
@@ -112,7 +122,8 @@ const ClientCreateDialog = ({ onClientCreated }: ClientCreateDialogProps) => {
   };
   
   const selectAddressSuggestion = (address: string) => {
-    setNewClient(prev => ({ ...prev, address }));
+    form.setValue("address", address);
+    form.trigger("address");
     setShowSuggestions(false);
   };
 
@@ -124,109 +135,143 @@ const ClientCreateDialog = ({ onClientCreated }: ClientCreateDialogProps) => {
           <span>Nouveau Client</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Ajouter un nouveau client</DialogTitle>
           <DialogDescription>
             Remplissez les informations ci-dessous pour créer un nouveau client.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">
-              Nom <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="name"
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleCreateClient)} className="space-y-4 py-2">
+            <FormField
+              control={form.control}
               name="name"
-              value={newClient.name}
-              onChange={handleInputChange}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">Email</Label>
-            <Input
-              id="email"
-              name="email"
-              value={newClient.email}
-              onChange={handleInputChange}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="phone" className="text-right">Téléphone</Label>
-            <Input
-              id="phone"
-              name="phone"
-              value={newClient.phone}
-              onChange={handleInputChange}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="address" className="text-right">Adresse</Label>
-            <div className="col-span-3 relative">
-              <div className="relative">
-                <MapPin className="absolute left-2.5 top-2.5 h-5 w-5 text-gray-400" />
-                {addressLoading && <Loader2 className="absolute right-2.5 top-2.5 h-5 w-5 text-gray-400 animate-spin" />}
-                <Input
-                  id="address"
-                  name="address"
-                  value={newClient.address}
-                  onChange={handleAddressChange}
-                  className="pl-10"
-                  placeholder="Saisissez une adresse..."
-                />
-              </div>
-              
-              {showSuggestions && addressSuggestions.length > 0 && (
-                <div className="absolute mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 z-10 max-h-60 overflow-auto">
-                  {addressSuggestions.map((suggestion, index) => (
-                    <div
-                      key={index}
-                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
-                      onClick={() => selectAddressSuggestion(suggestion)}
-                    >
-                      <div className="flex items-start">
-                        <MapPin className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0 text-gray-400" />
-                        <span>{suggestion}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Nom <span className="text-red-500">*</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Téléphone</FormLabel>
+                  <FormControl>
+                    <Input {...field} placeholder="Ex: +34 612 345 678" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem className="relative">
+                  <FormLabel>Adresse</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <MapPin className="absolute left-2.5 top-2.5 h-5 w-5 text-gray-400" />
+                      {addressLoading && <Loader2 className="absolute right-2.5 top-2.5 h-5 w-5 text-gray-400 animate-spin" />}
+                      <Input
+                        {...field}
+                        className="pl-10"
+                        placeholder="Saisissez une adresse..."
+                        onChange={(e) => {
+                          field.onChange(e);
+                          handleAddressChange(e.target.value);
+                        }}
+                      />
+                    </div>
+                  </FormControl>
+                  
+                  {showSuggestions && addressSuggestions.length > 0 && (
+                    <div className="absolute mt-1 w-full bg-white shadow-lg rounded-md border border-gray-200 z-10 max-h-60 overflow-auto">
+                      {addressSuggestions.map((suggestion, index) => (
+                        <div
+                          key={index}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm"
+                          onClick={() => selectAddressSuggestion(suggestion)}
+                        >
+                          <div className="flex items-start">
+                            <MapPin className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0 text-gray-400" />
+                            <span>{suggestion}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="nif"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>NIF</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Ex: A12345678" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Type</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="nif" className="text-right">NIF</Label>
-            <Input
-              id="nif"
-              name="nif"
-              value={newClient.nif}
-              onChange={handleInputChange}
-              className="col-span-3"
-            />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="type" className="text-right">Type</Label>
-            <Input
-              id="type"
-              name="type"
-              value={newClient.type}
-              onChange={handleInputChange}
-              className="col-span-3"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => setOpenDialog(false)}>
-            Annuler
-          </Button>
-          <Button onClick={handleCreateClient}>
-            Créer le client
-          </Button>
-        </DialogFooter>
+            
+            <DialogFooter className="pt-4">
+              <Button variant="outline" type="button" onClick={() => setOpenDialog(false)}>
+                Annuler
+              </Button>
+              <Button type="submit">
+                Créer le client
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
