@@ -1,6 +1,6 @@
 
 import { GeoCoordinates } from './geoCoordinatesService';
-import { getCadastralDataByCoordinatesREST, getCadastralDataByAddressREST } from './catastroRestService';
+import { getCadastralDataByCoordinatesREST } from './catastroRestService';
 import { getClimateZoneByAddress } from './climateZoneService';
 
 // Interface pour les données cadastrales
@@ -79,94 +79,60 @@ export const clearCadastralCache = (): void => {
 };
 
 // Fonction principale pour récupérer les données cadastrales à partir de coordonnées
-export const getCadastralInfoFromCoordinates = async (latitude: number, longitude: number): Promise<CatastroData> => {
+export const getCadastralInfoFromCoordinates = async (
+  latitude: number, 
+  longitude: number, 
+  forceRefresh = false
+): Promise<CatastroData> => {
   const cacheKey = `coord_${latitude}_${longitude}`;
   
-  // Vérifier dans le cache d'abord
-  const cachedData = getFromCache(cacheKey);
-  if (cachedData) {
-    console.log('Données cadastrales récupérées du cache pour les coordonnées:', latitude, longitude);
-    return cachedData;
+  // Vérifier dans le cache d'abord (sauf si forceRefresh)
+  if (!forceRefresh) {
+    const cachedData = getFromCache(cacheKey);
+    if (cachedData) {
+      console.log('Données cadastrales récupérées du cache pour les coordonnées:', latitude, longitude);
+      return cachedData;
+    }
   }
   
   // Récupérer les données fraîches
+  console.log(`Appel à l'API Catastro avec coordonnées: lat=${latitude}, lng=${longitude}`);
   const cadastralData = await getCadastralDataByCoordinatesREST(latitude, longitude);
   
   // Si les données sont valides, les mettre en cache
   if (cadastralData && !cadastralData.error) {
     saveToCache(cacheKey, cadastralData);
-  }
-  
-  return cadastralData;
-};
-
-// Fonction principale pour récupérer les données cadastrales à partir d'une adresse
-export const getCadastralDataFromAddress = async (address: string): Promise<CatastroData> => {
-  const cacheKey = `addr_${address}`;
-  
-  // Vérifier dans le cache d'abord
-  const cachedData = getFromCache(cacheKey);
-  if (cachedData) {
-    console.log('Données cadastrales récupérées du cache pour l\'adresse:', address);
-    return cachedData;
-  }
-  
-  // Récupérer les données via l'API REST
-  const cadastralData = await getCadastralDataByAddressREST(address);
-  
-  // Si les données sont incomplètes ou en erreur, essayer l'approche traditionnelle
-  if (!cadastralData.cadastralReference && !cadastralData.error) {
-    console.log('Données cadastrales insuffisantes, utilisation de la méthode traditionnelle');
+  } else if (cadastralData.error) {
+    console.error('Erreur API Catastro:', cadastralData.error);
     
-    // Récupérer la zone climatique basée sur l'adresse
-    const climateZone = getClimateZoneByAddress(address);
-    
+    // En cas d'erreur, essayer de déterminer au moins la zone climatique approximative
+    // basée sur la latitude/longitude (si possible)
     return {
       utmCoordinates: '',
       cadastralReference: '',
-      climateZone,
+      // Utilise la latitude pour estimer la province/zone climatique
+      climateZone: latitude > 40 ? 'D3' : 'B3', // Estimation très approximative
       apiSource: 'FALLBACK',
-      error: null
+      error: cadastralData.error
     };
-  }
-  
-  // Si les données sont valides, les mettre en cache
-  if (cadastralData && !cadastralData.error) {
-    saveToCache(cacheKey, cadastralData);
   }
   
   return cadastralData;
 };
 
 // Fonction pour forcer un rafraîchissement des données
-export const refreshCadastralData = async (addressOrCoordinates: string | GeoCoordinates): Promise<CatastroData> => {
+export const refreshCadastralData = async (coordinates: GeoCoordinates): Promise<CatastroData> => {
   try {
-    let result: CatastroData;
+    const { lat, lng } = coordinates;
+    const cacheKey = `coord_${lat}_${lng}`;
     
-    if (typeof addressOrCoordinates === 'string') {
-      // Supprimer du cache si existe
-      const cacheKey = `addr_${addressOrCoordinates}`;
-      const cache = getCache();
-      delete cache[cacheKey];
-      localStorage.setItem(CATASTRAL_CACHE_KEY, JSON.stringify(cache));
-      
-      // Récupérer de nouvelles données
-      result = await getCadastralDataFromAddress(addressOrCoordinates);
-    } else {
-      // C'est un objet de coordonnées
-      const { lat, lng } = addressOrCoordinates;
-      const cacheKey = `coord_${lat}_${lng}`;
-      
-      // Supprimer du cache si existe
-      const cache = getCache();
-      delete cache[cacheKey];
-      localStorage.setItem(CATASTRAL_CACHE_KEY, JSON.stringify(cache));
-      
-      // Récupérer de nouvelles données
-      result = await getCadastralInfoFromCoordinates(lat, lng);
-    }
+    // Supprimer du cache si existe
+    const cache = getCache();
+    delete cache[cacheKey];
+    localStorage.setItem(CATASTRAL_CACHE_KEY, JSON.stringify(cache));
     
-    return result;
+    // Récupérer de nouvelles données
+    return await getCadastralInfoFromCoordinates(lat, lng);
   } catch (error) {
     console.error('Erreur lors du rafraîchissement des données cadastrales:', error);
     return {
@@ -177,4 +143,17 @@ export const refreshCadastralData = async (addressOrCoordinates: string | GeoCoo
       error: error instanceof Error ? error.message : 'Erreur inconnue'
     };
   }
+};
+
+// Cette fonction n'est plus utilisée dans l'approche optimisée, mais conservée 
+// pour la compatibilité avec le code existant. Elle sera dépréciée.
+export const getCadastralDataFromAddress = async (address: string): Promise<CatastroData> => {
+  console.warn('DÉPRÉCIÉ: getCadastralDataFromAddress est déconseillé. Utilisez la méthode par coordonnées.');
+  return {
+    utmCoordinates: '',
+    cadastralReference: '',
+    climateZone: getClimateZoneByAddress(address),
+    apiSource: 'DEPRECATED',
+    error: 'Méthode dépréciée. Utilisez l\'approche par géocodage puis coordonnées.'
+  };
 };

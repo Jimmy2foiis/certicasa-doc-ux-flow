@@ -37,7 +37,7 @@ const ClientInfoTab = ({
   // Gestionnaire de changement d'adresse
   const handleAddressChange = (newAddress: string) => {
     setAddress(newAddress);
-    // Propager le changement d'adresse au composant parent pour mettre à jour les données cadastrales
+    // Propager le changement d'adresse au composant parent
     if (onAddressChange) {
       onAddressChange(newAddress);
     }
@@ -45,7 +45,7 @@ const ClientInfoTab = ({
     // Notification de modification d'adresse
     toast({
       title: "Adresse mise à jour",
-      description: "Données cadastrales en cours de récupération...",
+      description: "Géolocalisation en cours...",
       duration: 3000,
     });
   };
@@ -55,6 +55,13 @@ const ClientInfoTab = ({
     if (onCoordinatesChange) {
       onCoordinatesChange(coordinates);
       console.log("Nouvelles coordonnées reçues:", coordinates);
+      
+      // Notification de récupération des données cadastrales
+      toast({
+        title: "Coordonnées obtenues",
+        description: "Récupération des données cadastrales en cours...",
+        duration: 3000,
+      });
     }
   };
 
@@ -62,7 +69,7 @@ const ClientInfoTab = ({
   const handleRefreshCadastralData = async () => {
     if (onRefreshCadastralData) {
       toast({
-        title: "Rafraîchissement des données",
+        title: "Actualisation des données",
         description: "Nouvelle requête aux services cadastraux en cours...",
         duration: 3000,
       });

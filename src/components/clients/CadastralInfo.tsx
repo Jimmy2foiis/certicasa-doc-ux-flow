@@ -55,11 +55,25 @@ const CadastralInfo = ({
       </div>
       
       <div className="flex">
+        <Navigation className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
+        <div>
+          <p className="font-medium text-sm">Géolocalisation:</p>
+          {loadingCadastral ? (
+            <span className="text-gray-500">Obtention des coordonnées GPS...</span>
+          ) : utmCoordinates ? (
+            <span className="text-xs text-green-600">Localisé avec précision GPS</span>
+          ) : (
+            <span className="text-amber-600 text-sm">Coordonnées non disponibles</span>
+          )}
+        </div>
+      </div>
+      
+      <div className="flex">
         <MapPinned className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
         <div>
           <p className="font-medium text-sm">UTM30:</p>
           {loadingCadastral ? (
-            <span className="text-gray-500">Chargement des coordonnées...</span>
+            <span className="text-gray-500">Conversion des coordonnées...</span>
           ) : utmCoordinates ? (
             <span className="text-xs font-mono">{utmCoordinates}</span>
           ) : (
@@ -73,7 +87,7 @@ const CadastralInfo = ({
         <div>
           <p className="font-medium text-sm">Référence cadastrale:</p>
           {loadingCadastral ? (
-            <span className="text-gray-500">Chargement des données cadastrales...</span>
+            <span className="text-gray-500">Récupération depuis le Catastro...</span>
           ) : cadastralReference ? (
             <span className="font-mono">{cadastralReference}</span>
           ) : (
@@ -87,24 +101,9 @@ const CadastralInfo = ({
         <div>
           <p className="font-medium text-sm">Zone climatique:</p>
           {loadingCadastral ? (
-            <span className="text-gray-500">Chargement de la zone climatique...</span>
+            <span className="text-gray-500">Détermination de la zone climatique...</span>
           ) : climateZone ? (
             <span>{climateZone}</span>
-          ) : (
-            <span className="text-amber-600 text-sm">Non disponible</span>
-          )}
-        </div>
-      </div>
-      
-      {/* Géolocalisation */}
-      <div className="flex">
-        <Navigation className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
-        <div>
-          <p className="font-medium text-sm">Géolocalisation:</p>
-          {loadingCadastral ? (
-            <span className="text-gray-500">Chargement des coordonnées GPS...</span>
-          ) : utmCoordinates ? (
-            <span className="text-xs font-mono">Lat/Long disponible dans l'API Google Maps</span>
           ) : (
             <span className="text-amber-600 text-sm">Non disponible</span>
           )}
@@ -114,7 +113,10 @@ const CadastralInfo = ({
       {!loadingCadastral && !cadastralReference && (
         <Alert variant="default" className="mt-2">
           <AlertDescription className="text-xs">
-            Les données cadastrales n'ont pas pu être récupérées. Vérifiez que l'adresse est en Espagne et correctement formatée, ou que le service Catastro est accessible.
+            {utmCoordinates ? 
+              "Coordonnées GPS obtenues mais le Catastro n'a pas trouvé de référence cadastrale. Le bien pourrait ne pas être enregistré ou être hors du territoire espagnol." :
+              "Impossible d'obtenir les coordonnées GPS. Vérifiez que l'adresse est complète et en Espagne."
+            }
             {onRefresh && (
               <Button variant="link" size="sm" className="p-0 h-auto ml-1" onClick={onRefresh}>
                 Réessayer

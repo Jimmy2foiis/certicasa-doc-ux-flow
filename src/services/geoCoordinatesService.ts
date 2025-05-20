@@ -24,9 +24,15 @@ setupProj4();
 /**
  * Conversion de l'adresse en coordonnées géographiques via Google Maps Geocoding
  * Optimisé pour les adresses espagnoles avec la dernière version de l'API
+ * Cette fonction est cruciale pour la récupération des données cadastrales
  */
 export const getCoordinatesFromAddress = async (address: string): Promise<GeoCoordinates | null> => {
   try {
+    if (!address || address.trim() === "") {
+      console.error("Adresse vide fournie au géocodeur");
+      return null;
+    }
+    
     // Vérifier que l'API Google Maps est disponible
     if (!window.google || !window.google.maps || !window.google.maps.Geocoder) {
       console.error("Google Maps API non disponible");
@@ -56,11 +62,17 @@ export const getCoordinatesFromAddress = async (address: string): Promise<GeoCoo
             lng: location.lng(),
           };
           
-          console.log(`Géocodage réussi pour: ${normalizedAddress}`, coordinates);
-          resolve(coordinates);
+          // Vérifier que les coordonnées sont bien en Espagne
+          if (validateSpanishCoordinates(coordinates)) {
+            console.log(`Géocodage réussi pour: ${normalizedAddress}`, coordinates);
+            resolve(coordinates);
+          } else {
+            console.error(`Coordonnées obtenues hors d'Espagne:`, coordinates);
+            reject(new Error("Les coordonnées obtenues sont en dehors de l'Espagne"));
+          }
         } else {
           console.error(`Erreur de géocodage pour ${normalizedAddress}:`, status);
-          reject(null);
+          reject(new Error(`Erreur de géocodage: ${status}`));
         }
       });
     });
@@ -146,5 +158,19 @@ export const convertToUTM = (lat: number, lng: number): { x: number, y: number }
     const y = Math.round(UTM_SCALE_Y * (lat - REF_LAT));
     
     return { x, y };
+  }
+};
+
+/**
+ * Obtient les coordonnées UTM sous forme de chaîne formatée
+ * Format : "X: 12345, Y: 67890"
+ */
+export const getFormattedUTMCoordinates = (lat: number, lng: number): string => {
+  try {
+    const { x, y } = convertToUTM(lat, lng);
+    return `X: ${x}, Y: ${y}`;
+  } catch (error) {
+    console.error("Erreur lors du formatage des coordonnées UTM:", error);
+    return "";
   }
 };

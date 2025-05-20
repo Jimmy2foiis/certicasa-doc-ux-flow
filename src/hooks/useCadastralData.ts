@@ -1,5 +1,6 @@
+
 import { useState, useEffect, useCallback } from 'react';
-import { getCadastralDataFromAddress, getCadastralInfoFromCoordinates, refreshCadastralData, clearCadastralCache, type CatastroData } from '../services/catastroService';
+import { getCadastralInfoFromCoordinates, clearCadastralCache, type CatastroData } from '../services/catastroService';
 import { type GeoCoordinates } from '../services/geoCoordinatesService';
 
 interface CadastralData {
@@ -13,14 +14,12 @@ interface CadastralData {
 }
 
 interface UseCadastralDataOptions {
-  useDirectCoordinates?: boolean;
   skipInitialFetch?: boolean;
 }
 
 /**
- * Hook amélioré pour récupérer les données cadastrales à partir d'une adresse ou de coordonnées directes
- * en utilisant l'API officielle du Catastro Español avec mécanismes de cache et refresh
- * Utilise l'API REST/JSON moderne en priorité avec fallback sur SOAP
+ * Hook optimisé pour récupérer les données cadastrales uniquement via coordonnées GPS
+ * Cette approche est plus fiable car elle évite les problèmes d'interprétation d'adresses textuelles
  */
 export const useCadastralData = (
   address: string, 
@@ -35,12 +34,14 @@ export const useCadastralData = (
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { useDirectCoordinates = true, skipInitialFetch = false } = options;
+  const { skipInitialFetch = false } = options;
   
-  // Fonction pour récupérer les données cadastrales
+  // Fonction pour récupérer les données cadastrales exclusivement par coordonnées
   const fetchCadastralData = useCallback(async (forceRefresh = false) => {
-    // Si pas de coordonnées ni d'adresse, on ne fait rien
-    if ((!address || address.trim() === '') && !coordinates) {
+    // Ne rien faire si pas de coordonnées disponibles
+    if (!coordinates || !coordinates.lat || !coordinates.lng) {
+      console.log('Aucune coordonnée disponible pour récupérer les données cadastrales');
+      setError("Coordonnées GPS manquantes. Veuillez saisir une adresse valide.");
       return;
     }
     
@@ -48,26 +49,12 @@ export const useCadastralData = (
     setError(null);
     
     try {
-      let cadastralInfo: CatastroData;
+      console.log('Récupération des données cadastrales avec les coordonnées :', coordinates);
       
-      // Décider si on utilise le refresh forcé ou les fonctions normales
-      if (forceRefresh) {
-        if (coordinates && useDirectCoordinates) {
-          cadastralInfo = await refreshCadastralData(coordinates);
-        } else {
-          cadastralInfo = await refreshCadastralData(address);
-        }
-      } else {
-        // Si on a des coordonnées directes et l'option est activée, on les utilise directement
-        // Cette approche est plus fiable car elle évite une étape de géocodage supplémentaire
-        if (coordinates && useDirectCoordinates) {
-          console.log('Récupération des données cadastrales avec coordonnées directes:', coordinates);
-          cadastralInfo = await getCadastralInfoFromCoordinates(coordinates.lat, coordinates.lng);
-        } else {
-          console.log('Récupération des données cadastrales à partir de l\'adresse:', address);
-          cadastralInfo = await getCadastralDataFromAddress(address);
-        }
-      }
+      // Toujours utiliser la méthode par coordonnées qui est plus fiable
+      const cadastralInfo = forceRefresh 
+        ? await getCadastralInfoFromCoordinates(coordinates.lat, coordinates.lng, true) 
+        : await getCadastralInfoFromCoordinates(coordinates.lat, coordinates.lng);
       
       if (cadastralInfo.error) {
         throw new Error(cadastralInfo.error);
@@ -77,27 +64,27 @@ export const useCadastralData = (
         utmCoordinates: cadastralInfo.utmCoordinates || '',
         cadastralReference: cadastralInfo.cadastralReference || '',
         climateZone: cadastralInfo.climateZone || '',
-        apiSource: cadastralInfo.apiSource || 'REST' // Par défaut, on suppose que c'est l'API REST
+        apiSource: cadastralInfo.apiSource || 'REST'
       });
     } catch (err) {
       console.error('Erreur lors de la récupération des données cadastrales:', err);
-      setError('Impossible de récupérer les données cadastrales. Veuillez vérifier l\'adresse et réessayer.');
+      setError('Impossible de récupérer les données cadastrales. Veuillez vérifier les coordonnées et réessayer.');
     } finally {
       setIsLoading(false);
     }
-  }, [address, coordinates, useDirectCoordinates]);
+  }, [coordinates]);
   
   // Fonction pour forcer un rafraîchissement des données
   const refreshData = useCallback(async () => {
     await fetchCadastralData(true);
   }, [fetchCadastralData]);
 
-  // Effet pour charger les données au montage ou quand les dépendances changent
+  // Effet pour charger les données quand les coordonnées changent
   useEffect(() => {
-    if (!skipInitialFetch) {
+    if (!skipInitialFetch && coordinates) {
       fetchCadastralData();
     }
-  }, [address, coordinates, useDirectCoordinates, skipInitialFetch, fetchCadastralData]);
+  }, [coordinates, skipInitialFetch, fetchCadastralData]);
 
   return { ...data, isLoading, error, refreshData };
 };
