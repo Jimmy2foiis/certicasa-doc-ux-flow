@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { DOCUMENT_TEMPLATES_KEY } from '@/components/documents/DocumentTemplateUpload';
 import { useToast } from "@/components/ui/use-toast";
@@ -16,17 +16,14 @@ export interface DocumentTemplate {
 export const useDocumentTemplates = () => {
   const [templates, setTemplates] = useState<DocumentTemplate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [retryCount, setRetryCount] = useState(0);
   const { toast } = useToast();
 
-  // Charger les templates au montage du composant
-  useEffect(() => {
-    loadTemplates();
-  }, []);
-
-  // Charger les modèles depuis Supabase
-  const loadTemplates = async () => {
+  // Charger les templates avec une fonction de rappel pour permettre les retries
+  const loadTemplates = useCallback(async () => {
     setLoading(true);
     try {
+      console.log("Chargement des modèles depuis Supabase...");
       const { data, error } = await supabase
         .from('document_templates')
         .select('*');
@@ -36,6 +33,7 @@ export const useDocumentTemplates = () => {
       }
 
       if (data) {
+        console.log(`${data.length} modèles trouvés dans Supabase`);
         // Convertir du format Supabase au format local
         const formattedTemplates: DocumentTemplate[] = data.map(template => ({
           id: template.id,
@@ -47,19 +45,44 @@ export const useDocumentTemplates = () => {
         }));
         setTemplates(formattedTemplates);
       } else {
+        console.log("Aucun modèle trouvé dans Supabase");
         setTemplates([]);
       }
     } catch (error) {
       console.error("Erreur lors du chargement des modèles:", error);
       setTemplates([]);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les modèles. Veuillez rafraîchir la page.",
-        variant: "destructive",
-      });
+      
+      // Afficher l'erreur uniquement après quelques tentatives échouées
+      if (retryCount > 2) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les modèles. Veuillez rafraîchir la page.",
+          variant: "destructive",
+        });
+      } else {
+        // Incrémenter le compteur d'essais
+        setRetryCount(prev => prev + 1);
+      }
     }
     setLoading(false);
-  };
+  }, [toast, retryCount]);
+
+  // Effectuer une tentative de rechargement automatique après une erreur
+  useEffect(() => {
+    if (retryCount > 0 && retryCount <= 3) {
+      const timeoutId = setTimeout(() => {
+        console.log(`Tentative de rechargement des modèles (${retryCount}/3)...`);
+        loadTemplates();
+      }, 2000 * retryCount); // Augmente le délai entre les tentatives
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [retryCount, loadTemplates]);
+
+  // Chargement initial des templates
+  useEffect(() => {
+    loadTemplates();
+  }, [loadTemplates]);
 
   // Ajouter un nouveau modèle
   const addTemplate = async (template: DocumentTemplate) => {
@@ -139,5 +162,17 @@ export const useDocumentTemplates = () => {
     }
   };
 
-  return { templates, loading, addTemplate, removeTemplate, refreshTemplates: loadTemplates };
+  const forceRefresh = () => {
+    setRetryCount(0); // Réinitialise le compteur d'essais
+    loadTemplates();
+  };
+
+  return { 
+    templates, 
+    loading, 
+    addTemplate, 
+    removeTemplate, 
+    refreshTemplates: loadTemplates,
+    forceRefresh
+  };
 };

@@ -2,11 +2,12 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Eye, FileUp, Trash2 } from "lucide-react";
+import { FileText, Eye, FileUp, Trash2, RefreshCw } from "lucide-react";
 import { DocumentTemplate, useDocumentTemplates } from "@/hooks/useDocumentTemplates";
 import { useTemplateActions } from "@/hooks/useTemplateActions";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface LibraryTabContentProps {
   loading: boolean;
@@ -19,8 +20,9 @@ const LibraryTabContent = ({
   filteredTemplates,
   setActiveTab 
 }: LibraryTabContentProps) => {
-  const { removeTemplate } = useDocumentTemplates();
+  const { removeTemplate, forceRefresh } = useDocumentTemplates();
   const [templateToDelete, setTemplateToDelete] = React.useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
   
   const {
     previewTemplate,
@@ -48,14 +50,56 @@ const LibraryTabContent = ({
     setTemplateToDelete(null);
   };
 
+  // Fonction pour rafraîchir la liste des modèles
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    forceRefresh();
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 1000);
+  };
+
+  // Affichage des états de chargement avec des squelettes
+  const renderLoadingState = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {[1, 2, 3].map((i) => (
+        <Card key={i} className="overflow-hidden">
+          <CardContent className="p-4">
+            <div className="flex items-start space-x-4">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <div className="space-y-2 flex-1">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            </div>
+            <div className="mt-4 border-t pt-3 flex justify-end gap-2">
+              <Skeleton className="h-8 w-20" />
+              <Skeleton className="h-8 w-20" />
+              <Skeleton className="h-8 w-16" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Bibliothèque de Documents</CardTitle>
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className={isRefreshing ? 'animate-spin' : ''}
+        >
+          <RefreshCw className="h-4 w-4" />
+        </Button>
       </CardHeader>
       <CardContent className="pt-0">
-        {loading ? (
-          <div className="text-center py-8">Chargement des modèles...</div>
+        {loading || isRefreshing ? (
+          renderLoadingState()
         ) : filteredTemplates.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredTemplates.map(template => (

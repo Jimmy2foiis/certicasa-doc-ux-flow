@@ -6,25 +6,30 @@ import { Json } from '@/integrations/supabase/types';
 // Constante pour la durée d'expiration du cache (24 heures en millisecondes)
 const CACHE_EXPIRY_TIME = 24 * 60 * 60 * 1000;
 
-// Génère une clé de cache unique pour des coordonnées
+/**
+ * Génère une clé de cache unique pour les coordonnées données
+ */
 const generateCacheKey = (lat: number, lng: number): string => {
-  // Arrondir à 6 décimales pour éviter de stocker des clés similaires
-  // mais conserver assez de précision pour l'usage cadastral
   return `${lat.toFixed(6)}_${lng.toFixed(6)}`;
 };
 
-// Vérifie si une entrée de cache est encore valide
+/**
+ * Vérifie si les données du cache sont encore valides
+ */
 const isCacheValid = (timestamp: string): boolean => {
   const cacheTime = new Date(timestamp).getTime();
-  const now = Date.now();
-  return (now - cacheTime) < CACHE_EXPIRY_TIME;
+  const currentTime = new Date().getTime();
+  return (currentTime - cacheTime) < CACHE_EXPIRY_TIME;
 };
 
-// Récupère les données du cache Supabase
+/**
+ * Récupère les données cadastrales du cache pour les coordonnées spécifiées
+ */
 export const getCachedCadastralData = async (lat: number, lng: number): Promise<CatastroData | null> => {
   try {
     const cacheKey = generateCacheKey(lat, lng);
     
+    // Récupérer les données du cache
     const { data, error } = await supabase
       .from('cadastral_cache')
       .select('*')
@@ -55,7 +60,8 @@ export const getCachedCadastralData = async (lat: number, lng: number): Promise<
       await supabase
         .from('cadastral_cache')
         .delete()
-        .eq('coordinate_key', cacheKey);
+        .eq('id', data.id);
+      console.log(`Cache expiré pour ${lat}, ${lng}, données supprimées`);
     }
     
     return null;
@@ -65,7 +71,9 @@ export const getCachedCadastralData = async (lat: number, lng: number): Promise<
   }
 };
 
-// Stocke des données dans le cache Supabase
+/**
+ * Stocke les données cadastrales dans le cache pour les coordonnées spécifiées
+ */
 export const setCachedCadastralData = async (lat: number, lng: number, data: CatastroData): Promise<void> => {
   try {
     const cacheKey = generateCacheKey(lat, lng);
@@ -82,16 +90,17 @@ export const setCachedCadastralData = async (lat: number, lng: number, data: Cat
     // Vérifier si l'entrée existe déjà
     const { data: existingData, error: checkError } = await supabase
       .from('cadastral_cache')
-      .select('id')
+      .select('*')
       .eq('coordinate_key', cacheKey)
       .single();
     
-    if (checkError && checkError.code !== 'PGRST116') {  // PGRST116 = not found
+    if (checkError && checkError.code !== 'PGRST116') {
       console.error("Erreur lors de la vérification du cache:", checkError);
     }
     
-    // Mise à jour ou insertion
+    // Si l'entrée existe, on la met à jour
     if (existingData) {
+      console.log(`Mise à jour du cache pour ${lat}, ${lng}`);
       const { error: updateError } = await supabase
         .from('cadastral_cache')
         .update({
@@ -100,43 +109,21 @@ export const setCachedCadastralData = async (lat: number, lng: number, data: Cat
         })
         .eq('id', existingData.id);
       
-      if (updateError) {
-        throw updateError;
-      }
+      if (updateError) throw updateError;
     } else {
+      // Sinon, on crée une nouvelle entrée
+      console.log(`Création d'une nouvelle entrée de cache pour ${lat}, ${lng}`);
       const { error: insertError } = await supabase
         .from('cadastral_cache')
-        .insert([{
+        .insert({
           coordinate_key: cacheKey,
           data: jsonData,
           timestamp: new Date().toISOString()
-        }]);
+        });
       
-      if (insertError) {
-        throw insertError;
-      }
+      if (insertError) throw insertError;
     }
-    
-    console.log(`Données cadastrales mises en cache pour ${lat}, ${lng}`);
   } catch (error) {
     console.error("Erreur lors de la mise en cache des données cadastrales:", error);
-  }
-};
-
-// Efface le cache
-export const clearCadastralCache = async (): Promise<void> => {
-  try {
-    const { error } = await supabase
-      .from('cadastral_cache')
-      .delete()
-      .gte('id', '0');  // Condition toujours vraie pour tout supprimer
-    
-    if (error) {
-      throw error;
-    }
-    
-    console.log("Cache cadastral effacé");
-  } catch (error) {
-    console.error("Erreur lors de l'effacement du cache cadastral:", error);
   }
 };
