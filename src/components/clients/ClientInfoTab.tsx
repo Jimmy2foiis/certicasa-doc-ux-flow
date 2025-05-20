@@ -23,7 +23,8 @@ interface ClientInfoTabProps {
   loadingCadastral: boolean;
   onShowCalculation?: (projectId?: string) => void;
   onAddressChange?: (newAddress: string) => void;
-  onCoordinatesChange?: (coordinates: GeoCoordinates) => void; // Prop pour les coordonnées
+  onCoordinatesChange?: (coordinates: GeoCoordinates) => void;
+  onRefreshCadastralData?: () => Promise<void>;
 }
 
 const ClientInfoTab = ({ 
@@ -34,7 +35,8 @@ const ClientInfoTab = ({
   loadingCadastral,
   onShowCalculation,
   onAddressChange,
-  onCoordinatesChange
+  onCoordinatesChange,
+  onRefreshCadastralData
 }: ClientInfoTabProps) => {
   const { toast } = useToast();
   // Adresse par défaut du client
@@ -63,6 +65,19 @@ const ClientInfoTab = ({
       console.log("Nouvelles coordonnées reçues:", coordinates);
     }
   };
+
+  // Gestionnaire de rafraîchissement des données cadastrales
+  const handleRefreshCadastralData = async () => {
+    if (onRefreshCadastralData) {
+      toast({
+        title: "Rafraîchissement des données",
+        description: "Nouvelle requête aux services cadastraux en cours...",
+        duration: 3000,
+      });
+      
+      await onRefreshCadastralData();
+    }
+  };
   
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -80,6 +95,7 @@ const ClientInfoTab = ({
             cadastralReference={cadastralReference}
             climateZone={climateZone}
             loadingCadastral={loadingCadastral}
+            onRefreshCadastralData={handleRefreshCadastralData}
           />
         </CardContent>
       </Card>

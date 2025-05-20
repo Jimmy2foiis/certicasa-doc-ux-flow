@@ -1,6 +1,6 @@
 
-import { useState, useEffect } from 'react';
-import { getCadastralDataFromAddress, getCadastralInfoFromCoordinates, type CatastroData, type GeoCoordinates } from '../services/catastroService';
+import { useState, useEffect, useCallback } from 'react';
+import { getCadastralDataFromAddress, getCadastralInfoFromCoordinates, refreshCadastralData, clearCadastralCache, type CatastroData, type GeoCoordinates } from '../services/catastroService';
 
 interface CadastralData {
   utmCoordinates: string;
@@ -8,43 +8,53 @@ interface CadastralData {
   climateZone: string;
   isLoading: boolean;
   error: string | null;
+  refreshData: () => Promise<void>;
 }
 
 interface UseCadastralDataOptions {
   useDirectCoordinates?: boolean;
+  skipInitialFetch?: boolean;
 }
 
 /**
- * Hook pour récupérer les données cadastrales à partir d'une adresse ou de coordonnées directes
- * en utilisant l'API officielle du Catastro Español
+ * Hook amélioré pour récupérer les données cadastrales à partir d'une adresse ou de coordonnées directes
+ * en utilisant l'API officielle du Catastro Español avec mécanismes de cache et refresh
  */
 export const useCadastralData = (
   address: string, 
   coordinates?: GeoCoordinates,
   options: UseCadastralDataOptions = {}
 ): CadastralData => {
-  const [data, setData] = useState<Omit<CadastralData, 'isLoading' | 'error'>>({
+  const [data, setData] = useState<Omit<CadastralData, 'isLoading' | 'error' | 'refreshData'>>({
     utmCoordinates: '',
     cadastralReference: '',
     climateZone: ''
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { useDirectCoordinates = true } = options;
-
-  useEffect(() => {
+  const { useDirectCoordinates = true, skipInitialFetch = false } = options;
+  
+  // Fonction pour récupérer les données cadastrales
+  const fetchCadastralData = useCallback(async (forceRefresh = false) => {
     // Si pas de coordonnées ni d'adresse, on ne fait rien
     if ((!address || address.trim() === '') && !coordinates) {
       return;
     }
-
-    const fetchCadastralData = async () => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        let cadastralInfo: CatastroData;
-
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      let cadastralInfo: CatastroData;
+      
+      // Décider si on utilise le refresh forcé ou les fonctions normales
+      if (forceRefresh) {
+        if (coordinates && useDirectCoordinates) {
+          cadastralInfo = await refreshCadastralData(coordinates);
+        } else {
+          cadastralInfo = await refreshCadastralData(address);
+        }
+      } else {
         // Si on a des coordonnées directes et l'option est activée, on les utilise directement
         // Cette approche est plus fiable car elle évite une étape de géocodage supplémentaire
         if (coordinates && useDirectCoordinates) {
@@ -54,26 +64,36 @@ export const useCadastralData = (
           console.log('Récupération des données cadastrales à partir de l\'adresse:', address);
           cadastralInfo = await getCadastralDataFromAddress(address);
         }
-        
-        if (cadastralInfo.error) {
-          throw new Error(cadastralInfo.error);
-        }
-        
-        setData({
-          utmCoordinates: cadastralInfo.utmCoordinates || '',
-          cadastralReference: cadastralInfo.cadastralReference || '',
-          climateZone: cadastralInfo.climateZone || ''
-        });
-      } catch (err) {
-        console.error('Erreur lors de la récupération des données cadastrales:', err);
-        setError('Impossible de récupérer les données cadastrales. Veuillez vérifier l\'adresse et réessayer.');
-      } finally {
-        setIsLoading(false);
       }
-    };
-
-    fetchCadastralData();
+      
+      if (cadastralInfo.error) {
+        throw new Error(cadastralInfo.error);
+      }
+      
+      setData({
+        utmCoordinates: cadastralInfo.utmCoordinates || '',
+        cadastralReference: cadastralInfo.cadastralReference || '',
+        climateZone: cadastralInfo.climateZone || ''
+      });
+    } catch (err) {
+      console.error('Erreur lors de la récupération des données cadastrales:', err);
+      setError('Impossible de récupérer les données cadastrales. Veuillez vérifier l\'adresse et réessayer.');
+    } finally {
+      setIsLoading(false);
+    }
   }, [address, coordinates, useDirectCoordinates]);
+  
+  // Fonction pour forcer un rafraîchissement des données
+  const refreshData = useCallback(async () => {
+    await fetchCadastralData(true);
+  }, [fetchCadastralData]);
 
-  return { ...data, isLoading, error };
+  // Effet pour charger les données au montage ou quand les dépendances changent
+  useEffect(() => {
+    if (!skipInitialFetch) {
+      fetchCadastralData();
+    }
+  }, [address, coordinates, useDirectCoordinates, skipInitialFetch, fetchCadastralData]);
+
+  return { ...data, isLoading, error, refreshData };
 };

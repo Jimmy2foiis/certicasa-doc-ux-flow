@@ -1,10 +1,11 @@
 
-import { User, Mail, Phone, Building, FileText, Calendar, MapPinned, FileSpreadsheet, MapPin, Navigation } from "lucide-react";
+import { User, Mail, Phone, Building, FileText, Calendar, MapPinned, FileSpreadsheet, MapPin, Navigation, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import AddressSearch from "./AddressSearch";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ClientPersonalInfoProps {
   client: any;
@@ -15,6 +16,7 @@ interface ClientPersonalInfoProps {
   cadastralReference: string;
   climateZone: string;
   loadingCadastral: boolean;
+  onRefreshCadastralData?: () => void;
 }
 
 const ClientPersonalInfo = ({
@@ -25,7 +27,8 @@ const ClientPersonalInfo = ({
   utmCoordinates,
   cadastralReference,
   climateZone,
-  loadingCadastral
+  loadingCadastral,
+  onRefreshCadastralData
 }: ClientPersonalInfoProps) => {
   return (
     <div className="space-y-6">
@@ -59,12 +62,13 @@ const ClientPersonalInfo = ({
           />
         </div>
         
-        {/* Cadastral Information Section */}
+        {/* Section Informations Cadastrales avec bouton rafraîchir */}
         <CadastralInfo 
           utmCoordinates={utmCoordinates}
           cadastralReference={cadastralReference}
           climateZone={climateZone}
           loadingCadastral={loadingCadastral}
+          onRefresh={onRefreshCadastralData}
         />
         
         <div className="flex">
@@ -89,15 +93,40 @@ const CadastralInfo = ({
   utmCoordinates,
   cadastralReference,
   climateZone,
-  loadingCadastral
+  loadingCadastral,
+  onRefresh
 }: {
   utmCoordinates: string;
   cadastralReference: string;
   climateZone: string;
   loadingCadastral: boolean;
+  onRefresh?: () => void;
 }) => {
   return (
     <div className="space-y-2 mt-4 border-t pt-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-sm">Données Cadastrales</h3>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 w-8 p-0" 
+                onClick={onRefresh} 
+                disabled={loadingCadastral || !onRefresh}
+              >
+                <RefreshCcw className={`h-4 w-4 ${loadingCadastral ? 'animate-spin' : ''}`} />
+                <span className="sr-only">Actualiser les données cadastrales</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Actualiser les données cadastrales</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+      
       <div className="flex">
         <MapPinned className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
         <div>
@@ -105,7 +134,7 @@ const CadastralInfo = ({
           {loadingCadastral ? (
             <span className="text-gray-500">Chargement des coordonnées...</span>
           ) : utmCoordinates ? (
-            <span>{utmCoordinates}</span>
+            <span className="text-xs font-mono">{utmCoordinates}</span>
           ) : (
             <span className="text-amber-600 text-sm">Non disponible</span>
           )}
@@ -159,6 +188,11 @@ const CadastralInfo = ({
         <Alert variant="default" className="mt-2">
           <AlertDescription className="text-xs">
             Les données cadastrales n'ont pas pu être récupérées. Vérifiez que l'adresse est en Espagne et correctement formatée, ou que le service Catastro est accessible.
+            {onRefresh && (
+              <Button variant="link" size="sm" className="p-0 h-auto ml-1" onClick={onRefresh}>
+                Réessayer
+              </Button>
+            )}
           </AlertDescription>
         </Alert>
       )}

@@ -4,11 +4,22 @@
  * Utilise l'API Google Maps pour le géocodage des adresses
  */
 
+import proj4 from 'proj4';
+
 // Interface pour les coordonnées géographiques
 export interface GeoCoordinates {
   lat: number;
   lng: number;
 }
+
+// Configuration de proj4 pour la conversion WGS84 vers UTM ETRS89 Zone 30N (utilisé par le Catastro)
+// EPSG:4326 est WGS84 (latitude/longitude standard)
+// EPSG:25830 est ETRS89 / UTM zone 30N (utilisé en Espagne)
+const setupProj4 = () => {
+  proj4.defs("EPSG:25830", "+proj=utm +zone=30 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+};
+
+setupProj4();
 
 /**
  * Conversion de l'adresse en coordonnées géographiques via Google Maps Geocoding
@@ -101,25 +112,39 @@ export const normalizeSpanishAddress = (address: string): string => {
 };
 
 /**
- * Convertit des coordonnées décimales (WGS84) en UTM ETRS89 (système utilisé par le Catastro)
- * Cette fonction est une approximation simplifiée, pour une conversion précise
- * il faudrait utiliser une librairie spécialisée comme proj4js
+ * Convertit des coordonnées WGS84 (lat/lng) en UTM ETRS89 (système utilisé par le Catastro)
+ * Utilise proj4js pour une conversion précise
  */
 export const convertToUTM = (lat: number, lng: number): { x: number, y: number } => {
-  // Note: Cette conversion est simplifiée et approximative
-  // Le Catastro utilise ETRS89 UTM zone 30N pour la péninsule ibérique
-  
-  // Facteurs de conversion approximatifs pour l'Espagne (UTM zone 30N)
-  const UTM_SCALE_X = 111320; // mètres par degré de longitude à l'équateur
-  const UTM_SCALE_Y = 110540; // mètres par degré de latitude
-  
-  // Point de référence UTM zone 30N (méridien central 3°W)
-  const REF_LNG = -3;
-  const REF_LAT = 0;
-  
-  // Conversion approximative
-  const x = Math.round(UTM_SCALE_X * (lng - REF_LNG) * Math.cos(lat * Math.PI / 180) + 500000);
-  const y = Math.round(UTM_SCALE_Y * (lat - REF_LAT));
-  
-  return { x, y };
+  try {
+    // Convertir les coordonnées WGS84 en UTM ETRS89 Zone 30N
+    const result = proj4('EPSG:4326', 'EPSG:25830', [lng, lat]);
+    
+    // Arrondir les coordonnées UTM à l'entier le plus proche
+    const x = Math.round(result[0]);
+    const y = Math.round(result[1]);
+    
+    console.log(`Conversion UTM réussie: (${lat}, ${lng}) -> UTM (${x}, ${y})`);
+    
+    return { x, y };
+  } catch (error) {
+    console.error("Erreur lors de la conversion UTM:", error);
+    
+    // Fallback à la méthode approximative si proj4js échoue
+    console.warn("Utilisation de la méthode de conversion UTM approximative");
+    
+    // Facteurs de conversion approximatifs pour l'Espagne (UTM zone 30N)
+    const UTM_SCALE_X = 111320; // mètres par degré de longitude à l'équateur
+    const UTM_SCALE_Y = 110540; // mètres par degré de latitude
+    
+    // Point de référence UTM zone 30N (méridien central 3°W)
+    const REF_LNG = -3;
+    const REF_LAT = 0;
+    
+    // Conversion approximative
+    const x = Math.round(UTM_SCALE_X * (lng - REF_LNG) * Math.cos(lat * Math.PI / 180) + 500000);
+    const y = Math.round(UTM_SCALE_Y * (lat - REF_LAT));
+    
+    return { x, y };
+  }
 };
