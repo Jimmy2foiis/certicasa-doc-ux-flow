@@ -1,5 +1,5 @@
 
-import { Calculator } from "lucide-react";
+import { Calculator, Download } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -9,9 +9,12 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import ExportExcelButton from "../calculations/ExportExcelButton";
 
 interface CalculationsTabProps {
   clientId: string;
+  clientName?: string;
+  clientAddress?: string;
   savedCalculations: Array<{
     id: string;
     projectId: string;
@@ -29,6 +32,8 @@ interface CalculationsTabProps {
 
 const CalculationsTab = ({ 
   clientId, 
+  clientName,
+  clientAddress,
   savedCalculations, 
   onOpenCalculation, 
   onCreateNewCalculation 
@@ -77,6 +82,12 @@ const CalculationsTab = ({
                     </div>
                     
                     <div className="flex justify-end space-x-2">
+                      <ExportExcelButton 
+                        calculationData={calculation.calculationData} 
+                        clientName={clientName}
+                        clientAddress={clientAddress}
+                        projectName={calculation.projectName}
+                      />
                       <Button 
                         size="sm"
                         className="bg-blue-600 hover:bg-blue-700"

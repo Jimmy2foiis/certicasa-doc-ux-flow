@@ -8,6 +8,7 @@ import ThermalEconomySection from "./ThermalEconomySection";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import { useCadastralData } from "@/hooks/useCadastralData";
+import ExportExcelButton from "./ExportExcelButton";
 
 interface ProjectCalculationProps {
   clientId?: string;
@@ -183,34 +184,36 @@ const ProjectCalculation = ({
     }
   };
 
+  // Calculer tous les paramètres requis pour l'export Excel
+  const calculationData = {
+    projectType,
+    surfaceArea,
+    roofArea,
+    ventilationBefore,
+    ventilationAfter,
+    ratioBefore,
+    ratioAfter,
+    rsiBefore,
+    rseBefore,
+    rsiAfter,
+    rseAfter,
+    beforeLayers,
+    afterLayers,
+    totalRBefore,
+    upValueBefore,
+    uValueBefore,
+    totalRAfter,
+    upValueAfter,
+    uValueAfter,
+    improvementPercent,
+    climateZone: effectiveClimateZone,
+    bCoefficientBefore,
+    bCoefficientAfter
+  };
+  
   // Fonction pour enregistrer les données
   const handleSave = () => {
     if (onSave) {
-      const calculationData = {
-        projectType,
-        surfaceArea,
-        roofArea,
-        ventilationBefore,
-        ventilationAfter,
-        ratioBefore,
-        ratioAfter,
-        rsiBefore,
-        rseBefore,
-        rsiAfter,
-        rseAfter,
-        beforeLayers,
-        afterLayers,
-        totalRBefore,
-        upValueBefore,
-        uValueBefore,
-        totalRAfter,
-        upValueAfter,
-        uValueAfter,
-        improvementPercent,
-        meetsRequirements,
-        climateZone: effectiveClimateZone // Use the effective climate zone for saving
-      };
-      
       onSave(calculationData);
     }
   };
@@ -239,15 +242,19 @@ const ProjectCalculation = ({
                 Saisissez les matériaux et épaisseurs pour calculer la résistance thermique
               </CardDescription>
             </div>
-            {onSave && (
-              <Button 
-                onClick={handleSave} 
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <Save className="h-4 w-4 mr-2" />
-                Enregistrer
-              </Button>
-            )}
+            <div className="flex gap-2">
+              <ExportExcelButton calculationData={calculationData} />
+              
+              {onSave && (
+                <Button 
+                  onClick={handleSave} 
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Enregistrer
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Before Work Section */}

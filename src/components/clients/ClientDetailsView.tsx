@@ -1,4 +1,3 @@
-
 import { 
   ArrowLeft, 
   User, 
@@ -192,7 +191,9 @@ const ClientDetailsView = ({ clientId, onBack }: ClientDetailsViewProps) => {
 
         <TabsContent value="calculations">
           <CalculationsTab 
-            clientId={clientId} 
+            clientId={clientId}
+            clientName={client.name} 
+            clientAddress={clientAddress}
             savedCalculations={savedCalculations} 
             onOpenCalculation={handleShowCalculation} 
             onCreateNewCalculation={() => handleShowCalculation()} 

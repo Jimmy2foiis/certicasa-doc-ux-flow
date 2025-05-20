@@ -1,19 +1,19 @@
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { MapPin, Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { toast } from "@/components/ui/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AddressSearchProps {
   initialAddress: string;
   onAddressChange: (address: string) => void;
 }
 
+// Étendre l'interface Window pour inclure la fonction gm_authFailure
 declare global {
   interface Window {
-    google: any;
-    initGoogleMapsAutocomplete: () => void;
+    google?: any;
+    gm_authFailure?: () => void;
   }
 }
 
