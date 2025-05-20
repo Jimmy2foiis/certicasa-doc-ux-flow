@@ -6,9 +6,35 @@
 // Extend Window interface for Google Maps global objects
 declare global {
   interface Window {
-    google?: any;
+    google: {
+      maps: {
+        places: {
+          Autocomplete: typeof google.maps.places.Autocomplete;
+        };
+        LatLng: typeof google.maps.LatLng;
+      };
+    };
     gm_authFailure?: () => void;
     initGoogleMapsAutocomplete?: () => void;
+  }
+}
+
+// Google Maps type definitions
+export namespace GoogleMapsTypes {
+  export interface PlaceResult {
+    formatted_address?: string;
+    geometry?: {
+      location?: {
+        lat: () => number;
+        lng: () => number;
+      };
+    };
+    address_components?: Array<{
+      long_name: string;
+      short_name: string;
+      types: string[];
+    }>;
+    name?: string;
   }
 }
 

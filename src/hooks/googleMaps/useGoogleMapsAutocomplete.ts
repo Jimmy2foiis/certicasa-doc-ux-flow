@@ -1,8 +1,8 @@
 
 import { useState, useEffect } from 'react';
-import { GoogleMapsAutocompleteOptions, GoogleMapsAutocompleteResult } from '@/types/googleMaps';
-import { loadGoogleMapsApi } from '@/services/googleMapsService';
-import { GOOGLE_MAPS_API_KEY } from '@/config/googleMapsConfig';
+import { GoogleMapsAutocompleteOptions, GoogleMapsAutocompleteResult, GoogleMapsTypes } from '@/types/googleMaps';
+import { loadGoogleMapsApi, isGoogleMapsLoaded } from '@/services/googleMapsService';
+import { GOOGLE_MAPS_API_KEY, DEFAULT_AUTOCOMPLETE_OPTIONS } from '@/config/googleMapsConfig';
 
 /**
  * Hook personnalisé pour l'autocomplétion Google Maps
@@ -16,7 +16,7 @@ export function useGoogleMapsAutocomplete({
 }: GoogleMapsAutocompleteOptions): GoogleMapsAutocompleteResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [apiAvailable, setApiAvailable] = useState(true);
+  const [apiAvailable, setApiAvailable] = useState(isGoogleMapsLoaded());
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
 
   /**
@@ -54,7 +54,11 @@ export function useGoogleMapsAutocomplete({
       }
     };
 
-    checkApiAvailability();
+    if (!isGoogleMapsLoaded()) {
+      checkApiAvailability();
+    } else {
+      setApiAvailable(true);
+    }
 
     return () => {
       isMounted = false;
@@ -75,20 +79,14 @@ export function useGoogleMapsAutocomplete({
 
     try {
       // Créer une nouvelle instance d'autocomplétion
-      const options = {
-        componentRestrictions: { country: 'es' }, // Limiter aux adresses en Espagne
-        fields: ['address_components', 'formatted_address', 'geometry', 'name'],
-        types: ['address']
-      };
-
       const newAutocomplete = new window.google.maps.places.Autocomplete(
         inputRef.current,
-        options
+        DEFAULT_AUTOCOMPLETE_OPTIONS
       );
 
       // Gestionnaire d'événement pour les sélections d'adresse
       newAutocomplete.addListener('place_changed', () => {
-        const place = newAutocomplete.getPlace();
+        const place = newAutocomplete.getPlace() as GoogleMapsTypes.PlaceResult;
         
         if (!place.geometry || !place.formatted_address) {
           console.error('Pas de données de géométrie pour cette adresse');

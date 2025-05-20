@@ -1,9 +1,6 @@
-
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { AddressInput } from "@/components/address/AddressInput";
 import { ApiStatus } from "@/components/address/ApiStatus";
-import { Control } from "react-hook-form";
-import { ClientFormValues } from "../schemas/clientSchema";
 import { useEffect, useRef, useState } from "react";
 import { useGoogleMapsAutocomplete } from "@/hooks/googleMaps/useGoogleMapsAutocomplete";
 import { useToast } from "@/components/ui/use-toast";
