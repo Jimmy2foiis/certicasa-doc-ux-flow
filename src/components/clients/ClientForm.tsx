@@ -30,6 +30,7 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
   const { toast } = useToast();
   const [addressSelected, setAddressSelected] = useState(false);
   const [addressWarning, setAddressWarning] = useState<string | null>(null);
+  const [isAddressProcessing, setIsAddressProcessing] = useState(false);
   
   // Initialize form with react-hook-form and zod validation
   const form = useForm<ClientFormValues>({
@@ -57,15 +58,17 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
   // Handle address selection from Google Maps autocomplete
   const handleAddressSelected = (address: string) => {
     console.log("Adresse sélectionnée:", address);
-    setAddressSelected(true);
-    setAddressWarning(null);
-    
-    // Notification visuelle pour confirmer la sélection
-    toast({
-      title: "Adresse sélectionnée",
-      description: `Adresse sélectionnée: ${address}`,
-      duration: 3000,
-    });
+    if (!isAddressProcessing) {
+      setAddressSelected(true);
+      setAddressWarning(null);
+      
+      // Notification visuelle pour confirmer la sélection
+      toast({
+        title: "Adresse sélectionnée",
+        description: `Adresse sélectionnée: ${address}`,
+        duration: 3000,
+      });
+    }
   };
   
   const handleCoordinatesSelected = (coords: {lat: number, lng: number}) => {
@@ -95,19 +98,25 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
         });
       }
       
+      // Empêcher la soumission si traitement d'adresse en cours
+      if (isAddressProcessing) {
+        toast({
+          title: "Traitement en cours",
+          description: "Veuillez attendre que le géocodage de l'adresse soit terminé.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       // Create a Client object ensuring name is not undefined
       const clientData: Client = {
-        name: data.name, // This is required and validated by zod
+        name: data.name,
         email: data.email || undefined,
         phone: data.phone || undefined,
         address: data.address || undefined,
         nif: data.nif || undefined,
         type: data.type || "010",
       };
-      
-      if (!clientData.address && data.address) {
-        clientData.address = data.address;
-      }
       
       console.log("Données client à envoyer:", clientData);
       console.log("Coordonnées à enregistrer:", coordinates);
@@ -156,7 +165,7 @@ export const ClientForm = ({ onSubmit, onCancel, initialValues, isSubmitting = f
         
         <FormActions 
           onCancel={onCancel}
-          isSubmitting={isSubmitting}
+          isSubmitting={isSubmitting || isAddressProcessing}
         />
       </form>
     </Form>

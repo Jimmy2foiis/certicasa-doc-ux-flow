@@ -1,32 +1,49 @@
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { AddressInput } from "@/components/address/AddressInput";
 import { AddressError } from "@/components/ui/address-error";
 import { ApiStatus } from "@/components/address/ApiStatus";
 import { useGoogleMapsAutocomplete } from "@/hooks/googleMaps/useGoogleMapsAutocomplete";
 import { GeoCoordinates, getCoordinatesFromAddress } from "@/services/geoCoordinatesService";
 import { useToast } from "@/components/ui/use-toast";
+import debounce from 'lodash/debounce';
 
 interface AddressSearchProps {
   initialAddress: string;
   onAddressChange: (address: string) => void;
   onCoordinatesChange?: (coordinates: GeoCoordinates) => void;
+  onProcessingChange?: (isProcessing: boolean) => void;
 }
 
 /**
  * Composant de recherche d'adresse avec autocomplétion Google Maps
  * Optimisé pour toujours fournir des coordonnées GPS avant l'appel à l'API Catastro
  */
-const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }: AddressSearchProps) => {
+const AddressSearch = ({ 
+  initialAddress, 
+  onAddressChange, 
+  onCoordinatesChange,
+  onProcessingChange
+}: AddressSearchProps) => {
   const [address, setAddress] = useState(initialAddress);
   const [isEditing, setIsEditing] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const autocompleteInitialized = useRef(false);
+  
+  // Mettre à jour l'état de traitement externe
+  useEffect(() => {
+    if (onProcessingChange) {
+      onProcessingChange(isProcessing);
+    }
+  }, [isProcessing, onProcessingChange]);
   
   // Gestionnaire pour la sélection d'adresse finalisée
-  const handleAddressSelected = async (selectedAddress: string) => {
+  const handleAddressSelected = useCallback(async (selectedAddress: string) => {
+    if (selectedAddress === address && !isEditing) return;
+    
     setAddress(selectedAddress);
     setIsEditing(false);
     setIsProcessing(true);
@@ -38,7 +55,6 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
           !selectedAddress.toLowerCase().includes('spain') && 
           !selectedAddress.toLowerCase().includes('españa')) {
         console.log("Adresse potentiellement hors d'Espagne:", selectedAddress);
-        // On continue quand même, l'API pourra donner une erreur plus spécifique
       }
       
       // Toujours obtenir les coordonnées à partir de l'adresse
@@ -74,10 +90,15 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
         description: "Impossible d'obtenir les coordonnées pour cette adresse",
         variant: "destructive",
       });
-    } finally {
       setIsProcessing(false);
     }
-  };
+  }, [address, isEditing, onAddressChange, onCoordinatesChange, toast]);
+  
+  // Version debounced du handler pour éviter les appels trop fréquents
+  const debouncedHandleAddressSelected = useCallback(
+    debounce(handleAddressSelected, 300), 
+    [handleAddressSelected]
+  );
   
   // Utiliser notre hook personnalisé pour Google Maps
   const { isLoading: isLoadingGoogleMaps, error: googleMapsError, apiAvailable, initAutocomplete } = useGoogleMapsAutocomplete({
@@ -88,48 +109,54 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
       if (onCoordinatesChange) {
         onCoordinatesChange(coords);
         console.log("Coordonnées obtenues de l'autocomplete:", coords);
+        setIsProcessing(false);
       }
     }
   });
 
-  // Initialiser l'autocomplétion quand le composant est monté
+  // Initialiser l'autocomplétion quand le composant est monté ou quand API devient disponible
   useEffect(() => {
-    console.log("AddressSearch: Initialisation de l'autocomplétion");
-    if (inputRef.current && apiAvailable) {
+    if (inputRef.current && apiAvailable && !autocompleteInitialized.current) {
+      console.log("AddressSearch: Initialisation de l'autocomplétion");
       initAutocomplete();
+      autocompleteInitialized.current = true;
     }
   }, [apiAvailable, initAutocomplete]);
   
   // Mettre à jour l'adresse affichée quand initialAddress change
   useEffect(() => {
-    if (!isEditing) {
+    if (!isEditing && initialAddress !== address) {
       setAddress(initialAddress);
     }
-  }, [initialAddress, isEditing]);
+  }, [initialAddress, isEditing, address]);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAddress(e.target.value);
+    const newValue = e.target.value;
+    setAddress(newValue);
     setIsEditing(true);
     setLocalError(null); // Réinitialiser l'erreur quand l'utilisateur modifie l'adresse
+    
+    // Informer le parent du changement si ce n'est pas en cours de traitement
+    if (!isProcessing) {
+      onAddressChange(newValue);
+    }
   };
   
   const handleFocus = () => {
     setIsEditing(true);
     // S'assurer que l'autocomplétion est activée
-    if (inputRef.current && apiAvailable) {
+    if (inputRef.current && apiAvailable && !autocompleteInitialized.current) {
       initAutocomplete();
+      autocompleteInitialized.current = true;
     }
   };
   
   const handleBlur = () => {
     // Quand l'utilisateur quitte le champ sans utiliser l'autocomplétion
-    setTimeout(async () => {
-      if (address !== initialAddress && !isProcessing) {
-        // Appeler handleAddressSelected qui gérera le géocodage et la notification au parent
-        await handleAddressSelected(address);
-      }
-      setIsEditing(false);
-    }, 200);
+    if (address !== initialAddress && !isProcessing) {
+      debouncedHandleAddressSelected(address);
+    }
+    setIsEditing(false);
   };
 
   // Afficher l'erreur de Google Maps ou l'erreur locale
@@ -150,12 +177,14 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
           if (inputRef.current) {
             inputRef.current.focus();
             // Forcer l'initialisation de l'autocomplétion au clic
-            if (apiAvailable) {
+            if (apiAvailable && !autocompleteInitialized.current) {
               initAutocomplete();
+              autocompleteInitialized.current = true;
             }
           }
         }}
         placeholder="Saisissez une adresse espagnole..."
+        disabled={isProcessing}
       />
       
       {errorToShow && <AddressError error={errorToShow} />}
@@ -169,7 +198,7 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
       {/* Information pour l'utilisateur */}
       {!errorToShow && !isProcessing && address && (
         <p className="text-xs text-gray-500 italic">
-          Pour de meilleurs résultats, assurez-vous que l'adresse est complète et inclut la ville, code postal et pays (Espagne).
+          Pour de meilleurs résultats, sélectionnez une adresse dans les suggestions.
         </p>
       )}
     </div>

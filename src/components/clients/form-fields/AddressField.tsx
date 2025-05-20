@@ -5,7 +5,7 @@ import { ClientFormValues } from "../schemas/clientSchema";
 import AddressSearch from "@/components/clients/AddressSearch";
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
 import { useCoordinates } from "@/hooks/useCoordinates";
-import { useEffect } from "react";
+import { useState } from "react";
 
 interface AddressFieldProps {
   control: Control<ClientFormValues>;
@@ -19,8 +19,8 @@ export const AddressField = ({
   onCoordinatesSelected
 }: AddressFieldProps) => {
   const { setClientCoordinates } = useCoordinates();
+  const [isProcessing, setIsProcessing] = useState(false);
   
-  // Utiliser directement le composant AddressSearch qui fonctionne bien
   return (
     <FormField
       control={control}
@@ -31,9 +31,11 @@ export const AddressField = ({
           <AddressSearch
             initialAddress={field.value || ""}
             onAddressChange={(address) => {
-              field.onChange(address);
-              if (onAddressSelected) {
-                onAddressSelected(address);
+              if (!isProcessing) {
+                field.onChange(address);
+                if (onAddressSelected) {
+                  onAddressSelected(address);
+                }
               }
             }}
             onCoordinatesChange={(coords: GeoCoordinates) => {
@@ -41,7 +43,9 @@ export const AddressField = ({
               if (onCoordinatesSelected) {
                 onCoordinatesSelected(coords);
               }
+              setIsProcessing(false);
             }}
+            onProcessingChange={setIsProcessing}
           />
           <FormMessage />
         </FormItem>
