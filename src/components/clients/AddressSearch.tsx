@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AddressInput } from "@/components/address/AddressInput";
 import { AddressError } from "@/components/ui/address-error";
 import { ApiStatus } from "@/components/address/ApiStatus";
@@ -31,12 +31,12 @@ const AddressSearch = ({ initialAddress, onAddressChange, onCoordinatesChange }:
     onCoordinatesSelected: onCoordinatesChange
   });
   
-  // Mettre à jour l'adresse locale si l'initialAddress change
-  useState(() => {
+  // Corrected: Using useEffect instead of useState to update address when initialAddress changes
+  useEffect(() => {
     if (!isEditing) {
       setAddress(initialAddress);
     }
-  });
+  }, [initialAddress, isEditing]);
   
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddress(e.target.value);
