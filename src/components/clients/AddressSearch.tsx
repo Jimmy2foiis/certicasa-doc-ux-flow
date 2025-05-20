@@ -16,9 +16,8 @@ declare global {
   }
 }
 
-// Note: Dans un environnement de production, cette clé devrait être stockée de façon sécurisée
-// Cette clé est uniquement pour la démonstration et a des restrictions
-const GOOGLE_MAPS_API_KEY = "AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartNGg";
+// Clé API Google Maps configurée pour cette application
+const GOOGLE_MAPS_API_KEY = "AIzaSyBoHmcKb2Bgf1PUxNTnsTAjMa0RgYx-HoQ";
 
 const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) => {
   const [address, setAddress] = useState(initialAddress);
@@ -159,11 +158,6 @@ const AddressSearch = ({ initialAddress, onAddressChange }: AddressSearchProps) 
       {isLoading && (
         <p className="text-xs text-gray-500">Chargement de la recherche d'adresse...</p>
       )}
-      
-      <p className="text-xs text-gray-500">
-        Note: Pour utiliser pleinement l'autocomplétion des adresses, vous devez configurer 
-        une clé API Google Maps valide. La clé de démonstration actuelle a des limitations.
-      </p>
     </div>
   );
 };
