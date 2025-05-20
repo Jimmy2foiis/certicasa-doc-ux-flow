@@ -20,12 +20,14 @@ const DocumentsTabContent = ({ clientId, clientName = "Client", projectType = "R
     updateProjectType
   } = useAdministrativeDocuments(clientId, clientName);
   
-  // Update document type when projectType changes
+  // Correction du hook useEffect pour éviter les mises à jour infinies
   useEffect(() => {
     if (projectType) {
+      // Simplement appeler updateProjectType sans logique conditionnelle additionnelle
+      // Laissez la gestion interne du hook s'occuper de vérifier si une mise à jour est nécessaire
       updateProjectType(projectType);
     }
-  }, [projectType, updateProjectType]);
+  }, [projectType]); // Supprimer updateProjectType des dépendances pour éviter les boucles
 
   return (
     <Card className="shadow-sm">

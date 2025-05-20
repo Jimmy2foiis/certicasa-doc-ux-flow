@@ -3,7 +3,7 @@ import { MapPinned, FileSpreadsheet, MapPin, Navigation, RefreshCcw, Globe } fro
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 interface CadastralInfoProps {
   utmCoordinates: string;
@@ -98,12 +98,12 @@ const CadastralInfo = ({
       
       <div className="flex">
         <FileSpreadsheet className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
-        <div>
+        <div className="w-full">
           <p className="font-medium text-sm">Référence cadastrale:</p>
           {loadingCadastral ? (
             <span className="text-gray-500">Récupération depuis le Catastro...</span>
           ) : cadastralReference ? (
-            <span className="font-mono">{cadastralReference}</span>
+            <span className="font-mono text-green-700 font-semibold">{cadastralReference}</span>
           ) : (
             <span className="text-amber-600 text-sm">Non disponible</span>
           )}
@@ -124,7 +124,7 @@ const CadastralInfo = ({
         </div>
       </div>
       
-      {!loadingCadastral && !cadastralReference && (
+      {!loadingCadastral && !cadastralReference && gpsCoordinates && (
         <Alert variant="default" className="mt-2">
           <AlertDescription className="text-xs">
             {utmCoordinates ? 

@@ -49,7 +49,21 @@ export const getCadastralDataByCoordinatesREST = async (
     
     // Parser la réponse JSON
     const data = await response.json();
-    console.log("Réponse API Catastro:", JSON.stringify(data));
+    console.log("Réponse API Catastro (brute):", data);
+    
+    // Extraction plus détaillée pour débogage
+    if (data && data.coordenadas && data.coordenadas.coord && data.coordenadas.coord.length > 0) {
+      const firstCoord = data.coordenadas.coord[0];
+      console.log("Premier élément de coordonnées:", firstCoord);
+      
+      if (firstCoord.pc) {
+        console.log("Référence cadastrale trouvée dans pc:", firstCoord.pc);
+      }
+      
+      if (firstCoord.lrc) {
+        console.log("Référence cadastrale trouvée dans lrc:", firstCoord.lrc);
+      }
+    }
     
     return parseCoordinatesResponse(data);
     
@@ -97,7 +111,7 @@ export const getCadastralDataByAddressREST = async (address: string): Promise<Ca
     
     // Parser la réponse JSON
     const data = await response.json();
-    console.log("Réponse API Catastro par adresse:", JSON.stringify(data));
+    console.log("Réponse API Catastro par adresse:", data);
     
     return parseAddressResponse(data, province);
     

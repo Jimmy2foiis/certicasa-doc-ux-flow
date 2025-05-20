@@ -37,6 +37,8 @@ export const getCadastralInfoFromCoordinates = async (
     // Récupérer les données cadastrales via l'API REST
     const cadastralData = await getCadastralDataByCoordinatesREST(latitude, longitude);
     
+    console.log("Données cadastrales reçues de l'API:", cadastralData);
+    
     // Si l'API ne retourne pas de coordonnées UTM, utiliser celles calculées localement
     if (!cadastralData.utmCoordinates && utmCoordinates) {
       cadastralData.utmCoordinates = utmCoordinates;
@@ -111,6 +113,8 @@ export const refreshCadastralData = async (coordinates: GeoCoordinates): Promise
       coordinates.lat, 
       coordinates.lng
     );
+    
+    console.log("Données cadastrales rafraîchies reçues:", cadastralData);
     
     // Si l'API ne retourne pas de coordonnées UTM, utiliser celles calculées localement
     if (!cadastralData.utmCoordinates && utmCoordinates) {
