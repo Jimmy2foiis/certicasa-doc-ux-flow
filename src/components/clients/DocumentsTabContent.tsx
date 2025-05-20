@@ -1,9 +1,7 @@
 
 import { useState } from "react";
-import { FileText, Download, Eye, Search, Plus, Filter } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
+import { Download } from "lucide-react";
+import { 
   Card,
   CardContent,
   CardHeader,
@@ -11,167 +9,230 @@ import {
   CardDescription,
   CardFooter,
 } from "@/components/ui/card";
-import { clientDocuments } from "@/data/mock";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import GenerateDocumentButton from "../documents/GenerateDocumentButton";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import DocumentStatusBadge, { DocumentStatus } from "@/components/documents/DocumentStatusBadge";
+import DocumentActionButtons from "@/components/documents/DocumentActionButtons";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface DocumentsTabContentProps {
   clientId?: string;
+  clientName?: string;
+  projectType?: string;
 }
 
-const DocumentsTabContent = ({ clientId }: DocumentsTabContentProps) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
+// Type pour représenter un document administratif
+interface AdministrativeDocument {
+  id: string;
+  name: string;
+  type: string; // Identifiant unique pour le type (ex: "ficha", "anexo", etc.)
+  description: string;
+  status: DocumentStatus;
+  statusLabel?: string;
+  order: number;
+}
+
+const DocumentsTabContent = ({ clientId, clientName = "Client", projectType = "RES010" }: DocumentsTabContentProps) => {
+  const { toast } = useToast();
   
-  const filteredDocuments = clientDocuments.filter(doc => 
-    doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.project.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    doc.status.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // État des documents administratifs
+  // Dans une implémentation réelle, ceux-ci viendraient d'une API ou d'un hook
+  const [adminDocuments, setAdminDocuments] = useState<AdministrativeDocument[]>([
+    {
+      id: "1",
+      name: `Ficha ${projectType}`,
+      type: "ficha",
+      description: "Document principal du dossier",
+      status: "generated",
+      order: 1
+    },
+    {
+      id: "2",
+      name: "Anexo I DR Subvenciones",
+      type: "anexo",
+      description: "Annexe pour les subventions",
+      status: "ready",
+      order: 2
+    },
+    {
+      id: "3",
+      name: "Factura",
+      type: "factura",
+      description: "Facture client",
+      status: "pending",
+      statusLabel: "En attente CAE",
+      order: 3
+    },
+    {
+      id: "4",
+      name: "Rapport Photos (4-Fotos)",
+      type: "fotos",
+      description: "Photos de l'installation",
+      status: "action-required",
+      statusLabel: "Photos manquantes",
+      order: 4
+    },
+    {
+      id: "5",
+      name: "Certificado Instalador (+ Calcul Coef.)",
+      type: "certificado",
+      description: "Certificat d'installation et calcul",
+      status: "pending",
+      statusLabel: "En attente CEE POST.",
+      order: 5
+    },
+    {
+      id: "6",
+      name: "CEEE (Inicial & Final)",
+      type: "ceee",
+      description: "Certificats énergétiques",
+      status: "missing",
+      order: 6
+    },
+    {
+      id: "7",
+      name: "Modelo Cesión Ahorros",
+      type: "modelo",
+      description: "Modèle de cession",
+      status: "ready",
+      order: 7
+    },
+    {
+      id: "8",
+      name: "DNI Client",
+      type: "dni",
+      description: "Document d'identité",
+      status: "linked",
+      statusLabel: "Fichier lié",
+      order: 8
+    },
+  ]);
 
-  const toggleDocumentSelection = (docId: string) => {
-    setSelectedDocuments(prev => 
-      prev.includes(docId)
-        ? prev.filter(id => id !== docId)
-        : [...prev, docId]
-    );
-  };
-
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case "Generado": return "default";
-      case "Firmado": return "success";
-      case "Pendiente": return "outline";
-      default: return "outline";
+  // Fonction pour gérer les actions sur les documents
+  const handleDocumentAction = (documentId: string, action: string) => {
+    const document = adminDocuments.find(doc => doc.id === documentId);
+    if (!document) return;
+    
+    // Actions spécifiques selon le type d'action
+    switch (action) {
+      case "view":
+        toast({
+          title: `Visualisation: ${document.name}`,
+          description: "Ouverture du document...",
+        });
+        break;
+      case "download":
+        toast({
+          title: `Téléchargement: ${document.name}`,
+          description: "Le document est en cours de téléchargement...",
+        });
+        break;
+      case "generate":
+        toast({
+          title: `Génération: ${document.name}`,
+          description: "Le document est en cours de génération...",
+        });
+        // Simuler la génération réussie
+        setTimeout(() => {
+          setAdminDocuments(prev => prev.map(doc => 
+            doc.id === documentId ? {...doc, status: "generated" as DocumentStatus} : doc
+          ));
+          toast({
+            title: "Document généré avec succès",
+            description: `${document.name} a été généré et ajouté au dossier client.`,
+          });
+        }, 1500);
+        break;
+      case "regenerate":
+        toast({
+          title: `Régénération: ${document.name}`,
+          description: "Le document est en cours de régénération...",
+        });
+        break;
+      case "refresh-ocr":
+        toast({
+          title: `Mise à jour OCR: ${document.name}`,
+          description: "Relance de l'analyse OCR en cours...",
+        });
+        break;
+      case "update-cee":
+        toast({
+          title: `Mise à jour CEE: ${document.name}`,
+          description: "Récupération des nouvelles données CEE...",
+        });
+        break;
+      case "link-files":
+      case "link-photos":
+      case "link-dni":
+        toast({
+          title: `Liaison de fichiers: ${document.name}`,
+          description: "Veuillez sélectionner les fichiers à lier...",
+        });
+        break;
     }
   };
 
-  const translateStatus = (status: string) => {
-    switch (status) {
-      case "Generado": return "Généré";
-      case "Firmado": return "Signé";
-      case "Pendiente": return "En attente";
-      default: return status;
-    }
-  };
-
-  const documentsByType = {
-    total: filteredDocuments.length,
-    signed: filteredDocuments.filter(doc => doc.status === "Firmado").length,
-    generated: filteredDocuments.filter(doc => doc.status === "Generado").length,
-    pending: filteredDocuments.filter(doc => doc.status === "Pendiente").length
-  };
-  
-  // Récupérer le nom du client pour l'utiliser avec GenerateDocumentButton
-  const clientName = "Client"; // Dans un vrai cas, récupérer depuis les props ou context
-  
-  const handleDocumentGenerated = (docId: string) => {
-    // Dans un cas réel, on actualiserait la liste des documents
-    console.log("Document généré avec ID:", docId);
+  // Fonction pour exporter tous les documents
+  const handleExportAll = () => {
+    toast({
+      title: "Export du dossier complet",
+      description: `Préparation de l'archive ZIP contenant tous les documents de ${clientName}...`,
+    });
   };
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <CardTitle>Documents</CardTitle>
-            <CardDescription>
-              Documents générés pour les projets du client
-            </CardDescription>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Rechercher un document..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 w-full sm:w-64"
-              />
-            </div>
-            <GenerateDocumentButton 
-              clientId={clientId} 
-              clientName={clientName}
-              onDocumentGenerated={handleDocumentGenerated} 
-            />
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2 mt-2">
-          <Badge variant="outline" className="cursor-pointer">
-            Tous ({documentsByType.total})
-          </Badge>
-          <Badge variant="success" className="cursor-pointer bg-green-100 text-green-800 hover:bg-green-200">
-            Signés ({documentsByType.signed})
-          </Badge>
-          <Badge variant="default" className="cursor-pointer">
-            Générés ({documentsByType.generated})
-          </Badge>
-          <Badge variant="outline" className="cursor-pointer">
-            En attente ({documentsByType.pending})
-          </Badge>
-        </div>
+        <CardTitle>Suivi des Documents Administratifs : {clientName} - {projectType}</CardTitle>
+        <CardDescription>
+          Statut des 8 documents obligatoires pour le dossier client
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-4">
-          {filteredDocuments.length === 0 ? (
-            <div className="text-center py-6 text-gray-500">
-              {searchTerm ? "Aucun document correspondant à votre recherche" : "Aucun document disponible pour ce client"}
-            </div>
-          ) : (
-            filteredDocuments.map((doc) => (
-              <div 
-                key={doc.id} 
-                className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50"
-              >
-                <div className="flex items-center">
-                  <Checkbox
-                    checked={selectedDocuments.includes(doc.id)}
-                    onCheckedChange={() => toggleDocumentSelection(doc.id)}
-                    id={`doc-${doc.id}`}
-                    className="mr-3"
-                  />
-                  <FileText className={`h-5 w-5 ${doc.status === "Firmado" ? "text-green-500" : "text-blue-500"} mr-3`} />
-                  <div>
-                    <h4 className="font-medium">{doc.name}</h4>
-                    <p className="text-sm text-gray-500">Projet: {doc.project}</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant={getStatusVariant(doc.status)}>
-                    {translateStatus(doc.status)}
-                  </Badge>
-                  <Button variant="ghost" size="sm">
-                    <Eye className="h-4 w-4 mr-1" /> Voir
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Download className="h-4 w-4 mr-1" /> Télécharger
-                  </Button>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[50%]">Document</TableHead>
+              <TableHead className="w-[20%]">Statut</TableHead>
+              <TableHead className="w-[30%]">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {adminDocuments
+              .sort((a, b) => a.order - b.order)
+              .map((document) => (
+                <TableRow key={document.id}>
+                  <TableCell className="font-medium">
+                    {document.order}. {document.name}
+                    <div className="text-xs text-muted-foreground mt-1">{document.description}</div>
+                  </TableCell>
+                  <TableCell>
+                    <DocumentStatusBadge 
+                      status={document.status} 
+                      customLabel={document.statusLabel} 
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <DocumentActionButtons 
+                      documentType={document.type} 
+                      status={document.status}
+                      onAction={(action) => handleDocumentAction(document.id, action)}
+                    />
+                  </TableCell>
+                </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </CardContent>
-      <CardFooter className="flex justify-between border-t pt-4">
-        <div className="text-sm text-gray-500">
-          {selectedDocuments.length > 0 ? (
-            `${selectedDocuments.length} document(s) sélectionné(s)`
-          ) : (
-            `${filteredDocuments.length} document(s) au total`
-          )}
-        </div>
-        {selectedDocuments.length > 0 && (
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-1" /> Télécharger la sélection
-            </Button>
-            <Button variant="default" size="sm">
-              Action groupée
-            </Button>
-          </div>
-        )}
+      <CardFooter className="flex justify-end">
+        <Button 
+          variant="outline" 
+          className="flex items-center" 
+          onClick={handleExportAll}
+        >
+          <Download className="mr-2 h-4 w-4" />
+          Exporter Dossier Complet (ZIP)
+        </Button>
       </CardFooter>
     </Card>
   );
