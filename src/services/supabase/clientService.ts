@@ -51,16 +51,16 @@ export const getClientById = async (clientId: string): Promise<Client | null> =>
 
 export const createClientRecord = async (clientData: Client): Promise<Client | null> => {
   try {
+    // Essayer d'abord de créer dans Supabase
     const { data, error } = await supabase
       .from('clients')
       .insert([clientData])
       .select();
     
     if (error) {
-      console.error('Erreur lors de la création du client:', error);
+      console.error('Erreur lors de la création du client dans Supabase:', error);
       
-      // On stocke toujours localement, même en cas d'erreur RLS 
-      // (pour compatibilité avec le comportement précédent)
+      // Si c'est une erreur RLS (401/403) ou autre erreur, on stocke UNIQUEMENT en local
       const localClient = {
         ...clientData,
         id: `local_${Date.now()}`,
@@ -74,9 +74,12 @@ export const createClientRecord = async (clientData: Client): Promise<Client | n
       clients.push(localClient);
       localStorage.setItem('local_clients', JSON.stringify(clients));
       
+      console.log('Client créé localement:', localClient);
       return localClient;
     }
     
+    // Si Supabase a réussi, on retourne le client créé et on NE STOCKE PAS en local
+    console.log('Client créé dans Supabase:', data?.[0]);
     return data?.[0] || null;
   } catch (error) {
     console.error('Exception lors de la création du client:', error);

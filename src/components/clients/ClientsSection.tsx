@@ -26,18 +26,24 @@ const ClientsSection = () => {
     try {
       setLoading(true);
       
-      // Charger depuis Supabase
-      const remoteClients = await getClients();
+      // Obtenir tous les clients (la fonction getClients combine déjà les sources)
+      const allClients = await getClients();
       
-      // Charger depuis le stockage local
-      const localClientsString = localStorage.getItem('local_clients');
-      const localClients = localClientsString ? JSON.parse(localClientsString) : [];
+      // Créer un Map pour éliminer les doublons potentiels
+      // (utiliser un ID comme clé garantit l'unicité)
+      const uniqueClientsMap = new Map<string, Client>();
       
-      // Combiner les deux sources
-      const allClients = [...remoteClients, ...localClients];
+      allClients.forEach(client => {
+        if (client.id) {
+          uniqueClientsMap.set(client.id, client);
+        }
+      });
       
-      setClients(allClients);
-      console.log("Clients chargés:", allClients);
+      // Convertir le Map en tableau
+      const uniqueClients = Array.from(uniqueClientsMap.values());
+      
+      setClients(uniqueClients);
+      console.log("Clients chargés (uniques):", uniqueClients);
     } catch (error) {
       console.error("Erreur lors du chargement des clients:", error);
       toast({
@@ -65,26 +71,6 @@ const ClientsSection = () => {
   // Gérer la suppression d'un client
   const handleDeleteClient = async (clientId: string) => {
     try {
-      // Si c'est un client local
-      if (clientId.startsWith('local_')) {
-        const localClientsString = localStorage.getItem('local_clients');
-        if (localClientsString) {
-          const localClients = JSON.parse(localClientsString);
-          const updatedClients = localClients.filter((c: Client) => c.id !== clientId);
-          localStorage.setItem('local_clients', JSON.stringify(updatedClients));
-          
-          toast({
-            title: "Client supprimé",
-            description: "Le client a été supprimé avec succès.",
-          });
-          
-          // Recharger la liste des clients
-          await loadClients();
-        }
-        return;
-      }
-      
-      // Si c'est un client dans Supabase
       const success = await deleteClientRecord(clientId);
       
       if (success) {
