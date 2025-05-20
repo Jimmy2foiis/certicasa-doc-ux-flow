@@ -1,4 +1,3 @@
-
 import { 
   ArrowLeft, 
   Building, 
@@ -11,7 +10,8 @@ import {
   Calendar,
   Home,
   Receipt,
-  BarChart
+  BarChart,
+  Calculator
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -86,6 +86,10 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
           <TabsTrigger value="billing" className="flex items-center gap-1">
             <Receipt className="h-4 w-4" />
             <span>Facturation</span>
+          </TabsTrigger>
+          <TabsTrigger value="calculations" className="flex items-center gap-1">
+            <Calculator className="h-4 w-4" />
+            <span>Calculs</span>
           </TabsTrigger>
           <TabsTrigger value="statistics" className="flex items-center gap-1">
             <BarChart className="h-4 w-4" />
@@ -411,6 +415,81 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
                     </div>
                   </div>
                 ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="calculations">
+          <Card>
+            <CardHeader>
+              <CardTitle>Module de Calcul</CardTitle>
+              <CardDescription>
+                Calculs thermiques et énergétiques pour les projets du client
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[1, 2].map((projectId) => (
+                    <Card key={projectId} className="overflow-hidden">
+                      <CardHeader className="bg-slate-50 pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg">Projet #{projectId}</CardTitle>
+                          <Badge variant="success">Enregistré</Badge>
+                        </div>
+                        <CardDescription>Réhabilitation Énergétique</CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-4">
+                        <div className="space-y-3">
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div>
+                              <p className="text-gray-500">Type:</p>
+                              <p className="font-medium">RES{projectId === 1 ? '010' : '020'}</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Surface:</p>
+                              <p className="font-medium">{120 + projectId * 10} m²</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Date:</p>
+                              <p className="font-medium">12/05/2023</p>
+                            </div>
+                            <div>
+                              <p className="text-gray-500">Amélioration:</p>
+                              <p className="font-medium">{35 + projectId * 3}%</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex justify-end space-x-2">
+                            <Button 
+                              size="sm"
+                              className="bg-blue-600 hover:bg-blue-700"
+                              onClick={() => setShowCalculations(true)}
+                            >
+                              <Calculator className="h-4 w-4 mr-1" />
+                              Voir/Modifier
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  
+                  <Card className="border-dashed border-2 flex flex-col items-center justify-center p-6">
+                    <div className="text-center space-y-3">
+                      <Calculator className="h-12 w-12 mx-auto text-gray-400" />
+                      <h3 className="font-medium">Nouveau Calcul</h3>
+                      <p className="text-sm text-gray-500">Créer un nouveau module de calcul pour ce client</p>
+                      <Button 
+                        className="mt-2 bg-blue-600 hover:bg-blue-700"
+                        onClick={() => setShowCalculations(true)}
+                      >
+                        Créer
+                      </Button>
+                    </div>
+                  </Card>
+                </div>
               </div>
             </CardContent>
           </Card>
