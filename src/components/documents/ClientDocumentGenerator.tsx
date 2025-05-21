@@ -1,18 +1,19 @@
 
-import { useState, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { FileText, FileUp, X } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { FileText, FileUp, X, AlertCircle } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { useDocumentTemplates } from "@/hooks/useDocumentTemplates";
 import { useDocumentGeneration } from "@/hooks/useDocumentGeneration";
 import TemplateSelectionList from "./TemplateSelectionList";
 import TemplateVariableMapping from "@/components/documents/template-mapping/TemplateVariableMapping";
-import { TemplateTag } from "@/types/documents"; // Import from central type definition
+import { TemplateTag } from "@/types/documents"; 
 import DocumentActions from "./DocumentActions";
 import GenerationSuccess from "./GenerationSuccess";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface ClientDocumentGeneratorProps {
   clientId: string;
@@ -31,8 +32,8 @@ const ClientDocumentGenerator = ({
   const [selectedTab, setSelectedTab] = useState("templates");
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [templateMappings, setTemplateMappings] = useState<TemplateTag[]>([]);
-  const { templates, loading } = useDocumentTemplates();
-  const { generating, generated, documentId, handleGenerate, handleDownload } = useDocumentGeneration(onDocumentGenerated, clientName);
+  const { templates, loading, refreshTemplates } = useDocumentTemplates();
+  const { generating, generated, documentId, handleGenerate, handleDownload, error } = useDocumentGeneration(onDocumentGenerated, clientName);
   const { toast } = useToast();
 
   // Get the selected template object
@@ -45,13 +46,13 @@ const ClientDocumentGenerator = ({
   };
 
   // Handle mapping completion
-  const handleMappingComplete = (mappings: TemplateTag[]) => {
+  const handleMappingComplete = useCallback((mappings: TemplateTag[]) => {
     setTemplateMappings(mappings);
     toast({
       title: "Mapping terminé",
-      description: "Vous pouvez maintenant procéder à la génération du document."
+      description: `${mappings.length} variables ont été mappées. Vous pouvez maintenant générer le document.`
     });
-  };
+  }, [toast]);
 
   // Handle document generation
   const handleDocumentGeneration = async () => {
@@ -65,13 +66,26 @@ const ClientDocumentGenerator = ({
     }
 
     try {
+      // Vérifier si toutes les variables sont mappées
+      const unmappedTags = templateMappings.filter(tag => !tag.mappedTo || tag.mappedTo === "");
+      
+      if (unmappedTags.length > 0) {
+        const confirmGeneration = window.confirm(
+          `${unmappedTags.length} variable(s) n'ont pas été mappées. Voulez-vous quand même générer le document?`
+        );
+        
+        if (!confirmGeneration) {
+          return;
+        }
+      }
+
       // Generate the document with mappings
       await handleGenerate(selectedTemplate, clientId, templateMappings);
     } catch (error) {
       console.error("Error generating document:", error);
       toast({
         title: "Erreur",
-        description: "Une erreur est survenue lors de la génération du document.",
+        description: `Une erreur est survenue lors de la génération du document: ${error instanceof Error ? error.message : String(error)}`,
         variant: "destructive"
       });
     }
@@ -83,17 +97,22 @@ const ClientDocumentGenerator = ({
       setIsOpen(false);
       // Wait for dialog animation to finish before resetting state
       setTimeout(() => {
-        if (generated) {
-          // Don't reset the template selection if successful
+        if (!generated) {
           setSelectedTab("templates");
         }
       }, 300);
     }
   };
 
+  // Rafraîchir les templates lorsque le dialogue s'ouvre
+  const handleOpenDialog = () => {
+    setIsOpen(true);
+    refreshTemplates();
+  };
+
   return (
     <>
-      <Button onClick={() => setIsOpen(true)}>
+      <Button onClick={handleOpenDialog}>
         <FileText className="mr-2 h-5 w-5" />
         Générer un document
       </Button>
@@ -111,6 +130,14 @@ const ClientDocumentGenerator = ({
               Sélectionnez un modèle et mappez les variables pour générer un document personnalisé
             </DialogDescription>
           </DialogHeader>
+
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Erreur</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
           {generated ? (
             <>

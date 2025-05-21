@@ -1,3 +1,4 @@
+
 // Définitions de types centralisées pour les documents
 
 // Type pour status de document (enum string)
@@ -14,6 +15,9 @@ export type DocumentStatus =
   | "sent"
   | "draft";
 
+// Type de fichier supporté
+export type SupportedFileType = "pdf" | "docx" | "xlsx" | "unknown";
+
 // Type principal pour les modèles de document
 export interface DocumentTemplate {
   id: string;
@@ -27,6 +31,7 @@ export interface DocumentTemplate {
   size?: number;
   variables?: string[];
   tags?: string[];
+  extractedText?: string;
 }
 
 // Type pour les balises de modèle
@@ -58,6 +63,9 @@ export interface UploadedFile {
   status?: string;
   progress?: number;
   lastModified?: number;
+  extractedText?: string;
+  variables?: string[];
+  // Pour compatibilité avec les objets File natifs
   slice?: Function;
   stream?: Function;
   text?: Function;
@@ -110,3 +118,33 @@ export const availableVariables = {
   calcul: ["type", "improvement", "surface", "date", "calculation_data"],
   document: ["name", "type", "status", "created_at"]
 };
+
+// Configuration pour l'extraction de variables
+export interface VariableExtractionConfig {
+  pattern: RegExp;
+  categories: string[];
+}
+
+// Configuration par défaut pour l'extraction des variables
+export const defaultVariablePatterns: VariableExtractionConfig[] = [
+  { pattern: /\{\{([^}]+)\}\}/g, categories: ["client", "document"] },
+  { pattern: /\$\{([^}]+)\}/g, categories: ["project", "cadastre"] },
+  { pattern: /<%(.*?)%>/g, categories: ["calcul"] },
+];
+
+// Service d'extraction de texte
+export interface TextExtractionResult {
+  text: string;
+  variables: string[];
+  error?: string;
+}
+
+// Type pour le contenu d'un document
+export type DocumentContentType = string | ArrayBuffer | null;
+
+// Résultat d'une opération de document
+export interface DocumentOperationResult<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
