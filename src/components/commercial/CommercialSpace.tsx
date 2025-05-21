@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useLocation, Routes, Route, Navigate } from "react-router-dom";
 import CommercialSidebar from "./CommercialSidebar";
@@ -25,24 +26,19 @@ const CommercialSpace = () => {
       <CommercialSidebar />
       
       {/* Contenu principal basé sur la route */}
-      <div className="flex-1 flex flex-col">
-        <header className="bg-white border-b border-gray-200 px-4 py-3">
-          <h1 className="text-2xl font-semibold text-gray-800">ESPACE COMMERCIALE</h1>
-        </header>
-        <div className="flex-1 p-4 overflow-auto">
-          <Routes>
-            <Route path="/lead" element={<LeadContent />} />
-            <Route path="/qualification" element={<QualificationContent />} />
-            <Route path="/planning" element={<PlanningContent />} />
-            <Route path="/pose" element={<PoseContent />} />
-            <Route path="/parrainage" element={<ParrainageContent />} />
-            <Route path="/products" element={<ProductsContent />} />
-            <Route path="/settings" element={<SettingsContent />} />
-            <Route path="/training" element={<TrainingContent />} />
-            <Route path="/help" element={<HelpContent />} />
-            <Route path="*" element={<Navigate to="/workflow/lead" replace />} />
-          </Routes>
-        </div>
+      <div className="flex-1 flex flex-col p-4 overflow-auto">
+        <Routes>
+          <Route path="/lead" element={<LeadContent />} />
+          <Route path="/qualification" element={<QualificationContent />} />
+          <Route path="/planning" element={<PlanningContent />} />
+          <Route path="/pose" element={<PoseContent />} />
+          <Route path="/parrainage" element={<ParrainageContent />} />
+          <Route path="/products" element={<ProductsContent />} />
+          <Route path="/settings" element={<SettingsContent />} />
+          <Route path="/training" element={<TrainingContent />} />
+          <Route path="/help" element={<HelpContent />} />
+          <Route path="*" element={<Navigate to="/workflow/lead" replace />} />
+        </Routes>
       </div>
     </div>
   );
