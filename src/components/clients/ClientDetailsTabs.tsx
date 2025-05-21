@@ -109,7 +109,7 @@ const ClientDetailsTabs = ({
       <TabsContent value="calculations">
         <CalculationsTab 
           clientId={clientId}
-          clientName={client.name} 
+          clientName={client?.name} 
           clientAddress={clientAddress}
           savedCalculations={savedCalculations} 
           onOpenCalculation={onShowCalculation} 

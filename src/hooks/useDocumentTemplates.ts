@@ -2,16 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useTemplateStorage } from "./useTemplateStorage";
-
-export interface DocumentTemplate {
-  id: string;
-  name: string;
-  type: string;
-  dateUploaded: string;
-  lastModified: string;
-  content: string | null;
-  userId: string | null;
-}
+import { DocumentTemplate } from "@/types/documents";
 
 export const useDocumentTemplates = () => {
   const [templates, setTemplates] = useState<DocumentTemplate[]>([]);

@@ -9,9 +9,15 @@ import { Card } from "@/components/ui/card";
 
 interface ClientTabsContainerProps {
   onShowCalculation?: (projectId?: string) => void;
+  clientId?: string;  // Ajout de clientId pour passer aux composants enfants
+  clientName?: string; // Ajout de clientName pour passer aux composants enfants
 }
 
-export const ClientTabsContainer = ({ onShowCalculation }: ClientTabsContainerProps) => {
+export const ClientTabsContainer = ({ 
+  onShowCalculation, 
+  clientId,
+  clientName 
+}: ClientTabsContainerProps) => {
   const [currentTab, setCurrentTab] = useState("projects");
 
   return (
@@ -45,19 +51,19 @@ export const ClientTabsContainer = ({ onShowCalculation }: ClientTabsContainerPr
         </TabsList>
 
         <TabsContent value="projects" className="p-4">
-          <ProjectsTabContent />
+          <ProjectsTabContent clientId={clientId} />
         </TabsContent>
 
         <TabsContent value="calculations" className="p-4">
-          <CalculationsTabContent onShowCalculation={onShowCalculation} />
+          <CalculationsTabContent onShowCalculation={onShowCalculation} clientId={clientId} />
         </TabsContent>
 
         <TabsContent value="documents" className="p-4">
-          <DocumentsTabContent />
+          <DocumentsTabContent clientId={clientId} clientName={clientName} />
         </TabsContent>
 
         <TabsContent value="signatures" className="p-4">
-          <SignaturesTabContent />
+          <SignaturesTabContent clientId={clientId} />
         </TabsContent>
       </Tabs>
     </Card>

@@ -2,7 +2,6 @@
 import { useFileUpload } from "./useFileUpload";
 import { useTemplateStorage } from "./useTemplateStorage";
 import { useTemplateNotification } from "./useTemplateNotification";
-import { UploadedFile } from "@/components/documents/TemplateFileItem";
 
 export const useDocumentTemplateUpload = () => {
   const {
@@ -17,7 +16,7 @@ export const useDocumentTemplateUpload = () => {
   } = useFileUpload();
 
   // Utiliser notre hook de notification
-  useTemplateNotification();
+  const { showNotification } = useTemplateNotification();
 
   // Utiliser le hook de stockage des modèles
   const { saveAllTemplates } = useTemplateStorage(resetUploadedFiles);
@@ -30,6 +29,7 @@ export const useDocumentTemplateUpload = () => {
     confirmDeleteFile,
     handleDeleteFile,
     cancelDelete,
-    saveAllTemplates
+    saveAllTemplates,
+    showNotification
   };
 };

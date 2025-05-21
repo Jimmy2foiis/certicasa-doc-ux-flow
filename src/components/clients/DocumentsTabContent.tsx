@@ -7,6 +7,7 @@ import DocumentsAccordion from "@/components/documents/DocumentsAccordion";
 import { useAdministrativeDocuments } from "@/hooks/useAdministrativeDocuments";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface DocumentsTabContentProps {
   clientId?: string;
@@ -23,8 +24,11 @@ const DocumentsTabContent = ({ clientId, clientName = "Client", projectType = "R
     filteredDocuments,
     filterDocuments,
     searchQuery,
-    setSearchQuery
+    setSearchQuery,
+    isLoading
   } = useAdministrativeDocuments(clientId, clientName);
+  
+  const { toast } = useToast();
   
   // Correction du hook useEffect pour éviter les mises à jour infinies
   useEffect(() => {
@@ -32,7 +36,18 @@ const DocumentsTabContent = ({ clientId, clientName = "Client", projectType = "R
       // Simplement appeler updateProjectType sans logique conditionnelle additionnelle
       updateProjectType(projectType);
     }
-  }, [projectType]); // Supprimer updateProjectType des dépendances pour éviter les boucles
+  }, [projectType, updateProjectType]); // On garde updateProjectType dans les dépendances car c'est une fonction memoized
+
+  // Notification une fois les documents chargés
+  useEffect(() => {
+    if (adminDocuments.length > 0 && !isLoading) {
+      toast({
+        title: "Documents chargés",
+        description: `${adminDocuments.length} documents disponibles pour ${clientName}`,
+        duration: 3000
+      });
+    }
+  }, [adminDocuments, isLoading, clientName, toast]);
 
   return (
     <Card className="shadow-sm">
@@ -50,10 +65,17 @@ const DocumentsTabContent = ({ clientId, clientName = "Client", projectType = "R
           </div>
         </div>
         
-        <DocumentsAccordion 
-          documents={filteredDocuments} 
-          onDocumentAction={handleDocumentAction}
-        />
+        {isLoading ? (
+          <div className="py-8 text-center">
+            <div className="animate-spin h-8 w-8 border-b-2 border-primary rounded-full mx-auto mb-4"></div>
+            <p>Chargement des documents...</p>
+          </div>
+        ) : (
+          <DocumentsAccordion 
+            documents={filteredDocuments} 
+            onDocumentAction={handleDocumentAction}
+          />
+        )}
       </CardContent>
       <DocumentsExportFooter onExportAll={handleExportAll} />
     </Card>

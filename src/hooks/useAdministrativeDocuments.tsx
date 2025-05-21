@@ -1,223 +1,267 @@
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { AdministrativeDocument, DocumentStatus } from "@/models/documents";
+import { supabase } from "@/integrations/supabase/client";
+import { getDocumentsForClient } from "@/services/supabase/documentService";
+
+// Types pour les documents administratifs
+interface AdminDocument {
+  id: string;
+  name: string;
+  type: string;
+  category: string;
+  status: string;
+  created_at: string;
+  content?: string;
+  file_path?: string;
+}
+
+// Catégories de documents administratifs
+const documentCategories = {
+  "administratif": ["Contrat", "Facture", "Devis", "Certificat"],
+  "technique": ["Plans", "Cadastre", "Calculs", "Rapports"],
+  "commercial": ["Présentation", "Brochure", "Offre commerciale"]
+};
 
 export const useAdministrativeDocuments = (clientId?: string, clientName?: string) => {
-  const { toast } = useToast();
+  const [adminDocuments, setAdminDocuments] = useState<AdminDocument[]>([]);
+  const [filteredDocuments, setFilteredDocuments] = useState<AdminDocument[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<string | null>(null);
-  
-  // Document list state
-  const [adminDocuments, setAdminDocuments] = useState<AdministrativeDocument[]>([
-    {
-      id: "1",
-      name: `Ficha RES010`,
-      type: "ficha",
-      description: "Document principal du dossier",
-      status: "generated",
-      order: 1
-    },
-    {
-      id: "2",
-      name: "Anexo I DR Subvenciones",
-      type: "anexo",
-      description: "Annexe pour les subventions",
-      status: "ready",
-      order: 2
-    },
-    {
-      id: "3",
-      name: "Factura",
-      type: "factura",
-      description: "Facture client",
-      status: "pending",
-      statusLabel: "En attente CAE",
-      order: 3
-    },
-    {
-      id: "4",
-      name: "Rapport Photos (4-Fotos)",
-      type: "fotos",
-      description: "Photos de l'installation",
-      status: "action-required",
-      statusLabel: "Photos manquantes",
-      order: 4
-    },
-    {
-      id: "5",
-      name: "Certificado Instalador (+ Calcul Coef.)",
-      type: "certificado",
-      description: "Certificat d'installation et calcul",
-      status: "pending",
-      statusLabel: "En attente CEE POST.",
-      order: 5
-    },
-    {
-      id: "6",
-      name: "CEEE (Inicial & Final)",
-      type: "ceee",
-      description: "Certificats énergétiques",
-      status: "missing",
-      order: 6
-    },
-    {
-      id: "7",
-      name: "Modelo Cesión Ahorros",
-      type: "modelo",
-      description: "Modèle de cession",
-      status: "ready",
-      order: 7
-    },
-    {
-      id: "8",
-      name: "DNI Client",
-      type: "dni",
-      description: "Document d'identité",
-      status: "linked",
-      statusLabel: "Fichier lié",
-      order: 8
-    },
-  ]);
+  const [projectType, setProjectType] = useState("RES010");
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
-  // Filtrer les documents selon la recherche et le filtre actif
-  const filteredDocuments = useMemo(() => {
-    let result = [...adminDocuments];
+  // Charger les documents du client
+  useEffect(() => {
+    const loadDocuments = async () => {
+      setIsLoading(true);
+      
+      try {
+        if (clientId) {
+          const documents = await getDocumentsForClient(clientId);
+          
+          // Transformer les documents en format AdminDocument
+          const formattedDocs = documents.map(doc => ({
+            id: doc.id,
+            name: doc.name,
+            type: doc.type || "pdf",
+            category: determineDocumentCategory(doc.name),
+            status: doc.status || "available",
+            created_at: doc.created_at,
+            content: doc.content,
+            file_path: doc.file_path
+          }));
+          
+          setAdminDocuments(formattedDocs);
+          setFilteredDocuments(formattedDocs);
+        } else {
+          // Si pas de clientId, charger des documents de démonstration
+          const demoDocuments = generateDemoDocuments();
+          setAdminDocuments(demoDocuments);
+          setFilteredDocuments(demoDocuments);
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des documents:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les documents. Veuillez réessayer.",
+          variant: "destructive",
+        });
+        
+        // Charger des documents de démonstration en cas d'erreur
+        const demoDocuments = generateDemoDocuments();
+        setAdminDocuments(demoDocuments);
+        setFilteredDocuments(demoDocuments);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    // Appliquer la recherche textuelle
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(doc => 
-        doc.name.toLowerCase().includes(query) || 
-        doc.description.toLowerCase().includes(query) ||
-        (doc.statusLabel && doc.statusLabel.toLowerCase().includes(query))
-      );
+    loadDocuments();
+  }, [clientId, toast]);
+
+  // Filtrer les documents en fonction de la recherche
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredDocuments(adminDocuments);
+      return;
     }
     
-    // Appliquer le filtre de statut
-    if (activeFilter) {
-      switch(activeFilter) {
-        case 'generated':
-          result = result.filter(doc => doc.status === "generated" || doc.status === "linked");
-          break;
-        case 'ready':
-          result = result.filter(doc => doc.status === "ready");
-          break;
-        case 'pending':
-          result = result.filter(doc => doc.status === "pending" || doc.status === "action-required");
-          break;
-        case 'missing':
-          result = result.filter(doc => doc.status === "missing");
-          break;
+    const lowerCaseQuery = searchQuery.toLowerCase();
+    const filtered = adminDocuments.filter(doc => 
+      doc.name.toLowerCase().includes(lowerCaseQuery) ||
+      doc.category.toLowerCase().includes(lowerCaseQuery) ||
+      doc.type.toLowerCase().includes(lowerCaseQuery)
+    );
+    
+    setFilteredDocuments(filtered);
+  }, [searchQuery, adminDocuments]);
+
+  // Fonction pour déterminer la catégorie d'un document en fonction de son nom
+  const determineDocumentCategory = (name: string): string => {
+    const lowerCaseName = name.toLowerCase();
+    
+    for (const [category, keywords] of Object.entries(documentCategories)) {
+      for (const keyword of keywords) {
+        if (lowerCaseName.includes(keyword.toLowerCase())) {
+          return category;
+        }
       }
     }
     
-    // Toujours trier par ordre
-    return result.sort((a, b) => a.order - b.order);
-  }, [adminDocuments, searchQuery, activeFilter]);
+    return "administratif";
+  };
+
+  // Fonction pour générer des documents de démonstration
+  const generateDemoDocuments = (): AdminDocument[] => {
+    const demoClient = clientName || "Demo Client";
+    
+    return [
+      {
+        id: "1",
+        name: `Contrat - ${demoClient}`,
+        type: "pdf",
+        category: "administratif",
+        status: "signed",
+        created_at: new Date().toISOString()
+      },
+      {
+        id: "2",
+        name: `Plans d'installation - Projet ${projectType}`,
+        type: "dwg",
+        category: "technique",
+        status: "available",
+        created_at: new Date().toISOString()
+      },
+      {
+        id: "3",
+        name: `Facture N°F20230001 - ${demoClient}`,
+        type: "pdf",
+        category: "administratif",
+        status: "sent",
+        created_at: new Date().toISOString()
+      },
+      {
+        id: "4",
+        name: `Rapport technique - Bilan énergétique`,
+        type: "docx",
+        category: "technique",
+        status: "draft",
+        created_at: new Date().toISOString()
+      },
+      {
+        id: "5",
+        name: `Présentation commerciale - Solutions ${projectType}`,
+        type: "pptx",
+        category: "commercial",
+        status: "available",
+        created_at: new Date().toISOString()
+      }
+    ];
+  };
+
+  // Fonction pour mettre à jour le type de projet
+  const updateProjectType = useCallback((type: string) => {
+    setProjectType(type);
+  }, []);
 
   // Fonction pour filtrer les documents
-  const filterDocuments = (filter: string | null) => {
-    setActiveFilter(filter);
-  };
+  const filterDocuments = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
 
-  // Update document type in the documents list when project type changes
-  const updateProjectType = (projectType: string) => {
-    if (!projectType) return;
-    
-    // Éviter les mises à jour inutiles
-    const currentFicha = adminDocuments.find(doc => doc.type === "ficha");
-    if (currentFicha && currentFicha.name === `Ficha ${projectType}`) return;
-    
-    setAdminDocuments(prev => 
-      prev.map(doc => 
-        doc.type === "ficha" 
-          ? {...doc, name: `Ficha ${projectType}`}
-          : doc
-      )
-    );
-  };
-
-  // Function to handle document actions
-  const handleDocumentAction = (documentId: string, action: string) => {
-    const document = adminDocuments.find(doc => doc.id === documentId);
-    if (!document) return;
-    
-    // Actions based on the action type
-    switch (action) {
-      case "view":
+  // Fonction pour gérer les actions sur un document
+  const handleDocumentAction = useCallback(async (documentId: string, action: string) => {
+    try {
+      const document = adminDocuments.find(doc => doc.id === documentId);
+      
+      if (!document) {
         toast({
-          title: `Visualisation: ${document.name}`,
-          description: "Ouverture du document...",
+          title: "Erreur",
+          description: "Document non trouvé",
+          variant: "destructive",
         });
-        break;
-      case "download":
-        toast({
-          title: `Téléchargement: ${document.name}`,
-          description: "Le document est en cours de téléchargement...",
-        });
-        break;
-      case "generate":
-        toast({
-          title: `Génération: ${document.name}`,
-          description: "Le document est en cours de génération...",
-        });
-        // Simulate successful generation
-        setTimeout(() => {
-          setAdminDocuments(prev => prev.map(doc => 
-            doc.id === documentId ? {...doc, status: "generated" as DocumentStatus} : doc
-          ));
+        return;
+      }
+      
+      switch (action) {
+        case "download":
           toast({
-            title: "Document généré avec succès",
-            description: `${document.name} a été généré et ajouté au dossier client.`,
+            title: "Téléchargement",
+            description: `Téléchargement de ${document.name} en cours...`,
           });
-        }, 1500);
-        break;
-      case "regenerate":
-        toast({
-          title: `Régénération: ${document.name}`,
-          description: "Le document est en cours de régénération...",
-        });
-        break;
-      case "refresh-ocr":
-        toast({
-          title: `Mise à jour OCR: ${document.name}`,
-          description: "Relance de l'analyse OCR en cours...",
-        });
-        break;
-      case "update-cee":
-        toast({
-          title: `Mise à jour CEE: ${document.name}`,
-          description: "Récupération des nouvelles données CEE...",
-        });
-        break;
-      case "link-files":
-      case "link-photos":
-      case "link-dni":
-        toast({
-          title: `Liaison de fichiers: ${document.name}`,
-          description: "Veuillez sélectionner les fichiers à lier...",
-        });
-        break;
+          // Simuler un téléchargement
+          setTimeout(() => {
+            toast({
+              title: "Téléchargement terminé",
+              description: `Le fichier ${document.name} a été téléchargé avec succès.`,
+            });
+          }, 1500);
+          break;
+          
+        case "view":
+          toast({
+            title: "Aperçu du document",
+            description: `Ouverture de ${document.name} en cours...`,
+          });
+          // Simuler l'ouverture d'un aperçu
+          break;
+          
+        case "edit":
+          toast({
+            title: "Édition du document",
+            description: `Préparation de l'édition pour ${document.name}...`,
+          });
+          // Simuler l'ouverture d'un éditeur
+          break;
+          
+        case "share":
+          toast({
+            title: "Partage du document",
+            description: `Préparation du partage pour ${document.name}...`,
+          });
+          // Simuler le partage d'un document
+          break;
+          
+        default:
+          console.log(`Action ${action} non implémentée`);
+      }
+    } catch (error) {
+      console.error(`Erreur lors de l'action ${action}:`, error);
+      toast({
+        title: "Erreur",
+        description: `Impossible d'exécuter l'action. Veuillez réessayer.`,
+        variant: "destructive",
+      });
     }
-  };
+  }, [adminDocuments, toast]);
 
-  // Function to export all documents
-  const handleExportAll = () => {
+  // Fonction pour exporter tous les documents
+  const handleExportAll = useCallback(() => {
     toast({
-      title: "Export du dossier complet",
-      description: `Préparation de l'archive ZIP contenant tous les documents de ${clientName}...`,
+      title: "Export groupé",
+      description: `Préparation de l'export de ${filteredDocuments.length} document(s)...`,
     });
-  };
+    
+    // Simuler un export
+    setTimeout(() => {
+      toast({
+        title: "Export terminé",
+        description: `${filteredDocuments.length} document(s) exporté(s) avec succès.`,
+      });
+    }, 2000);
+  }, [filteredDocuments, toast]);
 
   return {
     adminDocuments,
     filteredDocuments,
     searchQuery,
     setSearchQuery,
+    projectType,
+    updateProjectType,
     filterDocuments,
     handleDocumentAction,
     handleExportAll,
-    updateProjectType
+    isLoading
   };
 };

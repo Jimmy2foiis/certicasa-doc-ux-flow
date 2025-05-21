@@ -1,21 +1,5 @@
 
-import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
-
-export type TemplateTag = { 
-  tag: string;
-  category: string;
-  mappedTo: string;
-};
-
-export interface TagMapping {
-  templateId: string;
-  mappings: TemplateTag[];
-}
-
-export interface TagCategoryProps {
-  category: string;
-  onSelect: (variable: string) => void;
-}
+import { DocumentTemplate, TagCategoryProps, TemplateTag, TagMapping, availableVariables } from "@/types/documents";
 
 export interface TemplateVariableMappingProps {
   template: DocumentTemplate;
@@ -23,11 +7,19 @@ export interface TemplateVariableMappingProps {
   onMappingComplete: (mappings: TemplateTag[]) => void;
 }
 
-// Object containing all available variables by category
-export const availableVariables = {
-  client: ["name", "email", "phone", "address", "nif", "type", "status"],
-  project: ["name", "type", "surface_area", "roof_area", "status", "created_at"],
-  cadastre: ["utm_coordinates", "cadastral_reference", "climate_zone", "api_source"],
-  calcul: ["type", "improvement", "surface", "date", "calculation_data"],
-  document: ["name", "type", "status", "created_at"]
-};
+// Re-export pour compatibilité avec les imports existants
+export { TagCategoryProps, TemplateTag, TagMapping, availableVariables };
+
+// Export type pour les composants de mapping
+export interface MappingContentProps {
+  loading: boolean;
+  templateTags: TemplateTag[];
+  newTag: string;
+  setNewTag: (value: string) => void;
+  handleAddTag: () => void;
+  activeCategory: string;
+  setActiveCategory: (category: string) => void;
+  updateMapping: (index: number, value: string) => void;
+  updateCategory: (index: number, category: string) => void;
+  clientData?: any;
+}
