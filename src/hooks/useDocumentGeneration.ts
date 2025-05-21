@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { TemplateTag } from "@/components/documents/TemplateVariableMapping";
+import { TemplateTag } from "@/components/documents/template-mapping/types";
 
 interface UseDocumentGenerationProps {
   (onDocumentGenerated?: (documentId: string) => void, clientName?: string): {

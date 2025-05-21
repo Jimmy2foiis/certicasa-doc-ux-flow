@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -7,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useDocumentTemplates } from "@/hooks/useDocumentTemplates";
 import { useDocumentGeneration } from "@/hooks/useDocumentGeneration";
 import TemplateSelectionList from "./TemplateSelectionList";
-import TemplateVariableMapping, { TemplateTag } from "./TemplateVariableMapping";
+import TemplateVariableMapping, { TemplateTag } from "@/components/documents/template-mapping/TemplateVariableMapping";
 import DocumentActions from "./DocumentActions";
 import GenerationSuccess from "./GenerationSuccess";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
