@@ -1,66 +1,82 @@
-
 import React from "react";
+import {
+  User,
+  CheckSquare,
+  Calendar,
+  Building2,
+  Gift,
+  Package,
+  Settings,
+  BookOpen,
+  HelpCircle
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from "react-router-dom";
 
-interface CommercialSidebarProps {
-  activeSection?: string;
-  setActiveSection?: (section: string) => void;
-}
+const sidebarItems = [
+  { id: "lead", label: "Lead", icon: User },
+  { id: "qualification", label: "Qualification Commerciale", icon: CheckSquare },
+  { id: "planning", label: "Confirmation & Planification", icon: Calendar },
+  { id: "pose", label: "VT & Pose", icon: Building2 },
+  { id: "parrainage", label: "Parrainage", icon: Gift },
+  { id: "products", label: "Produits & Stocks", icon: Package },
+  { id: "settings", label: "Paramètre", icon: Settings },
+  { id: "training", label: "Outils de formation", icon: BookOpen },
+  { id: "help", label: "Aide", icon: HelpCircle },
+];
 
-const CommercialSidebar: React.FC<CommercialSidebarProps> = ({ activeSection, setActiveSection }) => {
+const CommercialSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  const menuItems = [
-    { id: "leads", label: "Leads", description: "Gestion des leads et prospects" },
-    { id: "qualification", label: "Qualification", description: "Qualification des projets" },
-    { id: "planning", label: "Planning", description: "Planification des rendez-vous" },
-    { id: "suivi", label: "Suivi", description: "Suivi des projets" },
-    { id: "facturation", label: "Facturation", description: "Gestion de la facturation" },
-    { id: "products", label: "Produits", description: "Catalogue de produits" },
-    { id: "pose", label: "Pose", description: "Gestion des installations" },
-    { id: "parrainage", label: "Parrainage", description: "Programme de parrainage" },
-    { id: "formation", label: "Formation", description: "Modules de formation" },
-    { id: "parametres", label: "Paramètres", description: "Configuration du compte" },
-    { id: "aide", label: "Aide", description: "Centre d'aide et support" }
-  ];
+  const [activeItem, setActiveItem] = React.useState("lead");
 
-  const handleMenuItemClick = (itemId: string) => {
-    if (setActiveSection) {
-      setActiveSection(itemId);
+  React.useEffect(() => {
+    // Extraire l'ID actif de l'URL si présent
+    const path = location.pathname;
+    const segments = path.split("/");
+    const lastSegment = segments[segments.length - 1];
+    
+    // Si on trouve un ID correspondant dans nos items, on l'active
+    const foundItem = sidebarItems.find(item => item.id === lastSegment);
+    if (foundItem) {
+      setActiveItem(foundItem.id);
     } else {
-      // Using react-router for navigation
-      navigate(`/workflow/${itemId}`);
+      setActiveItem("lead"); // Par défaut
     }
+  }, [location]);
+
+  const handleItemClick = (itemId: string) => {
+    setActiveItem(itemId);
+    navigate(`/workflow/${itemId}`);
   };
 
-  // Determine active item based on current location if activeSection is not provided
-  const currentActive = activeSection || location.pathname.split('/').pop() || 'leads';
-
   return (
-    <div className="w-64 bg-white border-r border-gray-200 h-screen">
-      <div className="p-4 border-b border-gray-200">
-        <div className="text-xl font-bold text-gray-900">ESPACE COMMERCIAL</div>
+    <div className="w-64 h-full bg-white border-r border-gray-200">
+      <div className="py-4">
+        <h2 className="px-4 text-lg font-semibold text-gray-700 mb-4">
+          ESPACE COMMERCIALE
+        </h2>
+        <nav className="mt-2">
+          <ul className="space-y-1 px-2">
+            {sidebarItems.map((item) => (
+              <li key={item.id}>
+                <button
+                  onClick={() => handleItemClick(item.id)}
+                  className={cn(
+                    "flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200",
+                    activeItem === item.id
+                      ? "bg-indigo-50 text-indigo-700"
+                      : "text-gray-700 hover:bg-gray-100"
+                  )}
+                >
+                  <item.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+                  <span>{item.label}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </div>
-      <nav className="p-4">
-        <ul className="space-y-2">
-          {menuItems.map((item) => (
-            <li key={item.id}>
-              <button
-                onClick={() => handleMenuItemClick(item.id)}
-                className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-                  currentActive === item.id
-                    ? "bg-indigo-50 text-indigo-600"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
-                title={item.description}
-              >
-                {item.label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
     </div>
   );
 };
