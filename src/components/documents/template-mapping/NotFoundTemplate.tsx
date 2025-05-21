@@ -40,8 +40,8 @@ export const NotFoundTemplate = ({ reason = 'unknown' }: NotFoundTemplateProps) 
           </h3>
           <ul className="text-sm space-y-2 text-slate-700">
             <li>• Utilisez un fichier .docx (Microsoft Word) pour une compatibilité optimale</li>
-            <li>• Insérez des balises au format <code>{{nom_variable}}</code> dans votre document</li>
-            <li>• Exemples de balises : <code>{{nom}}</code>, <code>{{adresse}}</code>, <code>{{client.email}}</code></li>
+            <li>• Insérez des balises au format <code>{'{{nom_variable}}'}</code> dans votre document</li>
+            <li>• Exemples de balises : <code>{'{{nom}}'}</code>, <code>{'{{adresse}}'}</code>, <code>{'{{client.email}}'}</code></li>
             <li>• Les PDF sont acceptés uniquement s'ils sont générés depuis Word et conservent les balises en texte</li>
           </ul>
         </div>
