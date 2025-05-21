@@ -15,6 +15,7 @@ import { createInitialMapping, loadTemplateMapping, saveTemplateMapping } from "
 const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: TemplateVariableMappingProps) => {
   const [templateTags, setTemplateTags] = useState<TemplateTag[]>([]);
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [newTag, setNewTag] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("client");
   const { toast } = useToast();
@@ -85,6 +86,13 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
   const handleSaveMapping = async () => {
     try {
       setLoading(true);
+      setSaving(true);
+      
+      if (!template?.id) {
+        throw new Error("Template ID is missing");
+      }
+      
+      console.log("Saving mapping for template:", template.id, templateTags);
       
       // Save mapping to Supabase
       const success = await saveTemplateMapping(template.id, templateTags);
@@ -108,6 +116,7 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
       });
     } finally {
       setLoading(false);
+      setSaving(false);
     }
   };
   
@@ -153,9 +162,22 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
       </CardContent>
       
       <CardFooter>
-        <Button onClick={handleSaveMapping} disabled={loading} className="ml-auto">
-          <Save className="h-4 w-4 mr-2" />
-          Sauvegarder le mapping
+        <Button 
+          onClick={handleSaveMapping} 
+          disabled={loading || saving} 
+          className="ml-auto"
+        >
+          {saving ? (
+            <>
+              <div className="animate-spin h-4 w-4 mr-2 border-b-2 border-white rounded-full"></div>
+              Sauvegarde en cours...
+            </>
+          ) : (
+            <>
+              <Save className="h-4 w-4 mr-2" />
+              Sauvegarder le mapping
+            </>
+          )}
         </Button>
       </CardFooter>
     </Card>

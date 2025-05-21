@@ -29,11 +29,28 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
 
   // Function to generate a document
   const handleGenerate = async (templateId: string, clientId?: string, mappings?: TemplateTag[]) => {
+    if (!templateId) {
+      toast({
+        title: "Erreur",
+        description: "Aucun modèle sélectionné.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setGenerating(true);
 
     try {
+      console.log("Generating document from template:", templateId);
+      console.log("Client ID:", clientId);
+      console.log("Mappings:", mappings);
+      
       // Get the template data
       const templateData = await getTemplateById(templateId);
+      
+      if (!templateData || !templateData.content) {
+        throw new Error("Le modèle sélectionné est vide ou invalide");
+      }
       
       // Fetch client data if we have client ID and mappings
       let documentContent = templateData.content;
@@ -95,14 +112,19 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       return;
     }
 
-    const success = await downloadDocument(documentId);
-    
-    if (success) {
-      toast({
-        title: "Téléchargement",
-        description: "Le téléchargement du document a commencé.",
-      });
-    } else {
+    try {
+      const success = await downloadDocument(documentId);
+      
+      if (success) {
+        toast({
+          title: "Téléchargement",
+          description: "Le téléchargement du document a commencé.",
+        });
+      } else {
+        throw new Error("Impossible de télécharger le document");
+      }
+    } catch (error) {
+      console.error("Download error:", error);
       toast({
         title: "Erreur",
         description: "Impossible de télécharger le document.",
@@ -123,6 +145,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
     }
     
     try {
+      console.log("Saving document to folder:", documentId, "for client:", clientId);
       const success = await saveDocumentToFolder(documentId, clientId);
       
       if (success) {
@@ -132,15 +155,10 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
         });
         return true;
       } else {
-        toast({
-          title: "Erreur",
-          description: "Impossible d'enregistrer le document dans le dossier.",
-          variant: "destructive",
-        });
-        return false;
+        throw new Error("Impossible d'enregistrer le document dans le dossier");
       }
     } catch (error) {
-      console.error("Erreur lors de l'enregistrement:", error);
+      console.error("Save error:", error);
       toast({
         title: "Erreur",
         description: "Une erreur inattendue est survenue lors de l'enregistrement.",

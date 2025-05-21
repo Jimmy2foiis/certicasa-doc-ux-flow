@@ -69,17 +69,21 @@ export const loadTemplateMapping = async (
       .from('template_mappings')
       .select('*')
       .eq('template_id', templateId)
-      .single();
+      .maybeSingle(); // Using maybeSingle instead of single to avoid error when no mapping exists
     
-    if (error) throw error;
+    if (error) {
+      console.error("Error loading template mapping:", error);
+      return createInitialMapping(null, availableVariables);
+    }
     
     if (mappingData?.mappings) {
       return mappingData.mappings as TemplateTag[];
     }
-    throw new Error('No mapping found');
+    
+    return createInitialMapping(null, availableVariables);
   } catch (error) {
-    console.log('Error or no mapping found, will extract from template');
-    return [];
+    console.log('Error or no mapping found, will extract from template:', error);
+    return createInitialMapping(null, availableVariables);
   }
 };
 
@@ -88,16 +92,29 @@ export const saveTemplateMapping = async (
   templateId: string, 
   mappings: TemplateTag[]
 ): Promise<boolean> => {
+  if (!templateId) {
+    console.error("No template ID provided for saving mapping");
+    return false;
+  }
+  
   try {
+    console.log("Saving mapping for template:", templateId, mappings);
+    
     const { error } = await supabase
       .from('template_mappings')
       .upsert({
         template_id: templateId,
         mappings: mappings,
         updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'template_id'
       });
     
-    if (error) throw error;
+    if (error) {
+      console.error('Error saving template mapping:', error);
+      throw error;
+    }
+    
     return true;
   } catch (error) {
     console.error('Error saving template mapping:', error);

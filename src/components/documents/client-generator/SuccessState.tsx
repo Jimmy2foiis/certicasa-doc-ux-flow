@@ -21,8 +21,11 @@ const SuccessState = ({ onDownload, onSaveToFolder, clientId, clientName, docume
     if (!onSaveToFolder) return;
     
     setSaving(true);
-    await onSaveToFolder();
-    setSaving(false);
+    try {
+      await onSaveToFolder();
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
