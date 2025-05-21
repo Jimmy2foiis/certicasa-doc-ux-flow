@@ -21,37 +21,41 @@ export const TemplateVariableMapping = ({ template, clientData, onMappingComplet
 
   // Extraire les balises du contenu du template au chargement
   useEffect(() => {
-    if (template && template.content) {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        // Simuler l'extraction des balises (remplacer par la logique réelle d'extraction)
-        setTimeout(() => {
-          const extractedTags: TemplateTag[] = extractTemplateTags(template.content);
-          
-          if (extractedTags.length === 0) {
-            setError("Aucune variable n'a été détectée dans ce modèle. Vous pouvez ajouter des variables manuellement.");
-          }
-          
-          setTemplateTags(extractedTags);
-          setLoading(false);
-        }, 500);
-      } catch (error) {
-        console.error('Erreur lors de l\'extraction des balises:', error);
-        setError(error instanceof Error ? error.message : "Erreur lors de l'extraction des variables");
-        setLoading(false);
-        
-        toast({
-          title: "Erreur",
-          description: "Impossible d'extraire les variables du modèle",
-          variant: "destructive",
-        });
-      }
-    } else {
-      // Aucun contenu à analyser
+    if (!template) {
+      setError("Aucun template fourni");
       setLoading(false);
-      setError("Ce modèle n'a pas de contenu valide pour l'extraction des variables");
+      return;
+    }
+    
+    if (!template.content) {
+      setError("Le template n'a pas de contenu");
+      setLoading(false);
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Extraire les balises du contenu
+      const extractedTags: TemplateTag[] = extractTemplateTags(template.content);
+      
+      if (extractedTags.length === 0) {
+        setError("Aucune variable n'a été détectée dans ce modèle. Vous pouvez ajouter des variables manuellement.");
+      }
+      
+      setTemplateTags(extractedTags);
+      setLoading(false);
+    } catch (error) {
+      console.error('Erreur lors de l\'extraction des balises:', error);
+      setError(error instanceof Error ? error.message : "Erreur lors de l'extraction des variables");
+      setLoading(false);
+      
+      toast({
+        title: "Erreur",
+        description: "Impossible d'extraire les variables du modèle",
+        variant: "destructive",
+      });
     }
   }, [template, toast]);
 
@@ -69,22 +73,36 @@ export const TemplateVariableMapping = ({ template, clientData, onMappingComplet
       
       // Utiliser exec dans une boucle pour extraire toutes les balises
       while ((matches = tagRegex.exec(workingContent)) !== null) {
-        const tag = matches[1].trim();
+        const tag = matches[0].trim(); // Utiliser la balise complète avec {{}}
+        const tagInside = matches[1].trim(); // Le contenu à l'intérieur des {{}}
+        
         // Éviter les doublons
-        if (!tags.some(t => t.tag === `{{${tag}}}`)) {
+        if (!tags.some(t => t.tag === tag)) {
+          // Déterminer la catégorie basée sur le contenu de la balise
+          let category = 'client'; // Catégorie par défaut
+          
+          if (tagInside.toLowerCase().includes('projet') || tagInside.toLowerCase().includes('project')) {
+            category = 'project';
+          } else if (tagInside.toLowerCase().includes('calcul')) {
+            category = 'calcul';
+          } else if (tagInside.toLowerCase().includes('cadastre')) {
+            category = 'cadastre';
+          }
+          
           tags.push({
-            tag: `{{${tag}}}`,
-            category: 'client', // Catégorie par défaut
+            tag: tag,
+            category: category,
             mappedTo: ''
           });
         }
       }
+      
+      return tags;
     } catch (e) {
       console.error("Erreur lors de l'analyse du contenu pour extraire les balises:", e);
       setError("Impossible d'analyser le contenu du modèle pour extraire les variables");
+      return [];
     }
-    
-    return tags;
   };
 
   // Gérer l'ajout d'une nouvelle balise manuelle
@@ -138,31 +156,56 @@ export const TemplateVariableMapping = ({ template, clientData, onMappingComplet
     setTemplateTags(updatedTags);
   };
 
+  // Vérifier que le mapping est complet et valide
+  const validateMapping = (): {valid: boolean, message: string} => {
+    if (templateTags.length === 0) {
+      return {
+        valid: false, 
+        message: "Aucune variable n'a été définie pour ce modèle"
+      };
+    }
+    
+    const unmappedTags = templateTags.filter(tag => !tag.mappedTo || tag.mappedTo.trim() === '');
+    
+    if (unmappedTags.length > 0) {
+      return {
+        valid: false,
+        message: `${unmappedTags.length} variable(s) n'ont pas été mappées`
+      };
+    }
+    
+    // Vérifier les mappings invalides
+    const invalidMappings = templateTags.filter(tag => {
+      return tag.mappedTo === "undefined.undefined" || !tag.mappedTo.includes(".");
+    });
+    
+    if (invalidMappings.length > 0) {
+      return {
+        valid: false,
+        message: `${invalidMappings.length} variable(s) ont un mapping invalide`
+      };
+    }
+    
+    return { valid: true, message: "" };
+  };
+
   // Fonction pour terminer et enregistrer le mapping
   const handleSaveMapping = () => {
     setError(null);
     
-    // Vérifier si toutes les variables sont mappées
-    const unmappedTags = templateTags.filter(tag => !tag.mappedTo || tag.mappedTo.trim() === '');
+    // Vérifier la validité du mapping
+    const validationResult = validateMapping();
     
-    if (unmappedTags.length > 0) {
-      setError(`${unmappedTags.length} variable(s) n'ont pas été mappées. Veuillez associer toutes les variables.`);
+    if (!validationResult.valid) {
+      setError(`${validationResult.message}. Veuillez associer toutes les variables correctement.`);
       
       toast({
         title: "Association incomplète",
-        description: `${unmappedTags.length} variable(s) n'ont pas été associées`,
+        description: validationResult.message,
         variant: "default",
       });
       
       return;
-    }
-    
-    if (templateTags.length === 0) {
-      toast({
-        title: "Avertissement",
-        description: "Aucune variable n'a été définie pour ce modèle",
-        variant: "default",
-      });
     }
     
     onMappingComplete(templateTags);
@@ -258,7 +301,7 @@ export const TemplateVariableMapping = ({ template, clientData, onMappingComplet
               <Button 
                 variant="default"
                 onClick={handleSaveMapping}
-                disabled={templateTags.some(tag => !tag.mappedTo) || templateTags.length === 0}
+                disabled={templateTags.length === 0}
               >
                 Confirmer l'association
               </Button>

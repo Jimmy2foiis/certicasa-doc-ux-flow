@@ -32,15 +32,58 @@ const ClientDocumentGenerator = ({
   const [selectedTab, setSelectedTab] = useState("templates");
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [templateMappings, setTemplateMappings] = useState<TemplateTag[]>([]);
+  const [templateValid, setTemplateValid] = useState<boolean>(false);
   const { templates, loading, refreshTemplates } = useDocumentTemplates();
-  const { generating, generated, documentId, handleGenerate, handleDownload, error } = useDocumentGeneration(onDocumentGenerated, clientName);
+  const { generating, generated, documentId, handleGenerate, handleDownload, error, canDownload } = useDocumentGeneration(onDocumentGenerated, clientName);
   const { toast } = useToast();
 
   // Get the selected template object
   const selectedTemplateObject = templates.find(t => t.id === selectedTemplate);
 
+  // Vérifier si le template est valide
+  const validateTemplate = useCallback((template: any) => {
+    if (!template) {
+      return false;
+    }
+    
+    // Vérifier que le template a un contenu non vide
+    if (!template.content || template.content.trim() === "") {
+      return false;
+    }
+    
+    // Si c'est un PDF, vérifier le format
+    if (template.type === 'pdf') {
+      return template.content.startsWith('data:application/pdf') || template.content.startsWith('blob:');
+    }
+    
+    return true;
+  }, []);
+
   // Handle template selection
   const handleTemplateSelect = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId);
+    
+    if (!template) {
+      toast({
+        title: "Erreur",
+        description: "Modèle introuvable",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Valider le template sélectionné
+    const isValid = validateTemplate(template);
+    setTemplateValid(isValid);
+    
+    if (!isValid) {
+      toast({
+        title: "Avertissement",
+        description: "Le modèle sélectionné est vide ou contient un contenu invalide. La génération de document pourrait échouer.",
+        variant: "default"
+      });
+    }
+    
     setSelectedTemplate(templateId);
     setSelectedTab("mapping");
   };
@@ -48,11 +91,44 @@ const ClientDocumentGenerator = ({
   // Handle mapping completion
   const handleMappingComplete = useCallback((mappings: TemplateTag[]) => {
     setTemplateMappings(mappings);
-    toast({
-      title: "Mapping terminé",
-      description: `${mappings.length} variables ont été mappées. Vous pouvez maintenant générer le document.`
-    });
+    
+    // Vérifier si toutes les variables sont mappées
+    const unmappedCount = mappings.filter(m => !m.mappedTo || m.mappedTo === "").length;
+    
+    if (unmappedCount > 0) {
+      toast({
+        title: "Avertissement",
+        description: `${unmappedCount} variables n'ont pas été mappées. La génération pourrait ne pas être optimale.`,
+        variant: "default"
+      });
+    } else {
+      toast({
+        title: "Mapping terminé",
+        description: `${mappings.length} variables ont été mappées. Vous pouvez maintenant générer le document.`,
+      });
+    }
   }, [toast]);
+
+  // Vérifier si le mapping est valide
+  const validateMapping = (): {valid: boolean, message: string} => {
+    if (!templateMappings || templateMappings.length === 0) {
+      return {
+        valid: false,
+        message: "Aucune variable n'a été définie pour ce modèle"
+      };
+    }
+    
+    const unmappedTags = templateMappings.filter(tag => !tag.mappedTo || tag.mappedTo.trim() === '');
+    
+    if (unmappedTags.length > 0) {
+      return {
+        valid: false,
+        message: `${unmappedTags.length} variable(s) n'ont pas été mappées`
+      };
+    }
+    
+    return { valid: true, message: "" };
+  };
 
   // Handle document generation
   const handleDocumentGeneration = async () => {
@@ -64,14 +140,21 @@ const ClientDocumentGenerator = ({
       });
       return;
     }
+    
+    if (!templateValid) {
+      const confirmation = window.confirm("Le modèle sélectionné semble être invalide ou vide. Voulez-vous quand même essayer de générer un document ?");
+      if (!confirmation) {
+        return;
+      }
+    }
 
     try {
-      // Vérifier si toutes les variables sont mappées
-      const unmappedTags = templateMappings.filter(tag => !tag.mappedTo || tag.mappedTo === "");
+      // Valider le mapping
+      const validationResult = validateMapping();
       
-      if (unmappedTags.length > 0) {
+      if (!validationResult.valid) {
         const confirmGeneration = window.confirm(
-          `${unmappedTags.length} variable(s) n'ont pas été mappées. Voulez-vous quand même générer le document?`
+          `${validationResult.message}. Voulez-vous quand même générer le document ?`
         );
         
         if (!confirmGeneration) {
@@ -143,7 +226,12 @@ const ClientDocumentGenerator = ({
             <>
               <GenerationSuccess />
               <DialogFooter>
-                <DocumentActions onDownload={handleDownload} />
+                <DocumentActions 
+                  onDownload={handleDownload} 
+                  documentId={documentId || undefined}
+                  clientId={clientId}
+                  canDownload={canDownload}
+                />
               </DialogFooter>
             </>
           ) : generating ? (
@@ -184,7 +272,16 @@ const ClientDocumentGenerator = ({
                       <Button
                         variant="secondary"
                         disabled={!selectedTemplate}
-                        onClick={() => setSelectedTab("mapping")}
+                        onClick={() => {
+                          if (!templateValid) {
+                            toast({
+                              title: "Avertissement",
+                              description: "Le modèle sélectionné pourrait être vide ou invalide",
+                              variant: "default"
+                            });
+                          }
+                          setSelectedTab("mapping");
+                        }}
                       >
                         Continuer →
                       </Button>
@@ -195,6 +292,17 @@ const ClientDocumentGenerator = ({
                 <TabsContent value="mapping">
                   {selectedTemplateObject && (
                     <div className="space-y-4">
+                      {!templateValid && (
+                        <Alert variant="warning" className="mb-4">
+                          <AlertCircle className="h-4 w-4" />
+                          <AlertTitle>Avertissement</AlertTitle>
+                          <AlertDescription>
+                            Le modèle sélectionné semble être vide ou contient un format invalide. 
+                            La génération pourrait échouer ou produire un document vide.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                      
                       <TemplateVariableMapping
                         template={selectedTemplateObject}
                         clientData={clientData}
@@ -211,7 +319,7 @@ const ClientDocumentGenerator = ({
                           ← Retour
                         </Button>
                         <Button
-                          disabled={templateMappings.length === 0}
+                          disabled={!selectedTemplate}
                           onClick={handleDocumentGeneration}
                         >
                           <FileText className="mr-2 h-4 w-4" />

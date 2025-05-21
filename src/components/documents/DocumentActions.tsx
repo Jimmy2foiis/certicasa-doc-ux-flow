@@ -28,7 +28,7 @@ const DocumentActions = ({
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Fonction pour envoyer un document par email
+  // Fonction pour envoyer un document par email avec validation améliorée
   const handleSendEmail = async () => {
     setError(null);
     
@@ -39,6 +39,11 @@ const DocumentActions = ({
     
     if (!clientId) {
       setError("Aucun client associé à ce document. Impossible d'envoyer par email.");
+      return;
+    }
+    
+    if (!canDownload) {
+      setError("Le document n'est pas prêt ou n'a pas de contenu valide. Impossible d'envoyer par email.");
       return;
     }
 
@@ -105,7 +110,7 @@ const DocumentActions = ({
     }
   };
 
-  // Fonction pour enregistrer le document dans le dossier du client
+  // Fonction pour enregistrer le document dans le dossier du client avec validation améliorée
   const handleSaveToFolder = async () => {
     setError(null);
     
@@ -116,6 +121,11 @@ const DocumentActions = ({
     
     if (!clientId) {
       setError("Aucun client associé à ce document. Impossible d'enregistrer dans un dossier client.");
+      return;
+    }
+    
+    if (!canDownload) {
+      setError("Le document n'est pas prêt ou n'a pas de contenu valide. Impossible de l'enregistrer.");
       return;
     }
 
