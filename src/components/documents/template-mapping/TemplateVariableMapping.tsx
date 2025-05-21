@@ -8,7 +8,7 @@ import { FileText, Save } from "lucide-react";
 import { AddNewTagField } from "./AddNewTagField";
 import { TagsList } from "./TagsList";
 import { VariableCategoryTabs } from "./VariableCategoryTabs";
-import { TemplateTag, TemplateVariableMappingProps, availableVariables } from "./types";
+import { TemplateTag, TemplateVariableMappingProps } from "./types";
 import { createInitialMapping, loadTemplateMapping, saveTemplateMapping } from "./utils";
 
 // Main component
@@ -25,14 +25,14 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
       setLoading(true);
       try {
         // Try to get existing mapping from Supabase
-        const mappings = await loadTemplateMapping(template.id, availableVariables);
+        const mappings = await loadTemplateMapping(template.id);
         
         if (mappings && mappings.length > 0) {
           setTemplateTags(mappings);
           console.log("Loaded existing mapping:", mappings);
         } else {
           // Create initial mapping from template content
-          const initialTags = createInitialMapping(template.content, availableVariables);
+          const initialTags = createInitialMapping(template.content);
           setTemplateTags(initialTags);
           console.log("Created initial mapping:", initialTags);
         }

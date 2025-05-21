@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { TemplateTag, Json } from "@/types/documents";
+import { TemplateTag, Json, availableVariables } from "@/types/documents";
 
 // Helper function to extract tags from a document content
 export const extractTemplateTags = (content: string | null): string[] => {
@@ -19,14 +19,21 @@ export const extractTemplateTags = (content: string | null): string[] => {
 };
 
 // Helper function to determine the most likely category for a tag
-export const determineTagCategory = (tag: string, availableCategories: string[]): string => {
+export const determineTagCategory = (tag: string): string => {
   // Remove {{ and }} and split by dot if present
   const cleanTag = tag.replace(/[{}]/g, "");
   const parts = cleanTag.split(".");
   
   if (parts.length > 1) {
     const category = parts[0].toLowerCase();
-    if (availableCategories.includes(category)) {
+    if (Object.keys(availableVariables).includes(category)) {
+      return category;
+    }
+  }
+  
+  // Try to find in available variables
+  for (const [category, variables] of Object.entries(availableVariables)) {
+    if (variables.some(v => cleanTag.includes(v))) {
       return category;
     }
   }
@@ -36,7 +43,7 @@ export const determineTagCategory = (tag: string, availableCategories: string[])
 };
 
 // Helper to get a suitable default mapping for a tag
-export const getDefaultMapping = (tag: string, availableVariables: Record<string, string[]>): string => {
+export const getDefaultMapping = (tag: string): string => {
   const cleanTag = tag.replace(/[{}]/g, "");
   const parts = cleanTag.split(".");
   
@@ -54,14 +61,13 @@ export const getDefaultMapping = (tag: string, availableVariables: Record<string
   }
   
   // If no match found, use the tag name with the default category
-  const category = determineTagCategory(tag, Object.keys(availableVariables));
+  const category = determineTagCategory(tag);
   return `${category}.${cleanTag}`;
 };
 
 // Load template mapping from Supabase
 export const loadTemplateMapping = async (
-  templateId: string, 
-  availableVariables: Record<string, string[]>
+  templateId: string
 ): Promise<TemplateTag[]> => {
   try {
     // Try to get existing mapping from Supabase
@@ -118,14 +124,13 @@ export const saveTemplateMapping = async (
 
 // Extract tags from template content and create initial mapping
 export const createInitialMapping = (
-  content: string | null, 
-  availableVariables: Record<string, string[]>
+  content: string | null
 ): TemplateTag[] => {
   const extractedTags = extractTemplateTags(content);
   
   return extractedTags.map(tag => ({
     tag,
-    category: determineTagCategory(tag, Object.keys(availableVariables)),
-    mappedTo: getDefaultMapping(tag, availableVariables)
+    category: determineTagCategory(tag),
+    mappedTo: getDefaultMapping(tag)
   }));
 };

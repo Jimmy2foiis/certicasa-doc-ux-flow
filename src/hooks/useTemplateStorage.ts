@@ -1,4 +1,3 @@
-
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { DocumentTemplate, UploadedFile } from "@/types/documents";
@@ -27,10 +26,12 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
       // Préparer les données pour Supabase
       const now = new Date().toISOString();
       
+      // Convert file content to string if it's ArrayBuffer
       const templates = filesToSave.map(file => ({
         name: file.name.replace(/\.[^/.]+$/, ""), // Enlever l'extension
         type: file.name.split('.').pop() || "unknown",
-        content: file.content || null, // Using the now-defined content property
+        content: typeof file.content === 'string' ? file.content : 
+                file.content ? JSON.stringify(file.content) : null,
         last_modified: now,
         date_uploaded: now,
         user_id: user?.id || null // Ajouter l'ID utilisateur si disponible

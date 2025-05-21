@@ -8,7 +8,7 @@ export interface TemplateVariableMappingProps {
 }
 
 // Re-export types from central type definition
-export type { TagCategoryProps, TemplateTag, TagMapping } from "@/types/documents";
+export type { TemplateTag, TagMapping, TagCategoryProps } from "@/types/documents";
 export { availableVariables } from "@/types/documents";
 
 // Export type pour les composants de mapping
