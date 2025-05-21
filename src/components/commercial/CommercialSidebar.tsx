@@ -1,16 +1,14 @@
-
 import React from "react";
 import {
   User,
   CheckSquare,
   Calendar,
-  Users,
+  Building2,
   Gift,
   Package,
   Settings,
   BookOpen,
-  HelpCircle,
-  Building2
+  HelpCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNavigate, useLocation } from "react-router-dom";

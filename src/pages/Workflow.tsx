@@ -1,4 +1,3 @@
-
 import React from "react";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
@@ -12,19 +11,19 @@ const Workflow = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-y-auto">
-          {workspace === "administrative" ? (
-            <WorkflowSpace />
-          ) : (
-            <Routes>
-              <Route path="/*" element={<CommercialSpace />} />
-            </Routes>
-          )}
-        </main>
-      </div>
+      {workspace === "administrative" ? (
+        <>
+          <Sidebar />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <Header />
+            <main className="flex-1 overflow-y-auto">
+              <WorkflowSpace />
+            </main>
+          </div>
+        </>
+      ) : (
+        <CommercialSpace />
+      )}
     </div>
   );
 };

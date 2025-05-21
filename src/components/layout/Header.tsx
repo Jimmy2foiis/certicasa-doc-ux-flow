@@ -1,4 +1,3 @@
-
 import { Bell, Search, Settings, User, Building2, FileSpreadsheet } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,6 +27,11 @@ const Header = () => {
     // Rediriger vers la page workflow quand on change d'espace
     navigate("/workflow");
   };
+
+  // Ne pas afficher le header dans l'espace commercial
+  if (workspace === "commercial") {
+    return null;
+  }
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
