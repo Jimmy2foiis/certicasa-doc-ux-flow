@@ -1,5 +1,7 @@
+
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
+import { extractFileContent } from "@/utils/docxUtils";
 import { UploadedFile } from "@/components/documents/TemplateFileItem";
 
 export const useFileUpload = () => {
@@ -8,124 +10,134 @@ export const useFileUpload = () => {
   const [fileToDelete, setFileToDelete] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
     if (!files || files.length === 0) return;
-    
+
     setUploading(true);
-    
-    // Validation - only accept .docx or .pdf files
-    const validFiles: UploadedFile[] = [];
-    const invalidFiles: string[] = [];
-    
-    Array.from(files).forEach(file => {
-      const fileExt = file.name.split('.').pop()?.toLowerCase();
-      
-      if (fileExt === 'docx' || fileExt === 'pdf') {
-        // Create a copy of the file with additional properties
+    const newFiles: UploadedFile[] = [];
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const id = `${file.name}-${Date.now()}`;
+        
+        // Créer l'objet de fichier initial
         const uploadedFile: UploadedFile = {
-          id: `${file.name}-${Date.now()}`,
+          id,
           name: file.name,
           size: file.size,
           type: file.type,
           lastModified: file.lastModified,
           progress: 0,
-          status: 'uploading',
-          content: null, // Initialize with null, will be populated when needed
+          status: "uploading",
+          content: null,
           slice: file.slice,
-          stream: file.stream?.bind(file),
-          text: file.text?.bind(file),
-          arrayBuffer: file.arrayBuffer?.bind(file),
+          stream: file.stream,
+          text: file.text,
+          arrayBuffer: file.arrayBuffer
         };
         
-        validFiles.push(uploadedFile);
-      } else {
-        invalidFiles.push(file.name);
+        // Ajouter le fichier à la liste pour montrer la progression
+        setUploadedFiles(prev => [...prev, uploadedFile]);
+        newFiles.push(uploadedFile);
+        
+        // Simuler la progression de l'upload
+        await simulateFileUpload(id);
+        
+        // Extraire le contenu du fichier une fois l'upload terminé
+        const content = await extractFileContent(file);
+        
+        // Loguer les balises trouvées pour le débogage
+        const tags = extractTemplateTags(content);
+        console.log(`Balises détectées dans ${file.name}:`, tags);
+        
+        // Mettre à jour le fichier avec le contenu extrait
+        setUploadedFiles(prev => 
+          prev.map(f => 
+            f.id === id 
+              ? { ...f, status: "complete", progress: 100, content } 
+              : f
+          )
+        );
       }
-    });
-    
-    if (invalidFiles.length > 0) {
+      
+      // Notification de succès
+      if (newFiles.length > 0) {
+        toast({
+          title: "Fichiers téléversés",
+          description: `${newFiles.length} fichier(s) téléversés avec succès.`,
+        });
+      }
+    } catch (error) {
+      console.error("Erreur lors du téléversement:", error);
       toast({
-        title: "Format de fichier non supporté",
-        description: `Les fichiers suivants ne sont pas au format .docx ou .pdf: ${invalidFiles.join(', ')}`,
-        variant: "destructive"
+        title: "Erreur",
+        description: "Impossible de téléverser certains fichiers.",
+        variant: "destructive",
       });
+    } finally {
+      setUploading(false);
+      // Réinitialiser le champ input pour permettre de recharger le même fichier si nécessaire
+      event.target.value = "";
     }
-    
-    if (validFiles.length > 0) {
-      setUploadedFiles(prev => [...prev, ...validFiles]);
-      
-      // Simulate upload progress for each file
-      validFiles.forEach(file => {
-        simulateFileUpload(file.id);
-      });
-    }
-    
-    // Reset file input
-    e.target.value = '';
   };
-  
-  // Simulate file upload with progress
-  const simulateFileUpload = (fileId: string) => {
+
+  // Fonction pour simuler une progression d'upload
+  const simulateFileUpload = async (fileId: string) => {
     let progress = 0;
-    const interval = setInterval(() => {
-      progress += Math.random() * 10;
+    const interval = 50; // ms
+    
+    while (progress < 100) {
+      // Incrémenter aléatoirement entre 5% et 15%
+      progress += Math.random() * 10 + 5;
+      if (progress > 100) progress = 100;
       
-      if (progress >= 100) {
-        progress = 100;
-        clearInterval(interval);
-        
-        setUploadedFiles(prev => 
-          prev.map(file => 
-            file.id === fileId 
-              ? { ...file, progress: 100, status: 'complete' } 
-              : file
-          )
-        );
-        
-        // Check if all files are complete
-        setTimeout(() => {
-          const allComplete = uploadedFiles.every(file => 
-            file.id === fileId ? true : file.status === 'complete'
-          );
-          
-          if (allComplete) {
-            setUploading(false);
-            toast({
-              title: "Modèles téléversés avec succès",
-              description: "Tous les modèles ont été ajoutés avec succès.",
-            });
-          }
-        }, 300);
-      } else {
-        setUploadedFiles(prev => 
-          prev.map(file => 
-            file.id === fileId 
-              ? { ...file, progress: Math.min(progress, 99) } 
-              : file
-          )
-        );
-      }
-    }, 200);
+      setUploadedFiles(prev => 
+        prev.map(file => 
+          file.id === fileId 
+            ? { ...file, progress } 
+            : file
+        )
+      );
+      
+      await new Promise(resolve => setTimeout(resolve, interval));
+      
+      // Sortir plus tôt si le fichier a été supprimé pendant l'upload
+      const fileExists = uploadedFiles.some(file => file.id === fileId);
+      if (!fileExists) break;
+    }
   };
-  
+
+  // Fonction pour vérifier la présence de balises dans un contenu
+  const extractTemplateTags = (content: string | null): string[] => {
+    if (!content) return [];
+    
+    // Match {{tag}} patterns in the content
+    const tagRegex = /\{\{([^{}]+)\}\}/g;
+    const tags: string[] = [];
+    let match;
+    
+    while ((match = tagRegex.exec(content)) !== null) {
+      tags.push(match[0]);
+    }
+    
+    return [...new Set(tags)]; // Supprimer les doublons
+  };
+
   const confirmDeleteFile = (fileId: string) => {
     setFileToDelete(fileId);
   };
-  
-  const handleDeleteFile = () => {
-    if (fileToDelete) {
-      setUploadedFiles(prev => prev.filter(file => file.id !== fileToDelete));
-      
-      toast({
-        title: "Modèle supprimé",
-        description: "Le modèle a été supprimé avec succès.",
-      });
-      
-      setFileToDelete(null);
-    }
+
+  const handleDeleteFile = (fileId: string) => {
+    setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
+    setFileToDelete(null);
+    toast({
+      title: "Fichier supprimé",
+      description: "Le fichier a été retiré de la liste.",
+    });
   };
-  
+
   const cancelDelete = () => {
     setFileToDelete(null);
   };
