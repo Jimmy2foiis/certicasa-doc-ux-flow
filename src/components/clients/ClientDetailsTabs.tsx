@@ -1,9 +1,8 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientInfoTab from "./ClientInfoTab";
-import { DocumentsTab } from "./DocumentsTab";
-import { CalculationsTab } from "./CalculationsTab";
+import DocumentsTab from "./DocumentsTab";
+import CalculationsTab from "./CalculationsTab";
 import BillingTab from "./BillingTab";
 import StatisticsTab from "./StatisticsTab";
 import { ClientPlanning } from "./planning/ClientPlanning";
