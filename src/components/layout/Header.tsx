@@ -10,14 +10,23 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useWorkspace } from "@/context/WorkspaceContext";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Header = () => {
   const { workspace, setWorkspace } = useWorkspace();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
   const workspaceLabels = {
     administrative: "Espace Administratif",
     commercial: "Espace Commercial / Terrain"
+  };
+
+  const handleWorkspaceChange = (newWorkspace) => {
+    setWorkspace(newWorkspace);
+    setIsDropdownOpen(false);
+    // Rediriger vers la page workflow quand on change d'espace
+    navigate("/workflow");
   };
 
   return (
@@ -55,10 +64,7 @@ const Header = () => {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuItem 
               className={`flex items-center gap-2 p-3 ${workspace === "administrative" ? "bg-gray-100" : ""}`}
-              onClick={() => {
-                setWorkspace("administrative");
-                setIsDropdownOpen(false);
-              }}
+              onClick={() => handleWorkspaceChange("administrative")}
             >
               <FileSpreadsheet size={18} className="text-emerald-600" />
               <div className="flex flex-col">
@@ -68,10 +74,7 @@ const Header = () => {
             </DropdownMenuItem>
             <DropdownMenuItem 
               className={`flex items-center gap-2 p-3 ${workspace === "commercial" ? "bg-gray-100" : ""}`}
-              onClick={() => {
-                setWorkspace("commercial");
-                setIsDropdownOpen(false);
-              }}
+              onClick={() => handleWorkspaceChange("commercial")}
             >
               <Building2 size={18} className="text-indigo-600" />
               <div className="flex flex-col">
