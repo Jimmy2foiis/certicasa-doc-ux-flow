@@ -1,0 +1,12 @@
+{
+  "name": "certicasa-doc-ux-flow",
+  "type": "web",
+  "build": {
+    "command": "npm run build",
+    "output": "dist"
+  },
+  "deploy": {
+    "branch": "main",
+    "autoDeploy": true
+  }
+} 
