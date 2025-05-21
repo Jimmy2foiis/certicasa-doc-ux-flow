@@ -1,7 +1,7 @@
 
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { UploadedFile } from "@/types/documents"; // Update import to use the type from documents.ts
+import { useToast } from "@/hooks/use-toast";
+import { UploadedFile } from "@/types/documents";
 
 export const useFileUpload = () => {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);

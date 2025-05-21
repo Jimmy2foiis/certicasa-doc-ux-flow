@@ -1,4 +1,3 @@
-
 // Définitions de types centralisées pour les documents
 
 // Type pour status de document (enum string)
@@ -9,7 +8,11 @@ export type DocumentStatus =
   | "missing" 
   | "action-required" 
   | "error"
-  | "linked";
+  | "linked"
+  | "signed"
+  | "available"
+  | "sent"
+  | "draft";
 
 // Type principal pour les modèles de document
 export interface DocumentTemplate {

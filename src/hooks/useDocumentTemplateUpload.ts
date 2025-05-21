@@ -1,7 +1,7 @@
 
 import { useFileUpload } from "./useFileUpload";
 import { useTemplateStorage } from "./useTemplateStorage";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { UploadedFile } from "@/types/documents";
 
 export const useDocumentTemplateUpload = () => {
@@ -16,7 +16,6 @@ export const useDocumentTemplateUpload = () => {
     resetUploadedFiles
   } = useFileUpload();
 
-  // Utiliser useToast hook correctement
   const { toast } = useToast();
 
   const showNotification = (title: string, description: string, variant?: "default" | "destructive") => {
@@ -27,7 +26,6 @@ export const useDocumentTemplateUpload = () => {
     });
   };
 
-  // Utiliser le hook de stockage des modèles
   const { saveAllTemplates } = useTemplateStorage(resetUploadedFiles);
 
   return {

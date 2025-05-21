@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Eye, Download, RefreshCw, RefreshCcw, Link, FileText, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DocumentStatus } from "@/types/documents";
@@ -18,14 +19,16 @@ interface DocumentActionButtonsProps {
   documentType: string;
   status: DocumentStatus;
   onAction: (action: ActionType) => void;
+  showViewDownload?: boolean; // Nouveau prop pour contrôler l'affichage des boutons voir/télécharger
 }
 
-const DocumentActionButtons = ({ documentType, status, onAction }: DocumentActionButtonsProps) => {
+const DocumentActionButtons = ({ documentType, status, onAction, showViewDownload = true }: DocumentActionButtonsProps) => {
   // Définir les actions disponibles en fonction du type de document et de son statut
   const getAvailableActions = (): ActionType[] => {
-    // Actions de base disponibles pour la plupart des documents générés
+    // Actions de base basées sur le statut
     if (status === "generated" || status === "linked") {
-      const actions: ActionType[] = ["view", "download"];
+      // Ne pas inclure view/download si showViewDownload est false pour éviter les doublons
+      const actions: ActionType[] = showViewDownload ? ["view", "download"] : [];
       
       // Actions spécifiques selon le type de document
       if (documentType === "ficha") {
@@ -46,7 +49,7 @@ const DocumentActionButtons = ({ documentType, status, onAction }: DocumentActio
     // Document en attente avec aperçu disponible
     if (status === "pending") {
       if (documentType === "factura") {
-        return ["view"]; // Voir le brouillon
+        return showViewDownload ? ["view"] : [];
       }
       return [];
     }
@@ -139,5 +142,5 @@ const DocumentActionButtons = ({ documentType, status, onAction }: DocumentActio
 };
 
 export default DocumentActionButtons;
-// Also export as a named export for consistency
+// Exporter également en tant qu'export nommé pour la cohérence
 export { DocumentActionButtons };
