@@ -64,6 +64,13 @@ export const loadTemplateMapping = async (
   availableVariables: Record<string, string[]>
 ): Promise<TemplateTag[]> => {
   try {
+    if (!templateId) {
+      console.error("No template ID provided for loading mapping");
+      return [];
+    }
+    
+    console.log("Loading template mapping for:", templateId);
+    
     // Try to get existing mapping from Supabase
     const { data: mappingData, error } = await supabase
       .from('template_mappings')
@@ -73,17 +80,54 @@ export const loadTemplateMapping = async (
     
     if (error) {
       console.error("Error loading template mapping:", error);
-      return createInitialMapping(null, availableVariables);
+      return await createInitialMappingFromTemplate(templateId, availableVariables);
     }
     
-    if (mappingData?.mappings) {
+    if (mappingData?.mappings && mappingData.mappings.length > 0) {
+      console.log("Found existing mapping:", mappingData.mappings);
       return mappingData.mappings as TemplateTag[];
     }
     
-    return createInitialMapping(null, availableVariables);
+    console.log("No mapping found, creating initial mapping from template");
+    return await createInitialMappingFromTemplate(templateId, availableVariables);
   } catch (error) {
-    console.log('Error or no mapping found, will extract from template:', error);
-    return createInitialMapping(null, availableVariables);
+    console.error('Error loading template mapping:', error);
+    return await createInitialMappingFromTemplate(templateId, availableVariables);
+  }
+};
+
+// Helper function to create initial mapping from template content
+export const createInitialMappingFromTemplate = async (
+  templateId: string,
+  availableVariables: Record<string, string[]>
+): Promise<TemplateTag[]> => {
+  try {
+    if (!templateId) {
+      console.error("No template ID provided for creating mapping");
+      return [];
+    }
+    
+    // Get template content from database
+    const { data: templateData, error } = await supabase
+      .from('document_templates')
+      .select('content')
+      .eq('id', templateId)
+      .single();
+      
+    if (error) {
+      console.error("Error fetching template content:", error);
+      return [];
+    }
+    
+    if (!templateData?.content) {
+      console.error("Template content is empty:", templateId);
+      return [];
+    }
+    
+    return createInitialMapping(templateData.content, availableVariables);
+  } catch (error) {
+    console.error("Error creating initial mapping:", error);
+    return [];
   }
 };
 

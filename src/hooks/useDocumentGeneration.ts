@@ -12,7 +12,7 @@ interface UseDocumentGenerationProps {
     generated: boolean;
     documentId: string | null;
     handleGenerate: (templateId: string, clientId?: string, mappings?: TemplateTag[]) => Promise<void>;
-    handleDownload: () => void;
+    handleDownload: () => Promise<void>;
     handleSaveToFolder: () => Promise<boolean>;
   };
 }
@@ -48,7 +48,11 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       // Get the template data
       const templateData = await getTemplateById(templateId);
       
-      if (!templateData || !templateData.content) {
+      if (!templateData) {
+        throw new Error("Le modèle sélectionné n'existe pas");
+      }
+      
+      if (!templateData.content) {
         throw new Error("Le modèle sélectionné est vide ou invalide");
       }
       
@@ -57,19 +61,29 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       if (clientId && mappings && mappings.length > 0) {
         console.log("Applying mappings to document:", mappings);
         const clientData = await fetchClientDataForMapping(clientId);
+        
+        if (!clientData || Object.keys(clientData).length === 0) {
+          console.warn("Client data is empty for client ID:", clientId);
+        }
+        
         documentContent = processDocumentContent(documentContent, mappings, clientData);
       }
 
       // Prepare the document data
       const documentData = prepareDocumentData(
         templateData,
-        clientName,
+        clientName || "Document sans nom",
         clientId,
         documentContent
       );
 
       // Create the document
       const document = await createDocument(documentData);
+      
+      if (!document || !document.id) {
+        throw new Error("Erreur lors de la création du document");
+      }
+      
       console.log("Document generated successfully:", document);
       
       setDocumentId(document.id);

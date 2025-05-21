@@ -1,28 +1,50 @@
 
+import { useState } from "react";
 import { Save } from "lucide-react";
 import GenerationSuccess from "../GenerationSuccess";
 import DocumentActions from "../DocumentActions";
 import { DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface SuccessStateProps {
-  onDownload: () => void;
+  onDownload: () => Promise<void>;
   onSaveToFolder?: () => Promise<boolean>;
   clientId?: string;
   clientName?: string;
   documentId?: string | null;
 }
 
-const SuccessState = ({ onDownload, onSaveToFolder, clientId, clientName, documentId }: SuccessStateProps) => {
+const SuccessState = ({ 
+  onDownload, 
+  onSaveToFolder, 
+  clientId, 
+  clientName, 
+  documentId 
+}: SuccessStateProps) => {
   const [saving, setSaving] = useState(false);
+  const { toast } = useToast();
 
   const handleSaveToFolder = async () => {
-    if (!onSaveToFolder) return;
+    if (!onSaveToFolder) {
+      toast({
+        title: "Action non disponible",
+        description: "La fonctionnalité d'enregistrement n'est pas disponible.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setSaving(true);
     try {
       await onSaveToFolder();
+    } catch (error) {
+      console.error("Error saving document to folder:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de l'enregistrement du document.",
+        variant: "destructive",
+      });
     } finally {
       setSaving(false);
     }
@@ -39,7 +61,7 @@ const SuccessState = ({ onDownload, onSaveToFolder, clientId, clientName, docume
             clientId={clientId}
           />
         ) : (
-          <Button onClick={onDownload} variant="outline">
+          <Button onClick={() => onDownload()} variant="outline" disabled={saving}>
             <Save className="mr-2 h-4 w-4" />
             Télécharger
           </Button>

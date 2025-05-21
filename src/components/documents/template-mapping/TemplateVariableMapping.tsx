@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
-import { FileText, Save } from "lucide-react";
+import { FileText, Save, AlertTriangle } from "lucide-react";
 import { AddNewTagField } from "./AddNewTagField";
 import { TagsList } from "./TagsList";
 import { VariableCategoryTabs } from "./VariableCategoryTabs";
@@ -16,6 +16,7 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
   const [templateTags, setTemplateTags] = useState<TemplateTag[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [newTag, setNewTag] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("client");
   const { toast } = useToast();
@@ -24,7 +25,19 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
   useEffect(() => {
     const initializeMapping = async () => {
       setLoading(true);
+      setError(null);
+      
       try {
+        if (!template?.id) {
+          setError("Template ID is missing");
+          return;
+        }
+        
+        if (!template?.content) {
+          setError("Template content is empty or invalid");
+          return;
+        }
+        
         // Try to get existing mapping from Supabase
         const mappings = await loadTemplateMapping(template.id, availableVariables);
         
@@ -36,9 +49,18 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
           const initialTags = createInitialMapping(template.content, availableVariables);
           setTemplateTags(initialTags);
           console.log("Created initial mapping:", initialTags);
+          
+          if (initialTags.length === 0 && template.content) {
+            toast({
+              title: "Aucune variable trouvée",
+              description: "Le modèle ne contient pas de variables à associer.",
+              variant: "default",
+            });
+          }
         }
       } catch (error) {
         console.error("Error loading template mapping:", error);
+        setError("Impossible de charger le mapping des variables");
       } finally {
         setLoading(false);
       }
@@ -47,7 +69,7 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
     if (template?.id) {
       initializeMapping();
     }
-  }, [template?.id, template?.content]);
+  }, [template?.id, template?.content, toast]);
   
   const handleAddTag = () => {
     if (!newTag.trim()) return;
@@ -87,6 +109,7 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
     try {
       setLoading(true);
       setSaving(true);
+      setError(null);
       
       if (!template?.id) {
         throw new Error("Template ID is missing");
@@ -109,6 +132,7 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
       
     } catch (error) {
       console.error("Error saving template mapping:", error);
+      setError("Impossible de sauvegarder le mapping des variables");
       toast({
         title: "Erreur",
         description: "Impossible de sauvegarder le mapping des variables.",
@@ -119,6 +143,27 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
       setSaving(false);
     }
   };
+  
+  if (!template?.id || !template?.content) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center text-amber-600">
+            <AlertTriangle className="mr-2 h-5 w-5" />
+            Modèle invalide
+          </CardTitle>
+          <CardDescription>
+            Le modèle sélectionné est vide ou invalide. Veuillez sélectionner un autre modèle.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center py-10">
+          <Button variant="outline" onClick={() => window.history.back()}>
+            Retour à la sélection
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
   
   return (
     <Card>
@@ -136,6 +181,13 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
         {loading ? (
           <div className="flex justify-center py-8">
             <div className="animate-spin h-8 w-8 border-b-2 border-blue-600 rounded-full"></div>
+          </div>
+        ) : error ? (
+          <div className="border border-red-200 bg-red-50 rounded-md p-4 text-red-800">
+            <div className="flex items-center">
+              <AlertTriangle className="h-5 w-5 mr-2" />
+              <p>{error}</p>
+            </div>
           </div>
         ) : (
           <>
@@ -164,7 +216,7 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
       <CardFooter>
         <Button 
           onClick={handleSaveMapping} 
-          disabled={loading || saving} 
+          disabled={loading || saving || !!error || templateTags.length === 0} 
           className="ml-auto"
         >
           {saving ? (
