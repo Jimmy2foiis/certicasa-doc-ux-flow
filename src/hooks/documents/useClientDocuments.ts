@@ -34,7 +34,9 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
             content: doc.content,
             file_path: doc.file_path,
             description: "",  // Default empty description
-            order: 0          // Default order
+            order: 0,         // Default order
+            // Add status label based on document type and status
+            statusLabel: getStatusLabelForDocument(doc.type || "pdf", doc.status || "available")
           }));
           
           setAdminDocuments(formattedDocs);
@@ -96,3 +98,34 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
     isLoading
   };
 };
+
+// Helper function to determine status label based on document type and status
+function getStatusLabelForDocument(type: string, status: string): string {
+  if (status === "pending") {
+    switch (type.toLowerCase()) {
+      case "ficha":
+        return "En attente CEE PREVIO";
+      case "certificado":
+        return "En attente CEE POSTERIOR";
+      case "anexo":
+        return "En attente signatures";
+      case "factura":
+        return "En attente de validation";
+      default:
+        return "En attente de données";
+    }
+  }
+  
+  if (status === "action-required") {
+    switch (type.toLowerCase()) {
+      case "fotos":
+        return "Photos requises";
+      case "certificado":
+        return "Signature E. Chiche requise";
+      default:
+        return "Action requise";
+    }
+  }
+  
+  return "";
+}

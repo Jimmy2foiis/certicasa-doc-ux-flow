@@ -63,9 +63,36 @@ const DocumentStatusBadge = ({ status, customLabel }: DocumentStatusBadgeProps) 
   };
 
   const { label, variant, icon: Icon } = getStatusDetails(status);
+  
+  // Determine badge color based on status
+  let badgeColor = '';
+  switch (status) {
+    case "generated":
+    case "linked":
+      badgeColor = "bg-green-100 text-green-800 border-green-200"; // Green
+      break;
+    case "ready":
+      badgeColor = "bg-blue-100 text-blue-800 border-blue-200"; // Blue
+      break;
+    case "pending":
+    case "action-required":
+      badgeColor = "bg-amber-100 text-amber-800 border-amber-200"; // Yellow
+      break;
+    case "missing":
+      badgeColor = "bg-gray-100 text-gray-800 border-gray-200"; // Gray
+      break;
+    case "error":
+      badgeColor = "bg-red-100 text-red-800 border-red-200"; // Red
+      break;
+    default:
+      badgeColor = "bg-gray-100 text-gray-800 border-gray-200"; // Default gray
+  }
 
   return (
-    <Badge variant={variant} className="flex items-center gap-1.5 font-normal">
+    <Badge 
+      variant={variant} 
+      className={`flex items-center gap-1.5 font-normal px-2 py-1 ${badgeColor}`}
+    >
       <Icon className="h-3 w-3" />
       <span>{label}</span>
     </Badge>

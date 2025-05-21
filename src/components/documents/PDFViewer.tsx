@@ -11,11 +11,13 @@ interface PDFViewerProps {
 }
 
 export const PDFViewer = ({ fileUrl, fileName }: PDFViewerProps) => {
-  const defaultLayoutPluginInstance = defaultLayoutPlugin();
+  const defaultLayoutPluginInstance = defaultLayoutPlugin({
+    sidebarTabs: (defaultTabs) => [defaultTabs[0]], // Only show thumbnails tab
+  });
 
   return (
-    <div className="h-[80vh] w-full">
-      <Worker workerUrl={`https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`}>
+    <div className="h-full w-full">
+      <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js">
         <Viewer
           fileUrl={fileUrl}
           plugins={[defaultLayoutPluginInstance]}

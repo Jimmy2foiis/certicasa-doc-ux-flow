@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { DocumentPreview } from "@/components/documents/DocumentPreview";
 import { documentService } from "@/services/documentService";
 import { DocumentsHeader } from "./documents/DocumentsHeader";
-import { DocumentsList } from "./documents/DocumentsList";
+import DocumentsAccordion from "@/components/documents/DocumentsAccordion";
 import { DocumentsFooter } from "./documents/DocumentsFooter";
 
 interface DocumentsTabContentProps {
@@ -256,5 +256,49 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
         onDownload={(documentId) => handleDocumentAction(documentId, "download")}
       />
     </Card>
+  );
+};
+
+// Loading state component
+const DocumentsLoadingState = () => (
+  <div className="space-y-3">
+    {Array(5).fill(0).map((_, i) => (
+      <div key={i} className="flex items-center justify-between p-3 border rounded-md">
+        <div className="flex items-center space-x-3">
+          <div className="h-10 w-10 rounded-md bg-muted animate-pulse" />
+          <div>
+            <div className="h-5 w-40 bg-muted animate-pulse rounded" />
+            <div className="h-4 w-20 mt-2 bg-muted animate-pulse rounded" />
+          </div>
+        </div>
+        <div className="h-8 w-24 bg-muted animate-pulse rounded" />
+      </div>
+    ))}
+  </div>
+);
+
+// Component to display the list of documents
+const DocumentsList = ({ documents, isLoading, onAction }: { 
+  documents: AdministrativeDocument[], 
+  isLoading: boolean,
+  onAction: (documentId: string, action: string) => void
+}) => {
+  if (isLoading) {
+    return <DocumentsLoadingState />;
+  }
+
+  if (documents.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-muted-foreground">Aucun document trouvé</p>
+      </div>
+    );
+  }
+
+  return (
+    <DocumentsAccordion 
+      documents={documents}
+      onDocumentAction={onAction}
+    />
   );
 };

@@ -1,17 +1,17 @@
 
 import React from "react";
-import { CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { FileDown, FileUp, Search, RefreshCcw } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Search, X } from "lucide-react";
 
 interface DocumentsHeaderProps {
   searchQuery: string;
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onClearSearch: () => void;
-  onExportAll: () => void;
+  onExportAll?: () => void;
   isLoading: boolean;
   documentCount: number;
+  title?: string;
 }
 
 export const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({
@@ -20,50 +20,38 @@ export const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({
   onClearSearch,
   onExportAll,
   isLoading,
-  documentCount
+  documentCount,
+  title
 }) => {
   return (
-    <>
-      <div className="flex justify-between items-center">
-        <CardTitle className="text-lg">Documents du client</CardTitle>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={onExportAll}
-            disabled={isLoading || documentCount === 0}
-          >
-            <FileDown className="h-4 w-4 mr-1" />
-            Exporter tout
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
+    <div className="space-y-3">
+      {title && (
+        <h1 className="text-xl font-bold">{title}</h1>
+      )}
+      <div className="flex items-center space-x-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            type="search"
+            placeholder="Rechercher un document..."
+            value={searchQuery}
+            onChange={onSearchChange}
+            className="pl-9 w-full"
             disabled={isLoading}
-          >
-            <FileUp className="h-4 w-4 mr-1" />
-            Ajouter
-          </Button>
+          />
+          {searchQuery && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute right-1 top-1 h-7 w-7 p-0"
+              onClick={onClearSearch}
+            >
+              <X className="h-3 w-3" />
+              <span className="sr-only">Effacer la recherche</span>
+            </Button>
+          )}
         </div>
       </div>
-      <div className="flex items-center space-x-2 my-2">
-        <Search className="h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Rechercher un document..."
-          className="h-9"
-          value={searchQuery}
-          onChange={onSearchChange}
-        />
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="h-9 w-9" 
-          onClick={onClearSearch}
-          disabled={isLoading}
-        >
-          <RefreshCcw className="h-4 w-4" />
-        </Button>
-      </div>
-    </>
+    </div>
   );
 };
