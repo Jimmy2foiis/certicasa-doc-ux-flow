@@ -2,7 +2,7 @@
 import { useFileUpload } from "./useFileUpload";
 import { useTemplateStorage } from "./useTemplateStorage";
 import { useTemplateNotification } from "./useTemplateNotification";
-import { UploadedFile } from "@/components/documents/TemplateFileItem";
+import { UploadedFile } from "@/types/documents";
 
 export const useDocumentTemplateUpload = () => {
   const {

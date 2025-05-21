@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
-import { TemplateTag } from "./types";
+import { TemplateTag } from "@/components/documents/template-mapping/types";
 import { AddNewTagField } from "./AddNewTagField";
 import { TagsList } from "./TagsList";
 import { VariableCategoryTabs } from "./VariableCategoryTabs";

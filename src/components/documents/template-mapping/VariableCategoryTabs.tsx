@@ -1,7 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { availableVariables } from "./types";
+import { availableVariables } from "@/types/documents";
 
 interface VariableCategoryTabsProps {
   activeCategory: string;

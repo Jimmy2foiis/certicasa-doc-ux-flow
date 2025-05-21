@@ -1,10 +1,9 @@
-
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
 import TemplateVariableMapping from "../template-mapping/TemplateVariableMapping";
-import { TemplateTag } from "../template-mapping/types";
+import { TemplateTag } from "@/components/documents/template-mapping/types";
 
 interface MappingStepProps {
   template: DocumentTemplate;

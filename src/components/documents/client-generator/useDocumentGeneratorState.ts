@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useDocumentTemplates } from "@/hooks/useDocumentTemplates";
 import { useDocumentGeneration } from "@/hooks/useDocumentGeneration";
-import { TemplateTag } from "../template-mapping/types";
+import { TemplateTag } from "@/components/documents/template-mapping/types";
 
 interface UseDocumentGeneratorStateProps {
   clientId: string;

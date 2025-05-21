@@ -1,7 +1,6 @@
-
 import { Badge } from "@/components/ui/badge";
 import { TagVariableRow } from "./TagVariableRow";
-import { TemplateTag } from "./types";
+import { TemplateTag } from "@/components/documents/template-mapping/types";
 
 interface TagsListProps {
   tags: TemplateTag[];

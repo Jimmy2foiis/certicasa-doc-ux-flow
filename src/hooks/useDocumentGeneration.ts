@@ -1,13 +1,12 @@
-
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { TemplateTag } from "@/types/documents";
+import { TemplateTag } from "@/components/documents/template-mapping/types";
 import { processDocumentContent, prepareDocumentData } from "@/utils/documentUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useTemplateStorage } from "./useTemplateStorage";
 
 interface UseDocumentGenerationProps {
-  (onDocumentGenerated?: (documentId: string) => void, clientName?: string, clientId?: string): {
+  (onDocumentGenerated?: ((documentId: string) => void) | undefined, clientName?: string, clientId?: string): {
     generating: boolean;
     generated: boolean;
     documentId: string | null;
@@ -196,7 +195,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
   };
 
   // Fonction pour télécharger un document
-  const handleDownload = async () => {
+  const handleDownload = async (): Promise<void> => {
     if (!documentId) {
       toast({
         title: "Erreur",
@@ -222,20 +221,18 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       const url = URL.createObjectURL(blob);
       
       // Créer un lien de téléchargement et cliquer dessus
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${document.name || 'document'}.txt`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${document.name || 'document'}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
       toast({
         title: "Téléchargement",
         description: "Le téléchargement du document a commencé.",
       });
-      
-      return true;
     } catch (error) {
       console.error("Erreur de téléchargement:", error);
       toast({
@@ -243,12 +240,11 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
         description: "Impossible de télécharger le document.",
         variant: "destructive",
       });
-      return false;
     }
   };
 
   // Fonction pour enregistrer le document dans un dossier
-  const handleSaveToFolder = async () => {
+  const handleSaveToFolder = async (): Promise<boolean> => {
     if (!documentId) {
       toast({
         title: "Erreur",

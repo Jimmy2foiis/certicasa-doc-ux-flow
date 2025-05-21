@@ -1,7 +1,7 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TemplateTag, availableVariables } from "./types";
+import { TemplateTag } from "@/components/documents/template-mapping/types";
+import { availableVariables } from "@/types/documents";
 
 interface TagVariableRowProps {
   tag: TemplateTag;

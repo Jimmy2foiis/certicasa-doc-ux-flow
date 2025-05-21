@@ -1,83 +1,58 @@
 
 import mammoth from 'mammoth';
-import { TemplateTag } from '@/types/documents';
 
 /**
- * Extrait le texte d'un fichier .docx en utilisant mammoth.js
- * @param file Fichier .docx à traiter
- * @returns Promise avec le contenu textuel du document
+ * Extraire le contenu d'un fichier .docx ou .pdf
+ * @param file Le fichier à traiter
+ * @returns Le contenu extrait sous forme de texte
  */
-export const extractDocxContent = async (file: File): Promise<string> => {
+export const extractFileContent = async (file: File): Promise<string | null> => {
   try {
-    // Convertir le fichier en ArrayBuffer
-    const arrayBuffer = await file.arrayBuffer();
+    if (!file) return null;
     
-    // Utiliser mammoth pour extraire le texte
-    const result = await mammoth.extractRawText({ arrayBuffer });
-    console.log("Contenu DOCX extrait:", result.value.substring(0, 100) + "...");
-    
-    return result.value;
-  } catch (error) {
-    console.error("Erreur lors de l'extraction du contenu DOCX:", error);
-    throw new Error("Impossible d'extraire le contenu du fichier DOCX");
-  }
-};
-
-/**
- * Extrait le contenu d'un fichier en fonction de son type
- * @param file Fichier à traiter
- * @returns Promise avec le contenu du fichier
- */
-export const extractFileContent = async (file: File): Promise<string> => {
-  try {
-    console.log("Extraction du contenu pour:", file.name, file.type);
-    
-    // Pour les fichiers DOCX
-    if (file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-      return await extractDocxContent(file);
-    }
-    
-    // Pour les fichiers PDF (pour l'instant, retourne une chaîne vide)
-    if (file.type === "application/pdf") {
-      console.warn("L'extraction de contenu PDF n'est pas encore implémentée");
-      return ""; // À implémenter avec une bibliothèque comme pdf.js
-    }
-    
-    // Pour les fichiers texte
-    if (file.type.includes("text/") || file.type.includes("application/json")) {
+    // Selon le type de fichier
+    if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+      // Pour les fichiers .docx, utiliser mammoth
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      return result.value;
+    } else if (file.type === 'application/pdf') {
+      // Pour les PDF, ajouter ici la logique d'extraction si nécessaire
+      // Actuellement simple indication que PDF est détecté
+      console.log("PDF détecté, extraction de contenu non supportée");
+      return "PDF Content Placeholder";
+    } else {
+      // Pour les fichiers texte et autres formats supportés
       return await file.text();
     }
-    
-    console.warn("Type de fichier non pris en charge pour l'extraction de contenu:", file.type);
-    return "";
   } catch (error) {
-    console.error("Erreur lors de l'extraction du contenu:", error);
-    return "";
+    console.error("Erreur lors de l'extraction du contenu du fichier:", error);
+    return null;
   }
 };
 
 /**
- * Extrait les balises d'un contenu de document
- * @param content Contenu du document
- * @returns Tableau de balises uniques trouvées
+ * Extraire les balises de template d'un contenu de document
+ * @param content Le contenu du document
+ * @returns Un tableau des balises trouvées
  */
 export const extractTemplateTags = (content: string | null): string[] => {
   if (!content) return [];
   
   try {
-    // Match {{tag}} patterns in the content
-    const tagRegex = /\{\{([^{}]+)\}\}/g;
-    const tags: string[] = [];
+    console.log("Extraction des balises du contenu:", content.substring(0, 100) + "...");
+    
+    // Recherche les balises au format {{variable}}
+    const regex = /\{\{([^}]+)\}\}/g;
+    const tags = [];
     let match;
     
-    while ((match = tagRegex.exec(content)) !== null) {
-      tags.push(match[0]); // Capturer la balise complète avec {{}}
+    while ((match = regex.exec(content)) !== null) {
+      tags.push(match[0]); // match[0] contient la balise complète avec {{}}
     }
     
-    // Afficher les balises pour le débogage
-    console.log(`Balises extraites (${tags.length}):`, tags);
-    
-    return [...new Set(tags)]; // Supprimer les doublons
+    console.log(`${tags.length} balises trouvées:`, tags);
+    return tags;
   } catch (error) {
     console.error("Erreur lors de l'extraction des balises:", error);
     return [];
@@ -85,54 +60,70 @@ export const extractTemplateTags = (content: string | null): string[] => {
 };
 
 /**
- * Détermine la catégorie la plus probable pour une balise
- * @param tag Balise à analyser
- * @param availableCategories Liste des catégories disponibles
- * @returns Catégorie déterminée
+ * Déterminer la catégorie la plus probable pour une balise
+ * @param tag La balise à analyser
+ * @param categories Liste des catégories disponibles
+ * @returns La catégorie la plus probable
  */
-export const determineTagCategory = (tag: string, availableCategories: string[]): string => {
-  // Supprimer {{ et }} et diviser par point si présent
-  const cleanTag = tag.replace(/[{}]/g, "");
-  const parts = cleanTag.split(".");
+export const determineTagCategory = (tag: string, categories: string[]): string => {
+  // Nettoyer la balise (enlever {{ et }})
+  const cleanTag = tag.replace(/[{}]/g, '');
   
-  if (parts.length > 1) {
-    const category = parts[0].toLowerCase();
-    if (availableCategories.includes(category)) {
+  // Vérifier si la balise contient déjà une catégorie (format categorie.variable)
+  if (cleanTag.includes('.')) {
+    const [category] = cleanTag.split('.');
+    if (categories.includes(category)) return category;
+  }
+  
+  // Essayer de trouver une correspondance dans les catégories disponibles
+  for (const category of categories) {
+    if (cleanTag.toLowerCase().includes(category.toLowerCase())) {
       return category;
     }
   }
   
-  // Par défaut, utiliser "client" si aucune correspondance
-  return "client";
+  // Par défaut, utiliser la première catégorie disponible ou "client"
+  return categories[0] || 'client';
 };
 
 /**
- * Obtient un mapping par défaut pour une balise
- * @param tag Balise à mapper
- * @param availableVariables Variables disponibles par catégorie
- * @returns Mapping par défaut
+ * Obtenir un mapping par défaut pour une balise
+ * @param tag La balise à mapper
+ * @param availableVariables Les variables disponibles par catégorie
+ * @returns Une chaîne de mapping au format "categorie.variable"
  */
-export const getDefaultMapping = (
-  tag: string, 
-  availableVariables: Record<string, string[]>
-): string => {
-  const cleanTag = tag.replace(/[{}]/g, "");
-  const parts = cleanTag.split(".");
+export const getDefaultMapping = (tag: string, availableVariables: any): string => {
+  // Nettoyer la balise (enlever {{ et }})
+  const cleanTag = tag.replace(/[{}]/g, '');
   
-  if (parts.length > 1) {
-    return cleanTag; // A déjà le format category.variable
+  // Si la balise est déjà au format categorie.variable
+  if (cleanTag.includes('.')) {
+    const [category, variable] = cleanTag.split('.');
+    if (
+      availableVariables[category] && 
+      availableVariables[category].includes(variable)
+    ) {
+      return `${category}.${variable}`;
+    }
   }
   
-  // Essayer de trouver dans les variables disponibles
+  // Essayer de trouver une correspondance dans les variables disponibles
   for (const [category, variables] of Object.entries(availableVariables)) {
-    for (const variable of variables) {
-      if (cleanTag === variable || cleanTag.includes(variable)) {
+    for (const variable of variables as string[]) {
+      if (cleanTag.toLowerCase() === variable.toLowerCase()) {
         return `${category}.${variable}`;
       }
     }
   }
   
-  // Si aucune correspondance trouvée, utiliser le nom de la balise avec la catégorie par défaut
-  const category = determineTagCategory(tag, Object.keys(availableVariables));
-  return `${category}.${cleanTag}`;
+  // Déterminer la catégorie la plus probable
+  const category = determineTagCategory(cleanTag, Object.keys(availableVariables));
+  
+  // Par défaut, utiliser la première variable de la catégorie ou le nom de la balise
+  const defaultVariable = 
+    availableVariables[category] && availableVariables[category].length > 0 
+      ? availableVariables[category][0] 
+      : cleanTag;
+  
+  return `${category}.${defaultVariable}`;
 };

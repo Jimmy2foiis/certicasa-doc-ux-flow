@@ -1,24 +1,13 @@
-
-import { useState, useEffect } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
-import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
-import { TemplateTag } from "../template-mapping/types";
 import { useDocumentGeneratorState } from "./useDocumentGeneratorState";
 import TemplateSelectionStep from "./TemplateSelectionStep";
 import MappingStep from "./MappingStep";
-import { NotFoundTemplate } from "../template-mapping/NotFoundTemplate";
 import GeneratingState from "./GeneratingState";
 import SuccessState from "./SuccessState";
 import GeneratorDialogHeader from "./GeneratorDialogHeader";
+import { TemplateTag } from "@/components/documents/template-mapping/types";
 
 interface DocumentGeneratorDialogProps {
   isOpen: boolean;
