@@ -9,6 +9,8 @@ import { documentService } from "@/services/documentService";
 import { DocumentsHeader } from "./documents/DocumentsHeader";
 import DocumentsAccordion from "@/components/documents/DocumentsAccordion";
 import { DocumentsFooter } from "./documents/DocumentsFooter";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface DocumentsTabContentProps {
   clientId?: string;
@@ -32,6 +34,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
   const [clientDocuments, setClientDocuments] = useState<AdministrativeDocument[]>([]);
   const [previewDocument, setPreviewDocument] = useState<AdministrativeDocument | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   // When administrative documents are loaded
@@ -77,6 +80,8 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
   // Handle document actions with preview
   const handleDocumentAction = async (documentId: string, action: string) => {
     try {
+      setError(null);
+      
       switch (action) {
         case "view":
           // Find document to preview
@@ -91,6 +96,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
             });
             setIsPreviewOpen(true);
           } else {
+            setError("Document introuvable");
             toast({
               title: "Erreur",
               description: "Document introuvable",
@@ -102,6 +108,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
         case "download":
           const docToDownload = filteredDocuments.find(doc => doc.id === documentId);
           if (!docToDownload) {
+            setError("Document introuvable");
             toast({
               title: "Erreur",
               description: "Document introuvable",
@@ -112,21 +119,38 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
           
           // If we have the content directly, use it
           if (docToDownload.content) {
-            const success = await documentService.downloadDocument(
+            // Valider le contenu avant téléchargement
+            const validationResult = documentService.validateDocumentContent(
+              docToDownload.content, 
+              docToDownload.type
+            );
+            
+            if (!validationResult.success) {
+              setError(`Contenu de document invalide: ${validationResult.error}`);
+              toast({
+                title: "Erreur",
+                description: validationResult.error,
+                variant: "destructive",
+              });
+              return;
+            }
+            
+            const downloadResult = await documentService.downloadDocument(
               docToDownload.content, 
               docToDownload.name, 
               docToDownload.type
             );
             
-            if (success) {
+            if (downloadResult.success) {
               toast({
                 title: "Téléchargement réussi",
                 description: `Le document ${docToDownload.name} a été téléchargé avec succès`,
               });
             } else {
+              setError(`Erreur de téléchargement: ${downloadResult.error}`);
               toast({
                 title: "Erreur de téléchargement",
-                description: "Impossible de télécharger le document",
+                description: downloadResult.error || "Impossible de télécharger le document",
                 variant: "destructive",
               });
             }
@@ -140,28 +164,46 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
             const documentData = await documentService.getDocumentContent(documentId);
             
             if (documentData && documentData.success && documentData.data?.content) {
-              const success = await documentService.downloadDocument(
+              // Valider le contenu avant téléchargement
+              const validationResult = documentService.validateDocumentContent(
+                documentData.data.content, 
+                documentData.data.type
+              );
+              
+              if (!validationResult.success) {
+                setError(`Contenu de document invalide: ${validationResult.error}`);
+                toast({
+                  title: "Erreur",
+                  description: validationResult.error,
+                  variant: "destructive",
+                });
+                return;
+              }
+              
+              const downloadResult = await documentService.downloadDocument(
                 documentData.data.content,
                 documentData.data.name,
                 documentData.data.type
               );
               
-              if (success) {
+              if (downloadResult.success) {
                 toast({
                   title: "Téléchargement réussi",
                   description: `Le document ${documentData.data.name} a été téléchargé avec succès`,
                 });
               } else {
+                setError(`Erreur de téléchargement: ${downloadResult.error}`);
                 toast({
                   title: "Erreur de téléchargement",
-                  description: "Impossible de télécharger le document",
+                  description: downloadResult.error || "Impossible de télécharger le document",
                   variant: "destructive",
                 });
               }
             } else {
+              setError("Contenu du document non disponible ou invalide");
               toast({
                 title: "Erreur",
-                description: "Contenu du document non disponible",
+                description: documentData.error || "Contenu du document non disponible",
                 variant: "destructive",
               });
             }
@@ -174,6 +216,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
       }
     } catch (error) {
       console.error("Erreur lors de l'action sur le document:", error);
+      setError(error instanceof Error ? error.message : "Erreur inattendue");
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors du traitement de votre demande",
@@ -185,27 +228,41 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
   // Handle exporting all documents
   const handleExportAll = async () => {
     try {
+      setError(null);
+      
+      if (!filteredDocuments || filteredDocuments.length === 0) {
+        setError("Aucun document à exporter");
+        toast({
+          title: "Information",
+          description: "Aucun document à exporter.",
+          variant: "default",
+        });
+        return;
+      }
+      
       toast({
         title: "Export groupé",
         description: "Préparation de l'export des documents...",
       });
       
-      const success = await documentService.exportAllDocuments(filteredDocuments);
+      const exportResult = await documentService.exportAllDocuments(filteredDocuments);
       
-      if (success) {
+      if (exportResult.success) {
         toast({
           title: "Export réussi",
           description: "Tous les documents ont été exportés avec succès",
         });
       } else {
+        setError(`Erreur d'exportation: ${exportResult.error}`);
         toast({
           title: "Erreur d'exportation",
-          description: "Impossible d'exporter tous les documents",
+          description: exportResult.error || "Impossible d'exporter tous les documents",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Erreur lors de l'exportation des documents:", error);
+      setError(error instanceof Error ? error.message : "Erreur inattendue");
       toast({
         title: "Erreur",
         description: "Une erreur est survenue lors de l'exportation",
@@ -234,6 +291,14 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
       </CardHeader>
       
       <CardContent>
+        {error && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Erreur</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+        
         <DocumentsList 
           documents={filteredDocuments}
           isLoading={isLoading}

@@ -35,6 +35,10 @@ const createDocumentBlob = (content: DocumentContentType, type: string): Blob | 
   if (typeof content === 'string' && content.startsWith('data:')) {
     try {
       const base64Content = content.split(',')[1];
+      if (!base64Content) {
+        console.error("Contenu base64 invalide (pas de virgule pour séparer en-tête/contenu)");
+        return null;
+      }
       const binaryString = window.atob(base64Content);
       const bytes = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
@@ -78,6 +82,14 @@ export const downloadDocument = async (
   fileType: string
 ): Promise<DocumentOperationResult<void>> => {
   try {
+    // Vérifier que le contenu existe
+    if (!content) {
+      return {
+        success: false,
+        error: "Le document n'a pas de contenu à télécharger"
+      };
+    }
+
     const blob = createDocumentBlob(content, fileType);
     if (!blob) {
       return {
@@ -114,25 +126,35 @@ export const downloadDocument = async (
 export const exportAllDocuments = async (documents: AdministrativeDocument[]): Promise<DocumentOperationResult<void>> => {
   try {
     // Vérifier s'il y a des documents à exporter
-    if (documents.length === 0) {
+    if (!documents || documents.length === 0) {
       return {
         success: false,
         error: "Aucun document à exporter"
       };
     }
     
-    // Pour l'instant, on télécharge simplement le premier document (preuve de concept)
-    // Dans une implémentation réelle, cela créerait un fichier zip avec tous les documents
-    const doc = documents[0];
-    
-    if (!doc.content) {
+    // Vérifier si au moins un document a du contenu
+    const documentsWithContent = documents.filter(doc => doc.content || doc.file_path);
+    if (documentsWithContent.length === 0) {
       return {
         success: false,
-        error: "Le premier document n'a pas de contenu"
+        error: "Aucun document n'a de contenu à exporter"
       };
     }
     
-    return await downloadDocument(doc.content, doc.name, doc.type);
+    // Pour l'instant, on télécharge simplement le premier document avec contenu (preuve de concept)
+    // Dans une implémentation réelle, cela créerait un fichier zip avec tous les documents
+    const docToDownload = documentsWithContent[0];
+    
+    if (!docToDownload.content && !docToDownload.file_path) {
+      return {
+        success: false,
+        error: "Le document n'a pas de contenu"
+      };
+    }
+    
+    const content = docToDownload.content || docToDownload.file_path;
+    return await downloadDocument(content, docToDownload.name, docToDownload.type);
     
   } catch (error) {
     console.error("Erreur lors de l'exportation de tous les documents:", error);
@@ -146,6 +168,13 @@ export const exportAllDocuments = async (documents: AdministrativeDocument[]): P
 // Obtenir le contenu d'un document par ID (simuler un appel API)
 export const getDocumentContent = async (documentId: string): Promise<DocumentOperationResult<AdministrativeDocument>> => {
   try {
+    if (!documentId) {
+      return {
+        success: false,
+        error: "Identifiant de document manquant"
+      };
+    }
+    
     // Ceci serait généralement un appel API pour obtenir le contenu du document
     // Pour l'instant, on renvoie simplement du contenu factice
     return {
@@ -172,6 +201,13 @@ export const getDocumentContent = async (documentId: string): Promise<DocumentOp
 // Créer une URL de prévisualisation du document
 export const createDocumentPreviewUrl = (content: DocumentContentType, type: string): DocumentOperationResult<string> => {
   try {
+    if (!content) {
+      return {
+        success: false,
+        error: "Pas de contenu à prévisualiser"
+      };
+    }
+    
     if (typeof content === 'string' && content.startsWith('data:')) {
       // C'est déjà une URL de données
       return {
@@ -214,8 +250,31 @@ export const validateDocumentContent = (content: DocumentContentType, type: stri
     if (typeof content === 'string' && content.startsWith('data:')) {
       // Vérifier si le contenu base64 est valide
       try {
-        const base64Content = content.split(',')[1];
-        window.atob(base64Content);
+        const splitContent = content.split(',');
+        if (splitContent.length < 2) {
+          return {
+            success: false,
+            error: "Format de données base64 invalide"
+          };
+        }
+        
+        const base64Content = splitContent[1];
+        if (!base64Content || base64Content.trim().length === 0) {
+          return {
+            success: false,
+            error: "Le contenu base64 est vide"
+          };
+        }
+        
+        try {
+          window.atob(base64Content);
+        } catch (e) {
+          return {
+            success: false,
+            error: "Le contenu base64 est corrompu ou mal formaté"
+          };
+        }
+        
         return { success: true, data: true };
       } catch (e) {
         return {
@@ -225,7 +284,23 @@ export const validateDocumentContent = (content: DocumentContentType, type: stri
       }
     }
     
-    // Pour ArrayBuffer et autres types de contenu
+    // Pour ArrayBuffer, vérifier qu'il n'est pas vide
+    if (content instanceof ArrayBuffer && content.byteLength === 0) {
+      return {
+        success: false,
+        error: "Le contenu du document est vide (ArrayBuffer de taille zéro)"
+      };
+    }
+    
+    // Pour les chaînes de caractères simples, vérifier qu'elles ne sont pas vides
+    if (typeof content === 'string' && content.trim().length === 0) {
+      return {
+        success: false,
+        error: "Le contenu du document est une chaîne vide"
+      };
+    }
+    
+    // Pour tous les autres types de contenu, considérer comme valide
     return { success: true, data: true };
   } catch (error) {
     console.error("Erreur lors de la validation du contenu du document:", error);

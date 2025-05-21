@@ -10,6 +10,8 @@ import TemplateFileItem from "./TemplateFileItem";
 import { useDocumentTemplateUpload } from "@/hooks/useDocumentTemplateUpload";
 import { supabase } from "@/integrations/supabase/client";
 import { UploadedFile } from "@/types/documents";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 // Clé de référence pour les modèles de documents (maintenu pour compatibilité)
 export const DOCUMENT_TEMPLATES_KEY = 'document_templates';
@@ -23,7 +25,9 @@ const DocumentTemplateUpload = () => {
     confirmDeleteFile,
     handleDeleteFile,
     cancelDelete,
-    saveAllTemplates
+    saveAllTemplates,
+    error,
+    hasValidFiles
   } = useDocumentTemplateUpload();
   
   // Vérifier l'état d'authentification pour le débogage
@@ -51,6 +55,13 @@ const DocumentTemplateUpload = () => {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col gap-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
           <TemplateUploadArea 
             uploading={uploading} 
             onChange={handleFileUpload} 
@@ -92,13 +103,11 @@ const DocumentTemplateUpload = () => {
         <CardFooter>
           <div className="w-full flex justify-between items-center">
             <p className="text-sm text-gray-500">
-              {uploadedFiles.length} modèle(s) téléversé(s)
+              {uploadedFiles.length} modèle(s) téléversé(s), {uploadedFiles.filter(f => f.status === 'complete').length} prêt(s) à l'enregistrement
             </p>
             <Button 
-              onClick={() => {
-                console.log("Tentative de sauvegarde des modèles:", uploadedFiles);
-                saveAllTemplates(uploadedFiles as UploadedFile[]);
-              }}
+              onClick={saveAllTemplates}
+              disabled={uploadedFiles.length === 0 || !hasValidFiles()}
             >
               Enregistrer dans la bibliothèque
             </Button>

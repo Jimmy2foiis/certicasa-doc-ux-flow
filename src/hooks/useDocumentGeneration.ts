@@ -13,6 +13,7 @@ interface UseDocumentGenerationProps {
     handleGenerate: (templateId: string, clientId?: string, mappings?: TemplateTag[]) => Promise<void>;
     handleDownload: () => Promise<void>;
     error: string | null;
+    canDownload: boolean;
   };
 }
 
@@ -24,6 +25,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
   const [generated, setGenerated] = useState(false);
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [canDownload, setCanDownload] = useState(false);
 
   // Fonction pour vérifier si le mapping est complet
   const validateMappings = (mappings?: TemplateTag[]): boolean => {
@@ -81,8 +83,14 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
   const handleGenerate = async (templateId: string, clientId?: string, mappings?: TemplateTag[]) => {
     setError(null);
     setGenerating(true);
+    setCanDownload(false);
 
     try {
+      // Validation du template ID
+      if (!templateId) {
+        throw new Error("Aucun modèle sélectionné. Veuillez sélectionner un modèle avant de générer un document.");
+      }
+
       // Vérifier que le mapping est complet si fourni
       if (mappings && mappings.length > 0 && !validateMappings(mappings)) {
         throw new Error("Le mapping des variables n'est pas complet. Veuillez mapper toutes les variables avant de générer le document.");
@@ -202,6 +210,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
 
       console.log("Document généré avec succès:", data[0]);
       setDocumentId(data[0].id);
+      setCanDownload(true);
       
       // Simuler un délai pour l'expérience utilisateur
       setTimeout(() => {
@@ -222,6 +231,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       console.error("Erreur lors de la génération:", err);
       setGenerating(false);
       setError(err instanceof Error ? err.message : String(err));
+      setCanDownload(false);
       
       toast({
         title: "Erreur",
@@ -292,6 +302,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
     documentId,
     handleGenerate,
     handleDownload,
-    error
+    error,
+    canDownload
   };
 };

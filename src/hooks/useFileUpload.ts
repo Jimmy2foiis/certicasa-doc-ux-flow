@@ -59,14 +59,29 @@ export const useFileUpload = () => {
           // Extraire le texte et les variables du fichier
           const extractionResult = await DocumentExtractionService.extractTextAndVariables(file);
           
+          // Vérifier si l'extraction a produit du texte
+          if (!extractionResult.text || extractionResult.text.trim().length === 0) {
+            throw new Error("Le fichier semble être vide ou ne contient pas de texte extractible.");
+          }
+          
           // Lire le fichier en tant que data URL
           const contentPromise = new Promise<string>((resolve, reject) => {
-            reader.onload = () => resolve(reader.result as string);
-            reader.onerror = reject;
+            reader.onload = () => {
+              if (!reader.result) {
+                reject(new Error("Échec de lecture du fichier"));
+                return;
+              }
+              resolve(reader.result as string);
+            };
+            reader.onerror = () => reject(new Error("Erreur lors de la lecture du fichier"));
             reader.readAsDataURL(file);
           });
           
           const content = await contentPromise;
+          
+          if (!content) {
+            throw new Error("Impossible d'obtenir le contenu du fichier");
+          }
           
           // Mettre à jour le fichier avec le contenu et les variables extraites
           setUploadedFiles(prevFiles => 
@@ -152,6 +167,16 @@ export const useFileUpload = () => {
   const resetUploadedFiles = () => {
     setUploadedFiles([]);
   };
+  
+  // Fonction pour vérifier si les fichiers sont valides pour la génération
+  const hasValidFiles = () => {
+    return uploadedFiles.some(file => 
+      file.status === 'complete' && 
+      file.content && 
+      file.extractedText && 
+      file.extractedText.trim().length > 0
+    );
+  };
 
   return {
     uploadedFiles,
@@ -161,6 +186,7 @@ export const useFileUpload = () => {
     confirmDeleteFile,
     handleDeleteFile,
     cancelDelete,
-    resetUploadedFiles
+    resetUploadedFiles,
+    hasValidFiles
   };
 };

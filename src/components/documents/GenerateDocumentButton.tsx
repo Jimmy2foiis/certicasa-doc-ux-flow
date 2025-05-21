@@ -8,7 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { FileText, FileUp } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { FileText, FileUp, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { useDocumentGeneration } from "@/hooks/useDocumentGeneration";
 import DocumentActions from "./DocumentActions";
@@ -38,7 +39,9 @@ const GenerateDocumentButton = ({
     generating,
     generated,
     handleGenerate,
-    handleDownload
+    handleDownload,
+    error,
+    canDownload
   } = useDocumentGeneration(onDocumentGenerated, clientName);
 
   return (
@@ -64,11 +67,24 @@ const GenerateDocumentButton = ({
             </DialogDescription>
           </DialogHeader>
 
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Erreur</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
           {generated ? (
             <>
               <GenerationSuccess />
               <DialogFooter className="flex-col sm:flex-row gap-2">
-                <DocumentActions onDownload={handleDownload} />
+                <DocumentActions 
+                  onDownload={handleDownload} 
+                  documentId={templateId}
+                  clientId={clientId}
+                  canDownload={canDownload}
+                />
               </DialogFooter>
             </>
           ) : (
@@ -123,7 +139,7 @@ const GenerateDocumentButton = ({
                   Annuler
                 </Button>
                 <Button 
-                  onClick={() => handleGenerate(templateId || 'default-template')}
+                  onClick={() => handleGenerate(templateId || '')}
                   disabled={generating || !templateId}
                 >
                   Générer

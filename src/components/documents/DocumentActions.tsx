@@ -1,9 +1,10 @@
 
-import { Download, Mail, Save, Eye } from "lucide-react";
+import { Download, Mail, Save, Eye, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface DocumentActionsProps {
   onDownload: () => void;
@@ -11,6 +12,7 @@ interface DocumentActionsProps {
   documentId?: string;
   clientId?: string;
   showViewButton?: boolean;
+  canDownload?: boolean;
 }
 
 const DocumentActions = ({ 
@@ -18,20 +20,25 @@ const DocumentActions = ({
   onView, 
   documentId, 
   clientId, 
-  showViewButton = false 
+  showViewButton = false,
+  canDownload = false
 }: DocumentActionsProps) => {
   const [isEmailSending, setIsEmailSending] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Fonction pour envoyer un document par email
   const handleSendEmail = async () => {
-    if (!documentId || !clientId) {
-      toast({
-        title: "Erreur",
-        description: "Impossible d'envoyer ce document par email. Informations manquantes.",
-        variant: "destructive",
-      });
+    setError(null);
+    
+    if (!documentId) {
+      setError("Aucun document à envoyer. Veuillez d'abord générer un document.");
+      return;
+    }
+    
+    if (!clientId) {
+      setError("Aucun client associé à ce document. Impossible d'envoyer par email.");
       return;
     }
 
@@ -44,19 +51,27 @@ const DocumentActions = ({
         .eq('id', clientId)
         .single();
       
-      if (clientError || !clientData.email) {
-        throw new Error("Impossible de récupérer l'email du client");
+      if (clientError || !clientData) {
+        throw new Error("Impossible de récupérer les informations du client");
+      }
+      
+      if (!clientData.email) {
+        throw new Error("Ce client n'a pas d'adresse email enregistrée");
       }
 
       // Récupérer les informations du document
       const { data: docData, error: docError } = await supabase
         .from('documents')
-        .select('name, file_path')
+        .select('name, file_path, content')
         .eq('id', documentId)
         .single();
       
-      if (docError) {
+      if (docError || !docData) {
         throw new Error("Impossible de récupérer les informations du document");
+      }
+      
+      if (!docData.content && !docData.file_path) {
+        throw new Error("Le document n'a pas de contenu valide à envoyer");
       }
 
       // Simuler l'envoi d'email (dans une application réelle, utilisez une Edge Function)
@@ -78,6 +93,8 @@ const DocumentActions = ({
       });
     } catch (error) {
       console.error("Erreur lors de l'envoi de l'email:", error);
+      setError(error instanceof Error ? error.message : "Erreur lors de l'envoi de l'email");
+      
       toast({
         title: "Erreur",
         description: "Impossible d'envoyer l'email. Veuillez réessayer.",
@@ -90,17 +107,35 @@ const DocumentActions = ({
 
   // Fonction pour enregistrer le document dans le dossier du client
   const handleSaveToFolder = async () => {
-    if (!documentId || !clientId) {
-      toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer ce document. Informations manquantes.",
-        variant: "destructive",
-      });
+    setError(null);
+    
+    if (!documentId) {
+      setError("Aucun document à enregistrer. Veuillez d'abord générer un document.");
+      return;
+    }
+    
+    if (!clientId) {
+      setError("Aucun client associé à ce document. Impossible d'enregistrer dans un dossier client.");
       return;
     }
 
     setIsSaving(true);
     try {
+      // Vérifier que le document existe et a du contenu
+      const { data: docData, error: docError } = await supabase
+        .from('documents')
+        .select('content, file_path')
+        .eq('id', documentId)
+        .single();
+      
+      if (docError || !docData) {
+        throw new Error("Impossible de récupérer le document");
+      }
+      
+      if (!docData.content && !docData.file_path) {
+        throw new Error("Le document n'a pas de contenu valide à enregistrer");
+      }
+      
       // Mettre à jour le document pour indiquer qu'il est enregistré dans le dossier
       const { error } = await supabase
         .from('documents')
@@ -119,6 +154,8 @@ const DocumentActions = ({
       });
     } catch (error) {
       console.error("Erreur lors de l'enregistrement:", error);
+      setError(error instanceof Error ? error.message : "Erreur lors de l'enregistrement du document");
+      
       toast({
         title: "Erreur",
         description: "Impossible d'enregistrer le document. Veuillez réessayer.",
@@ -131,34 +168,54 @@ const DocumentActions = ({
 
   return (
     <>
-      {showViewButton && (
-        <Button variant="outline" className="flex-1 sm:flex-none" onClick={onView}>
-          <Eye className="mr-2 h-4 w-4" />
-          Voir
-        </Button>
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
-      <Button variant="outline" className="flex-1 sm:flex-none" onClick={onDownload}>
-        <Download className="mr-2 h-4 w-4" />
-        Télécharger
-      </Button>
-      <Button 
-        variant="outline" 
-        className="flex-1 sm:flex-none" 
-        onClick={handleSendEmail}
-        disabled={isEmailSending}
-      >
-        <Mail className="mr-2 h-4 w-4" />
-        {isEmailSending ? "Envoi..." : "Envoyer par email"}
-      </Button>
-      <Button 
-        variant="outline" 
-        className="flex-1 sm:flex-none"
-        onClick={handleSaveToFolder}
-        disabled={isSaving}
-      >
-        <Save className="mr-2 h-4 w-4" />
-        {isSaving ? "Enregistrement..." : "Enregistrer dans le dossier"}
-      </Button>
+      
+      <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
+        {showViewButton && (
+          <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={onView}>
+            <Eye className="mr-2 h-4 w-4" />
+            Voir
+          </Button>
+        )}
+        
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex-1 sm:flex-none" 
+          onClick={onDownload}
+          disabled={!canDownload}
+        >
+          <Download className="mr-2 h-4 w-4" />
+          Télécharger
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex-1 sm:flex-none" 
+          onClick={handleSendEmail}
+          disabled={isEmailSending || !canDownload}
+        >
+          <Mail className="mr-2 h-4 w-4" />
+          {isEmailSending ? "Envoi..." : "Envoyer par email"}
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="flex-1 sm:flex-none"
+          onClick={handleSaveToFolder}
+          disabled={isSaving || !canDownload}
+        >
+          <Save className="mr-2 h-4 w-4" />
+          {isSaving ? "Enregistrement..." : "Enregistrer"}
+        </Button>
+      </div>
     </>
   );
 };

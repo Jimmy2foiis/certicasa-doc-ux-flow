@@ -29,6 +29,10 @@ export const PDFViewer = ({ fileUrl, fileName }: PDFViewerProps) => {
         
         // Si c'est une URL de données (base64), on considère qu'elle est valide
         if (fileUrl.startsWith('data:')) {
+          // Vérifier si c'est une URL de données PDF valide
+          if (!fileUrl.startsWith('data:application/pdf') && !fileUrl.includes('pdf')) {
+            throw new Error("Le format du fichier ne semble pas être un PDF valide");
+          }
           setLoading(false);
           return;
         }
