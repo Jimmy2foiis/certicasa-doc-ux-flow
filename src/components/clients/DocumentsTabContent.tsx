@@ -5,7 +5,7 @@ import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, FileUp, FileDown, RefreshCcw, FileText } from "lucide-react";
+import { Search, FileUp, FileDown, RefreshCcw, FileText, Eye } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentStatusBadge } from "@/components/documents/DocumentStatusBadge";
 import DocumentActionButtons from "@/components/documents/DocumentActionButtons";
@@ -85,7 +85,13 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
           // Trouver le document à prévisualiser
           const docToPreview = filteredDocuments.find(doc => doc.id === documentId);
           if (docToPreview) {
-            setPreviewDocument(docToPreview);
+            // Convert to AdministrativeDocument type with required properties
+            setPreviewDocument({
+              ...docToPreview,
+              description: (docToPreview as any).description || "",
+              order: (docToPreview as any).order || 0,
+              status: docToPreview.status as DocumentStatus
+            });
             setIsPreviewOpen(true);
           } else {
             toast({
@@ -365,3 +371,4 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
     </Card>
   );
 };
+
