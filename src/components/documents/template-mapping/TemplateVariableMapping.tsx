@@ -18,7 +18,7 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
   const [error, setError] = useState<string | null>(null);
   const [newTag, setNewTag] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("client");
-  const [templateValidationState, setTemplateValidationState] = useState<'valid' | 'empty' | 'invalid' | 'no-tags' | 'unknown'>('unknown');
+  const [templateValidationState, setTemplateValidationState] = useState<'empty' | 'invalid' | 'no-tags' | 'unknown'>('unknown');
   const { toast } = useToast();
   
   // Load existing mapping if available
@@ -48,12 +48,13 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
           toast({
             title: "Aucune variable trouvée",
             description: "Le modèle ne contient pas de variables à associer (format {{variable}}).",
-            variant: "warning",
+            variant: "default", // Modifié de "warning" à "default"
           });
           return;
         }
         
-        setTemplateValidationState('valid');
+        // Changement du 'valid' à 'unknown' puisque 'valid' n'est pas une option dans le type
+        setTemplateValidationState('unknown');
         
         // Try to get existing mapping from Supabase
         const mappings = await loadTemplateMapping(template.id, availableVariables);
@@ -154,7 +155,7 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
     }
   };
   
-  if (!template?.id || !template?.content || templateValidationState !== 'valid') {
+  if (!template?.id || !template?.content || templateValidationState !== 'unknown') {
     return <NotFoundTemplate reason={templateValidationState} />;
   }
   
