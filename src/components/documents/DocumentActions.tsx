@@ -36,6 +36,51 @@ const DocumentActions = ({
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
+  // Fonction pour valider si un document a du contenu exploitable
+  const validateDocumentContent = async (docId: string): Promise<{valid: boolean; message?: string}> => {
+    try {
+      // Récupérer le document depuis Supabase
+      const { data: document, error: documentError } = await supabase
+        .from('documents')
+        .select('content, type')
+        .eq('id', docId)
+        .single();
+      
+      if (documentError || !document) {
+        return { 
+          valid: false, 
+          message: "Document introuvable ou inaccessible" 
+        };
+      }
+      
+      if (!document.content || document.content.trim() === '') {
+        return { 
+          valid: false, 
+          message: "Le document n'a pas de contenu exploitable" 
+        };
+      }
+      
+      // Validation spécifique au type
+      if (document.type === 'pdf') {
+        if (!document.content.startsWith('data:application/pdf') && 
+            !document.content.startsWith('blob:')) {
+          return { 
+            valid: false, 
+            message: "Le contenu du PDF est invalide ou corrompu" 
+          };
+        }
+      }
+      
+      return { valid: true };
+    } catch (error) {
+      console.error("Erreur de validation du document:", error);
+      return { 
+        valid: false, 
+        message: error instanceof Error ? error.message : "Erreur de validation du document" 
+      };
+    }
+  };
+
   // Fonction pour gérer le téléchargement du document
   const handleDownload = async () => {
     if (!canDownload) {
@@ -45,6 +90,19 @@ const DocumentActions = ({
         variant: "destructive",
       });
       return;
+    }
+
+    if (documentId) {
+      // Valider le contenu avant le téléchargement
+      const validation = await validateDocumentContent(documentId);
+      if (!validation.valid) {
+        toast({
+          title: "Erreur",
+          description: validation.message || "Contenu du document invalide",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     if (onDownload) {
@@ -79,21 +137,12 @@ const DocumentActions = ({
         throw new Error("Adresse email invalide");
       }
 
-      // Vérifier d'abord si le document a un contenu valide
-      const { data: document, error: documentError } = await supabase
-        .from('documents')
-        .select('content, type')
-        .eq('id', documentId)
-        .single();
-      
-      if (documentError || !document) {
-        throw new Error("Document introuvable ou inaccessible");
+      // Valider le contenu avant l'envoi
+      const validation = await validateDocumentContent(documentId);
+      if (!validation.valid) {
+        throw new Error(validation.message || "Contenu du document invalide");
       }
       
-      if (!document.content || document.content.trim() === '') {
-        throw new Error("Le document n'a pas de contenu à envoyer");
-      }
-
       setSendingEmail(true);
       
       // Récupérer l'email du client si aucun email n'est spécifié
@@ -157,26 +206,12 @@ const DocumentActions = ({
         return;
       }
 
-      // Vérifier que le document existe et a un contenu valide
-      const { data: document, error: documentError } = await supabase
-        .from('documents')
-        .select('name, type, content')
-        .eq('id', documentId)
-        .single();
-      
-      if (documentError || !document) {
+      // Valider le contenu avant l'enregistrement
+      const validation = await validateDocumentContent(documentId);
+      if (!validation.valid) {
         toast({
           title: "Erreur",
-          description: "Document introuvable ou inaccessible",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (!document.content || document.content.trim() === '') {
-        toast({
-          title: "Erreur",
-          description: "Le document n'a pas de contenu à enregistrer",
+          description: validation.message || "Contenu du document invalide",
           variant: "destructive",
         });
         return;

@@ -1,4 +1,5 @@
-import { useToast } from "@/components/ui/use-toast";
+
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { DocumentTemplate, UploadedFile } from "@/types/documents";
 import { useCallback } from "react";
@@ -9,13 +10,19 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
   // Convertir les fichiers téléversés en modèles de documents et les enregistrer dans Supabase
   const saveAllTemplates = useCallback(async (uploadedFiles: UploadedFile[]) => {
     try {
-      // Filtrer les fichiers complètement téléversés
-      const filesToSave = uploadedFiles.filter(file => file.status === 'complete');
+      // Filtrer les fichiers complètement téléversés avec du contenu valide
+      const filesToSave = uploadedFiles.filter(file => 
+        file.status === 'complete' && 
+        file.content && 
+        file.extractedText && 
+        file.extractedText.trim().length > 0
+      );
       
       if (filesToSave.length === 0) {
         toast({
           title: "Avertissement",
-          description: "Aucun fichier valide à enregistrer.",
+          description: "Aucun fichier valide à enregistrer. Les fichiers doivent contenir du texte extractible.",
+          variant: "default",
         });
         return;
       }
@@ -26,12 +33,13 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
       // Préparer les données pour Supabase
       const now = new Date().toISOString();
       
-      // Convert file content to string if it's ArrayBuffer
+      // Préparer les données avec le contenu binaire pour l'affichage et le texte extrait pour le mapping
       const templates = filesToSave.map(file => ({
         name: file.name.replace(/\.[^/.]+$/, ""), // Enlever l'extension
         type: file.name.split('.').pop() || "unknown",
-        content: typeof file.content === 'string' ? file.content : 
-                file.content ? JSON.stringify(file.content) : null,
+        content: file.content, // Contenu binaire pour l'affichage/téléchargement
+        extracted_text: file.extractedText, // Texte extrait pour le mapping
+        variables: JSON.stringify(file.variables || []), // Variables détectées
         last_modified: now,
         date_uploaded: now,
         user_id: user?.id || null // Ajouter l'ID utilisateur si disponible
@@ -96,6 +104,8 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
         dateUploaded: new Date(item.date_uploaded).toLocaleDateString(),
         lastModified: new Date(item.last_modified).toLocaleDateString(),
         content: item.content,
+        extractedText: item.extracted_text || '',
+        variables: item.variables ? JSON.parse(item.variables) : [],
         userId: item.user_id
       }));
     } catch (error) {

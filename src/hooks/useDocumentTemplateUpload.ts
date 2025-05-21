@@ -66,11 +66,14 @@ export const useDocumentTemplateUpload = () => {
       );
       
       if (filesWithoutText.length > 0) {
-        setError(`Le texte n'a pas pu être extrait de ${filesWithoutText.length} fichier(s). Vérifiez le format et le contenu.`);
-        const shouldContinue = window.confirm("Certains fichiers n'ont pas de texte extrait. Voulez-vous quand même continuer ?");
-        if (!shouldContinue) {
-          return;
-        }
+        const fileNames = filesWithoutText.map(f => f.name).join(', ');
+        setError(`Impossible d'extraire du texte de: ${fileNames}. Ces modèles ne pourront pas être utilisés pour le mapping de variables.`);
+        toast({
+          title: "Erreur",
+          description: "Certains fichiers ne contiennent pas de texte extractible",
+          variant: "destructive",
+        });
+        return;
       }
       
       // Enregistrer les modèles

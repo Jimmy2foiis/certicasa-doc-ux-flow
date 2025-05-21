@@ -1,6 +1,11 @@
 
 import mammoth from 'mammoth';
+import * as pdfjs from 'pdfjs-dist';
 import { TextExtractionResult, VariableExtractionConfig, defaultVariablePatterns } from '@/types/documents';
+
+// Initialiser pdfjs avec le worker
+const pdfjsWorkerSrc = new URL('pdfjs-dist/build/pdf.worker.min.js', import.meta.url).toString();
+pdfjs.GlobalWorkerOptions.workerSrc = pdfjsWorkerSrc;
 
 /**
  * Service d'extraction de texte et de variables depuis différents formats de document
@@ -12,7 +17,7 @@ export class DocumentExtractionService {
   static async extractTextAndVariables(file: File, customPatterns?: VariableExtractionConfig[]): Promise<TextExtractionResult> {
     try {
       // Vérifier le type de fichier
-      if (file.type === 'application/pdf') {
+      if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
         return this.extractFromPDF(file, customPatterns);
       } else if (
         file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
@@ -23,7 +28,7 @@ export class DocumentExtractionService {
         return {
           text: '',
           variables: [],
-          error: `Format de fichier non pris en charge: ${file.type}`
+          error: `Format de fichier non pris en charge: ${file.type || file.name.split('.').pop()}`
         };
       }
     } catch (error) {
@@ -41,14 +46,39 @@ export class DocumentExtractionService {
    */
   private static async extractFromPDF(file: File, customPatterns?: VariableExtractionConfig[]): Promise<TextExtractionResult> {
     try {
-      // Pour l'instant, nous ne pouvons pas extraire directement le texte d'un PDF
-      // Nous renvoyons un message indiquant que l'extraction est limitée
-      const text = "Extraction limitée pour les PDF. Les variables ne peuvent pas être automatiquement détectées.";
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
+      
+      let fullText = '';
+      
+      // Extraire le texte de chaque page
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .filter(item => 'str' in item)
+          .map(item => 'str' in item ? item.str : '')
+          .join(' ');
+          
+        fullText += pageText + '\n';
+      }
+      
+      // Si le texte extrait est vide ou trop court, c'est probablement un PDF scanné ou une image
+      if (!fullText || fullText.trim().length < 10) {
+        return {
+          text: '',
+          variables: [],
+          error: "Ce PDF ne contient pas de texte extractible. Il pourrait s'agir d'un document scanné ou d'une image."
+        };
+      }
+      
+      // Extraire les variables du texte
+      const variables = this.extractVariables(fullText, customPatterns);
       
       return {
-        text,
-        variables: [],
-        error: "Extraction de texte limitée pour les PDF"
+        text: fullText,
+        variables,
+        error: variables.length === 0 ? "Aucune variable n'a été détectée dans ce document." : undefined
       };
     } catch (error) {
       console.error('Erreur lors de l\'extraction du texte PDF:', error);
@@ -72,13 +102,22 @@ export class DocumentExtractionService {
       const result = await mammoth.extractRawText({ arrayBuffer });
       const text = result.value;
       
+      // Vérifier si le texte extrait est valide
+      if (!text || text.trim().length < 10) {
+        return {
+          text: '',
+          variables: [],
+          error: "Le document DOCX ne contient pas de texte extractible ou est vide."
+        };
+      }
+      
       // Extraire les variables du texte
       const variables = this.extractVariables(text, customPatterns);
       
       return {
         text,
         variables,
-        error: result.messages.length > 0 ? result.messages[0].message : undefined
+        error: variables.length === 0 ? "Aucune variable n'a été détectée dans ce document." : undefined
       };
     } catch (error) {
       console.error('Erreur lors de l\'extraction du texte DOCX:', error);
@@ -94,11 +133,18 @@ export class DocumentExtractionService {
    * Extrait les variables d'un texte selon des patterns définis
    */
   static extractVariables(text: string, customPatterns?: VariableExtractionConfig[]): string[] {
+    if (!text || text.trim().length === 0) {
+      return [];
+    }
+    
     const patterns = customPatterns || defaultVariablePatterns;
     const variables = new Set<string>();
     
     patterns.forEach(config => {
       let match;
+      // Réinitialiser lastIndex pour éviter les boucles infinies
+      config.pattern.lastIndex = 0;
+      
       while ((match = config.pattern.exec(text)) !== null) {
         if (match[1]) {
           variables.add(match[1].trim());

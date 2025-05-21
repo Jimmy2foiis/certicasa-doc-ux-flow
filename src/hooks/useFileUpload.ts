@@ -41,31 +41,30 @@ export const useFileUpload = () => {
         setUploadedFiles(prev => [...prev, uploadedFile]);
         
         try {
-          // Lire le contenu du fichier
-          const reader = new FileReader();
-          
           // Mettre à jour la progression
-          reader.onprogress = (event) => {
-            if (event.lengthComputable) {
-              const progress = (event.loaded / event.total) * 100;
-              setUploadedFiles(prevFiles => 
-                prevFiles.map(f => 
-                  f.id === fileId ? { ...f, progress } : f
-                )
-              );
-            }
+          const updateProgress = (progress: number) => {
+            setUploadedFiles(prevFiles => 
+              prevFiles.map(f => 
+                f.id === fileId ? { ...f, progress } : f
+              )
+            );
           };
+          
+          updateProgress(20); // Démarrage de l'extraction
           
           // Extraire le texte et les variables du fichier
           const extractionResult = await DocumentExtractionService.extractTextAndVariables(file);
           
+          updateProgress(60); // Extraction terminée
+          
           // Vérifier si l'extraction a produit du texte
           if (!extractionResult.text || extractionResult.text.trim().length === 0) {
-            throw new Error("Le fichier semble être vide ou ne contient pas de texte extractible.");
+            throw new Error(extractionResult.error || "Le fichier semble être vide ou ne contient pas de texte extractible.");
           }
-          
-          // Lire le fichier en tant que data URL
-          const contentPromise = new Promise<string>((resolve, reject) => {
+
+          // Lire le fichier en tant que data URL pour le stockage
+          const content = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
             reader.onload = () => {
               if (!reader.result) {
                 reject(new Error("Échec de lecture du fichier"));
@@ -77,11 +76,7 @@ export const useFileUpload = () => {
             reader.readAsDataURL(file);
           });
           
-          const content = await contentPromise;
-          
-          if (!content) {
-            throw new Error("Impossible d'obtenir le contenu du fichier");
-          }
+          updateProgress(100); // Lecture terminée
           
           // Mettre à jour le fichier avec le contenu et les variables extraites
           setUploadedFiles(prevFiles => 
@@ -89,7 +84,7 @@ export const useFileUpload = () => {
               f.id === fileId 
                 ? { 
                     ...f, 
-                    status: extractionResult.error ? 'error' : 'complete',
+                    status: 'complete',
                     progress: 100,
                     content,
                     extractedText: extractionResult.text,
@@ -99,11 +94,17 @@ export const useFileUpload = () => {
             )
           );
           
-          // Si une erreur d'extraction est survenue, afficher un toast d'avertissement
-          if (extractionResult.error) {
+          // Notifier si aucune variable n'est détectée
+          if (extractionResult.variables.length === 0) {
             toast({
-              title: "Avertissement",
-              description: extractionResult.error,
+              title: "Information",
+              description: `Aucune variable n'a été détectée dans ${file.name}. Ce document ne pourra pas être utilisé pour un mapping.`,
+              variant: "default",
+            });
+          } else {
+            toast({
+              title: "Extraction réussie",
+              description: `${extractionResult.variables.length} variables détectées dans ${file.name}.`,
               variant: "default",
             });
           }
@@ -119,7 +120,7 @@ export const useFileUpload = () => {
           );
           
           toast({
-            title: "Erreur de téléchargement",
+            title: "Erreur de traitement",
             description: `Impossible de traiter ${file.name}: ${error instanceof Error ? error.message : String(error)}`,
             variant: "destructive",
           });
