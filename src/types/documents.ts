@@ -1,4 +1,3 @@
-
 // Définitions de types centralisées pour les documents
 
 // Type pour status de document (enum string)
@@ -32,6 +31,8 @@ export interface DocumentTemplate {
   variables?: string[];
   tags?: string[];
   extractedText?: string;
+  // Ajout des propriétés manquantes pour compatibilité avec Supabase
+  extracted_text?: string | null;
 }
 
 // Type pour les balises de modèle

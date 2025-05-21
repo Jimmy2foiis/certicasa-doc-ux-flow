@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { DocumentTemplate, UploadedFile } from "@/types/documents";
@@ -105,6 +104,8 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
         lastModified: new Date(item.last_modified).toLocaleDateString(),
         content: item.content,
         extractedText: item.extracted_text || '',
+        // Utiliser extracted_text pour la compatibilité
+        extracted_text: item.extracted_text || null,
         variables: item.variables ? JSON.parse(item.variables) : [],
         userId: item.user_id
       }));
