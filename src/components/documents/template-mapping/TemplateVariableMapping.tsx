@@ -4,7 +4,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { useToast } from "@/components/ui/use-toast";
 import { FileText } from "lucide-react";
 import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
-import { TemplateTag, TemplateVariableMappingProps } from "./types";
+import { TemplateTag, TemplateVariableMappingProps, availableVariables } from "./types";
 import { createInitialMapping, loadTemplateMapping, saveTemplateMapping } from "./utils";
 import { NotFoundTemplate } from "./NotFoundTemplate";
 import { MappingContent } from "./MappingContent";
