@@ -2,10 +2,10 @@
 import { useState, useEffect } from "react";
 import { useAdministrativeDocuments } from "@/hooks/useAdministrativeDocuments";
 import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, FileUp, FileDown, RefreshCcw, FileText } from "lucide-react";
+import { Search, FileUp, FileDown, RefreshCcw, FileText, Eye, Download } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DocumentStatusBadge } from "@/components/documents/DocumentStatusBadge";
 import { DocumentActionButtons } from "@/components/documents/DocumentActionButtons";
@@ -153,19 +153,59 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3">
                   <DocumentStatusBadge status={doc.status as DocumentStatus} />
-                  <DocumentActionButtons 
-                    documentType={doc.type} 
-                    status={doc.status as DocumentStatus}
-                    onAction={(action) => handleDocumentAction(doc.id, action)}
-                  />
+                  {/* Enhanced document action buttons with text labels */}
+                  <div className="flex space-x-2">
+                    {(doc.status === "generated" || doc.status === "linked") && (
+                      <>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleDocumentAction(doc.id, "view")}
+                          className="flex items-center"
+                        >
+                          <Eye className="h-4 w-4 mr-1.5" />
+                          <span>Voir</span>
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleDocumentAction(doc.id, "download")}
+                          className="flex items-center"
+                        >
+                          <Download className="h-4 w-4 mr-1.5" />
+                          <span>Télécharger</span>
+                        </Button>
+                      </>
+                    )}
+                    <DocumentActionButtons 
+                      documentType={doc.type} 
+                      status={doc.status as DocumentStatus}
+                      onAction={(action) => handleDocumentAction(doc.id, action)}
+                    />
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
       </CardContent>
+      
+      <CardFooter className="pt-2">
+        <div className="flex justify-end w-full">
+          <Button 
+            variant="default" 
+            size="sm" 
+            onClick={() => handleExportAll()}
+            disabled={isLoading || filteredDocuments.length === 0}
+            className="flex items-center"
+          >
+            <FileDown className="h-4 w-4 mr-2" />
+            Tout télécharger
+          </Button>
+        </div>
+      </CardFooter>
     </Card>
   );
 };
