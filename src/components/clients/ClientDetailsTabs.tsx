@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientInfoTab from "./ClientInfoTab";
@@ -73,15 +74,18 @@ const ClientDetailsTabs = ({
       
       <TabsContent value="documents">
         <DocumentsTab 
-          clientId={clientId} 
-          clientName={client?.name}
+          clientId={clientId}
         />
       </TabsContent>
       
       <TabsContent value="calculations">
         <CalculationsTab 
+          clientId={clientId}
+          clientName={client?.name}
+          clientAddress={clientAddress}
           savedCalculations={savedCalculations} 
-          onShowCalculation={onShowCalculation}
+          onOpenCalculation={onShowCalculation}
+          onCreateNewCalculation={() => onShowCalculation()}
         />
       </TabsContent>
 
