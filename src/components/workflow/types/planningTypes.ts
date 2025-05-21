@@ -2,6 +2,9 @@
 // Types of intervention
 export type InterventionType = "installation" | "sav" | "measure" | "visit" | "other";
 
+// Status types for planning events
+export type PlanningStatus = "pending" | "completed" | "cancelled" | "in-progress" | "unassigned";
+
 // Type for planning events
 export interface PlanningEvent {
   id: string;
@@ -14,7 +17,7 @@ export interface PlanningEvent {
   endTime: string;
   team: string;
   teamId: string;
-  status: "pending" | "completed" | "cancelled" | "in-progress" | "unassigned";
+  status: PlanningStatus;
   notes?: string;
 }
 
