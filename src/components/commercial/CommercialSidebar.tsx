@@ -49,7 +49,7 @@ const CommercialSidebar = () => {
 
   const handleItemClick = (itemId: string) => {
     setActiveItem(itemId);
-    // Pour l'instant, restons sur la même page mais on pourrait naviguer vers d'autres routes
+    navigate(`/workflow/${itemId}`);
   };
 
   return (
