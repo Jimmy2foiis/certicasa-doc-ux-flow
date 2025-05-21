@@ -23,14 +23,14 @@ const MappingStep = ({
   const [mappings, setMappings] = useState<TemplateTag[]>(templateTags);
   const [canGenerate, setCanGenerate] = useState<boolean>(templateTags.length > 0);
 
-  // Create a mock template object with the tags
+  // Create a mock template object with the tags and required content property
   const mockTemplate: DocumentTemplate = {
     id: "template-mapping",
     name: "Template Mapping",
-    tags: templateTags.map(tag => tag.tag),
-    // Add other required fields with default values
-    file_path: "",
     type: "document",
+    content: "", // Add the required content property (empty string instead of null)
+    tags: templateTags.map(tag => tag.tag),
+    file_path: "",
     created_at: new Date().toISOString(),
     variables: templateTags.map(tag => tag.tag)
   };
