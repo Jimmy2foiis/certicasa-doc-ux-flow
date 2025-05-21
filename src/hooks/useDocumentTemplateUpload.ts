@@ -2,6 +2,7 @@
 import { useFileUpload } from "./useFileUpload";
 import { useTemplateStorage } from "./useTemplateStorage";
 import { useToast } from "@/components/ui/use-toast";
+import { UploadedFile } from "@/types/documents";
 
 export const useDocumentTemplateUpload = () => {
   const {

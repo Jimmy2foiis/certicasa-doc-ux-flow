@@ -51,7 +51,7 @@ export interface UploadedFile {
   name: string;
   size: number;
   type: string;
-  content: string | null; // Made required to match usage
+  content: string | null;
   status?: string;
   progress?: number;
   lastModified?: number;

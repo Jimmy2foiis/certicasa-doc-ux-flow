@@ -9,6 +9,7 @@ import TemplateUploadArea from "./TemplateUploadArea";
 import TemplateFileItem from "./TemplateFileItem";
 import { useDocumentTemplateUpload } from "@/hooks/useDocumentTemplateUpload";
 import { supabase } from "@/integrations/supabase/client";
+import { UploadedFile } from "@/types/documents";
 
 // Clé de référence pour les modèles de documents (maintenu pour compatibilité)
 export const DOCUMENT_TEMPLATES_KEY = 'document_templates';
@@ -62,7 +63,7 @@ const DocumentTemplateUpload = () => {
                 {uploadedFiles.map((file) => (
                   <TemplateFileItem
                     key={file.id}
-                    file={file}
+                    file={file as UploadedFile}
                     onDelete={confirmDeleteFile}
                   />
                 ))}
@@ -96,7 +97,7 @@ const DocumentTemplateUpload = () => {
             <Button 
               onClick={() => {
                 console.log("Tentative de sauvegarde des modèles:", uploadedFiles);
-                saveAllTemplates(uploadedFiles);
+                saveAllTemplates(uploadedFiles as UploadedFile[]);
               }}
             >
               Enregistrer dans la bibliothèque

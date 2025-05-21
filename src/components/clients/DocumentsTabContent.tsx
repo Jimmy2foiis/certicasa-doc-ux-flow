@@ -7,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, FileUp, FileDown, RefreshCcw, FileText } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import DocumentStatusBadge from "@/components/documents/DocumentStatusBadge";
-import DocumentActionButtons from "@/components/documents/DocumentActionButtons";
+import { DocumentStatusBadge } from "@/components/documents/DocumentStatusBadge";
+import { DocumentActionButtons } from "@/components/documents/DocumentActionButtons";
 
 interface DocumentsTabContentProps {
   clientId?: string;
@@ -154,10 +154,10 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <DocumentStatusBadge status={doc.status} />
+                  <DocumentStatusBadge status={doc.status as DocumentStatus} />
                   <DocumentActionButtons 
                     documentType={doc.type} 
-                    status={doc.status}
+                    status={doc.status as DocumentStatus}
                     onAction={(action) => handleDocumentAction(doc.id, action)}
                   />
                 </div>
@@ -169,4 +169,3 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
     </Card>
   );
 };
-

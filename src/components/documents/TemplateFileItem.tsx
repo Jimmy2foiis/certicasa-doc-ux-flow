@@ -2,21 +2,7 @@
 import { FileCheck, FileText, AlertCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-
-export interface UploadedFile {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  lastModified: number;
-  progress: number;
-  status: 'uploading' | 'complete' | 'error';
-  content?: string | null; // Added the missing content property
-  slice: Function;
-  stream?: Function;
-  text?: Function;
-  arrayBuffer?: Function;
-}
+import { UploadedFile } from "@/types/documents";
 
 interface TemplateFileItemProps {
   file: UploadedFile;
@@ -75,7 +61,7 @@ const TemplateFileItem = ({ file, onDelete }: TemplateFileItemProps) => {
         <div className="mt-2">
           <Progress value={file.progress} className="h-1" />
           <p className="text-xs text-gray-500 mt-1">
-            Téléversement en cours... {Math.round(file.progress)}%
+            Téléversement en cours... {Math.round(file.progress || 0)}%
           </p>
         </div>
       )}
