@@ -23,6 +23,7 @@ export interface MappingContentProps {
   updateMapping: (index: number, value: string) => void;
   updateCategory: (index: number, category: string) => void;
   clientData?: any;
+  handleDeleteTag?: (index: number) => void;
 }
 
 // Props for TagsList component
