@@ -1,12 +1,16 @@
 
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface CommercialSidebarProps {
-  activeSection: string;
-  setActiveSection: (section: string) => void;
+  activeSection?: string;
+  setActiveSection?: (section: string) => void;
 }
 
 const CommercialSidebar: React.FC<CommercialSidebarProps> = ({ activeSection, setActiveSection }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   const menuItems = [
     { id: "leads", label: "Leads", description: "Gestion des leads et prospects" },
     { id: "qualification", label: "Qualification", description: "Qualification des projets" },
@@ -21,6 +25,18 @@ const CommercialSidebar: React.FC<CommercialSidebarProps> = ({ activeSection, se
     { id: "aide", label: "Aide", description: "Centre d'aide et support" }
   ];
 
+  const handleMenuItemClick = (itemId: string) => {
+    if (setActiveSection) {
+      setActiveSection(itemId);
+    } else {
+      // Using react-router for navigation
+      navigate(`/workflow/${itemId}`);
+    }
+  };
+
+  // Determine active item based on current location if activeSection is not provided
+  const currentActive = activeSection || location.pathname.split('/').pop() || 'leads';
+
   return (
     <div className="w-64 bg-white border-r border-gray-200 h-screen">
       <div className="p-4 border-b border-gray-200">
@@ -31,9 +47,9 @@ const CommercialSidebar: React.FC<CommercialSidebarProps> = ({ activeSection, se
           {menuItems.map((item) => (
             <li key={item.id}>
               <button
-                onClick={() => setActiveSection(item.id)}
+                onClick={() => handleMenuItemClick(item.id)}
                 className={`w-full text-left px-4 py-2 rounded-md transition-colors ${
-                  activeSection === item.id
+                  currentActive === item.id
                     ? "bg-indigo-50 text-indigo-600"
                     : "text-gray-600 hover:bg-gray-50"
                 }`}
