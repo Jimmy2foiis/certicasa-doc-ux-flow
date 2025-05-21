@@ -9,15 +9,18 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { TimelineEventProps } from "../types";
-import { getStatusBadge, getStatusIcon, getTypeColor } from "../utils/styleUtils";
+import { getStatusBadgeProps, getStatusIconProps, getTypeColor } from "../utils/styleUtils";
 import { formatDate } from "../utils/formatUtils";
 
 const TimelineEvent: React.FC<TimelineEventProps> = ({ event }) => {
+  const { className, label } = getStatusBadgeProps(event.status);
+  const { icon: StatusIcon, className: iconClassName } = getStatusIconProps(event.status);
+  
   return (
     <div className="relative pl-10">
       {/* Point de la timeline */}
       <div className="absolute left-0 top-1.5 h-4 w-4 rounded-full bg-white border-2 border-primary flex items-center justify-center">
-        {getStatusIcon(event.status)}
+        <StatusIcon className={iconClassName} />
       </div>
       
       {/* Carte d'événement */}
@@ -32,7 +35,7 @@ const TimelineEvent: React.FC<TimelineEventProps> = ({ event }) => {
               {formatDate(event.date)} • {event.startTime} - {event.endTime}
             </div>
           </div>
-          {getStatusBadge(event.status)}
+          <span className={className}>{label}</span>
         </div>
         
         <div className="text-xs text-gray-600 mb-2">

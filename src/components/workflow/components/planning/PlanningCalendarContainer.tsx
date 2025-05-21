@@ -9,7 +9,7 @@ import { usePlanningNavigation } from "../../hooks/usePlanningNavigation";
 // Components
 import PlanningHeader from "../PlanningHeader";
 import PlanningNavigation from "../PlanningNavigation";
-import UnassignedEventsPanel from "../UnassignedEventsPanel";
+import UnassignedEventsPanel from "./UnassignedEventsPanel";
 import EventListView from "./EventListView";
 import TeamCalendarView from "./TeamCalendarView";
 import { filterEvents } from "../../utils/planningUtils";
