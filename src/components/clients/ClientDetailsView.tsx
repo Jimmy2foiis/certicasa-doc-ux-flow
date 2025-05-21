@@ -81,7 +81,12 @@ const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsV
   if (showCalculations) {
     return (
       <CalculationHandler 
-        client={{...client, climateZone}} 
+        client={{
+          ...client, 
+          climateZone,
+          // Ensure id is not undefined
+          id: client.id || clientId
+        }} 
         clientId={clientId}
         currentProjectId={currentProjectId}
         savedCalculations={savedCalculations}
@@ -90,13 +95,23 @@ const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsV
     );
   }
 
+  // Ensure client header receives client with required fields
+  const clientForHeader = {
+    id: client.id || clientId,
+    name: client.name || "",
+    email: client.email || "",
+    phone: client.phone || "",
+    address: client.address || "",
+    type: client.type || "",
+  };
+
   return (
     <div className="space-y-6">
       <ClientDetailsHeader 
         onBack={onBack} 
         clientId={clientId} 
         clientName={client.name}
-        client={client}
+        client={clientForHeader}
         onDocumentGenerated={handleDocumentGenerated}
         onClientUpdated={onClientUpdated}
       />

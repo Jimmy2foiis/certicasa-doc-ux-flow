@@ -7,8 +7,8 @@ import DocumentsAccordion from "@/components/documents/DocumentsAccordion";
 import { useAdministrativeDocuments } from "@/hooks/useAdministrativeDocuments";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, FileText, Plus } from "lucide-react";
-import ClientDocumentGenerator from "@/components/documents/client-generator/ClientDocumentGenerator";
+import { Search, FileText } from "lucide-react";
+import ClientDocumentGenerator from "@/components/clients/ClientDocumentGenerator";
 
 interface DocumentsTabContentProps {
   clientId?: string;
