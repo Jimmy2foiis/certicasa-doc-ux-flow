@@ -4,21 +4,23 @@ import { useToast } from "@/components/ui/use-toast";
 import { TemplateTag } from "@/components/documents/template-mapping/types";
 import { getTemplateById, createDocument, fetchClientDataForMapping } from "@/services/documentService";
 import { processDocumentContent, prepareDocumentData } from "@/utils/documentUtils";
-import { downloadDocument } from "@/utils/downloadUtils";
+import { downloadDocument, saveDocumentToFolder } from "@/utils/downloadUtils";
 
 interface UseDocumentGenerationProps {
-  (onDocumentGenerated?: (documentId: string) => void, clientName?: string): {
+  (onDocumentGenerated?: (documentId: string) => void, clientName?: string, clientId?: string): {
     generating: boolean;
     generated: boolean;
     documentId: string | null;
     handleGenerate: (templateId: string, clientId?: string, mappings?: TemplateTag[]) => Promise<void>;
     handleDownload: () => void;
+    handleSaveToFolder: () => Promise<boolean>;
   };
 }
 
 export const useDocumentGeneration: UseDocumentGenerationProps = (
   onDocumentGenerated,
-  clientName
+  clientName,
+  clientId
 ) => {
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState(false);
@@ -83,7 +85,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
   };
 
   // Function to download a document
-  const handleDownload = () => {
+  const handleDownload = async () => {
     if (!documentId) {
       toast({
         title: "Erreur",
@@ -93,13 +95,58 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       return;
     }
 
-    const success = downloadDocument(documentId);
+    const success = await downloadDocument(documentId);
     
     if (success) {
       toast({
         title: "Téléchargement",
         description: "Le téléchargement du document a commencé.",
       });
+    } else {
+      toast({
+        title: "Erreur",
+        description: "Impossible de télécharger le document.",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  // Function to save document to client folder
+  const handleSaveToFolder = async () => {
+    if (!documentId || !clientId) {
+      toast({
+        title: "Erreur",
+        description: "Impossible d'enregistrer ce document. Informations manquantes.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    try {
+      const success = await saveDocumentToFolder(documentId, clientId);
+      
+      if (success) {
+        toast({
+          title: "Document enregistré",
+          description: "Le document a été enregistré dans le dossier du client.",
+        });
+        return true;
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible d'enregistrer le document dans le dossier.",
+          variant: "destructive",
+        });
+        return false;
+      }
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur inattendue est survenue lors de l'enregistrement.",
+        variant: "destructive",
+      });
+      return false;
     }
   };
 
@@ -108,6 +155,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
     generated,
     documentId,
     handleGenerate,
-    handleDownload
+    handleDownload,
+    handleSaveToFolder
   };
 };

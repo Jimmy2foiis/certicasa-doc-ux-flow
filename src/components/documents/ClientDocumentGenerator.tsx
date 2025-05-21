@@ -37,11 +37,13 @@ const ClientDocumentGenerator = ({
     loading,
     generating,
     generated,
+    documentId,
     handleTemplateSelect,
     handleMappingComplete,
     handleDocumentGeneration,
     handleCloseDialog,
-    handleDownload
+    handleDownload,
+    handleSaveToFolder
   } = useDocumentGeneratorState({
     clientId,
     clientName,
@@ -60,7 +62,13 @@ const ClientDocumentGenerator = ({
           <GeneratorDialogHeader clientName={clientName} onClose={handleCloseDialog} />
 
           {generated ? (
-            <SuccessState onDownload={handleDownload} />
+            <SuccessState 
+              onDownload={handleDownload} 
+              onSaveToFolder={handleSaveToFolder}
+              clientId={clientId}
+              clientName={clientName}
+              documentId={documentId}
+            />
           ) : generating ? (
             <GeneratingState />
           ) : (

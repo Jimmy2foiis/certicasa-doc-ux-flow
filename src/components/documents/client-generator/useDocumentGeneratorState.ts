@@ -22,7 +22,15 @@ export const useDocumentGeneratorState = ({
   const [templateMappings, setTemplateMappings] = useState<TemplateTag[]>([]);
   
   const { templates, loading } = useDocumentTemplates();
-  const { generating, generated, documentId, handleGenerate, handleDownload } = useDocumentGeneration(onDocumentGenerated, clientName);
+  const { 
+    generating, 
+    generated, 
+    documentId, 
+    handleGenerate, 
+    handleDownload,
+    handleSaveToFolder 
+  } = useDocumentGeneration(onDocumentGenerated, clientName, clientId);
+  
   const { toast } = useToast();
 
   // Get the selected template object
@@ -93,10 +101,12 @@ export const useDocumentGeneratorState = ({
     loading,
     generating,
     generated,
+    documentId,
     handleTemplateSelect,
     handleMappingComplete,
     handleDocumentGeneration,
     handleCloseDialog,
-    handleDownload
+    handleDownload,
+    handleSaveToFolder
   };
 };
