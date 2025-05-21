@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { useAdministrativeDocuments } from "@/hooks/useAdministrativeDocuments";
 import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { DocumentPreview } from "@/components/documents/DocumentPreview";
-import { documentService } from "@/services/documentService";
+import { documentService, getDocumentContent, exportAllDocuments } from "@/services/documentService";
 import { DocumentsHeader } from "./documents/DocumentsHeader";
 import DocumentsAccordion from "@/components/documents/DocumentsAccordion";
 import { DocumentsFooter } from "./documents/DocumentsFooter";
@@ -161,7 +160,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
               description: "Récupération du document...",
             });
             
-            const documentData = await documentService.getDocumentContent(documentId);
+            const documentData = await getDocumentContent(documentId);
             
             if (documentData && documentData.success && documentData.data?.content) {
               // Valider le contenu avant téléchargement
@@ -245,7 +244,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
         description: "Préparation de l'export des documents...",
       });
       
-      const exportResult = await documentService.exportAllDocuments(filteredDocuments);
+      const exportResult = await exportAllDocuments(filteredDocuments);
       
       if (exportResult.success) {
         toast({

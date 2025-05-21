@@ -179,29 +179,35 @@ export type Database = {
         Row: {
           content: string | null
           date_uploaded: string
+          extracted_text: string | null
           id: string
           last_modified: string
           name: string
           type: string
           user_id: string | null
+          variables: Json | null
         }
         Insert: {
           content?: string | null
           date_uploaded?: string
+          extracted_text?: string | null
           id?: string
           last_modified?: string
           name: string
           type: string
           user_id?: string | null
+          variables?: Json | null
         }
         Update: {
           content?: string | null
           date_uploaded?: string
+          extracted_text?: string | null
           id?: string
           last_modified?: string
           name?: string
           type?: string
           user_id?: string | null
+          variables?: Json | null
         }
         Relationships: []
       }

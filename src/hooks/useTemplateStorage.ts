@@ -1,4 +1,5 @@
 
+import React from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from '@/integrations/supabase/client';
 import { DocumentTemplate, UploadedFile } from "@/types/documents";
@@ -97,7 +98,7 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
       }
       
       // Transformer les données pour correspondre au format DocumentTemplate
-      return data.map(item => ({
+      return (data as any[]).map(item => ({
         id: item.id,
         name: item.name,
         type: item.type,
