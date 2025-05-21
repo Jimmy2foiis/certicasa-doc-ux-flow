@@ -4,6 +4,7 @@ import { DocumentTemplate } from "@/types/documents";
 export interface TemplateVariableMappingProps {
   template: DocumentTemplate;
   clientData?: any;
+  clientId?: string;
   onMappingComplete: (mappings: TemplateTag[]) => void;
 }
 

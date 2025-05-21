@@ -30,10 +30,14 @@ export interface DocumentTemplate {
   id: string;
   name: string;
   type: string;
-  dateUploaded: string;
-  lastModified: string;
+  dateUploaded?: string;
+  lastModified?: string;
   content: string | null;
-  userId: string | null;
+  userId?: string | null;
+  file_path?: string;
+  created_at?: string;
+  tags?: string[];
+  variables?: string[];
 }
 
 /**

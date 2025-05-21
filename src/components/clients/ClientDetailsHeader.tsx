@@ -23,9 +23,22 @@ interface ClientDetailsHeaderProps {
     type: string;
   };
   onEdit?: () => void;
+  onBack?: () => void;
+  clientId?: string;
+  clientName?: string;
+  onDocumentGenerated?: (documentId: string) => void;
+  onClientUpdated?: () => void;
 }
 
-const ClientDetailsHeader: React.FC<ClientDetailsHeaderProps> = ({ client, onEdit }) => {
+const ClientDetailsHeader: React.FC<ClientDetailsHeaderProps> = ({ 
+  client, 
+  onEdit,
+  onBack,
+  clientId = client?.id, 
+  clientName = client?.name,
+  onDocumentGenerated,
+  onClientUpdated
+}) => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [showOptions, setShowOptions] = useState(false);
@@ -42,11 +55,21 @@ const ClientDetailsHeader: React.FC<ClientDetailsHeaderProps> = ({ client, onEdi
     }
   };
 
+  const handleBackClick = () => {
+    if (onBack) {
+      onBack();
+    }
+  };
+
   const handleDocumentGenerated = (documentId: string) => {
-    toast({
-      title: "Document généré",
-      description: `Document ${documentId} généré avec succès`,
-    });
+    if (onDocumentGenerated) {
+      onDocumentGenerated(documentId);
+    } else {
+      toast({
+        title: "Document généré",
+        description: `Document ${documentId} généré avec succès`,
+      });
+    }
     // Rediriger vers la page de documents ou mettre à jour l'UI
   };
 
