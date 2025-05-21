@@ -56,7 +56,7 @@ const CommercialSidebar = () => {
     <div className="w-64 h-full bg-white border-r border-gray-200">
       <div className="py-4">
         <h2 className="px-4 text-lg font-semibold text-gray-700 mb-4">
-          Espace Commercial
+          ESPACE COMMERCIALE
         </h2>
         <nav className="mt-2">
           <ul className="space-y-1 px-2">
