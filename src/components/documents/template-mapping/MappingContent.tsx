@@ -1,10 +1,11 @@
 
-import { useState } from "react";
+import React from "react";
 import { AlertTriangle } from "lucide-react";
-import { TemplateTag } from "@/components/documents/template-mapping/types";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AddNewTagField } from "./AddNewTagField";
 import { TagsList } from "./TagsList";
 import { VariableCategoryTabs } from "./VariableCategoryTabs";
+import { TemplateTag } from "./types";
 
 interface MappingContentProps {
   loading: boolean;

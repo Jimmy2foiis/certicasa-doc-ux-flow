@@ -222,12 +222,12 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       const url = URL.createObjectURL(blob);
       
       // Créer un lien de téléchargement et cliquer dessus
-      const a = window.document.createElement('a');
+      const a = document.createElement('a');
       a.href = url;
       a.download = `${document.name || 'document'}.txt`;
-      window.document.body.appendChild(a);
+      document.body.appendChild(a);
       a.click();
-      window.document.body.removeChild(a);
+      document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
       toast({
