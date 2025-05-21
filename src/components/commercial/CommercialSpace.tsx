@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation, Routes, Route, Navigate } from "react-router-dom";
 import CommercialSidebar from "./CommercialSidebar";
+import Header from "@/components/layout/Header";
 import LeadContent from "./content/LeadContent";
 import QualificationContent from "./content/QualificationContent";
 import PlanningContent from "./content/PlanningContent";
@@ -26,9 +27,7 @@ const CommercialSpace = () => {
       
       {/* Contenu principal basé sur la route */}
       <div className="flex-1 flex flex-col">
-        <header className="bg-white border-b border-gray-200 px-4 py-3">
-          <h1 className="text-2xl font-semibold text-gray-800">ESPACE COMMERCIALE</h1>
-        </header>
+        <Header />
         <div className="flex-1 p-4 overflow-auto">
           <Routes>
             <Route path="/lead" element={<LeadContent />} />
