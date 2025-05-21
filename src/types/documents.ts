@@ -51,8 +51,14 @@ export interface UploadedFile {
   name: string;
   size: number;
   type: string;
-  content: string | ArrayBuffer | null;
+  content: string | null; // Made required to match usage
   status?: string;
+  progress?: number;
+  lastModified?: number;
+  slice?: Function;
+  stream?: Function;
+  text?: Function;
+  arrayBuffer?: Function;
 }
 
 // Type pour un document généré
@@ -81,6 +87,7 @@ export interface AdministrativeDocument {
   project_id?: string | null;
   created_at?: string;
   statusLabel?: string;
+  category?: string;
 }
 
 // Type Json pour utilisation avec Supabase

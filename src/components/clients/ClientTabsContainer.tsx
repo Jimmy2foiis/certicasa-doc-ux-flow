@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectsTabContent from "./ProjectsTabContent";
 import CalculationsTabContent from "./CalculationsTabContent";
-import DocumentsTabContent from "./DocumentsTabContent";
+import { DocumentsTabContent } from "./DocumentsTabContent"; // Changed to named import
 import SignaturesTabContent from "./SignaturesTabContent";
 import { Card } from "@/components/ui/card";
 

@@ -1,163 +1,147 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { DocumentTemplate } from "@/types/documents";
-import { FileText, Save } from "lucide-react";
-import { AddNewTagField } from "./AddNewTagField";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { TagsList } from "./TagsList";
+import { AddNewTagField } from "./AddNewTagField";
 import { VariableCategoryTabs } from "./VariableCategoryTabs";
-import { TemplateTag, TemplateVariableMappingProps } from "./types";
-import { createInitialMapping, loadTemplateMapping, saveTemplateMapping } from "./utils";
+import { DocumentTemplate, TemplateTag } from "@/types/documents";
+import { MappingContentProps, TemplateVariableMappingProps } from "./types";
 
-// Main component
-const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: TemplateVariableMappingProps) => {
-  const [templateTags, setTemplateTags] = useState<TemplateTag[]>([]);
+export const TemplateVariableMapping = ({ 
+  template,
+  clientData,
+  onMappingComplete 
+}: TemplateVariableMappingProps) => {
   const [loading, setLoading] = useState(false);
+  const [templateTags, setTemplateTags] = useState<TemplateTag[]>([]);
   const [newTag, setNewTag] = useState("");
-  const [activeCategory, setActiveCategory] = useState<string>("client");
-  const { toast } = useToast();
-  
-  // Load existing mapping if available
+  const [activeCategory, setActiveCategory] = useState("client");
+
+  // Extract variables from template content
   useEffect(() => {
-    const initializeMapping = async () => {
+    if (template && template.content) {
       setLoading(true);
-      try {
-        // Try to get existing mapping from Supabase
-        const mappings = await loadTemplateMapping(template.id);
-        
-        if (mappings && mappings.length > 0) {
-          setTemplateTags(mappings);
-          console.log("Loaded existing mapping:", mappings);
-        } else {
-          // Create initial mapping from template content
-          const initialTags = createInitialMapping(template.content);
-          setTemplateTags(initialTags);
-          console.log("Created initial mapping:", initialTags);
-        }
-      } catch (error) {
-        console.error("Error loading template mapping:", error);
-      } finally {
+      setTimeout(() => {
+        const extractedTags = extractTagsFromContent(template.content || "");
+        setTemplateTags(extractedTags);
         setLoading(false);
-      }
-    };
-    
-    if (template?.id) {
-      initializeMapping();
+      }, 500); // Simulate loading
     }
-  }, [template?.id, template?.content]);
-  
+  }, [template]);
+
+  // Extract template tags from content
+  const extractTagsFromContent = (content: string): TemplateTag[] => {
+    // Regular expression to match {{tag}} pattern
+    const tagRegex = /\{\{([^}]+)\}\}/g;
+    const tags: TemplateTag[] = [];
+    const foundTags = new Set<string>();
+    
+    let match;
+    while ((match = tagRegex.exec(content)) !== null) {
+      const tagName = match[1].trim();
+      
+      // Skip duplicate tags
+      if (foundTags.has(tagName)) continue;
+      foundTags.add(tagName);
+      
+      // Create a new tag with default category
+      tags.push({
+        tag: tagName,
+        category: "client",
+        mappedTo: ""
+      });
+    }
+    
+    return tags;
+  };
+
+  // Add a new tag manually
   const handleAddTag = () => {
     if (!newTag.trim()) return;
     
-    const formattedTag = newTag.includes("{{") ? newTag : `{{${newTag}}}`;
+    // Check if tag already exists
+    if (templateTags.some(t => t.tag === newTag.trim())) {
+      setNewTag("");
+      return;
+    }
     
     setTemplateTags([
-      ...templateTags, 
-      { 
-        tag: formattedTag, 
-        category: activeCategory, 
-        mappedTo: `${activeCategory}.${newTag.replace(/[{}]/g, "")}` 
+      ...templateTags,
+      {
+        tag: newTag.trim(),
+        category: activeCategory,
+        mappedTo: ""
       }
     ]);
     
     setNewTag("");
-    
-    toast({
-      title: "Balise ajoutée",
-      description: `La balise ${formattedTag} a été ajoutée à la liste.`,
-    });
   };
-  
+
+  // Update the mapping value for a tag
   const updateMapping = (index: number, value: string) => {
     const updatedTags = [...templateTags];
-    updatedTags[index].mappedTo = value;
+    updatedTags[index] = { ...updatedTags[index], mappedTo: value };
     setTemplateTags(updatedTags);
+    
+    // Call the parent callback
+    onMappingComplete(updatedTags);
   };
-  
+
+  // Update the category for a tag
   const updateCategory = (index: number, category: string) => {
     const updatedTags = [...templateTags];
-    updatedTags[index].category = category;
+    updatedTags[index] = { ...updatedTags[index], category };
     setTemplateTags(updatedTags);
+    
+    // Call the parent callback
+    onMappingComplete(updatedTags);
   };
-  
-  const handleSaveMapping = async () => {
-    try {
-      setLoading(true);
-      
-      // Save mapping to Supabase
-      const success = await saveTemplateMapping(template.id, templateTags);
-      
-      if (!success) throw new Error("Failed to save mapping");
-      
-      toast({
-        title: "Mapping sauvegardé",
-        description: "Les correspondances de variables ont été sauvegardées.",
-      });
-      
-      // Notify parent component
-      onMappingComplete(templateTags);
-      
-    } catch (error) {
-      console.error("Error saving template mapping:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de sauvegarder le mapping des variables.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
+
+  // Shared props for mapping components
+  const mappingContentProps: MappingContentProps = {
+    loading,
+    templateTags,
+    newTag,
+    setNewTag,
+    handleAddTag,
+    activeCategory,
+    setActiveCategory,
+    updateMapping,
+    updateCategory,
+    clientData
   };
-  
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center">
-          <FileText className="mr-2 h-5 w-5" />
-          Mapping des variables pour "{template.name}"
+        <CardTitle className="text-xl">
+          Mapping des variables du modèle
         </CardTitle>
-        <CardDescription>
-          Associez chaque balise du document aux données client correspondantes
-        </CardDescription>
       </CardHeader>
       
-      <CardContent className="space-y-4">
+      <CardContent>
         {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin h-8 w-8 border-b-2 border-blue-600 rounded-full"></div>
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-32 w-full" />
           </div>
         ) : (
-          <>
-            <AddNewTagField 
-              newTag={newTag} 
-              setNewTag={setNewTag} 
-              handleAddTag={handleAddTag} 
-            />
+          <div className="space-y-6">
+            <AddNewTagField {...mappingContentProps} />
             
-            <TagsList 
-              tags={templateTags}
-              clientData={clientData}
-              updateCategory={updateCategory}
-              updateMapping={updateMapping}
-            />
-            
-            <VariableCategoryTabs 
-              activeCategory={activeCategory}
-              setActiveCategory={setActiveCategory}
-              onSelectVariable={setNewTag}
-            />
-          </>
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="w-full md:w-1/3">
+                <VariableCategoryTabs {...mappingContentProps} />
+              </div>
+              
+              <div className="w-full md:w-2/3">
+                <TagsList {...mappingContentProps} />
+              </div>
+            </div>
+          </div>
         )}
       </CardContent>
-      
-      <CardFooter>
-        <Button onClick={handleSaveMapping} disabled={loading} className="ml-auto">
-          <Save className="h-4 w-4 mr-2" />
-          Sauvegarder le mapping
-        </Button>
-      </CardFooter>
     </Card>
   );
 };
