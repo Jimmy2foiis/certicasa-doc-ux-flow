@@ -1,49 +1,24 @@
 
+import React from "react";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-// Import the new components
-import GeneratorDialogHeader from "./client-generator/GeneratorDialogHeader";
-import TemplateSelectionStep from "./client-generator/TemplateSelectionStep";
-import MappingStep from "./client-generator/MappingStep";
-import GeneratingState from "./client-generator/GeneratingState";
-import SuccessState from "./client-generator/SuccessState";
+import DocumentGeneratorDialog from "./client-generator/DocumentGeneratorDialog";
 import { useDocumentGeneratorState } from "./client-generator/useDocumentGeneratorState";
 
 interface ClientDocumentGeneratorProps {
   clientId: string;
-  clientName: string;
-  clientData: any;
-  onDocumentGenerated: (documentId: string) => void;
+  clientName?: string;
+  onDocumentGenerated?: (documentId: string) => void;
 }
 
 const ClientDocumentGenerator = ({
   clientId,
-  clientName,
-  clientData,
-  onDocumentGenerated
+  clientName = "Client",
+  onDocumentGenerated = () => {}
 }: ClientDocumentGeneratorProps) => {
   const {
     isOpen,
-    setIsOpen,
-    selectedTab,
-    setSelectedTab,
-    selectedTemplate,
-    selectedTemplateObject,
-    templateMappings,
-    templates,
-    loading,
-    generating,
-    generated,
-    documentId,
-    handleTemplateSelect,
-    handleMappingComplete,
-    handleDocumentGeneration,
-    handleCloseDialog,
-    handleDownload,
-    handleSaveToFolder
+    setIsOpen
   } = useDocumentGeneratorState({
     clientId,
     clientName,
@@ -57,57 +32,13 @@ const ClientDocumentGenerator = ({
         Générer un document
       </Button>
 
-      <Dialog open={isOpen} onOpenChange={handleCloseDialog}>
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-          <GeneratorDialogHeader clientName={clientName} onClose={handleCloseDialog} />
-
-          {generated ? (
-            <SuccessState 
-              onDownload={handleDownload} 
-              onSaveToFolder={handleSaveToFolder}
-              clientId={clientId}
-              clientName={clientName}
-              documentId={documentId}
-            />
-          ) : generating ? (
-            <GeneratingState />
-          ) : (
-            <>
-              <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-                <TabsList className="mb-4 grid grid-cols-2">
-                  <TabsTrigger value="templates">1. Sélection du modèle</TabsTrigger>
-                  <TabsTrigger value="mapping" disabled={!selectedTemplate}>
-                    2. Mapping des variables
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="templates">
-                  <TemplateSelectionStep 
-                    selectedTemplate={selectedTemplate}
-                    loading={loading}
-                    templatesCount={templates.length}
-                    onTemplateSelect={handleTemplateSelect}
-                    onContinue={() => setSelectedTab("mapping")}
-                  />
-                </TabsContent>
-                
-                <TabsContent value="mapping">
-                  {selectedTemplateObject && (
-                    <MappingStep
-                      template={selectedTemplateObject}
-                      clientData={clientData}
-                      onMappingComplete={handleMappingComplete}
-                      onBack={() => setSelectedTab("templates")}
-                      onGenerate={handleDocumentGeneration}
-                      canGenerate={templateMappings.length > 0}
-                    />
-                  )}
-                </TabsContent>
-              </Tabs>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <DocumentGeneratorDialog 
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        clientId={clientId}
+        clientName={clientName}
+        onDocumentGenerated={onDocumentGenerated}
+      />
     </>
   );
 };

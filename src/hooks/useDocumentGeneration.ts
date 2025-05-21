@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { TemplateTag } from "@/components/documents/template-mapping/types";
@@ -221,12 +222,12 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       const url = URL.createObjectURL(blob);
       
       // Créer un lien de téléchargement et cliquer dessus
-      const a = document.createElement('a');
+      const a = window.document.createElement('a');
       a.href = url;
       a.download = `${document.name || 'document'}.txt`;
-      document.body.appendChild(a);
+      window.document.body.appendChild(a);
       a.click();
-      document.body.removeChild(a);
+      window.document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
       toast({

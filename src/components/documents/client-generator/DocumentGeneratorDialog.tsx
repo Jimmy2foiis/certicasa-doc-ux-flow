@@ -1,5 +1,7 @@
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
+
+import React, { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useDocumentGeneratorState } from "./useDocumentGeneratorState";
 import TemplateSelectionStep from "./TemplateSelectionStep";
@@ -8,6 +10,8 @@ import GeneratingState from "./GeneratingState";
 import SuccessState from "./SuccessState";
 import GeneratorDialogHeader from "./GeneratorDialogHeader";
 import { TemplateTag } from "@/components/documents/template-mapping/types";
+import { ArrowLeft } from "lucide-react";
+import { NotFoundTemplate } from "@/components/documents/template-mapping/NotFoundTemplate";
 
 interface DocumentGeneratorDialogProps {
   isOpen: boolean;

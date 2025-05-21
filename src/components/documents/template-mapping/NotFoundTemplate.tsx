@@ -1,56 +1,17 @@
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { AlertTriangle, FileText } from "lucide-react";
+import React from "react";
+import { AlertCircle } from "lucide-react";
 
-interface NotFoundTemplateProps {
-  reason?: 'empty' | 'invalid' | 'no-tags' | 'unknown';
-}
-
-export const NotFoundTemplate = ({ reason = 'unknown' }: NotFoundTemplateProps) => {
-  const getErrorMessage = () => {
-    switch (reason) {
-      case 'empty':
-        return "Le modèle sélectionné est vide. Veuillez téléverser un nouveau modèle.";
-      case 'no-tags':
-        return "Aucune variable détectée dans ce modèle. Utilisez un modèle .docx avec des balises {{variable}}.";
-      case 'invalid':
-        return "Le format du modèle n'est pas compatible. Utilisez de préférence un fichier .docx.";
-      default:
-        return "Le modèle sélectionné est invalide. Veuillez sélectionner un autre modèle.";
-    }
-  };
-
+export const NotFoundTemplate = () => {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center text-amber-600">
-          <AlertTriangle className="mr-2 h-5 w-5" />
-          Modèle invalide
-        </CardTitle>
-        <CardDescription>
-          {getErrorMessage()}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div className="bg-slate-50 p-4 rounded-md border">
-          <h3 className="text-sm font-medium mb-2 flex items-center">
-            <FileText className="h-4 w-4 mr-2" /> 
-            Conseils pour un modèle valide :
-          </h3>
-          <ul className="text-sm space-y-2 text-slate-700">
-            <li>• Utilisez un fichier .docx (Microsoft Word) pour une compatibilité optimale</li>
-            <li>• Insérez des balises au format <code>{'{{nom_variable}}'}</code> dans votre document</li>
-            <li>• Exemples de balises : <code>{'{{nom}}'}</code>, <code>{'{{adresse}}'}</code>, <code>{'{{client.email}}'}</code></li>
-            <li>• Les PDF sont acceptés uniquement s'ils sont générés depuis Word et conservent les balises en texte</li>
-          </ul>
-        </div>
-        <div className="flex justify-center py-4">
-          <Button variant="outline" onClick={() => window.history.back()}>
-            Retour à la sélection
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col items-center justify-center p-8 border border-dashed rounded-md">
+      <AlertCircle className="h-12 w-12 text-amber-500 mb-4" />
+      <h3 className="text-lg font-medium mb-2">Modèle non trouvé</h3>
+      <p className="text-center text-gray-500">
+        Le modèle sélectionné n'a pas pu être chargé ou n'existe plus.
+        <br />
+        Veuillez sélectionner un autre modèle ou contacter l'administrateur.
+      </p>
+    </div>
   );
 };
