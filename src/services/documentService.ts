@@ -19,6 +19,14 @@ export const validateDocumentContent = (content: string | null, type: string): {
         error: "Format de document PDF invalide"
       };
     }
+  } else if (fileType === 'txt') {
+    // Pour les fichiers texte, on vérifie simplement que le contenu n'est pas vide
+    if (content.trim().length === 0) {
+      return {
+        success: false,
+        error: "Le contenu du fichier texte est vide"
+      };
+    }
   }
   
   return { success: true };
@@ -59,6 +67,14 @@ export const createDocumentPreviewUrl = (content: string, type: string): { succe
       return {
         success: true,
         data: url
+      };
+    } else if (fileType === 'txt') {
+      // Pour les fichiers texte, on crée une data URL
+      const encodedContent = encodeURIComponent(content);
+      const dataUrl = `data:text/plain;charset=utf-8,${encodedContent}`;
+      return {
+        success: true,
+        data: dataUrl
       };
     }
     
@@ -105,6 +121,9 @@ export const downloadDocument = (content: string, fileName: string, type: string
         break;
       case 'docx':
         mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        break;
+      case 'txt':
+        mimeType = 'text/plain';
         break;
       default:
         mimeType = 'application/octet-stream';

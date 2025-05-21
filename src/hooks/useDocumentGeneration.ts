@@ -63,6 +63,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       case 'pdf':
         return content.startsWith('data:application/pdf') || content.startsWith('blob:');
       case 'docx':
+      case 'txt':
         return content.length > 0;
       default:
         return content.length > 0;
@@ -74,7 +75,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
     content: string, 
     mappings: TemplateTag[], 
     clientData: any
-  ): Promise<string> => {
+  ): Promise<{documentContent: string, replacementsCount: number}> => {
     if (!content || content.trim().length === 0) {
       throw new Error("Le contenu du template est vide ou invalide");
     }
@@ -119,12 +120,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
         }
       }
       
-      // Vérifier que des remplacements ont été effectués si des mappings étaient attendus
-      if (mappings.length > 0 && replacementsCount === 0) {
-        console.warn("Aucun remplacement n'a été effectué lors du mapping des variables");
-      }
-      
-      return documentContent;
+      return { documentContent, replacementsCount };
     } catch (error) {
       console.error("Erreur lors de l'application du mapping:", error);
       throw new Error(`Erreur lors de l'application du mapping: ${error instanceof Error ? error.message : String(error)}`);
@@ -146,7 +142,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       // Récupérer les informations du template
       const { data: templateData, error: templateError } = await supabase
         .from('document_templates')
-        .select('name, type, content')
+        .select('name, type, content, extracted_text')
         .eq('id', templateId)
         .single();
       
@@ -155,16 +151,24 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
         throw new Error("Template introuvable ou inaccessible");
       }
 
-      // Vérifier si le contenu du template est valide
-      if (!templateData.content || templateData.content.trim().length === 0) {
-        throw new Error("Le contenu du template est vide ou invalide. Impossible de générer un document.");
-      }
-      
-      // Vérification spécifique pour le type de document
-      if (templateData.type === 'pdf' && 
-          !templateData.content.startsWith('data:application/pdf') && 
-          !templateData.content.startsWith('blob:')) {
-        throw new Error("Le contenu du template PDF est invalide ou corrompu.");
+      // Vérifier si le contenu du template est valide selon son type
+      if (templateData.type === 'docx') {
+        // Pour les DOCX, on vérifie que le texte extrait est disponible
+        if (!templateData.extracted_text || templateData.extracted_text.trim().length === 0) {
+          throw new Error("Le texte extrait du template DOCX est vide ou invalide. Impossible de générer un document.");
+        }
+      } else if (templateData.type === 'pdf') {
+        // Pour les PDF, on vérifie le contenu binaire
+        if (!templateData.content || templateData.content.trim().length === 0 || 
+            (!templateData.content.startsWith('data:application/pdf') && 
+             !templateData.content.startsWith('blob:'))) {
+          throw new Error("Le contenu du template PDF est invalide ou corrompu.");
+        }
+      } else {
+        // Pour les autres types
+        if (!templateData.content || templateData.content.trim().length === 0) {
+          throw new Error("Le contenu du template est vide ou invalide. Impossible de générer un document.");
+        }
       }
 
       // Vérifier que le mapping est complet si fourni
@@ -172,8 +176,10 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
         throw new Error("Le mapping des variables n'est pas complet. Veuillez mapper toutes les variables avant de générer le document.");
       }
 
-      // Initialiser le contenu du document
-      let documentContent = templateData.content;
+      // Initialiser le contenu du document selon le type
+      let documentContent = '';
+      let documentType = templateData.type;
+      let documentName = templateData.name;
       
       // Récupérer les données client si un ID client est fourni
       let clientData: any = {};
@@ -230,31 +236,57 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
         }
       }
       
-      // Appliquer le mapping si fourni
+      // Appliquer le mapping selon le type de document
       if (mappings && mappings.length > 0) {
         try {
-          documentContent = await applyMappingToContent(documentContent, mappings, clientData);
+          if (templateData.type === 'docx') {
+            // Pour les DOCX, utiliser le texte extrait comme base
+            const { documentContent: mappedContent, replacementsCount } = await applyMappingToContent(
+              templateData.extracted_text || '', 
+              mappings, 
+              clientData
+            );
+            
+            // Vérifier si des remplacements ont été effectués
+            if (replacementsCount === 0) {
+              throw new Error("Aucun remplacement n'a été effectué lors du mapping des variables. Vérifiez les mappings.");
+            }
+            
+            documentContent = mappedContent;
+            documentType = 'txt'; // Changer le type en texte pour les DOCX mappés
+            documentName = `${templateData.name}-mapped`; // Ajouter un suffixe pour identifier
+          } else {
+            // Pour les PDF et autres types, conserver le contenu binaire original
+            documentContent = templateData.content || '';
+          }
         } catch (err) {
           console.error("Erreur lors de l'application du mapping:", err);
           throw new Error("Erreur lors de l'application du mapping aux variables");
         }
+      } else {
+        // Si pas de mapping, simplement copier le contenu original
+        documentContent = templateData.type === 'docx' 
+          ? (templateData.extracted_text || '')
+          : (templateData.content || '');
       }
       
       // Valider le contenu final
-      if (!validateContent(documentContent, templateData.type)) {
+      if (!validateContent(documentContent, documentType)) {
         throw new Error("Le document généré est vide ou invalide après le mapping des variables.");
       }
       
-      const validationResult = documentService.validateDocumentContent(documentContent, templateData.type);
-      
-      if (!validationResult.success) {
-        throw new Error(`Le document généré est invalide: ${validationResult.error}`);
+      if (documentType !== 'txt') {
+        const validationResult = documentService.validateDocumentContent(documentContent, documentType);
+        
+        if (!validationResult.success) {
+          throw new Error(`Le document généré est invalide: ${validationResult.error}`);
+        }
       }
 
       // Préparer les données du document
       const documentData = {
-        name: `${templateData.name} - ${clientName || 'Document'}`,
-        type: templateData.type,
+        name: `${documentName} - ${clientName || 'Document'}`,
+        type: documentType,
         status: 'generated',
         client_id: clientId || null,
         content: documentContent,
@@ -337,18 +369,20 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
         throw new Error("Le contenu du document est vide ou invalide. Impossible de télécharger.");
       }
       
-      // Validation spécifique selon le type
-      if (document.type === 'pdf' && 
+      // Validation spécifique selon le type, sauf pour txt
+      if (document.type !== 'txt' && document.type === 'pdf' && 
           !document.content.startsWith('data:application/pdf') && 
           !document.content.startsWith('blob:')) {
         throw new Error("Le contenu du document PDF est invalide ou corrompu.");
       }
       
-      // Valider le contenu du document
-      const validationResult = documentService.validateDocumentContent(document.content, document.type);
-      
-      if (!validationResult.success) {
-        throw new Error(`Le document est invalide: ${validationResult.error}`);
+      // Pour les types autres que txt, valider avec le service
+      if (document.type !== 'txt') {
+        const validationResult = documentService.validateDocumentContent(document.content, document.type);
+        
+        if (!validationResult.success) {
+          throw new Error(`Le document est invalide: ${validationResult.error}`);
+        }
       }
       
       // Télécharger le document
