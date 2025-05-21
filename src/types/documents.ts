@@ -56,6 +56,21 @@ export interface GeneratedDocument {
   createdAt: string;
 }
 
+// Type pour les documents administratifs
+export interface AdministrativeDocument {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  description: string;
+  order: number;
+  content?: string | null;
+  file_path?: string | null;
+  client_id?: string | null;
+  project_id?: string | null;
+  created_at?: string;
+}
+
 // Variables disponibles par catégorie
 export const availableVariables = {
   client: ["name", "email", "phone", "address", "nif", "type", "status"],

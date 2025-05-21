@@ -46,9 +46,24 @@ export const getDocumentsForProject = async (projectId: string): Promise<Documen
 };
 
 export const createDocument = async (documentData: Partial<Document>): Promise<Document | null> => {
+  // Vérifier que le nom du document est défini
+  if (!documentData.name) {
+    console.error('Erreur: Le nom du document est obligatoire');
+    return null;
+  }
+  
   const { data, error } = await supabase
     .from('documents')
-    .insert([documentData])
+    .insert({
+      name: documentData.name, // Champ obligatoire
+      type: documentData.type || 'other',
+      status: documentData.status || 'draft',
+      client_id: documentData.client_id || null,
+      project_id: documentData.project_id || null,
+      content: documentData.content || null,
+      file_path: documentData.file_path || null,
+      // created_at est automatiquement défini par Supabase
+    })
     .select();
   
   if (error) {
@@ -94,7 +109,7 @@ export const getDocumentById = async (documentId: string): Promise<Document | nu
     .from('documents')
     .select('*')
     .eq('id', documentId)
-    .single();
+    .maybeSingle(); // Utiliser maybeSingle au lieu de single
   
   if (error) {
     console.error('Erreur lors de la récupération du document:', error);

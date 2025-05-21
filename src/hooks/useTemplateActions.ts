@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { DocumentTemplate } from "./useDocumentTemplates";
+import { DocumentTemplate } from "@/types/documents"; // Import from central type definition
 import { useToast } from "@/components/ui/use-toast";
 
 interface UseTemplateActionsReturn {

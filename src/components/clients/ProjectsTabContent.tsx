@@ -12,9 +12,10 @@ import {
 
 interface ProjectsTabContentProps {
   onShowCalculation?: (projectId?: string) => void;
+  clientId?: string; // Added clientId prop
 }
 
-const ProjectsTabContent = ({ onShowCalculation }: ProjectsTabContentProps) => {
+const ProjectsTabContent = ({ onShowCalculation, clientId }: ProjectsTabContentProps) => {
   return (
     <Card>
       <CardHeader>

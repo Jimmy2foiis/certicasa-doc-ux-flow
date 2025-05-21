@@ -1,5 +1,5 @@
 
-import { DocumentTemplate, TagCategoryProps, TemplateTag, TagMapping, availableVariables } from "@/types/documents";
+import { DocumentTemplate } from "@/types/documents";
 
 export interface TemplateVariableMappingProps {
   template: DocumentTemplate;
@@ -7,8 +7,9 @@ export interface TemplateVariableMappingProps {
   onMappingComplete: (mappings: TemplateTag[]) => void;
 }
 
-// Re-export pour compatibilité avec les imports existants
-export { TagCategoryProps, TemplateTag, TagMapping, availableVariables };
+// Re-export types from central type definition
+export type { TagCategoryProps, TemplateTag, TagMapping } from "@/types/documents";
+export { availableVariables } from "@/types/documents";
 
 // Export type pour les composants de mapping
 export interface MappingContentProps {

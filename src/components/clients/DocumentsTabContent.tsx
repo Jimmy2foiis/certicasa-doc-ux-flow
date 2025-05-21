@@ -8,6 +8,7 @@ import { useAdministrativeDocuments } from "@/hooks/useAdministrativeDocuments";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { AdministrativeDocument } from "@/types/documents";
 
 interface DocumentsTabContentProps {
   clientId?: string;
@@ -49,6 +50,20 @@ const DocumentsTabContent = ({ clientId, clientName = "Client", projectType = "R
     }
   }, [adminDocuments, isLoading, clientName, toast]);
 
+  // Conversion sécurisée du type pour éviter les erreurs TypeScript
+  const typedAdminDocuments: AdministrativeDocument[] = adminDocuments.map(doc => ({
+    ...doc,
+    description: doc.description || doc.name || "", // Ajouter description par défaut si non définie
+    order: doc.order || 0 // Ajouter order par défaut si non défini
+  }));
+
+  // Conversion des filteredDocuments aussi
+  const typedFilteredDocuments: AdministrativeDocument[] = filteredDocuments.map(doc => ({
+    ...doc,
+    description: doc.description || doc.name || "",
+    order: doc.order || 0
+  }));
+
   return (
     <Card className="shadow-sm">
       <DocumentsCardHeader clientName={clientName} projectType={projectType} />
@@ -72,7 +87,7 @@ const DocumentsTabContent = ({ clientId, clientName = "Client", projectType = "R
           </div>
         ) : (
           <DocumentsAccordion 
-            documents={filteredDocuments} 
+            documents={typedFilteredDocuments} 
             onDocumentAction={handleDocumentAction}
           />
         )}

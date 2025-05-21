@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { TemplateTag } from "./types";
+import { TemplateTag } from "@/types/documents";
+import type { Json } from '@supabase/supabase-js';
 
 // Helper function to extract tags from a document content
 export const extractTemplateTags = (content: string | null): string[] => {
@@ -74,9 +75,17 @@ export const loadTemplateMapping = async (
     if (error) throw error;
     
     if (mappingData?.mappings) {
-      return mappingData.mappings as TemplateTag[];
+      // Type cast safely
+      const jsonMappings = mappingData.mappings as unknown;
+      
+      // Validate the shape of the mappings
+      if (Array.isArray(jsonMappings) && jsonMappings.length > 0 && 
+          typeof jsonMappings[0] === 'object' && jsonMappings[0] !== null &&
+          'tag' in jsonMappings[0] && 'category' in jsonMappings[0] && 'mappedTo' in jsonMappings[0]) {
+        return jsonMappings as TemplateTag[];
+      }
     }
-    throw new Error('No mapping found');
+    throw new Error('No valid mapping found');
   } catch (error) {
     console.log('Error or no mapping found, will extract from template');
     return [];
@@ -89,11 +98,14 @@ export const saveTemplateMapping = async (
   mappings: TemplateTag[]
 ): Promise<boolean> => {
   try {
+    // Convert TemplateTag[] to a JSON-compatible format for the JSONB column
+    const jsonMappings = JSON.parse(JSON.stringify(mappings)) as Json;
+    
     const { error } = await supabase
       .from('template_mappings')
       .upsert({
         template_id: templateId,
-        mappings: mappings,
+        mappings: jsonMappings,
         updated_at: new Date().toISOString()
       });
     
