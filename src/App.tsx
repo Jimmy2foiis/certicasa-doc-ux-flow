@@ -16,6 +16,8 @@ import Documents from "./pages/Documents";
 import Workflow from "./pages/Workflow";
 import Billing from "./pages/Billing";
 import Help from "./pages/Help";
+import AdminPortal from "./pages/AdminPortal";
+import AdminPortalDossier from "./pages/AdminPortalDossier";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +39,8 @@ const App = () => (
             <Route path="/workflow/*" element={<Workflow />} />
             <Route path="/billing" element={<Billing />} />
             <Route path="/help" element={<Help />} />
+            <Route path="/admin" element={<AdminPortal />} />
+            <Route path="/admin/dossier/:id" element={<AdminPortalDossier />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
