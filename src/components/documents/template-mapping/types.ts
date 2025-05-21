@@ -1,20 +1,10 @@
 
 import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
 
-export type TemplateTag = { 
+export interface TemplateTag {
   tag: string;
   category: string;
   mappedTo: string;
-};
-
-export interface TagMapping {
-  templateId: string;
-  mappings: TemplateTag[];
-}
-
-export interface TagCategoryProps {
-  category: string;
-  onSelect: (variable: string) => void;
 }
 
 export interface TemplateVariableMappingProps {
@@ -23,11 +13,11 @@ export interface TemplateVariableMappingProps {
   onMappingComplete: (mappings: TemplateTag[]) => void;
 }
 
-// Object containing all available variables by category
+// Define available variables by category
 export const availableVariables = {
-  client: ["name", "email", "phone", "address", "nif", "type", "status"],
-  project: ["name", "type", "surface_area", "roof_area", "status", "created_at"],
-  cadastre: ["utm_coordinates", "cadastral_reference", "climate_zone", "api_source"],
-  calcul: ["type", "improvement", "surface", "date", "calculation_data"],
-  document: ["name", "type", "status", "created_at"]
+  client: ["nom", "prénom", "email", "téléphone", "adresse", "ville", "code_postal", "pays"],
+  projet: ["nom", "type", "surface", "description", "date_début", "date_fin"],
+  cadastre: ["référence", "coordonnées_utm", "utm_zone", "zone_climatique"],
+  calcul: ["type", "résultat", "économie", "amélioration"],
+  rdv: ["date", "heure", "lieu", "commercial", "notes"],
 };
