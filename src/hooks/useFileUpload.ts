@@ -1,8 +1,8 @@
 
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { extractFileContent } from "@/utils/docxUtils";
-import { UploadedFile } from "@/components/documents/TemplateFileItem";
+import { extractFileContent, extractTemplateTags } from "@/utils/docxUtils";
+import { UploadedFile } from "@/types/documents";
 
 export const useFileUpload = () => {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -45,28 +45,59 @@ export const useFileUpload = () => {
         // Simuler la progression de l'upload
         await simulateFileUpload(id);
         
-        // Extraire le contenu du fichier une fois l'upload terminé
-        const content = await extractFileContent(file);
-        
-        // Loguer les balises trouvées pour le débogage
-        const tags = extractTemplateTags(content);
-        console.log(`Balises détectées dans ${file.name}:`, tags);
-        
-        // Mettre à jour le fichier avec le contenu extrait
-        setUploadedFiles(prev => 
-          prev.map(f => 
-            f.id === id 
-              ? { ...f, status: "complete", progress: 100, content } 
-              : f
-          )
-        );
+        try {
+          // Extraire le contenu du fichier une fois l'upload terminé
+          console.log(`Extraction du contenu pour ${file.name}...`);
+          const content = await extractFileContent(file);
+          
+          if (!content) {
+            console.warn(`Aucun contenu extrait pour ${file.name}`);
+            toast({
+              title: "Avertissement",
+              description: `Impossible d'extraire le contenu de ${file.name}.`,
+              variant: "default",
+            });
+          }
+          
+          // Loguer les balises trouvées pour le débogage
+          const tags = extractTemplateTags(content);
+          console.log(`Balises détectées dans ${file.name} (${tags.length}):`, tags);
+          
+          // Mettre à jour le fichier avec le contenu extrait
+          setUploadedFiles(prev => 
+            prev.map(f => 
+              f.id === id 
+                ? { ...f, status: "complete", progress: 100, content } 
+                : f
+            )
+          );
+        } catch (error) {
+          console.error(`Erreur lors de l'extraction du contenu de ${file.name}:`, error);
+          setUploadedFiles(prev => 
+            prev.map(f => 
+              f.id === id 
+                ? { ...f, status: "error", progress: 100 } 
+                : f
+            )
+          );
+          
+          toast({
+            title: "Erreur",
+            description: `Erreur lors de l'extraction du contenu de ${file.name}.`,
+            variant: "destructive",
+          });
+        }
       }
       
       // Notification de succès
       if (newFiles.length > 0) {
+        const successCount = newFiles.filter(f => 
+          uploadedFiles.find(uf => uf.id === f.id)?.status === "complete"
+        ).length;
+        
         toast({
           title: "Fichiers téléversés",
-          description: `${newFiles.length} fichier(s) téléversés avec succès.`,
+          description: `${successCount}/${newFiles.length} fichier(s) téléversés avec succès.`,
         });
       }
     } catch (error) {
@@ -79,12 +110,14 @@ export const useFileUpload = () => {
     } finally {
       setUploading(false);
       // Réinitialiser le champ input pour permettre de recharger le même fichier si nécessaire
-      event.target.value = "";
+      if (event.target) {
+        event.target.value = "";
+      }
     }
   };
 
   // Fonction pour simuler une progression d'upload
-  const simulateFileUpload = async (fileId: string) => {
+  const simulateFileUpload = async (fileId: string): Promise<void> => {
     let progress = 0;
     const interval = 50; // ms
     
@@ -109,29 +142,19 @@ export const useFileUpload = () => {
     }
   };
 
-  // Fonction pour vérifier la présence de balises dans un contenu
-  const extractTemplateTags = (content: string | null): string[] => {
-    if (!content) return [];
-    
-    // Match {{tag}} patterns in the content
-    const tagRegex = /\{\{([^{}]+)\}\}/g;
-    const tags: string[] = [];
-    let match;
-    
-    while ((match = tagRegex.exec(content)) !== null) {
-      tags.push(match[0]);
-    }
-    
-    return [...new Set(tags)]; // Supprimer les doublons
-  };
-
   const confirmDeleteFile = (fileId: string) => {
     setFileToDelete(fileId);
   };
 
   const handleDeleteFile = (fileId: string) => {
+    if (!fileId) {
+      console.error("handleDeleteFile: ID de fichier manquant");
+      return;
+    }
+    
     setUploadedFiles(prev => prev.filter(file => file.id !== fileId));
     setFileToDelete(null);
+    
     toast({
       title: "Fichier supprimé",
       description: "Le fichier a été retiré de la liste.",

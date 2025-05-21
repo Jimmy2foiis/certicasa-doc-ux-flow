@@ -5,22 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { extractTemplateTags } from "@/components/documents/template-mapping/utils";
-
-export interface UploadedFile {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  lastModified: number;
-  progress: number;
-  status: "uploading" | "complete" | "error";
-  content: string | null;
-  slice: any;
-  stream: any;
-  text: any;
-  arrayBuffer: any;
-}
+import { extractTemplateTags } from "@/utils/docxUtils";
+import { UploadedFile } from "@/types/documents";
 
 interface TemplateFileItemProps {
   file: UploadedFile;

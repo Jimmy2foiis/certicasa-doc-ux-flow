@@ -98,6 +98,7 @@ const DocumentTemplateUpload = () => {
                 console.log("Tentative de sauvegarde des modèles:", uploadedFiles);
                 saveAllTemplates(uploadedFiles);
               }}
+              disabled={uploadedFiles.length === 0 || uploading}
             >
               Enregistrer dans la bibliothèque
             </Button>

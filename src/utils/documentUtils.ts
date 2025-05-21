@@ -1,33 +1,50 @@
 
-import { TemplateTag } from "@/components/documents/template-mapping/types";
+import { Document, TemplateTag } from "@/types/documents";
 
 /**
- * Processes document content by replacing template variables with actual values
- * @param content The template content containing variables
- * @param mappings Array of template tag mappings
- * @param clientData Object containing client data for mappings
- * @returns Processed document content
+ * Traite le contenu d'un document en remplaçant les variables du modèle par des valeurs réelles
+ * @param content Contenu du modèle contenant des variables
+ * @param mappings Tableau des mappings de balises de modèle
+ * @param clientData Objet contenant les données client pour les mappings
+ * @returns Contenu du document traité
  */
 export const processDocumentContent = (
   content: string | null,
   mappings?: TemplateTag[], 
   clientData?: any
 ): string => {
-  if (!content || !mappings || mappings.length === 0 || !clientData) {
-    return content || '';
+  if (!content) {
+    console.warn("processDocumentContent: Le contenu du document est null");
+    return '';
+  }
+  
+  if (!mappings || mappings.length === 0) {
+    console.warn("processDocumentContent: Aucun mapping fourni");
+    return content;
+  }
+  
+  if (!clientData) {
+    console.warn("processDocumentContent: Aucune donnée client fournie");
+    return content;
   }
   
   let documentContent = content;
   
-  // Apply replacements
+  // Appliquer les remplacements
   mappings.forEach(mapping => {
     const tagRegex = new RegExp(mapping.tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
     
-    // Get the value from client data based on mapping
+    // Obtenir la valeur à partir des données client selon le mapping
     const [category, field] = mapping.mappedTo.split('.');
-    const value = clientData[category]?.[field] || `[${mapping.mappedTo}]`;
+    let value = '[Donnée manquante]';
     
-    // Replace in content
+    try {
+      value = clientData[category]?.[field] || `[${mapping.mappedTo}]`;
+    } catch (error) {
+      console.error(`Erreur lors de l'accès à ${mapping.mappedTo}:`, error);
+    }
+    
+    // Remplacer dans le contenu
     documentContent = documentContent.replace(tagRegex, value);
   });
   
@@ -35,19 +52,23 @@ export const processDocumentContent = (
 };
 
 /**
- * Prepares document data for creation
- * @param templateData The template data
- * @param clientName The name of the client
- * @param clientId Optional client ID
- * @param documentContent Optional processed document content
- * @returns Document data object ready for insertion
+ * Prépare les données d'un document pour la création
+ * @param templateData Les données du modèle
+ * @param clientName Le nom du client
+ * @param clientId ID du client optionnel
+ * @param documentContent Contenu du document traité optionnel
+ * @returns Objet de données du document prêt pour insertion
  */
 export const prepareDocumentData = (
   templateData: any,
   clientName?: string,
   clientId?: string,
   documentContent?: string
-) => {
+): Partial<Document> => {
+  if (!templateData) {
+    throw new Error("Données de modèle manquantes");
+  }
+  
   return {
     name: `${templateData.name} - ${clientName || 'Document'}`,
     type: templateData.type,

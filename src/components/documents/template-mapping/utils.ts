@@ -1,94 +1,38 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { TemplateTag } from "./types";
+import { TemplateTag, availableVariables } from "@/types/documents";
+import { extractTemplateTags, determineTagCategory, getDefaultMapping } from "@/utils/docxUtils";
 
-// Helper function to extract tags from a document content
-export const extractTemplateTags = (content: string | null): string[] => {
-  if (!content) return [];
-  
-  // Match {{tag}} patterns in the content
-  const tagRegex = /\{\{([^{}]+)\}\}/g;
-  const tags: string[] = [];
-  let match;
-  
-  while ((match = tagRegex.exec(content)) !== null) {
-    tags.push(match[0]);
-  }
-  
-  return [...new Set(tags)]; // Remove duplicates
-};
-
-// Helper function to determine the most likely category for a tag
-export const determineTagCategory = (tag: string, availableCategories: string[]): string => {
-  // Remove {{ and }} and split by dot if present
-  const cleanTag = tag.replace(/[{}]/g, "");
-  const parts = cleanTag.split(".");
-  
-  if (parts.length > 1) {
-    const category = parts[0].toLowerCase();
-    if (availableCategories.includes(category)) {
-      return category;
-    }
-  }
-  
-  // Default to client if no match
-  return "client";
-};
-
-// Helper to get a suitable default mapping for a tag
-export const getDefaultMapping = (tag: string, availableVariables: Record<string, string[]>): string => {
-  const cleanTag = tag.replace(/[{}]/g, "");
-  const parts = cleanTag.split(".");
-  
-  if (parts.length > 1) {
-    return cleanTag; // Already has category.variable format
-  }
-  
-  // Try to find in available variables
-  for (const [category, variables] of Object.entries(availableVariables)) {
-    for (const variable of variables) {
-      if (cleanTag === variable || cleanTag.includes(variable)) {
-        return `${category}.${variable}`;
-      }
-    }
-  }
-  
-  // If no match found, use the tag name with the default category
-  const category = determineTagCategory(tag, Object.keys(availableVariables));
-  return `${category}.${cleanTag}`;
-};
-
-// Load template mapping from Supabase
+// Charger le mapping de template depuis Supabase
 export const loadTemplateMapping = async (
-  templateId: string, 
-  availableVariables: Record<string, string[]>
+  templateId: string
 ): Promise<TemplateTag[]> => {
   try {
     if (!templateId) {
-      console.error("No template ID provided for loading mapping");
+      console.error("Aucun ID de template fourni pour le chargement du mapping");
       return [];
     }
     
-    console.log("Loading template mapping for:", templateId);
+    console.log("Chargement du mapping de template pour:", templateId);
     
-    // Try to get existing mapping from Supabase
+    // Essayer d'obtenir le mapping existant depuis Supabase
     const { data: mappingData, error } = await supabase
       .from('template_mappings')
       .select('*')
       .eq('template_id', templateId)
-      .maybeSingle(); // Using maybeSingle instead of single to avoid error when no mapping exists
+      .maybeSingle();
     
     if (error) {
-      console.error("Error loading template mapping:", error);
-      return await createInitialMappingFromTemplate(templateId, availableVariables);
+      console.error("Erreur lors du chargement du mapping de template:", error);
+      return await createInitialMappingFromTemplate(templateId);
     }
     
-    // Fix: Check if mappings exist and is an array before accessing length
+    // Vérifier si les mappings existent et sont un tableau avant d'accéder à length
     if (mappingData?.mappings && Array.isArray(mappingData.mappings)) {
-      console.log("Found existing mapping:", mappingData.mappings);
+      console.log("Mapping existant trouvé:", mappingData.mappings);
       
-      // Fix: Properly convert Json[] to TemplateTag[] with explicit mapping
-      const templateTags: TemplateTag[] = (mappingData.mappings as any[]).map(item => ({
+      // Convertir Json[] en TemplateTag[] avec un mapping explicite
+      const templateTags: TemplateTag[] = mappingData.mappings.map((item: any) => ({
         tag: String(item.tag || ''),
         category: String(item.category || ''),
         mappedTo: String(item.mappedTo || '')
@@ -97,63 +41,62 @@ export const loadTemplateMapping = async (
       return templateTags;
     }
     
-    console.log("No mapping found, creating initial mapping from template");
-    return await createInitialMappingFromTemplate(templateId, availableVariables);
+    console.log("Aucun mapping trouvé, création d'un mapping initial à partir du template");
+    return await createInitialMappingFromTemplate(templateId);
   } catch (error) {
-    console.error('Error loading template mapping:', error);
-    return await createInitialMappingFromTemplate(templateId, availableVariables);
+    console.error('Erreur lors du chargement du mapping de template:', error);
+    return await createInitialMappingFromTemplate(templateId);
   }
 };
 
-// Helper function to create initial mapping from template content
+// Fonction auxiliaire pour créer un mapping initial à partir du contenu du template
 export const createInitialMappingFromTemplate = async (
-  templateId: string,
-  availableVariables: Record<string, string[]>
+  templateId: string
 ): Promise<TemplateTag[]> => {
   try {
     if (!templateId) {
-      console.error("No template ID provided for creating mapping");
+      console.error("Aucun ID de template fourni pour la création du mapping");
       return [];
     }
     
-    // Get template content from database
+    // Obtenir le contenu du template depuis la base de données
     const { data: templateData, error } = await supabase
       .from('document_templates')
       .select('content')
       .eq('id', templateId)
-      .single();
+      .maybeSingle();
       
     if (error) {
-      console.error("Error fetching template content:", error);
+      console.error("Erreur lors de la récupération du contenu du template:", error);
       return [];
     }
     
     if (!templateData?.content) {
-      console.error("Template content is empty:", templateId);
+      console.error("Le contenu du template est vide:", templateId);
       return [];
     }
     
-    return createInitialMapping(templateData.content, availableVariables);
+    return createInitialMapping(templateData.content);
   } catch (error) {
-    console.error("Error creating initial mapping:", error);
+    console.error("Erreur lors de la création du mapping initial:", error);
     return [];
   }
 };
 
-// Save template mapping to Supabase
+// Sauvegarder le mapping de template dans Supabase
 export const saveTemplateMapping = async (
   templateId: string, 
   mappings: TemplateTag[]
 ): Promise<boolean> => {
   if (!templateId) {
-    console.error("No template ID provided for saving mapping");
+    console.error("Aucun ID de template fourni pour la sauvegarde du mapping");
     return false;
   }
   
   try {
-    console.log("Saving mapping for template:", templateId, mappings);
+    console.log("Sauvegarde du mapping pour le template:", templateId, mappings);
     
-    // Fix: Convert TemplateTag[] to Json for compatibility with Supabase
+    // Convertir TemplateTag[] en Json pour compatibilité avec Supabase
     const { error } = await supabase
       .from('template_mappings')
       .upsert({
@@ -165,27 +108,27 @@ export const saveTemplateMapping = async (
       });
     
     if (error) {
-      console.error('Error saving template mapping:', error);
+      console.error('Erreur lors de la sauvegarde du mapping de template:', error);
       throw error;
     }
     
     return true;
   } catch (error) {
-    console.error('Error saving template mapping:', error);
+    console.error('Erreur lors de la sauvegarde du mapping de template:', error);
     return false;
   }
 };
 
-// Extract tags from template content and create initial mapping
+// Extraire les balises du contenu du template et créer un mapping initial
 export const createInitialMapping = (
-  content: string | null, 
-  availableVariables: Record<string, string[]>
+  content: string | null
 ): TemplateTag[] => {
   const extractedTags = extractTemplateTags(content);
+  const categoriesList = Object.keys(availableVariables);
   
   return extractedTags.map(tag => ({
     tag,
-    category: determineTagCategory(tag, Object.keys(availableVariables)),
+    category: determineTagCategory(tag, categoriesList),
     mappedTo: getDefaultMapping(tag, availableVariables)
   }));
 };
