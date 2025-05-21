@@ -84,9 +84,17 @@ export const loadTemplateMapping = async (
     }
     
     // Fix: Check if mappings exist and is an array before accessing length
-    if (mappingData?.mappings && Array.isArray(mappingData.mappings) && mappingData.mappings.length > 0) {
+    if (mappingData?.mappings && Array.isArray(mappingData.mappings)) {
       console.log("Found existing mapping:", mappingData.mappings);
-      return mappingData.mappings as TemplateTag[];
+      
+      // Fix: Properly convert Json[] to TemplateTag[] with explicit mapping
+      const templateTags: TemplateTag[] = (mappingData.mappings as any[]).map(item => ({
+        tag: String(item.tag || ''),
+        category: String(item.category || ''),
+        mappedTo: String(item.mappedTo || '')
+      }));
+      
+      return templateTags;
     }
     
     console.log("No mapping found, creating initial mapping from template");
@@ -145,11 +153,12 @@ export const saveTemplateMapping = async (
   try {
     console.log("Saving mapping for template:", templateId, mappings);
     
+    // Fix: Convert TemplateTag[] to Json for compatibility with Supabase
     const { error } = await supabase
       .from('template_mappings')
       .upsert({
         template_id: templateId,
-        mappings: mappings,
+        mappings: mappings as unknown as any,
         updated_at: new Date().toISOString()
       }, {
         onConflict: 'template_id'
