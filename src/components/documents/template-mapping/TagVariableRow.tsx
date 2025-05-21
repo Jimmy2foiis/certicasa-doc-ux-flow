@@ -1,5 +1,4 @@
 
-import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TemplateTag, availableVariables } from "./types";
@@ -58,7 +57,7 @@ export const TagVariableRow = ({
             <SelectValue placeholder="Variable" />
           </SelectTrigger>
           <SelectContent>
-            {availableVariables[tag.category]?.map(variable => (
+            {availableVariables[tag.category as keyof typeof availableVariables]?.map(variable => (
               <SelectItem key={variable} value={variable}>
                 {variable}
               </SelectItem>

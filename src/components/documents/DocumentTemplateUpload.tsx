@@ -81,7 +81,7 @@ const DocumentTemplateUpload = () => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={cancelDelete}>Annuler</AlertDialogCancel>
-              <AlertDialogAction onClick={() => handleDeleteFile(fileToDelete as string)}>Supprimer</AlertDialogAction>
+              <AlertDialogAction onClick={handleDeleteFile}>Supprimer</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -98,7 +98,6 @@ const DocumentTemplateUpload = () => {
                 console.log("Tentative de sauvegarde des modèles:", uploadedFiles);
                 saveAllTemplates(uploadedFiles);
               }}
-              disabled={uploadedFiles.length === 0 || uploading}
             >
               Enregistrer dans la bibliothèque
             </Button>

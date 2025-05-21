@@ -1,98 +1,138 @@
-
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { TemplateTag } from "@/components/documents/template-mapping/types";
-import { processDocumentContent, prepareDocumentData } from "@/utils/documentUtils";
-import { fetchTemplateById, createDocument } from "@/utils/documentStorage";
-import { fetchClientData } from "@/utils/clientDataUtils";
-import { useDocumentActions } from "@/hooks/useDocumentActions";
-import { useTemplateStorage } from "@/hooks/useTemplateStorage";
 
 interface UseDocumentGenerationProps {
-  (onDocumentGenerated?: ((documentId: string) => void) | undefined, clientName?: string, clientId?: string): {
+  (onDocumentGenerated?: (documentId: string) => void, clientName?: string): {
     generating: boolean;
     generated: boolean;
     documentId: string | null;
     handleGenerate: (templateId: string, clientId?: string, mappings?: TemplateTag[]) => Promise<void>;
-    handleDownload: () => Promise<void>;
-    handleSaveToFolder: () => Promise<boolean>;
+    handleDownload: () => void;
   };
 }
 
 export const useDocumentGeneration: UseDocumentGenerationProps = (
   onDocumentGenerated,
-  clientName,
-  clientId
+  clientName
 ) => {
   const [generating, setGenerating] = useState(false);
   const [generated, setGenerated] = useState(false);
   const [documentId, setDocumentId] = useState<string | null>(null);
   const { toast } = useToast();
-  const { getTemplateById } = useTemplateStorage(() => {});
-  
-  // Use document actions hook for download and save
-  const documentActions = useDocumentActions({ documentId });
 
   // Fonction pour générer un document
   const handleGenerate = async (templateId: string, clientId?: string, mappings?: TemplateTag[]) => {
-    if (!templateId) {
-      toast({
-        title: "Erreur",
-        description: "Aucun modèle sélectionné.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setGenerating(true);
 
     try {
-      console.log("Génération de document à partir du template:", templateId);
-      console.log("ID client:", clientId);
-      console.log("Mappings:", mappings);
+      // Récupérer les informations du template
+      const { data: templateData, error: templateError } = await supabase
+        .from('document_templates')
+        .select('name, type, content')
+        .eq('id', templateId)
+        .single();
       
-      // Obtenir les données du template
-      const templateData = await fetchTemplateById(templateId);
-      
-      if (!templateData) {
-        throw new Error("Le modèle sélectionné n'existe pas");
+      if (templateError) {
+        console.error("Erreur lors de la récupération du template:", templateError);
+        throw new Error("Template introuvable");
       }
-      
-      if (!templateData.content) {
-        throw new Error("Le modèle sélectionné est vide ou invalide");
-      }
-      
-      // Récupérer les données client si nous avons un ID client et des mappings
+
+      // Generate document content by replacing variables if mappings provided
       let documentContent = templateData.content;
-      if (clientId && mappings && mappings.length > 0) {
-        console.log("Application des mappings au document:", mappings);
-        const clientData = await fetchClientData(clientId);
+      
+      if (mappings && mappings.length > 0) {
+        console.log("Applying mappings to document:", mappings);
         
-        if (!clientData || Object.keys(clientData).length === 0) {
-          console.warn("Les données client sont vides pour l'ID client:", clientId);
+        // Get client data if we have clientId
+        let clientData: any = {};
+        if (clientId) {
+          try {
+            // Get client data
+            const { data: client } = await supabase
+              .from('clients')
+              .select('*')
+              .eq('id', clientId)
+              .single();
+              
+            if (client) {
+              clientData.client = client;
+              
+              // Get cadastral data
+              const { data: cadastre } = await supabase
+                .from('cadastral_data')
+                .select('*')
+                .eq('client_id', clientId)
+                .single();
+                
+              if (cadastre) {
+                clientData.cadastre = cadastre;
+              }
+              
+              // Get projects
+              const { data: projects } = await supabase
+                .from('projects')
+                .select('*')
+                .eq('client_id', clientId);
+                
+              if (projects && projects.length > 0) {
+                clientData.project = projects[0]; // Use first project for now
+                
+                // Get calculations
+                const { data: calculations } = await supabase
+                  .from('calculations')
+                  .select('*')
+                  .eq('project_id', projects[0].id);
+                  
+                if (calculations && calculations.length > 0) {
+                  clientData.calcul = calculations[0];
+                }
+              }
+            }
+          } catch (err) {
+            console.error("Error fetching client data:", err);
+          }
         }
         
-        documentContent = processDocumentContent(documentContent, mappings, clientData);
+        // Apply replacements
+        mappings.forEach(mapping => {
+          const tagRegex = new RegExp(mapping.tag.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+          
+          // Get the value from client data based on mapping
+          const [category, field] = mapping.mappedTo.split('.');
+          const value = clientData[category]?.[field] || `[${mapping.mappedTo}]`;
+          
+          // Replace in content
+          if (documentContent) {
+            documentContent = documentContent.replace(tagRegex, value);
+          }
+        });
       }
 
       // Préparer les données du document
-      const documentData = prepareDocumentData(
-        templateData,
-        clientName || "Document sans nom",
-        clientId,
-        documentContent
-      );
+      const documentData = {
+        name: `${templateData.name} - ${clientName || 'Document'}`,
+        type: templateData.type,
+        status: 'generated',
+        client_id: clientId || null,
+        content: documentContent || templateData.content,
+        created_at: new Date().toISOString()
+      };
 
-      // Créer le document
-      const document = await createDocument(documentData);
+      // Insérer le document dans Supabase
+      const { data, error } = await supabase
+        .from('documents')
+        .insert([documentData])
+        .select();
       
-      if (!document || !document.id) {
-        throw new Error("Erreur lors de la création du document");
+      if (error) {
+        console.error("Erreur lors de la génération du document:", error);
+        throw new Error("Impossible de générer le document");
       }
-      
-      console.log("Document généré avec succès:", document);
-      
-      setDocumentId(document.id);
+
+      console.log("Document généré avec succès:", data[0]);
+      setDocumentId(data[0].id);
       
       // Simuler un délai pour l'expérience utilisateur
       setTimeout(() => {
@@ -100,7 +140,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
         setGenerated(true);
         
         if (onDocumentGenerated) {
-          onDocumentGenerated(document.id);
+          onDocumentGenerated(data[0].id);
         }
         
         toast({
@@ -110,7 +150,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       }, 1500);
 
     } catch (error) {
-      console.error("Erreur de génération:", error);
+      console.error("Erreur lors de la génération:", error);
       setGenerating(false);
       
       toast({
@@ -121,12 +161,39 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
     }
   };
 
+  // Fonction pour télécharger un document
+  const handleDownload = () => {
+    if (!documentId) {
+      toast({
+        title: "Erreur",
+        description: "Aucun document à télécharger.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Simulate a download (in a real app, use Storage or a URL)
+    console.log(`Téléchargement du document ${documentId}`);
+    
+    toast({
+      title: "Téléchargement",
+      description: "Le téléchargement du document a commencé.",
+    });
+    
+    // In a real application, you might use something like:
+    // const { data } = await supabase.storage.from('documents').download(`path/to/${documentId}`);
+    // const url = URL.createObjectURL(data);
+    // const a = document.createElement('a');
+    // a.href = url;
+    // a.download = 'document.pdf';
+    // a.click();
+  };
+
   return {
     generating,
     generated,
     documentId,
     handleGenerate,
-    handleDownload: documentActions.handleDownload,
-    handleSaveToFolder: documentActions.handleSaveToFolder
+    handleDownload
   };
 };

@@ -1,7 +1,7 @@
-
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
-import { DocumentTemplate, UploadedFile } from "@/types/documents";
+import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
+import { UploadedFile } from "@/components/documents/TemplateFileItem";
 import { useCallback } from "react";
 
 export const useTemplateStorage = (resetUploadedFiles: () => void) => {
@@ -17,7 +17,6 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
         toast({
           title: "Avertissement",
           description: "Aucun fichier valide à enregistrer.",
-          variant: "default",
         });
         return;
       }
@@ -30,8 +29,8 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
       
       const templates = filesToSave.map(file => ({
         name: file.name.replace(/\.[^/.]+$/, ""), // Enlever l'extension
-        type: file.name.split('.').pop()?.toLowerCase() || "unknown",
-        content: file.content || null,
+        type: file.name.split('.').pop() || "unknown",
+        content: file.content || null, // Using the now-defined content property
         last_modified: now,
         date_uploaded: now,
         user_id: user?.id || null // Ajouter l'ID utilisateur si disponible
@@ -88,10 +87,6 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
         throw error;
       }
       
-      if (!data) {
-        return [];
-      }
-      
       // Transformer les données pour correspondre au format DocumentTemplate
       return data.map(item => ({
         id: item.id,
@@ -110,11 +105,6 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
 
   // Fonction pour supprimer un modèle de document
   const deleteTemplate = useCallback(async (templateId: string): Promise<boolean> => {
-    if (!templateId) {
-      console.error("ID de template manquant");
-      return false;
-    }
-    
     try {
       const { error } = await supabase
         .from('document_templates')
@@ -143,49 +133,9 @@ export const useTemplateStorage = (resetUploadedFiles: () => void) => {
     }
   }, [toast]);
 
-  // Fonction pour obtenir un modèle par son ID
-  const getTemplateById = useCallback(async (templateId: string): Promise<DocumentTemplate | null> => {
-    if (!templateId) {
-      console.error("ID de template manquant");
-      return null;
-    }
-    
-    try {
-      const { data, error } = await supabase
-        .from('document_templates')
-        .select('*')
-        .eq('id', templateId)
-        .maybeSingle();
-        
-      if (error) {
-        console.error("Erreur lors de la récupération du modèle:", error);
-        throw error;
-      }
-      
-      if (!data) {
-        return null;
-      }
-      
-      // Transformer les données pour correspondre au format DocumentTemplate
-      return {
-        id: data.id,
-        name: data.name,
-        type: data.type,
-        dateUploaded: new Date(data.date_uploaded).toLocaleDateString(),
-        lastModified: new Date(data.last_modified).toLocaleDateString(),
-        content: data.content,
-        userId: data.user_id
-      };
-    } catch (error) {
-      console.error("Erreur lors de la récupération du modèle:", error);
-      return null;
-    }
-  }, []);
-
   return { 
     saveAllTemplates,
     getTemplates,
-    deleteTemplate,
-    getTemplateById
+    deleteTemplate
   };
 };

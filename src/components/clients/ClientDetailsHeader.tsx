@@ -1,127 +1,111 @@
-
-import React, { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import ClientDocumentGenerator from "./ClientDocumentGenerator";
+import { useState } from "react";
+import { ArrowLeft, Edit, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Ellipsis, FileText, Pencil, Phone, Mail, Calendar } from "lucide-react";
-import ClientAvatar from "./ClientAvatar";
-import { useNavigate } from "react-router-dom";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { ClientForm } from "./ClientForm";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
+import ClientDocumentGenerator from "@/components/documents/ClientDocumentGenerator";
 
 interface ClientDetailsHeaderProps {
-  client: {
-    id: string;
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-    type: string;
-  };
-  onEdit?: () => void;
-  onBack?: () => void;
-  clientId?: string;
-  clientName?: string;
+  onBack: () => void;
+  clientId: string;
+  clientName: string;
+  client: any; // The full client object
   onDocumentGenerated?: (documentId: string) => void;
   onClientUpdated?: () => void;
 }
 
-const ClientDetailsHeader: React.FC<ClientDetailsHeaderProps> = ({ 
-  client, 
-  onEdit,
+const ClientDetailsHeader = ({
   onBack,
-  clientId = client?.id, 
-  clientName = client?.name,
+  clientId,
+  clientName,
+  client,
   onDocumentGenerated,
-  onClientUpdated
-}) => {
-  const navigate = useNavigate();
+  onClientUpdated,
+}: ClientDetailsHeaderProps) => {
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const { toast } = useToast();
-  const [showOptions, setShowOptions] = useState(false);
 
-  const handleEditClick = () => {
-    if (onEdit) {
-      onEdit();
-    } else {
-      toast({
-        title: "Edition non disponible",
-        description: "Cette fonctionnalité n'est pas encore implémentée",
-        duration: 3000,
-      });
+  // Function to handle client updates
+  const handleClientUpdated = () => {
+    setShowEditDialog(false);
+    
+    if (onClientUpdated) {
+      onClientUpdated();
     }
+    
+    toast({
+      title: "Client modifié",
+      description: "Les informations du client ont été mises à jour.",
+      duration: 3000,
+    });
   };
 
-  const handleBackClick = () => {
-    if (onBack) {
-      onBack();
-    }
-  };
-
+  // Function to handle document generation
   const handleDocumentGenerated = (documentId: string) => {
     if (onDocumentGenerated) {
       onDocumentGenerated(documentId);
-    } else {
-      toast({
-        title: "Document généré",
-        description: `Document ${documentId} généré avec succès`,
-      });
     }
-    // Rediriger vers la page de documents ou mettre à jour l'UI
+    
+    toast({
+      title: "Document généré",
+      description: `Document créé pour ${clientName}`,
+      duration: 3000,
+    });
   };
 
   return (
-    <div className="flex flex-col md:flex-row justify-between p-6 bg-white rounded-lg shadow-sm">
-      <div className="flex items-center gap-4 mb-4 md:mb-0">
-        <ClientAvatar name={client.name} />
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex items-center">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="mr-2"
+          onClick={onBack}
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
         <div>
-          <h1 className="text-2xl font-bold">{client.name}</h1>
-          <div className="flex flex-col mt-1">
-            <div className="flex items-center text-gray-500">
-              <Phone className="h-4 w-4 mr-2" />
-              <span>{client.phone || "Non renseigné"}</span>
-            </div>
-            <div className="flex items-center text-gray-500 mt-1">
-              <Mail className="h-4 w-4 mr-2" />
-              <span>{client.email || "Non renseigné"}</span>
-            </div>
+          <h1 className="text-2xl font-bold">{clientName}</h1>
+          <div className="flex items-center gap-2">
+            <Badge variant={client?.status === "Actif" ? "default" : "secondary"}>
+              {client?.status || "Actif"}
+            </Badge>
+            <span className="text-sm text-gray-500">
+              {client?.type || "Client particulier"}
+            </span>
           </div>
         </div>
       </div>
       
-      <div className="flex items-center space-x-2">
-        <ClientDocumentGenerator 
-          clientId={client.id} 
-          clientName={client.name} 
+      <div className="flex items-center gap-2 self-end md:self-auto">
+        <ClientDocumentGenerator
+          clientId={clientId}
+          clientName={clientName}
+          clientData={{
+            client: client,
+            // Other data will be fetched in the component
+          }}
           onDocumentGenerated={handleDocumentGenerated}
         />
         
-        <Button variant="outline" onClick={handleEditClick}>
-          <Pencil className="h-5 w-5 mr-2" />
-          Modifier
+        <Button variant="outline" onClick={() => setShowEditDialog(true)}>
+          <Edit className="mr-2 h-4 w-4" /> Modifier
         </Button>
-        
-        <DropdownMenu open={showOptions} onOpenChange={setShowOptions}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
-              <Ellipsis className="h-5 w-5" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => navigate(`/calculations?client=${client.id}`)}>
-              <Calendar className="h-4 w-4 mr-2" />
-              Nouveaux calculs
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => navigate(`/documents?client=${client.id}`)}>
-              <FileText className="h-4 w-4 mr-2" />
-              Voir les documents
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
+
+      {/* Edit Client Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <ClientForm
+            client={client}
+            clientId={clientId}
+            onSubmitSuccess={handleClientUpdated}
+            submitButtonText="Enregistrer les modifications"
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

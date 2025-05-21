@@ -1,7 +1,7 @@
 
 import React from "react";
 import { FileUp } from "lucide-react";
-import { DocumentTemplate } from "@/types/documents";
+import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 
