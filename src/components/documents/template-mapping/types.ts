@@ -9,7 +9,7 @@ export interface TemplateVariableMappingProps {
 }
 
 // Exporter directement depuis ce fichier pour éviter les problèmes d'importation circulaire
-export { TemplateTag, AvailableVariables };
+export type { TemplateTag, AvailableVariables };
 
 export const availableVariables: AvailableVariables = {
   client: ["nom", "prénom", "email", "téléphone", "adresse", "ville", "code_postal", "pays"],
