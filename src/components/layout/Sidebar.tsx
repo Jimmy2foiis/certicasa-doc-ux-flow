@@ -11,7 +11,7 @@ import {
   HelpCircle,
   Package,
   Upload,
-  Shield
+  Box
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -21,7 +21,6 @@ const navItems = [
   { icon: Calculator, label: "Calculs", value: "/calculations" },
   { icon: FileText, label: "Documents", value: "/documents" },
   { icon: GitBranch, label: "Suivi de projet", value: "/workflow" },
-  { icon: Shield, label: "Portail Admin", value: "/admin" },
   { icon: Upload, label: "Dépôts des Lots", value: "/lots" },
   { icon: Package, label: "Produits & Stock", value: "/products" },
   { icon: Receipt, label: "Facturation", value: "/billing" },
