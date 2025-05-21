@@ -1,15 +1,14 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { FileText } from "lucide-react";
 import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
-import { FileText, Save, AlertTriangle } from "lucide-react";
-import { AddNewTagField } from "./AddNewTagField";
-import { TagsList } from "./TagsList";
-import { VariableCategoryTabs } from "./VariableCategoryTabs";
-import { TemplateTag, TemplateVariableMappingProps, availableVariables } from "./types";
+import { TemplateTag, TemplateVariableMappingProps } from "./types";
 import { createInitialMapping, loadTemplateMapping, saveTemplateMapping } from "./utils";
+import { NotFoundTemplate } from "./NotFoundTemplate";
+import { MappingContent } from "./MappingContent";
+import { SaveMappingButton } from "./SaveMappingButton";
 
 // Main component
 const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: TemplateVariableMappingProps) => {
@@ -145,24 +144,7 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
   };
   
   if (!template?.id || !template?.content) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center text-amber-600">
-            <AlertTriangle className="mr-2 h-5 w-5" />
-            Modèle invalide
-          </CardTitle>
-          <CardDescription>
-            Le modèle sélectionné est vide ou invalide. Veuillez sélectionner un autre modèle.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex justify-center py-10">
-          <Button variant="outline" onClick={() => window.history.back()}>
-            Retour à la sélection
-          </Button>
-        </CardContent>
-      </Card>
-    );
+    return <NotFoundTemplate />;
   }
   
   return (
@@ -178,59 +160,27 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin h-8 w-8 border-b-2 border-blue-600 rounded-full"></div>
-          </div>
-        ) : error ? (
-          <div className="border border-red-200 bg-red-50 rounded-md p-4 text-red-800">
-            <div className="flex items-center">
-              <AlertTriangle className="h-5 w-5 mr-2" />
-              <p>{error}</p>
-            </div>
-          </div>
-        ) : (
-          <>
-            <AddNewTagField 
-              newTag={newTag} 
-              setNewTag={setNewTag} 
-              handleAddTag={handleAddTag} 
-            />
-            
-            <TagsList 
-              tags={templateTags}
-              clientData={clientData}
-              updateCategory={updateCategory}
-              updateMapping={updateMapping}
-            />
-            
-            <VariableCategoryTabs 
-              activeCategory={activeCategory}
-              setActiveCategory={setActiveCategory}
-              onSelectVariable={setNewTag}
-            />
-          </>
-        )}
+        <MappingContent
+          loading={loading}
+          error={error}
+          templateTags={templateTags}
+          clientData={clientData}
+          updateCategory={updateCategory}
+          updateMapping={updateMapping}
+          newTag={newTag}
+          setNewTag={setNewTag}
+          handleAddTag={handleAddTag}
+          activeCategory={activeCategory}
+          setActiveCategory={setActiveCategory}
+        />
       </CardContent>
       
       <CardFooter>
-        <Button 
-          onClick={handleSaveMapping} 
-          disabled={loading || saving || !!error || templateTags.length === 0} 
-          className="ml-auto"
-        >
-          {saving ? (
-            <>
-              <div className="animate-spin h-4 w-4 mr-2 border-b-2 border-white rounded-full"></div>
-              Sauvegarde en cours...
-            </>
-          ) : (
-            <>
-              <Save className="h-4 w-4 mr-2" />
-              Sauvegarder le mapping
-            </>
-          )}
-        </Button>
+        <SaveMappingButton
+          onClick={handleSaveMapping}
+          disabled={loading || saving || !!error || templateTags.length === 0}
+          saving={saving}
+        />
       </CardFooter>
     </Card>
   );
