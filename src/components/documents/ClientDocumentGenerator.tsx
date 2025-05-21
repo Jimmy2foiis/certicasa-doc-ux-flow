@@ -293,7 +293,7 @@ const ClientDocumentGenerator = ({
                   {selectedTemplateObject && (
                     <div className="space-y-4">
                       {!templateValid && (
-                        <Alert variant="warning" className="mb-4">
+                        <Alert variant="default" className="mb-4">
                           <AlertCircle className="h-4 w-4" />
                           <AlertTitle>Avertissement</AlertTitle>
                           <AlertDescription>
