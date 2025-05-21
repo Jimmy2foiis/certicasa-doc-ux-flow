@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -11,7 +12,7 @@ import MappingStep from "./MappingStep";
 import GeneratingState from "./GeneratingState";
 import SuccessState from "./SuccessState";
 import { useDocumentGeneration } from "@/hooks/useDocumentGeneration";
-import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
+import { DocumentTemplate } from "@/types/documents";
 import { TemplateTag } from "@/components/documents/template-mapping/types";
 import { NotFoundTemplate } from "@/components/documents/template-mapping/NotFoundTemplate";
 import { TemplateValidationState } from "@/types/documents";

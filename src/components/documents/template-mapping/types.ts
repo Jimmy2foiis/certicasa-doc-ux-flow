@@ -1,5 +1,5 @@
 
-import { DocumentTemplate } from "@/types/documents";
+import { DocumentTemplate, TemplateTag, AvailableVariables } from "@/types/documents";
 
 export interface TemplateVariableMappingProps {
   template: DocumentTemplate;
@@ -8,16 +8,8 @@ export interface TemplateVariableMappingProps {
   onMappingComplete: (mappings: TemplateTag[]) => void;
 }
 
-export interface TemplateTag {
-  tag: string;
-  category: string;
-  mappedTo: string;
-}
-
 // Exporter directement depuis ce fichier pour éviter les problèmes d'importation circulaire
-export interface AvailableVariables {
-  [category: string]: string[];
-}
+export { TemplateTag, AvailableVariables };
 
 export const availableVariables: AvailableVariables = {
   client: ["nom", "prénom", "email", "téléphone", "adresse", "ville", "code_postal", "pays"],

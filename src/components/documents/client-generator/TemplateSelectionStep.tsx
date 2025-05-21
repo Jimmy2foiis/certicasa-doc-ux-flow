@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import TemplateSelectionList from "../TemplateSelectionList";
-import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
+import { DocumentTemplate } from "@/types/documents";
 import { TemplateTag } from "@/components/documents/template-mapping/types";
 import { TemplateValidationState } from "@/types/documents";
 import { useDocumentTemplates } from "@/hooks/useDocumentTemplates";
