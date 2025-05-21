@@ -1,14 +1,14 @@
 
 import { useState, useEffect } from "react";
 import { useAdministrativeDocuments } from "@/hooks/useAdministrativeDocuments";
-import { AdministrativeDocument } from "@/types/documents";
+import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, FileUp, FileDown, RefreshCcw, FileText } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { DocumentStatusBadge } from "@/components/documents/DocumentStatusBadge";
-import { DocumentActionButtons } from "@/components/documents/DocumentActionButtons";
+import DocumentStatusBadge from "@/components/documents/DocumentStatusBadge";
+import DocumentActionButtons from "@/components/documents/DocumentActionButtons";
 
 interface DocumentsTabContentProps {
   clientId?: string;
@@ -16,7 +16,7 @@ interface DocumentsTabContentProps {
   projectType?: string;
 }
 
-const DocumentsTabContent = ({ clientId, clientName, projectType = "RES010" }: DocumentsTabContentProps) => {
+export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES010" }: DocumentsTabContentProps) => {
   const {
     adminDocuments,
     filteredDocuments,
@@ -35,7 +35,7 @@ const DocumentsTabContent = ({ clientId, clientName, projectType = "RES010" }: D
   useEffect(() => {
     if (clientId && adminDocuments) {
       // Transform AdminDocuments to ensure they have all required properties for AdministrativeDocument
-      const transformedDocs: AdministrativeDocument[] = adminDocuments.map(doc => ({
+      const transformedDocs = adminDocuments.map(doc => ({
         ...doc,
         // Add required properties that may be missing
         description: (doc as any).description || "",
@@ -44,7 +44,7 @@ const DocumentsTabContent = ({ clientId, clientName, projectType = "RES010" }: D
         id: doc.id,
         name: doc.name,
         type: doc.type,
-        status: doc.status,
+        status: doc.status as DocumentStatus, // Cast string to DocumentStatus type
       }));
       
       // Create a combined list
@@ -156,7 +156,8 @@ const DocumentsTabContent = ({ clientId, clientName, projectType = "RES010" }: D
                 <div className="flex items-center space-x-2">
                   <DocumentStatusBadge status={doc.status} />
                   <DocumentActionButtons 
-                    document={doc} 
+                    documentType={doc.type} 
+                    status={doc.status}
                     onAction={(action) => handleDocumentAction(doc.id, action)}
                   />
                 </div>
@@ -169,4 +170,3 @@ const DocumentsTabContent = ({ clientId, clientName, projectType = "RES010" }: D
   );
 };
 
-export { DocumentsTabContent }; // Export as named export

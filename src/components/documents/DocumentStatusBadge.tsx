@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { DocumentStatus } from "@/models/documents";
+import { DocumentStatus } from "@/types/documents";
 import { CheckCircle, Clock, AlertTriangle, XCircle, Link as LinkIcon, FileText } from "lucide-react";
 
 interface DocumentStatusBadgeProps {
@@ -73,3 +73,5 @@ const DocumentStatusBadge = ({ status, customLabel }: DocumentStatusBadgeProps) 
 };
 
 export default DocumentStatusBadge;
+// Also export as a named export for consistency
+export { DocumentStatusBadge };

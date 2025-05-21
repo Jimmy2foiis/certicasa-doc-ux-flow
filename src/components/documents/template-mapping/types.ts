@@ -11,7 +11,7 @@ export interface TemplateVariableMappingProps {
 export type { TemplateTag, TagMapping, TagCategoryProps } from "@/types/documents";
 export { availableVariables } from "@/types/documents";
 
-// Export type pour les composants de mapping
+// Export type for mapping components
 export interface MappingContentProps {
   loading: boolean;
   templateTags: TemplateTag[];
@@ -23,4 +23,14 @@ export interface MappingContentProps {
   updateMapping: (index: number, value: string) => void;
   updateCategory: (index: number, category: string) => void;
   clientData?: any;
+}
+
+// Props for TagsList component
+export interface TagsListProps extends MappingContentProps {
+  tags: TemplateTag[];
+}
+
+// Props for VariableCategoryTabs component
+export interface VariableCategoryTabsProps extends MappingContentProps {
+  onSelectVariable: (variable: string) => void;
 }

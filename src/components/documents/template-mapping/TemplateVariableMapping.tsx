@@ -1,104 +1,103 @@
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from 'react';
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TagsList } from "./TagsList";
-import { AddNewTagField } from "./AddNewTagField";
-import { VariableCategoryTabs } from "./VariableCategoryTabs";
-import { DocumentTemplate, TemplateTag } from "@/types/documents";
-import { MappingContentProps, TemplateVariableMappingProps } from "./types";
+import { TemplateVariableMappingProps, TemplateTag, MappingContentProps } from './types';
+import { AddNewTagField } from './AddNewTagField';
+import { VariableCategoryTabs } from './VariableCategoryTabs';
+import { TagsList } from './TagsList';
 
-export const TemplateVariableMapping = ({ 
-  template,
-  clientData,
-  onMappingComplete 
-}: TemplateVariableMappingProps) => {
-  const [loading, setLoading] = useState(false);
+export const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: TemplateVariableMappingProps) => {
+  const [loading, setLoading] = useState<boolean>(true);
   const [templateTags, setTemplateTags] = useState<TemplateTag[]>([]);
-  const [newTag, setNewTag] = useState("");
-  const [activeCategory, setActiveCategory] = useState("client");
+  const [newTag, setNewTag] = useState<string>('');
+  const [activeCategory, setActiveCategory] = useState<string>('client');
 
-  // Extract variables from template content
+  // Extraire les balises du contenu du template au chargement
   useEffect(() => {
     if (template && template.content) {
       setLoading(true);
-      setTimeout(() => {
-        const extractedTags = extractTagsFromContent(template.content || "");
-        setTemplateTags(extractedTags);
+      try {
+        // Simuler l'extraction des balises (remplacer par la logique réelle d'extraction)
+        setTimeout(() => {
+          const extractedTags: TemplateTag[] = extractTemplateTags(template.content);
+          setTemplateTags(extractedTags);
+          setLoading(false);
+        }, 500);
+      } catch (error) {
+        console.error('Erreur lors de l\'extraction des balises:', error);
         setLoading(false);
-      }, 500); // Simulate loading
+      }
+    } else {
+      // Aucun contenu à analyser
+      setLoading(false);
     }
   }, [template]);
 
-  // Extract template tags from content
-  const extractTagsFromContent = (content: string): TemplateTag[] => {
-    // Regular expression to match {{tag}} pattern
-    const tagRegex = /\{\{([^}]+)\}\}/g;
-    const tags: TemplateTag[] = [];
-    const foundTags = new Set<string>();
+  // Fonction pour extraire les balises du contenu (logique simplifiée)
+  const extractTemplateTags = (content: string | null): TemplateTag[] => {
+    if (!content) return [];
     
-    let match;
-    while ((match = tagRegex.exec(content)) !== null) {
-      const tagName = match[1].trim();
-      
-      // Skip duplicate tags
-      if (foundTags.has(tagName)) continue;
-      foundTags.add(tagName);
-      
-      // Create a new tag with default category
-      tags.push({
-        tag: tagName,
-        category: "client",
-        mappedTo: ""
-      });
+    // Exemple de logique d'extraction - à adapter selon le format réel des templates
+    const tagRegex = /\{\{([^}]+)\}\}/g;
+    const matches = content.matchAll(tagRegex);
+    const tags: TemplateTag[] = [];
+    
+    for (const match of matches) {
+      const tag = match[1].trim();
+      // Éviter les doublons
+      if (!tags.some(t => t.tag === tag)) {
+        tags.push({
+          tag,
+          category: 'client', // Catégorie par défaut
+          mappedTo: ''
+        });
+      }
     }
     
     return tags;
   };
 
-  // Add a new tag manually
+  // Gérer l'ajout d'une nouvelle balise manuelle
   const handleAddTag = () => {
-    if (!newTag.trim()) return;
-    
-    // Check if tag already exists
-    if (templateTags.some(t => t.tag === newTag.trim())) {
-      setNewTag("");
-      return;
-    }
-    
-    setTemplateTags([
-      ...templateTags,
-      {
+    if (newTag.trim() && !templateTags.some(tag => tag.tag === newTag.trim())) {
+      setTemplateTags([...templateTags, {
         tag: newTag.trim(),
         category: activeCategory,
-        mappedTo: ""
-      }
-    ]);
-    
-    setNewTag("");
+        mappedTo: ''
+      }]);
+      setNewTag('');
+    }
   };
 
-  // Update the mapping value for a tag
+  // Mettre à jour la valeur mappée pour une balise
   const updateMapping = (index: number, value: string) => {
     const updatedTags = [...templateTags];
-    updatedTags[index] = { ...updatedTags[index], mappedTo: value };
+    updatedTags[index].mappedTo = value;
     setTemplateTags(updatedTags);
-    
-    // Call the parent callback
-    onMappingComplete(updatedTags);
   };
 
-  // Update the category for a tag
+  // Mettre à jour la catégorie d'une balise
   const updateCategory = (index: number, category: string) => {
     const updatedTags = [...templateTags];
-    updatedTags[index] = { ...updatedTags[index], category };
+    updatedTags[index].category = category;
     setTemplateTags(updatedTags);
-    
-    // Call the parent callback
-    onMappingComplete(updatedTags);
   };
 
-  // Shared props for mapping components
+  // Fonction pour terminer et enregistrer le mapping
+  const handleSaveMapping = () => {
+    onMappingComplete(templateTags);
+  };
+
+  // Sélectionner une variable pour la balise active
+  const handleSelectVariable = (variable: string) => {
+    // Si une balise est sélectionnée dans l'UI, on pourrait l'associer à cette variable
+    // Sinon, on ajoute simplement la variable au champ de nouvelle balise
+    setNewTag(variable);
+  };
+
+  // Props communs pour les composants de contenu de mapping
   const mappingContentProps: MappingContentProps = {
     loading,
     templateTags,
@@ -109,41 +108,53 @@ export const TemplateVariableMapping = ({
     setActiveCategory,
     updateMapping,
     updateCategory,
-    clientData
+    clientData,
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-xl">
-          Mapping des variables du modèle
-        </CardTitle>
-      </CardHeader>
-      
-      <CardContent>
+    <Card className="w-full">
+      <CardContent className="p-6">
+        <h2 className="text-xl font-semibold mb-4">Association des Variables</h2>
+        
         {loading ? (
           <div className="space-y-4">
-            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-12 w-full" />
             <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-10 w-1/3" />
           </div>
         ) : (
-          <div className="space-y-6">
-            <AddNewTagField {...mappingContentProps} />
+          <>
+            <AddNewTagField 
+              {...mappingContentProps} 
+            />
             
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="w-full md:w-1/3">
-                <VariableCategoryTabs {...mappingContentProps} />
-              </div>
+            <div className="mt-6">
+              <VariableCategoryTabs 
+                {...mappingContentProps}
+                onSelectVariable={handleSelectVariable}
+              />
               
-              <div className="w-full md:w-2/3">
-                <TagsList {...mappingContentProps} />
-              </div>
+              <TagsList 
+                {...mappingContentProps}
+                tags={templateTags}
+              />
             </div>
-          </div>
+            
+            <div className="mt-6 flex justify-end">
+              <Button 
+                variant="default"
+                onClick={handleSaveMapping}
+                disabled={templateTags.some(tag => !tag.mappedTo)}
+              >
+                Confirmer l'association
+              </Button>
+            </div>
+          </>
         )}
       </CardContent>
     </Card>
   );
 };
 
+// Export default for backward compatibility
 export default TemplateVariableMapping;

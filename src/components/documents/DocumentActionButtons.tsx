@@ -1,7 +1,7 @@
 
 import { Eye, Download, RefreshCw, RefreshCcw, Link, FileText, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { DocumentStatus } from "@/models/documents";
+import { DocumentStatus } from "@/types/documents";
 
 type ActionType = 
   | "view" 
@@ -139,3 +139,5 @@ const DocumentActionButtons = ({ documentType, status, onAction }: DocumentActio
 };
 
 export default DocumentActionButtons;
+// Also export as a named export for consistency
+export { DocumentActionButtons };
