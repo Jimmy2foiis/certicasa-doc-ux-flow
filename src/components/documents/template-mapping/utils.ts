@@ -83,7 +83,8 @@ export const loadTemplateMapping = async (
       return await createInitialMappingFromTemplate(templateId, availableVariables);
     }
     
-    if (mappingData?.mappings && mappingData.mappings.length > 0) {
+    // Fix: Check if mappings exist and is an array before accessing length
+    if (mappingData?.mappings && Array.isArray(mappingData.mappings) && mappingData.mappings.length > 0) {
       console.log("Found existing mapping:", mappingData.mappings);
       return mappingData.mappings as TemplateTag[];
     }
