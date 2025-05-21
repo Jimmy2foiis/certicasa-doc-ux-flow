@@ -4,8 +4,7 @@
  */
 
 import { InterventionType, PlanningStatus } from "@/components/workflow/types/planningTypes";
-import { AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
-import React from "react";
+import { LucideIcon, AlertCircle, CheckCircle, Clock, XCircle } from "lucide-react";
 
 /**
  * Get background color based on event status
@@ -28,33 +27,32 @@ export const getStatusColor = (status: PlanningStatus): string => {
 };
 
 /**
- * Get badge component based on status
+ * Get badge props based on status
  */
-export const getStatusBadge = (status: PlanningStatus): React.ReactNode => {
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(status)}`}>
-      {formatStatus(status)}
-    </span>
-  );
+export const getStatusBadgeProps = (status: PlanningStatus) => {
+  return {
+    className: `inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusColor(status)}`,
+    label: formatStatus(status)
+  };
 };
 
 /**
  * Get status icon based on status
  */
-export const getStatusIcon = (status: PlanningStatus): React.ReactNode => {
+export const getStatusIconProps = (status: PlanningStatus): { icon: LucideIcon; className: string } => {
   switch (status) {
     case "pending":
-      return <Clock className="h-2.5 w-2.5 text-yellow-600" />;
+      return { icon: Clock, className: "h-2.5 w-2.5 text-yellow-600" };
     case "completed":
-      return <CheckCircle className="h-2.5 w-2.5 text-green-600" />;
+      return { icon: CheckCircle, className: "h-2.5 w-2.5 text-green-600" };
     case "cancelled":
-      return <XCircle className="h-2.5 w-2.5 text-red-600" />;
+      return { icon: XCircle, className: "h-2.5 w-2.5 text-red-600" };
     case "in-progress":
-      return <Clock className="h-2.5 w-2.5 text-blue-600" />;
+      return { icon: Clock, className: "h-2.5 w-2.5 text-blue-600" };
     case "unassigned":
-      return <AlertCircle className="h-2.5 w-2.5 text-gray-600" />;
+      return { icon: AlertCircle, className: "h-2.5 w-2.5 text-gray-600" };
     default:
-      return null;
+      return { icon: AlertCircle, className: "h-2.5 w-2.5 text-gray-600" };
   }
 };
 
