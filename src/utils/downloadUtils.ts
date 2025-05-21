@@ -15,35 +15,35 @@ export const downloadDocument = async (documentId: string | null): Promise<boole
 
   try {
     // Get document details from database
-    const { data: document, error: docError } = await supabase
+    const { data: documentData, error: docError } = await supabase
       .from('documents')
       .select('name, content, type')
       .eq('id', documentId)
       .single();
     
-    if (docError || !document) {
+    if (docError || !documentData) {
       console.error("Erreur lors de la récupération du document:", docError);
       return false;
     }
 
     // Create the file content - in a real app this might come from Storage
     // For now, we'll just use the content stored in the database
-    const content = document.content || "Contenu du document non disponible";
+    const content = documentData.content || "Contenu du document non disponible";
     
     // Create a blob for the file
     const blob = new Blob([content], { type: 'application/pdf' });
     
-    // Create download link and trigger download
+    // Create download link and trigger download - using window.document (DOM) not the documentData variable
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = window.document.createElement('a');
     a.href = url;
-    a.download = `${document.name || 'document'}.pdf`;
-    document.body.appendChild(a);
+    a.download = `${documentData.name || 'document'}.pdf`;
+    window.document.body.appendChild(a);
     a.click();
     
     // Clean up
     setTimeout(() => {
-      document.body.removeChild(a);
+      window.document.body.removeChild(a);
       URL.revokeObjectURL(url);
     }, 100);
     
