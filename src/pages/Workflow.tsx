@@ -2,7 +2,7 @@
 import React from "react";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
-import WorkflowManagement from "@/components/workflow/WorkflowManagement";
+import { PlanningCalendar } from "@/components/workflow/PlanningCalendar";
 
 const Workflow = () => {
   return (
@@ -11,8 +11,7 @@ const Workflow = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
         <main className="flex-1 overflow-y-auto p-4">
-          <h1 className="text-2xl font-bold mb-6">Suivi de projet</h1>
-          <WorkflowManagement />
+          <PlanningCalendar />
         </main>
       </div>
     </div>

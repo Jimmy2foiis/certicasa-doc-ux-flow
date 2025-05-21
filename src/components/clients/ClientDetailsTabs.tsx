@@ -1,38 +1,30 @@
 
-import { 
-  User, 
-  Home, 
-  FileText, 
-  Receipt, 
-  BarChart, 
-  Calculator 
-} from "lucide-react";
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientInfoTab from "./ClientInfoTab";
-import ProjectsTab from "./ProjectsTab";
-import CalculationsTab from "./CalculationsTab";
-import DocumentsTab from "./DocumentsTab";
+import { DocumentsTab } from "./DocumentsTab";
+import { CalculationsTab } from "./CalculationsTab";
 import BillingTab from "./BillingTab";
 import StatisticsTab from "./StatisticsTab";
-import { GeoCoordinates } from "@/services/geoCoordinatesService";
+import { ClientPlanning } from "./planning/ClientPlanning";
 
 interface ClientDetailsTabsProps {
   clientId: string;
-  clientAddress: string;
   client: any;
+  clientAddress: string;
   utmCoordinates: string;
   cadastralReference: string;
   climateZone: string;
   apiSource?: string;
   loadingCadastral: boolean;
-  coordinates?: GeoCoordinates;
+  coordinates?: any;
   savedCalculations: any[];
   activeTab: string;
   setActiveTab: (tab: string) => void;
   onShowCalculation: (projectId?: string) => void;
-  onAddressChange: (address: string) => void;
-  onCoordinatesChange?: (coordinates: GeoCoordinates) => void;
-  onRefreshCadastralData?: () => Promise<void>;
+  onAddressChange: (newAddress: string) => void;
+  onCoordinatesChange: (coordinates: any) => void;
+  onRefreshCadastralData: () => Promise<void>;
 }
 
 const ClientDetailsTabs = ({
@@ -54,43 +46,21 @@ const ClientDetailsTabs = ({
   onRefreshCadastralData
 }: ClientDetailsTabsProps) => {
   return (
-    <Tabs 
-      value={activeTab} 
-      onValueChange={setActiveTab}
-      className="w-full"
-    >
-      <TabsList className="mb-6 bg-white p-1 shadow-sm rounded-md">
-        <TabsTrigger value="client-info" className="flex items-center gap-1">
-          <User className="h-4 w-4" />
-          <span>Fiche Client</span>
-        </TabsTrigger>
-        <TabsTrigger value="projects" className="flex items-center gap-1">
-          <Home className="h-4 w-4" />
-          <span>Projets</span>
-        </TabsTrigger>
-        <TabsTrigger value="calculations" className="flex items-center gap-1">
-          <Calculator className="h-4 w-4" />
-          <span>Calculs</span>
-        </TabsTrigger>
-        <TabsTrigger value="documents" className="flex items-center gap-1">
-          <FileText className="h-4 w-4" />
-          <span>Documents</span>
-        </TabsTrigger>
-        <TabsTrigger value="billing" className="flex items-center gap-1">
-          <Receipt className="h-4 w-4" />
-          <span>Facturation</span>
-        </TabsTrigger>
-        <TabsTrigger value="statistics" className="flex items-center gap-1">
-          <BarChart className="h-4 w-4" />
-          <span>Statistiques</span>
-        </TabsTrigger>
+    <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <TabsList className="grid grid-cols-6 mb-2">
+        <TabsTrigger value="client-info" className="text-sm">Informations</TabsTrigger>
+        <TabsTrigger value="documents" className="text-sm">Documents</TabsTrigger>
+        <TabsTrigger value="calculations" className="text-sm">Calculs</TabsTrigger>
+        <TabsTrigger value="planning" className="text-sm">Planning</TabsTrigger>
+        <TabsTrigger value="billing" className="text-sm">Facturation</TabsTrigger>
+        <TabsTrigger value="statistics" className="text-sm">Statistiques</TabsTrigger>
       </TabsList>
-
+      
       <TabsContent value="client-info">
         <ClientInfoTab 
-          client={client} 
-          utmCoordinates={utmCoordinates} 
-          cadastralReference={cadastralReference} 
+          client={client}
+          utmCoordinates={utmCoordinates}
+          cadastralReference={cadastralReference}
           climateZone={climateZone}
           apiSource={apiSource}
           loadingCadastral={loadingCadastral}
@@ -101,30 +71,32 @@ const ClientDetailsTabs = ({
           onRefreshCadastralData={onRefreshCadastralData}
         />
       </TabsContent>
-
-      <TabsContent value="projects">
-        <ProjectsTab clientId={clientId} />
+      
+      <TabsContent value="documents">
+        <DocumentsTab 
+          clientId={clientId} 
+          clientName={client?.name}
+        />
       </TabsContent>
-
+      
       <TabsContent value="calculations">
         <CalculationsTab 
-          clientId={clientId}
-          clientName={client?.name} 
-          clientAddress={clientAddress}
           savedCalculations={savedCalculations} 
-          onOpenCalculation={onShowCalculation} 
-          onCreateNewCalculation={() => onShowCalculation()} 
+          onShowCalculation={onShowCalculation}
         />
       </TabsContent>
 
-      <TabsContent value="documents">
-        <DocumentsTab clientId={clientId} />
+      <TabsContent value="planning">
+        <ClientPlanning 
+          clientId={clientId}
+          clientName={client?.name}
+        />
       </TabsContent>
-
+      
       <TabsContent value="billing">
         <BillingTab clientId={clientId} />
       </TabsContent>
-
+      
       <TabsContent value="statistics">
         <StatisticsTab clientId={clientId} />
       </TabsContent>
