@@ -145,7 +145,7 @@ const TemplateFileItem = ({ file, onDelete }: TemplateFileItemProps) => {
               <AlertTriangle className="mx-auto h-8 w-8 text-yellow-500 mb-2" />
               <p>Aucune balise n'a été détectée dans ce document.</p>
               <p className="text-sm text-gray-500 mt-2">
-                Assurez-vous que les variables sont au format {{variable}}.
+                Assurez-vous que les variables sont au format {'{{variable}}'}.
               </p>
             </div>
           )}

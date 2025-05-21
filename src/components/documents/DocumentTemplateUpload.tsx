@@ -81,7 +81,7 @@ const DocumentTemplateUpload = () => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel onClick={cancelDelete}>Annuler</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteFile}>Supprimer</AlertDialogAction>
+              <AlertDialogAction onClick={() => handleDeleteFile(fileToDelete as string)}>Supprimer</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
