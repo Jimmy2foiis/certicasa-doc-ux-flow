@@ -4,10 +4,11 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Button } from "@/components/ui/button";
 import { Download, Trash2, Eye } from "lucide-react";
 import DocumentStatusBadge from "./DocumentStatusBadge";
-import { Document } from "@/types/documents"; // Update the import to use Document type
+import { Document } from "@/types/documents";
+import { DocumentStatus } from "@/models/documents";
 
 interface DocumentsAccordionProps {
-  documents: Document[]; // Update from AdministrativeDocument[] to Document[]
+  documents: Document[];
   onDocumentAction: (action: string, documentId: string) => void;
 }
 
@@ -20,6 +21,18 @@ const DocumentsAccordion = ({ documents, onDocumentAction }: DocumentsAccordionP
     );
   }
 
+  // Helper function to convert string status to DocumentStatus type
+  const mapToDocumentStatus = (status: string | undefined): DocumentStatus => {
+    const validStatuses: DocumentStatus[] = [
+      "generated", "ready", "pending", "missing", "action-required", "error", "linked"
+    ];
+    
+    if (status && validStatuses.includes(status as DocumentStatus)) {
+      return status as DocumentStatus;
+    }
+    return "pending"; // Default status
+  };
+
   return (
     <Accordion type="single" collapsible className="w-full">
       {documents.map((doc) => (
@@ -28,7 +41,7 @@ const DocumentsAccordion = ({ documents, onDocumentAction }: DocumentsAccordionP
             <div className="flex items-center justify-between w-full pr-4">
               <div className="flex items-center">
                 <div className="mr-4">
-                  <DocumentStatusBadge status={doc.status || 'pending'} />
+                  <DocumentStatusBadge status={mapToDocumentStatus(doc.status)} />
                 </div>
                 <div className="text-left">
                   <h4 className="font-medium">{doc.name}</h4>
@@ -44,7 +57,6 @@ const DocumentsAccordion = ({ documents, onDocumentAction }: DocumentsAccordionP
             <div className="px-4 py-2">
               <div className="flex justify-between items-center">
                 <div>
-                  {/* If description property exists, display it, otherwise display a generic message */}
                   <p className="text-sm text-gray-600">
                     {(doc as any).description || "Document généré pour le client"}
                   </p>
