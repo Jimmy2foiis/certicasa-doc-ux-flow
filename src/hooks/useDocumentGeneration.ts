@@ -3,8 +3,10 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { TemplateTag } from "@/components/documents/template-mapping/types";
 import { processDocumentContent, prepareDocumentData } from "@/utils/documentUtils";
-import { supabase } from "@/integrations/supabase/client";
-import { useTemplateStorage } from "./useTemplateStorage";
+import { fetchTemplateById, createDocument } from "@/utils/documentStorage";
+import { fetchClientData } from "@/utils/clientDataUtils";
+import { useDocumentActions } from "@/hooks/useDocumentActions";
+import { useTemplateStorage } from "@/hooks/useTemplateStorage";
 
 interface UseDocumentGenerationProps {
   (onDocumentGenerated?: ((documentId: string) => void) | undefined, clientName?: string, clientId?: string): {
@@ -27,85 +29,9 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
   const [documentId, setDocumentId] = useState<string | null>(null);
   const { toast } = useToast();
   const { getTemplateById } = useTemplateStorage(() => {});
-
-  // Fonction pour récupérer les données client nécessaires au mapping
-  const fetchClientData = async (clientId?: string) => {
-    if (!clientId) return null;
-    
-    try {
-      // Récupérer les données du client
-      const { data: clientData, error: clientError } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('id', clientId)
-        .maybeSingle();
-        
-      if (clientError) throw clientError;
-      
-      // Récupérer les données cadastrales si disponibles
-      const { data: cadastralData } = await supabase
-        .from('cadastral_data')
-        .select('*')
-        .eq('client_id', clientId)
-        .maybeSingle();
-        
-      // Récupérer les projets du client
-      const { data: projectsData } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('client_id', clientId)
-        .order('created_at', { ascending: false });
-        
-      // Organiser les données par catégorie pour le mapping
-      return {
-        client: clientData || {},
-        cadastre: cadastralData || {},
-        projet: projectsData?.[0] || {},
-        // Autres catégories si nécessaire
-      };
-    } catch (error) {
-      console.error("Erreur lors de la récupération des données client:", error);
-      return null;
-    }
-  };
-
-  // Fonction pour obtenir un modèle par son ID
-  const getTemplateById2 = async (templateId: string) => {
-    try {
-      if (!templateId) throw new Error("ID de template manquant");
-      
-      const { data, error } = await supabase
-        .from('document_templates')
-        .select('*')
-        .eq('id', templateId)
-        .maybeSingle();
-        
-      if (error) throw error;
-      if (!data) throw new Error("Template non trouvé");
-      
-      return data;
-    } catch (error) {
-      console.error("Erreur lors de la récupération du template:", error);
-      throw error;
-    }
-  };
   
-  // Fonction pour créer un document
-  const createDocument = async (documentData: any) => {
-    try {
-      const { data, error } = await supabase
-        .from('documents')
-        .insert(documentData)
-        .select()
-        .single();
-        
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error("Erreur lors de la création du document:", error);
-      throw error;
-    }
-  };
+  // Use document actions hook for download and save
+  const documentActions = useDocumentActions({ documentId });
 
   // Fonction pour générer un document
   const handleGenerate = async (templateId: string, clientId?: string, mappings?: TemplateTag[]) => {
@@ -126,7 +52,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       console.log("Mappings:", mappings);
       
       // Obtenir les données du template
-      const templateData = await getTemplateById2(templateId);
+      const templateData = await fetchTemplateById(templateId);
       
       if (!templateData) {
         throw new Error("Le modèle sélectionné n'existe pas");
@@ -195,89 +121,12 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
     }
   };
 
-  // Fonction pour télécharger un document
-  const handleDownload = async (): Promise<void> => {
-    if (!documentId) {
-      toast({
-        title: "Erreur",
-        description: "Aucun document à télécharger.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      // Récupérer les informations du document
-      const { data: document, error } = await supabase
-        .from('documents')
-        .select('*')
-        .eq('id', documentId)
-        .maybeSingle();
-        
-      if (error) throw error;
-      if (!document) throw new Error("Document introuvable");
-      
-      // Créer un blob à partir du contenu
-      const blob = new Blob([document.content || ""], { type: 'text/plain' });
-      const url = URL.createObjectURL(blob);
-      
-      // Créer un lien de téléchargement et cliquer dessus
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${document.name || 'document'}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      toast({
-        title: "Téléchargement",
-        description: "Le téléchargement du document a commencé.",
-      });
-    } catch (error) {
-      console.error("Erreur de téléchargement:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de télécharger le document.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Fonction pour enregistrer le document dans un dossier
-  const handleSaveToFolder = async (): Promise<boolean> => {
-    if (!documentId) {
-      toast({
-        title: "Erreur",
-        description: "Aucun document à enregistrer.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
-    try {
-      toast({
-        title: "Document sauvegardé",
-        description: "Le document a été ajouté au dossier du client.",
-      });
-      return true;
-    } catch (error) {
-      console.error("Erreur de sauvegarde:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer le document dans le dossier.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
-
   return {
     generating,
     generated,
     documentId,
     handleGenerate,
-    handleDownload,
-    handleSaveToFolder
+    handleDownload: documentActions.handleDownload,
+    handleSaveToFolder: documentActions.handleSaveToFolder
   };
 };

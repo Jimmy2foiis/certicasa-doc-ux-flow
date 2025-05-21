@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 
 /**
  * Handle document download functionality
@@ -62,8 +61,8 @@ export const downloadDocument = async (documentId: string | null): Promise<boole
  * @returns Promise<boolean> indicating success
  */
 export const saveDocumentToFolder = async (documentId: string | null, clientId: string | null): Promise<boolean> => {
-  if (!documentId || !clientId) {
-    console.error("ID de document ou ID de client manquant");
+  if (!documentId) {
+    console.error("ID de document manquant");
     return false;
   }
   

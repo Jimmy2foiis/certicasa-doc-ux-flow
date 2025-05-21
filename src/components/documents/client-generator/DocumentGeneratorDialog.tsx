@@ -1,155 +1,141 @@
 
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogTitle, DialogHeader, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { useDocumentGeneratorState } from "./useDocumentGeneratorState";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+} from "@/components/ui/dialog";
+
+import GeneratorDialogHeader from "./GeneratorDialogHeader";
 import TemplateSelectionStep from "./TemplateSelectionStep";
 import MappingStep from "./MappingStep";
 import GeneratingState from "./GeneratingState";
 import SuccessState from "./SuccessState";
-import GeneratorDialogHeader from "./GeneratorDialogHeader";
+import { useDocumentGeneration } from "@/hooks/useDocumentGeneration";
+import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
 import { TemplateTag } from "@/components/documents/template-mapping/types";
-import { ArrowLeft } from "lucide-react";
 import { NotFoundTemplate } from "@/components/documents/template-mapping/NotFoundTemplate";
+import { TemplateValidationState } from "@/types/documents";
+
+type Step = "selection" | "mapping" | "generating" | "success";
 
 interface DocumentGeneratorDialogProps {
   isOpen: boolean;
   onClose: () => void;
   clientId: string;
-  clientName: string;
+  clientName?: string;
   onDocumentGenerated?: (documentId: string) => void;
 }
 
-const DocumentGeneratorDialog = ({
+const DocumentGeneratorDialog: React.FC<DocumentGeneratorDialogProps> = ({
   isOpen,
   onClose,
   clientId,
-  clientName,
-  onDocumentGenerated,
-}: DocumentGeneratorDialogProps) => {
+  clientName = "Client",
+  onDocumentGenerated = () => {},
+}) => {
+  const [step, setStep] = useState<Step>("selection");
+  const [selectedTemplate, setSelectedTemplate] = useState<DocumentTemplate | null>(null);
+  const [templateTags, setTemplateTags] = useState<TemplateTag[]>([]);
+  const [validationState, setValidationState] = useState<TemplateValidationState | null>(null);
+  
   const {
-    selectedTab,
-    setSelectedTab,
-    selectedTemplate,
-    selectedTemplateObject,
-    templateMappings,
-    templates,
-    loading,
     generating,
     generated,
     documentId,
-    handleTemplateSelect,
-    handleMappingComplete,
-    handleDocumentGeneration,
-    handleCloseDialog,
-    handleDownload,
-    handleSaveToFolder,
-  } = useDocumentGeneratorState({
-    clientId,
-    clientName,
-    onDocumentGenerated: onDocumentGenerated || (() => {}),
-  });
+    handleGenerate,
+    handleDownload
+  } = useDocumentGeneration((docId) => {
+    onDocumentGenerated(docId);
+    setStep("success");
+  }, clientName, clientId);
 
-  // Client data for mapping, to be fetched based on clientId
-  const [clientData, setClientData] = useState<any>({});
-
+  // Réinitialiser l'état lorsque le dialogue se ferme
   useEffect(() => {
-    // Reset dialog state when it's opened
-    if (isOpen) {
-      setSelectedTab("templates");
+    if (!isOpen) {
+      // Réinitialiser l'état après fermeture du dialogue
+      setTimeout(() => {
+        setStep("selection");
+        setSelectedTemplate(null);
+        setTemplateTags([]);
+        setValidationState(null);
+      }, 300);
     }
   }, [isOpen]);
 
-  return (
-    <Dialog open={isOpen} onOpenChange={(open) => {
-      if (!open) handleCloseDialog();
-      onClose();
-    }}>
-      <DialogContent className="sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>Génération de document pour {clientName}</DialogTitle>
-          <DialogDescription>
-            Sélectionnez un modèle et mappez les variables pour générer un document personnalisé
-          </DialogDescription>
-        </DialogHeader>
+  // Gérer la transition vers l'étape de mapping
+  const handleTemplateSelect = (template: DocumentTemplate, tags: TemplateTag[], validState: TemplateValidationState | null) => {
+    setSelectedTemplate(template);
+    setTemplateTags(tags);
+    setValidationState(validState);
+    
+    if (validState) {
+      // Si un état d'invalidation est présent, rester sur la même étape
+      setStep("selection");
+    } else {
+      // Sinon, passer à l'étape de mapping
+      setStep("mapping");
+    }
+  };
 
-        {!generating && !generated && (
-          <div className="grid grid-cols-2 gap-2 mb-4">
-            <div
-              className={`py-2 px-4 rounded-md text-center cursor-pointer ${
-                selectedTab === "templates"
-                  ? "bg-blue-100 text-blue-900 font-medium"
-                  : "bg-gray-50 text-gray-500"
-              }`}
-              onClick={() => setSelectedTab("templates")}
-            >
-              1. Sélection du modèle
-            </div>
-            <div
-              className={`py-2 px-4 rounded-md text-center cursor-pointer ${
-                selectedTab === "mapping"
-                  ? "bg-blue-100 text-blue-900 font-medium"
-                  : "bg-gray-50 text-gray-500"
-              }`}
-              onClick={() => {
-                if (selectedTemplate) setSelectedTab("mapping");
-              }}
-            >
-              2. Mapping des variables
-            </div>
-          </div>
-        )}
+  // Gérer la génération du document avec les mappings
+  const handleGenerateWithMappings = (mappings: TemplateTag[]) => {
+    if (!selectedTemplate) return;
+    
+    setStep("generating");
+    handleGenerate(selectedTemplate.id, clientId, mappings);
+  };
 
-        {generating && !generated && <GeneratingState />}
-        
-        {!generating && generated && (
+  const renderContent = () => {
+    switch (step) {
+      case "selection":
+        if (validationState) {
+          return <NotFoundTemplate reason={validationState} />;
+        }
+        return (
+          <TemplateSelectionStep
+            clientId={clientId}
+            onTemplateSelect={handleTemplateSelect}
+          />
+        );
+      case "mapping":
+        return (
+          <MappingStep
+            templateTags={templateTags}
+            clientId={clientId}
+            onGenerate={handleGenerateWithMappings}
+            onBack={() => setStep("selection")}
+          />
+        );
+      case "generating":
+        return <GeneratingState />;
+      case "success":
+        return (
           <SuccessState
             documentId={documentId}
+            clientId={clientId}
             onDownload={handleDownload}
-            onSaveToFolder={handleSaveToFolder}
           />
-        )}
-        
-        {!generating && !generated && selectedTab === "templates" && (
-          <TemplateSelectionStep
-            selectedTemplate={selectedTemplate}
-            loading={loading}
-            templatesCount={templates.length}
-            onTemplateSelect={handleTemplateSelect}
-            onContinue={() => setSelectedTab("mapping")}
-          />
-        )}
-        
-        {!generating && !generated && selectedTab === "mapping" && selectedTemplateObject && (
-          <MappingStep
-            template={selectedTemplateObject}
-            clientData={clientData}
-            onMappingComplete={handleMappingComplete}
-            onBack={() => setSelectedTab("templates")}
-            onGenerate={handleDocumentGeneration}
-            canGenerate={templateMappings.length > 0}
-          />
-        )}
-        
-        {!generating && !generated && selectedTab === "mapping" && !selectedTemplateObject && (
-          <NotFoundTemplate />
-        )}
+        );
+      default:
+        return null;
+    }
+  };
 
-        {!generating && !generated && (
-          <div className="flex justify-between mt-4">
-            <Button variant="outline" onClick={handleCloseDialog}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Retour
-            </Button>
-            
-            {selectedTab === "mapping" && (
-              <Button onClick={handleDocumentGeneration} disabled={generating}>
-                Générer le document
-              </Button>
-            )}
-          </div>
-        )}
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-[600px]">
+        <DialogHeader>
+          <GeneratorDialogHeader
+            step={step}
+            clientName={clientName}
+            templateName={selectedTemplate?.name}
+          />
+        </DialogHeader>
+        
+        <div className="mt-4">
+          {renderContent()}
+        </div>
       </DialogContent>
     </Dialog>
   );
