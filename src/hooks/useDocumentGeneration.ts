@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TemplateTag } from "@/types/documents";
 import { documentService } from "@/services/documentService";
@@ -14,6 +14,7 @@ interface UseDocumentGenerationProps {
     handleDownload: () => Promise<void>;
     error: string | null;
     canDownload: boolean;
+    reset: () => void;
   };
 }
 
@@ -26,6 +27,16 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
   const [documentId, setDocumentId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [canDownload, setCanDownload] = useState(false);
+  const { toast } = useToast();
+
+  // Reset the generation state
+  const reset = () => {
+    setGenerated(false);
+    setGenerating(false);
+    setDocumentId(null);
+    setError(null);
+    setCanDownload(false);
+  };
 
   // Fonction améliorée pour vérifier si le mapping est complet
   const validateMappings = (mappings?: TemplateTag[]): boolean => {
@@ -374,6 +385,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
     handleGenerate,
     handleDownload,
     error,
-    canDownload
+    canDownload,
+    reset
   };
 };

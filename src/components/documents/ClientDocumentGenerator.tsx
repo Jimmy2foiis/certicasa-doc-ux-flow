@@ -34,7 +34,7 @@ const ClientDocumentGenerator = ({
   const [templateMappings, setTemplateMappings] = useState<TemplateTag[]>([]);
   const [templateValid, setTemplateValid] = useState<boolean>(false);
   const { templates, loading, refreshTemplates } = useDocumentTemplates();
-  const { generating, generated, documentId, handleGenerate, handleDownload, error, canDownload } = useDocumentGeneration(onDocumentGenerated, clientName);
+  const { generating, generated, documentId, handleGenerate, handleDownload, error, canDownload, reset } = useDocumentGeneration(onDocumentGenerated, clientName);
   const { toast } = useToast();
 
   // Get the selected template object
@@ -142,10 +142,12 @@ const ClientDocumentGenerator = ({
     }
     
     if (!templateValid) {
-      const confirmation = window.confirm("Le modèle sélectionné semble être invalide ou vide. Voulez-vous quand même essayer de générer un document ?");
-      if (!confirmation) {
-        return;
-      }
+      toast({
+        title: "Erreur",
+        description: "Le modèle sélectionné est invalide ou vide. Impossible de générer un document.",
+        variant: "destructive"
+      });
+      return;
     }
 
     try {
@@ -153,13 +155,12 @@ const ClientDocumentGenerator = ({
       const validationResult = validateMapping();
       
       if (!validationResult.valid) {
-        const confirmGeneration = window.confirm(
-          `${validationResult.message}. Voulez-vous quand même générer le document ?`
-        );
-        
-        if (!confirmGeneration) {
-          return;
-        }
+        toast({
+          title: "Erreur de mapping",
+          description: validationResult.message,
+          variant: "destructive"
+        });
+        return;
       }
 
       // Generate the document with mappings
@@ -182,7 +183,10 @@ const ClientDocumentGenerator = ({
       setTimeout(() => {
         if (!generated) {
           setSelectedTab("templates");
+          setSelectedTemplate("");
+          setTemplateMappings([]);
         }
+        reset(); // Reset the document generation state
       }, 300);
     }
   };
@@ -191,6 +195,7 @@ const ClientDocumentGenerator = ({
   const handleOpenDialog = () => {
     setIsOpen(true);
     refreshTemplates();
+    reset(); // Reset any previous generation state
   };
 
   return (
@@ -271,7 +276,7 @@ const ClientDocumentGenerator = ({
                       </p>
                       <Button
                         variant="secondary"
-                        disabled={!selectedTemplate}
+                        disabled={!selectedTemplate || !templateValid}
                         onClick={() => {
                           if (!templateValid) {
                             toast({
@@ -319,7 +324,7 @@ const ClientDocumentGenerator = ({
                           ← Retour
                         </Button>
                         <Button
-                          disabled={!selectedTemplate}
+                          disabled={!templateValid || templateMappings.length === 0}
                           onClick={handleDocumentGeneration}
                         >
                           <FileText className="mr-2 h-4 w-4" />

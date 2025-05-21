@@ -1,232 +1,297 @@
 
-import { Download, Mail, Save, Eye, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { Download, Mail, Save, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface DocumentActionsProps {
-  onDownload: () => void;
-  onView?: () => void;
   documentId?: string;
   clientId?: string;
-  showViewButton?: boolean;
+  onDownload?: () => Promise<void>;
   canDownload?: boolean;
 }
 
-const DocumentActions = ({ 
-  onDownload, 
-  onView, 
-  documentId, 
-  clientId, 
-  showViewButton = false,
+const DocumentActions = ({
+  documentId,
+  clientId,
+  onDownload,
   canDownload = false
 }: DocumentActionsProps) => {
-  const [isEmailSending, setIsEmailSending] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [recipientEmail, setRecipientEmail] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Fonction pour envoyer un document par email avec validation améliorée
-  const handleSendEmail = async () => {
-    setError(null);
-    
-    if (!documentId) {
-      setError("Aucun document à envoyer. Veuillez d'abord générer un document.");
-      return;
-    }
-    
-    if (!clientId) {
-      setError("Aucun client associé à ce document. Impossible d'envoyer par email.");
-      return;
-    }
-    
+  // Fonction pour gérer le téléchargement du document
+  const handleDownload = async () => {
     if (!canDownload) {
-      setError("Le document n'est pas prêt ou n'a pas de contenu valide. Impossible d'envoyer par email.");
-      return;
-    }
-
-    setIsEmailSending(true);
-    try {
-      // Récupérer l'email du client
-      const { data: clientData, error: clientError } = await supabase
-        .from('clients')
-        .select('email')
-        .eq('id', clientId)
-        .single();
-      
-      if (clientError || !clientData) {
-        throw new Error("Impossible de récupérer les informations du client");
-      }
-      
-      if (!clientData.email) {
-        throw new Error("Ce client n'a pas d'adresse email enregistrée");
-      }
-
-      // Récupérer les informations du document
-      const { data: docData, error: docError } = await supabase
-        .from('documents')
-        .select('name, file_path, content')
-        .eq('id', documentId)
-        .single();
-      
-      if (docError || !docData) {
-        throw new Error("Impossible de récupérer les informations du document");
-      }
-      
-      if (!docData.content && !docData.file_path) {
-        throw new Error("Le document n'a pas de contenu valide à envoyer");
-      }
-
-      // Simuler l'envoi d'email (dans une application réelle, utilisez une Edge Function)
-      console.log(`Envoi du document "${docData.name}" à ${clientData.email}`);
-      
-      // Mettre à jour le statut du document comme "envoyé"
-      const { error: updateError } = await supabase
-        .from('documents')
-        .update({ status: 'sent' })
-        .eq('id', documentId);
-        
-      if (updateError) {
-        console.error("Erreur lors de la mise à jour du statut:", updateError);
-      }
-
-      toast({
-        title: "Email envoyé",
-        description: `Le document a été envoyé à ${clientData.email}`,
-      });
-    } catch (error) {
-      console.error("Erreur lors de l'envoi de l'email:", error);
-      setError(error instanceof Error ? error.message : "Erreur lors de l'envoi de l'email");
-      
       toast({
         title: "Erreur",
-        description: "Impossible d'envoyer l'email. Veuillez réessayer.",
+        description: "Ce document ne peut pas être téléchargé car son contenu est vide ou invalide.",
         variant: "destructive",
       });
-    } finally {
-      setIsEmailSending(false);
+      return;
+    }
+
+    if (onDownload) {
+      try {
+        await onDownload();
+      } catch (error) {
+        console.error("Erreur lors du téléchargement:", error);
+        toast({
+          title: "Erreur",
+          description: `Échec du téléchargement: ${error instanceof Error ? error.message : String(error)}`,
+          variant: "destructive",
+        });
+      }
+    } else {
+      toast({
+        title: "Info",
+        description: "Fonction de téléchargement non disponible",
+      });
     }
   };
 
-  // Fonction pour enregistrer le document dans le dossier du client avec validation améliorée
-  const handleSaveToFolder = async () => {
-    setError(null);
-    
-    if (!documentId) {
-      setError("Aucun document à enregistrer. Veuillez d'abord générer un document.");
-      return;
-    }
-    
-    if (!clientId) {
-      setError("Aucun client associé à ce document. Impossible d'enregistrer dans un dossier client.");
-      return;
-    }
-    
-    if (!canDownload) {
-      setError("Le document n'est pas prêt ou n'a pas de contenu valide. Impossible de l'enregistrer.");
-      return;
-    }
-
-    setIsSaving(true);
+  // Fonction pour envoyer le document par email
+  const handleSendEmail = async () => {
     try {
-      // Vérifier que le document existe et a du contenu
-      const { data: docData, error: docError } = await supabase
+      setError(null);
+      
+      if (!documentId || !clientId) {
+        throw new Error("Informations manquantes pour l'envoi d'email");
+      }
+      
+      if (!recipientEmail || !recipientEmail.includes('@')) {
+        throw new Error("Adresse email invalide");
+      }
+
+      // Vérifier d'abord si le document a un contenu valide
+      const { data: document, error: documentError } = await supabase
         .from('documents')
-        .select('content, file_path')
+        .select('content, type')
         .eq('id', documentId)
         .single();
       
-      if (docError || !docData) {
-        throw new Error("Impossible de récupérer le document");
+      if (documentError || !document) {
+        throw new Error("Document introuvable ou inaccessible");
       }
       
-      if (!docData.content && !docData.file_path) {
-        throw new Error("Le document n'a pas de contenu valide à enregistrer");
-      }
-      
-      // Mettre à jour le document pour indiquer qu'il est enregistré dans le dossier
-      const { error } = await supabase
-        .from('documents')
-        .update({ 
-          status: 'saved_to_folder',
-        })
-        .eq('id', documentId);
-        
-      if (error) {
-        throw new Error("Impossible de mettre à jour le statut du document");
+      if (!document.content || document.content.trim() === '') {
+        throw new Error("Le document n'a pas de contenu à envoyer");
       }
 
-      toast({
-        title: "Document enregistré",
-        description: "Le document a été enregistré dans le dossier du client.",
-      });
+      setSendingEmail(true);
+      
+      // Récupérer l'email du client si aucun email n'est spécifié
+      let emailToSend = recipientEmail;
+      
+      if (!emailToSend) {
+        const { data: client, error: clientError } = await supabase
+          .from('clients')
+          .select('email')
+          .eq('id', clientId)
+          .single();
+          
+        if (clientError || !client) {
+          throw new Error("Impossible de récupérer les informations du client");
+        }
+        
+        if (!client.email) {
+          throw new Error("Ce client n'a pas d'adresse email enregistrée");
+        }
+        
+        emailToSend = client.email;
+      }
+      
+      // Simuler l'envoi d'email (à remplacer par votre logique d'envoi réelle)
+      console.log(`Envoi d'email à ${emailToSend} avec le document ${documentId}`);
+      
+      // En production, vous appelleriez ici une API ou une fonction Edge pour envoyer l'email
+      // Exemple: await supabase.functions.invoke('send-email', { documentId, recipientEmail: emailToSend })
+      
+      setTimeout(() => {
+        setSendingEmail(false);
+        setEmailDialogOpen(false);
+        
+        toast({
+          title: "Email envoyé",
+          description: `Le document a été envoyé à ${emailToSend}`,
+        });
+      }, 1500);
     } catch (error) {
-      console.error("Erreur lors de l'enregistrement:", error);
-      setError(error instanceof Error ? error.message : "Erreur lors de l'enregistrement du document");
+      console.error("Erreur lors de l'envoi de l'email:", error);
+      setSendingEmail(false);
+      setError(error instanceof Error ? error.message : String(error));
       
       toast({
         title: "Erreur",
-        description: "Impossible d'enregistrer le document. Veuillez réessayer.",
+        description: `Impossible d'envoyer l'email: ${error instanceof Error ? error.message : String(error)}`,
         variant: "destructive",
       });
-    } finally {
-      setIsSaving(false);
+    }
+  };
+
+  // Fonction pour sauvegarder le document dans les documents administratifs
+  const handleSaveToAdminDocs = async () => {
+    try {
+      if (!documentId || !clientId) {
+        toast({
+          title: "Erreur",
+          description: "Informations manquantes pour l'enregistrement du document",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Vérifier que le document existe et a un contenu valide
+      const { data: document, error: documentError } = await supabase
+        .from('documents')
+        .select('name, type, content')
+        .eq('id', documentId)
+        .single();
+      
+      if (documentError || !document) {
+        toast({
+          title: "Erreur",
+          description: "Document introuvable ou inaccessible",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (!document.content || document.content.trim() === '') {
+        toast({
+          title: "Erreur",
+          description: "Le document n'a pas de contenu à enregistrer",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      toast({
+        title: "Info",
+        description: "Enregistrement du document dans les documents administratifs...",
+      });
+      
+      // Simuler l'enregistrement (à remplacer par votre logique réelle)
+      setTimeout(() => {
+        toast({
+          title: "Succès",
+          description: "Le document a été enregistré dans les documents administratifs",
+        });
+      }, 1000);
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement du document:", error);
+      toast({
+        title: "Erreur",
+        description: `Échec de l'enregistrement: ${error instanceof Error ? error.message : String(error)}`,
+        variant: "destructive",
+      });
     }
   };
 
   return (
-    <>
-      {error && (
-        <Alert variant="destructive" className="mb-4">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      
-      <div className="flex flex-wrap gap-2 justify-center sm:justify-end">
-        {showViewButton && (
-          <Button variant="outline" size="sm" className="flex-1 sm:flex-none" onClick={onView}>
-            <Eye className="mr-2 h-4 w-4" />
-            Voir
-          </Button>
-        )}
-        
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex-1 sm:flex-none" 
-          onClick={onDownload}
+    <div className="w-full flex flex-col space-y-4">
+      <div className="flex flex-wrap gap-2 justify-between">
+        <Button
+          variant="outline"
+          onClick={handleDownload}
           disabled={!canDownload}
+          className="flex-1"
         >
           <Download className="mr-2 h-4 w-4" />
           Télécharger
         </Button>
         
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex-1 sm:flex-none" 
-          onClick={handleSendEmail}
-          disabled={isEmailSending || !canDownload}
+        <Button
+          variant="outline"
+          onClick={() => setEmailDialogOpen(true)}
+          disabled={!canDownload}
+          className="flex-1"
         >
           <Mail className="mr-2 h-4 w-4" />
-          {isEmailSending ? "Envoi..." : "Envoyer par email"}
+          Envoyer par email
         </Button>
         
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="flex-1 sm:flex-none"
-          onClick={handleSaveToFolder}
-          disabled={isSaving || !canDownload}
+        <Button
+          variant="outline"
+          onClick={handleSaveToAdminDocs}
+          disabled={!canDownload}
+          className="flex-1"
         >
           <Save className="mr-2 h-4 w-4" />
-          {isSaving ? "Enregistrement..." : "Enregistrer"}
+          Enregistrer
         </Button>
       </div>
-    </>
+      
+      {!canDownload && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Document invalide</AlertTitle>
+          <AlertDescription>
+            Ce document ne peut pas être manipulé car son contenu est vide ou invalide.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Envoyer le document par email</DialogTitle>
+            <DialogDescription>
+              Entrez l'adresse email du destinataire pour envoyer le document.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Erreur</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="email" className="text-right">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="destinataire@example.com"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Annuler</Button>
+            </DialogClose>
+            <Button onClick={handleSendEmail} disabled={sendingEmail}>
+              {sendingEmail ? "Envoi en cours..." : "Envoyer"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 
