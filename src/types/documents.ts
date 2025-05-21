@@ -1,3 +1,4 @@
+
 // Définitions de types centralisées pour les documents
 
 // Type pour status de document (enum string)
@@ -113,7 +114,7 @@ export type Json =
 
 // Variables disponibles par catégorie
 export const availableVariables = {
-  client: ["name", "email", "phone", "address", "nif", "type", "status"],
+  client: ["name", "adresse", "email", "phone", "address", "nif", "type", "status"],
   project: ["name", "type", "surface_area", "roof_area", "status", "created_at"],
   cadastre: ["utm_coordinates", "cadastral_reference", "climate_zone", "api_source"],
   calcul: ["type", "improvement", "surface", "date", "calculation_data"],
