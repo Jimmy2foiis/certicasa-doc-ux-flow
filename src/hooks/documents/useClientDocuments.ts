@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getDocumentsForClient } from "@/services/supabase/documentService";
-import { AdministrativeDocument } from "@/types/documents";
+import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
 import { determineDocumentCategory, generateDemoDocuments } from "./useDemoDocuments";
 import { useDocumentSearch } from "./useDocumentSearch";
 import { useDocumentActions } from "./useDocumentActions";
@@ -28,7 +28,8 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
             name: doc.name,
             type: doc.type || "pdf",
             category: determineDocumentCategory(doc.name),
-            status: doc.status || "available",
+            // Convert string status to DocumentStatus type
+            status: (doc.status || "available") as DocumentStatus,
             created_at: doc.created_at,
             content: doc.content,
             file_path: doc.file_path,
