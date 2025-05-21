@@ -50,18 +50,20 @@ const DocumentsTabContent = ({ clientId, clientName = "Client", projectType = "R
     }
   }, [adminDocuments, isLoading, clientName, toast]);
 
-  // Conversion sécurisée du type pour éviter les erreurs TypeScript
+  // Conversion des documents pour assurer qu'ils respectent l'interface AdministrativeDocument
   const typedAdminDocuments: AdministrativeDocument[] = adminDocuments.map(doc => ({
     ...doc,
-    description: doc.description || doc.name || "", // Ajouter description par défaut si non définie
-    order: doc.order || 0 // Ajouter order par défaut si non défini
+    description: doc.description || doc.name || "", 
+    order: doc.order || 0,
+    status: doc.status as AdministrativeDocument["status"]
   }));
 
   // Conversion des filteredDocuments aussi
   const typedFilteredDocuments: AdministrativeDocument[] = filteredDocuments.map(doc => ({
     ...doc,
     description: doc.description || doc.name || "",
-    order: doc.order || 0
+    order: doc.order || 0,
+    status: doc.status as AdministrativeDocument["status"]
   }));
 
   return (

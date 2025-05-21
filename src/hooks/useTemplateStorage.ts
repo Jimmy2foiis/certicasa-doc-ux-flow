@@ -1,7 +1,7 @@
+
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from '@/integrations/supabase/client';
-import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
-import { UploadedFile } from "@/components/documents/TemplateFileItem";
+import { DocumentTemplate, UploadedFile } from "@/types/documents";
 import { useCallback } from "react";
 
 export const useTemplateStorage = (resetUploadedFiles: () => void) => {

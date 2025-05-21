@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
+import { DocumentTemplate } from "@/types/documents";
 import { FileText, Save } from "lucide-react";
 import { AddNewTagField } from "./AddNewTagField";
 import { TagsList } from "./TagsList";

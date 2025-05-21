@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FileText, FileUp, FileTextIcon, Check } from "lucide-react";
 import GenerateDocumentButton from "./GenerateDocumentButton";
-import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
+import { DocumentTemplate } from "@/types/documents";
 
 interface GenerateTabContentProps {
   setActiveTab: (tab: string) => void;

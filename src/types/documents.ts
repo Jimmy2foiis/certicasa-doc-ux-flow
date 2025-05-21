@@ -1,6 +1,16 @@
 
 // Définitions de types centralisées pour les documents
 
+// Type pour status de document (enum string)
+export type DocumentStatus = 
+  | "generated" 
+  | "ready" 
+  | "pending" 
+  | "missing" 
+  | "action-required" 
+  | "error"
+  | "linked";
+
 // Type principal pour les modèles de document
 export interface DocumentTemplate {
   id: string;
@@ -42,6 +52,7 @@ export interface UploadedFile {
   size: number;
   type: string;
   content: string | ArrayBuffer | null;
+  status?: string;
 }
 
 // Type pour un document généré
@@ -49,7 +60,7 @@ export interface GeneratedDocument {
   id: string;
   name: string;
   type: string;
-  status: string;
+  status: DocumentStatus;
   clientId?: string | null;
   projectId?: string | null;
   content?: string | null;
@@ -61,7 +72,7 @@ export interface AdministrativeDocument {
   id: string;
   name: string;
   type: string;
-  status: string;
+  status: DocumentStatus;
   description: string;
   order: number;
   content?: string | null;
@@ -69,7 +80,17 @@ export interface AdministrativeDocument {
   client_id?: string | null;
   project_id?: string | null;
   created_at?: string;
+  statusLabel?: string;
 }
+
+// Type Json pour utilisation avec Supabase
+export type Json = 
+  | string 
+  | number 
+  | boolean 
+  | null 
+  | { [key: string]: Json } 
+  | Json[];
 
 // Variables disponibles par catégorie
 export const availableVariables = {

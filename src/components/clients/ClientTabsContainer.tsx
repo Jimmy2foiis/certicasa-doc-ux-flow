@@ -55,7 +55,7 @@ export const ClientTabsContainer = ({
         </TabsContent>
 
         <TabsContent value="calculations" className="p-4">
-          <CalculationsTabContent onShowCalculation={onShowCalculation} clientId={clientId} />
+          <CalculationsTabContent onOpenCalculation={onShowCalculation} clientId={clientId} />
         </TabsContent>
 
         <TabsContent value="documents" className="p-4">
