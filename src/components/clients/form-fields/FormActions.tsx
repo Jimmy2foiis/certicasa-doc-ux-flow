@@ -4,11 +4,12 @@ import { DialogFooter } from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 
 interface FormActionsProps {
-  onCancel: () => void;
+  onCancel?: () => void;
   isSubmitting: boolean;
+  submitText?: string;
 }
 
-export const FormActions = ({ onCancel, isSubmitting }: FormActionsProps) => {
+export const FormActions = ({ onCancel, isSubmitting, submitText = 'Créer le client' }: FormActionsProps) => {
   return (
     <DialogFooter className="pt-4">
       <Button 
@@ -29,7 +30,7 @@ export const FormActions = ({ onCancel, isSubmitting }: FormActionsProps) => {
             Création...
           </>
         ) : (
-          'Créer le client'
+          submitText
         )}
       </Button>
     </DialogFooter>
