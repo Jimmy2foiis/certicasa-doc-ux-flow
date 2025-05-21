@@ -2,7 +2,7 @@
 import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, X, Download } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 interface DocumentsHeaderProps {
   searchQuery: string;
@@ -51,19 +51,6 @@ export const DocumentsHeader: React.FC<DocumentsHeaderProps> = ({
             </Button>
           )}
         </div>
-        
-        {onExportAll && (
-          <Button 
-            variant="outline"
-            size="sm"
-            disabled={documentCount === 0 || isLoading}
-            onClick={onExportAll}
-            className="flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            <span>Exporter tout</span>
-          </Button>
-        )}
       </div>
     </div>
   );
