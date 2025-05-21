@@ -5,7 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { FileText } from "lucide-react";
 import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
 import { TemplateTag, TemplateVariableMappingProps, availableVariables } from "./types";
-import { createInitialMapping, loadTemplateMapping, saveTemplateMapping } from "./utils";
+import { createInitialMapping, loadTemplateMapping, saveTemplateMapping, extractTemplateTags } from "./utils";
 import { NotFoundTemplate } from "./NotFoundTemplate";
 import { MappingContent } from "./MappingContent";
 import { SaveMappingButton } from "./SaveMappingButton";
@@ -18,6 +18,7 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
   const [error, setError] = useState<string | null>(null);
   const [newTag, setNewTag] = useState("");
   const [activeCategory, setActiveCategory] = useState<string>("client");
+  const [templateValidationState, setTemplateValidationState] = useState<'valid' | 'empty' | 'invalid' | 'no-tags' | 'unknown'>('unknown');
   const { toast } = useToast();
   
   // Load existing mapping if available
@@ -28,14 +29,31 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
       
       try {
         if (!template?.id) {
+          setTemplateValidationState('unknown');
           setError("Template ID is missing");
           return;
         }
         
         if (!template?.content) {
+          setTemplateValidationState('empty');
           setError("Template content is empty or invalid");
           return;
         }
+        
+        // Check for variables in the template content
+        const extractedTags = extractTemplateTags(template.content);
+        if (extractedTags.length === 0) {
+          setTemplateValidationState('no-tags');
+          setError("No template variables found in document");
+          toast({
+            title: "Aucune variable trouvée",
+            description: "Le modèle ne contient pas de variables à associer (format {{variable}}).",
+            variant: "warning",
+          });
+          return;
+        }
+        
+        setTemplateValidationState('valid');
         
         // Try to get existing mapping from Supabase
         const mappings = await loadTemplateMapping(template.id, availableVariables);
@@ -48,17 +66,10 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
           const initialTags = createInitialMapping(template.content, availableVariables);
           setTemplateTags(initialTags);
           console.log("Created initial mapping:", initialTags);
-          
-          if (initialTags.length === 0 && template.content) {
-            toast({
-              title: "Aucune variable trouvée",
-              description: "Le modèle ne contient pas de variables à associer.",
-              variant: "default",
-            });
-          }
         }
       } catch (error) {
         console.error("Error loading template mapping:", error);
+        setTemplateValidationState('invalid');
         setError("Impossible de charger le mapping des variables");
       } finally {
         setLoading(false);
@@ -143,8 +154,8 @@ const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: Te
     }
   };
   
-  if (!template?.id || !template?.content) {
-    return <NotFoundTemplate />;
+  if (!template?.id || !template?.content || templateValidationState !== 'valid') {
+    return <NotFoundTemplate reason={templateValidationState} />;
   }
   
   return (
