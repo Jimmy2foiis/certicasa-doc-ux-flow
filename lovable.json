@@ -1,3 +1,4 @@
+
 {
   "name": "certicasa-doc-ux-flow",
   "type": "web",
@@ -8,5 +9,8 @@
   "deploy": {
     "branch": "main",
     "autoDeploy": true
+  },
+  "scripts": {
+    "build:dev": "vite build --mode development"
   }
-} 
+}
