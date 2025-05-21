@@ -25,43 +25,54 @@ import {
 import { Progress } from "@/components/ui/progress";
 import StatCard from "@/components/dashboard/StatCard";
 import { recentProjects } from "@/data/mock";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+  
+  const handleViewAllProjects = () => {
+    navigate("/projects");
+  };
+  
+  const handleViewProject = (projectId: string) => {
+    navigate(`/projects/${projectId}`);
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard 
-          title="Proyectos" 
+          title="Projets" 
           value="428" 
           icon={<Home className="h-6 w-6" />}
           details={[
-            { label: "En curso", value: "187" },
-            { label: "Terminados", value: "241" },
+            { label: "En cours", value: "187" },
+            { label: "Terminés", value: "241" },
           ]}
           trend={12}
           className="border-l-4 border-blue-500"
         />
         
         <StatCard 
-          title="Clientes" 
+          title="Clients" 
           value="312" 
           icon={<User className="h-6 w-6" />}
           details={[
-            { label: "Activos", value: "245" },
-            { label: "Inactivos", value: "67" },
+            { label: "Actifs", value: "245" },
+            { label: "Inactifs", value: "67" },
           ]}
           trend={8}
           className="border-l-4 border-emerald-500"
         />
         
         <StatCard 
-          title="Ahorros Térmicos" 
+          title="Économies Thermiques" 
           value="1.24 M" 
           unit="kWh"
           icon={<Sparkles className="h-6 w-6" />}
           details={[
-            { label: "Ahorro (€)", value: "€198,400" },
-            { label: "Promedio", value: "€42/m²" },
+            { label: "Économies (€)", value: "€198,400" },
+            { label: "Moyenne", value: "€42/m²" },
           ]}
           trend={23}
           className="border-l-4 border-amber-500"
@@ -72,9 +83,9 @@ const Dashboard = () => {
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-lg font-medium flex items-center justify-between">
-              <span>Proyectos Recientes</span>
-              <Button variant="outline" size="sm" className="text-xs">
-                Ver todos
+              <span>Projets Récents</span>
+              <Button variant="outline" size="sm" className="text-xs" onClick={handleViewAllProjects}>
+                Voir tout
                 <ArrowUpRight className="ml-1 h-3 w-3" />
               </Button>
             </CardTitle>
@@ -83,11 +94,11 @@ const Dashboard = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nombre del proyecto</TableHead>
-                  <TableHead>Cliente</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Estatus</TableHead>
-                  <TableHead className="text-right">Acción</TableHead>
+                  <TableHead>Nom du projet</TableHead>
+                  <TableHead>Client</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -99,8 +110,8 @@ const Dashboard = () => {
                     <TableCell>
                       <Badge
                         variant={
-                          project.status === "Completado" ? "success" :
-                          project.status === "En progreso" ? "default" :
+                          project.status === "Terminé" ? "success" :
+                          project.status === "En cours" ? "default" :
                           "outline"
                         }
                       >
@@ -108,9 +119,9 @@ const Dashboard = () => {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => handleViewProject(project.id)}>
                         <Eye className="h-4 w-4 mr-1" />
-                        Ver
+                        Voir
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -122,12 +133,12 @@ const Dashboard = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-medium">Resumen del rendimiento</CardTitle>
+            <CardTitle className="text-lg font-medium">Résumé des performances</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Documentos generados</span>
+                <span className="text-muted-foreground">Documents générés</span>
                 <span className="font-medium">67%</span>
               </div>
               <Progress value={67} className="h-2" />
@@ -135,7 +146,7 @@ const Dashboard = () => {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Cálculos completados</span>
+                <span className="text-muted-foreground">Calculs terminés</span>
                 <span className="font-medium">89%</span>
               </div>
               <Progress value={89} className="h-2" />
@@ -143,7 +154,7 @@ const Dashboard = () => {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Firmas recolectadas</span>
+                <span className="text-muted-foreground">Signatures collectées</span>
                 <span className="font-medium">72%</span>
               </div>
               <Progress value={72} className="h-2" />
@@ -151,7 +162,7 @@ const Dashboard = () => {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Proyectos facturados</span>
+                <span className="text-muted-foreground">Projets facturés</span>
                 <span className="font-medium">54%</span>
               </div>
               <Progress value={54} className="h-2" />

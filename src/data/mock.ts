@@ -1,42 +1,41 @@
-
 // Mock data for CertiCasa Doc app
 
 // Recent projects for dashboard
 export const recentProjects = [
   {
-    id: "1",
-    name: "Rehabilitación fachada norte",
-    client: "Juan Pérez",
-    date: "12/05/2023",
-    status: "En progreso"
+    id: "PRJ001",
+    name: "Rénovation Énergétique Maison Dupont",
+    client: "Jean Dupont",
+    date: "05/05/2025",
+    status: "En cours"
   },
   {
-    id: "2",
-    name: "Aislamiento cubierta edificio",
-    client: "María Sánchez",
-    date: "08/05/2023",
-    status: "Completado"
+    id: "PRJ002",
+    name: "Isolation Thermique Résidence Les Pins",
+    client: "Marie Martin",
+    date: "02/05/2025",
+    status: "Terminé"
   },
   {
-    id: "3",
-    name: "Mejora ventanas vivienda",
-    client: "Carlos López",
-    date: "05/05/2023",
-    status: "En progreso"
+    id: "PRJ003",
+    name: "Panneaux Solaires Villa Mercier",
+    client: "Pierre Mercier",
+    date: "29/04/2025",
+    status: "En attente"
   },
   {
-    id: "4",
-    name: "Instalación aerotermia",
-    client: "Ana García",
-    date: "01/05/2023",
-    status: "En espera"
+    id: "PRJ004",
+    name: "Diagnostic Énergétique Appt. Bernard",
+    client: "Sophie Bernard",
+    date: "27/04/2025",
+    status: "En cours"
   },
   {
-    id: "5",
-    name: "Aislamiento sótano",
-    client: "Luis Martínez",
-    date: "28/04/2023",
-    status: "Completado"
+    id: "PRJ005",
+    name: "Remplacement Chauffage Maison Petit",
+    client: "Thomas Petit",
+    date: "25/04/2025",
+    status: "Terminé"
   }
 ];
 
