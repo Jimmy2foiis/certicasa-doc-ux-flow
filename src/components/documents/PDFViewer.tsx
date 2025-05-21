@@ -58,17 +58,17 @@ export const PDFViewer = ({ fileUrl, fileName }: PDFViewerProps) => {
     };
   }, [fileUrl]);
 
-  // Gestionnaire d'erreurs pour le viewer PDF
-  const handleError = (err: Error) => {
-    console.error('Erreur lors du rendu du PDF:', err);
-    setError(`Erreur lors du chargement du PDF: ${err.message}`);
-    setLoading(false);
-  };
-
   // Gestionnaire pour le chargement réussi
   const handleDocumentLoad = () => {
     setLoading(false);
     setError(null);
+  };
+
+  // Gérer les erreurs de PDF en interne
+  const handleError = (err: Error) => {
+    console.error('Erreur lors du rendu du PDF:', err);
+    setError(`Erreur lors du chargement du PDF: ${err.message}`);
+    setLoading(false);
   };
 
   if (loading) {
@@ -102,7 +102,6 @@ export const PDFViewer = ({ fileUrl, fileName }: PDFViewerProps) => {
             plugins={[defaultLayoutPluginInstance]}
             defaultScale={1}
             onDocumentLoad={handleDocumentLoad}
-            onError={handleError}
           />
         </div>
       </Worker>

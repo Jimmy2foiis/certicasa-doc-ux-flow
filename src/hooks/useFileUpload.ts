@@ -74,7 +74,7 @@ export const useFileUpload = () => {
               f.id === fileId 
                 ? { 
                     ...f, 
-                    status: extractionResult.error ? 'warning' : 'complete',
+                    status: extractionResult.error ? 'error' : 'complete',
                     progress: 100,
                     content,
                     extractedText: extractionResult.text,
@@ -89,7 +89,7 @@ export const useFileUpload = () => {
             toast({
               title: "Avertissement",
               description: extractionResult.error,
-              variant: "warning",
+              variant: "default",
             });
           }
         } catch (error) {

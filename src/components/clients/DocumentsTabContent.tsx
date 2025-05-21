@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAdministrativeDocuments } from "@/hooks/useAdministrativeDocuments";
 import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
@@ -138,17 +139,17 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
             
             const documentData = await documentService.getDocumentContent(documentId);
             
-            if (documentData && documentData.content) {
+            if (documentData && documentData.success && documentData.data?.content) {
               const success = await documentService.downloadDocument(
-                documentData.content,
-                documentData.name,
-                documentData.type
+                documentData.data.content,
+                documentData.data.name,
+                documentData.data.type
               );
               
               if (success) {
                 toast({
                   title: "Téléchargement réussi",
-                  description: `Le document ${documentData.name} a été téléchargé avec succès`,
+                  description: `Le document ${documentData.data.name} a été téléchargé avec succès`,
                 });
               } else {
                 toast({
