@@ -3,8 +3,8 @@ import React from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlanningEvent } from "../types/planningTypes";
-import { formatDate, getEventTypeColor } from "../utils/planningUtils";
+import { PlanningEvent } from "../../types/planningTypes";
+import { formatDate, getEventTypeColor } from "../../utils/planningUtils";
 
 interface EventListViewProps {
   filteredEvents: PlanningEvent[];

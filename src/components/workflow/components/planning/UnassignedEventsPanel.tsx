@@ -2,9 +2,8 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { UserCheck } from "lucide-react";
-import { PlanningEvent } from "../types/planningTypes";
-import { getEventTypeColor } from "../utils/planningUtils";
-import { formatDate } from "../utils/planningUtils";
+import { PlanningEvent } from "../../types/planningTypes";
+import { getEventTypeColor, formatDate } from "../../utils/planningUtils";
 
 interface UnassignedEventsPanelProps {
   unassignedEvents: PlanningEvent[];

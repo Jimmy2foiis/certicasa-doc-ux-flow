@@ -1,8 +1,8 @@
 
 import React from "react";
-import { PlanningEvent } from "../types/planningTypes";
-import { teams } from "../data/sampleData";
-import { getEventTypeColor } from "../utils/planningUtils";
+import { PlanningEvent } from "../../types/planningTypes";
+import { teams } from "../../data/sampleData";
+import { getEventTypeColor } from "../../utils/planningUtils";
 
 interface TeamCalendarViewProps {
   assignedEvents: PlanningEvent[];
