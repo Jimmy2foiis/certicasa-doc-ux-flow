@@ -2,8 +2,8 @@
 import React from "react";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import DocumentGeneratorDialog from "./client-generator/DocumentGeneratorDialog";
-import { useDocumentGeneratorState } from "./client-generator/useDocumentGeneratorState";
+import DocumentGeneratorDialog from "@/components/documents/client-generator/DocumentGeneratorDialog";
+import { useDocumentGeneratorState } from "@/hooks/useDocumentGeneratorState";
 
 interface ClientDocumentGeneratorProps {
   clientId: string;

@@ -1,12 +1,11 @@
 
 import React, { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import ClientDocumentGenerator from "./DocumentGenerator";
+import ClientDocumentGenerator from "./ClientDocumentGenerator";
 import { Button } from "@/components/ui/button";
 import { Ellipsis, FileText, Pencil, Phone, Mail, Calendar } from "lucide-react";
 import ClientAvatar from "./ClientAvatar";
 import { useNavigate } from "react-router-dom";
-import { ClientInfoCardProps } from "@/components/clients/ClientInfoCard";
 import { 
   DropdownMenu,
   DropdownMenuContent,
@@ -54,7 +53,7 @@ const ClientDetailsHeader: React.FC<ClientDetailsHeaderProps> = ({ client, onEdi
   return (
     <div className="flex flex-col md:flex-row justify-between p-6 bg-white rounded-lg shadow-sm">
       <div className="flex items-center gap-4 mb-4 md:mb-0">
-        <ClientAvatar name={client.name} size="lg" />
+        <ClientAvatar name={client.name} />
         <div>
           <h1 className="text-2xl font-bold">{client.name}</h1>
           <div className="flex flex-col mt-1">

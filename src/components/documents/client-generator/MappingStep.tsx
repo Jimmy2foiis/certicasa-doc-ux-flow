@@ -1,33 +1,38 @@
+
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { DocumentTemplate } from "@/hooks/useDocumentTemplates";
 import TemplateVariableMapping from "../template-mapping/TemplateVariableMapping";
 import { TemplateTag } from "@/components/documents/template-mapping/types";
+import { useState } from "react";
 
 interface MappingStepProps {
-  template: DocumentTemplate;
-  clientData: any;
-  onMappingComplete: (mappings: TemplateTag[]) => void;
+  templateTags: TemplateTag[];
+  clientId: string;
+  onGenerate: (mappings: TemplateTag[]) => void;
   onBack: () => void;
-  onGenerate: () => void;
-  canGenerate: boolean;
 }
 
 const MappingStep = ({
-  template,
-  clientData,
-  onMappingComplete,
-  onBack,
+  templateTags,
+  clientId,
   onGenerate,
-  canGenerate
+  onBack
 }: MappingStepProps) => {
+  const [mappings, setMappings] = useState<TemplateTag[]>(templateTags);
+  const [canGenerate, setCanGenerate] = useState<boolean>(templateTags.length > 0);
+
+  const handleMappingComplete = (updatedMappings: TemplateTag[]) => {
+    setMappings(updatedMappings);
+    setCanGenerate(updatedMappings.length > 0);
+  };
+
   return (
     <div className="space-y-4">
       <TemplateVariableMapping
-        template={template}
-        clientData={clientData}
-        onMappingComplete={onMappingComplete}
+        templateTags={templateTags}
+        clientId={clientId}
+        onMappingComplete={handleMappingComplete}
       />
       
       <Separator />
@@ -41,7 +46,7 @@ const MappingStep = ({
         </Button>
         <Button
           disabled={!canGenerate}
-          onClick={onGenerate}
+          onClick={() => onGenerate(mappings)}
         >
           <FileText className="mr-2 h-4 w-4" />
           Générer le document

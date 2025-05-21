@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -50,10 +49,10 @@ const DocumentGeneratorDialog: React.FC<DocumentGeneratorDialogProps> = ({
     setStep("success");
   }, clientName, clientId);
 
-  // Réinitialiser l'état lorsque le dialogue se ferme
+  // Reset state when dialog is closed
   useEffect(() => {
     if (!isOpen) {
-      // Réinitialiser l'état après fermeture du dialogue
+      // Reset the state after the dialog closes
       setTimeout(() => {
         setStep("selection");
         setSelectedTemplate(null);
@@ -63,22 +62,22 @@ const DocumentGeneratorDialog: React.FC<DocumentGeneratorDialogProps> = ({
     }
   }, [isOpen]);
 
-  // Gérer la transition vers l'étape de mapping
+  // Handle template selection
   const handleTemplateSelect = (template: DocumentTemplate, tags: TemplateTag[], validState: TemplateValidationState | null) => {
     setSelectedTemplate(template);
     setTemplateTags(tags);
     setValidationState(validState);
     
     if (validState) {
-      // Si un état d'invalidation est présent, rester sur la même étape
+      // If validation state is present, stay on the same step
       setStep("selection");
     } else {
-      // Sinon, passer à l'étape de mapping
+      // Otherwise, proceed to mapping step
       setStep("mapping");
     }
   };
 
-  // Gérer la génération du document avec les mappings
+  // Handle document generation with mappings
   const handleGenerateWithMappings = (mappings: TemplateTag[]) => {
     if (!selectedTemplate) return;
     
@@ -130,6 +129,7 @@ const DocumentGeneratorDialog: React.FC<DocumentGeneratorDialogProps> = ({
             step={step}
             clientName={clientName}
             templateName={selectedTemplate?.name}
+            onClose={onClose}
           />
         </DialogHeader>
         
