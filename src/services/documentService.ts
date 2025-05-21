@@ -1,136 +1,113 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { AdministrativeDocument } from "@/types/documents";
 
-// Types
-interface DownloadOptions {
-  fileName?: string;
-  fileType?: string;
-}
-
-// Service pour la gestion des documents
-export const documentService = {
-  // Télécharger un document
-  downloadDocument: async (
-    content: string | null | undefined,
-    fileName: string,
-    fileType: string = 'pdf'
-  ): Promise<boolean> => {
-    try {
-      if (!content) {
-        console.error('Aucun contenu à télécharger');
-        return false;
-      }
-
-      // Déterminer le type MIME
-      let mimeType = 'application/octet-stream'; // Par défaut
-      let extension = '';
-      
-      switch (fileType.toLowerCase()) {
-        case 'pdf':
-          mimeType = 'application/pdf';
-          extension = '.pdf';
-          break;
-        case 'docx':
-        case 'doc':
-          mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-          extension = '.docx';
-          break;
-        case 'xlsx':
-        case 'xls':
-          mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-          extension = '.xlsx';
-          break;
-        // Ajoutez d'autres types selon vos besoins
-      }
-
-      // Créer un Blob à partir du contenu
-      let blob;
-      
-      // Si le contenu est déjà en base64 avec en-tête data:application/...
-      if (typeof content === 'string' && content.startsWith('data:')) {
-        // Extraire la partie base64 après la virgule
-        const base64Data = content.split(',')[1];
-        const binaryData = atob(base64Data);
-        const array = new Uint8Array(binaryData.length);
-        for (let i = 0; i < binaryData.length; i++) {
-          array[i] = binaryData.charCodeAt(i);
-        }
-        blob = new Blob([array], { type: mimeType });
-      } else {
-        // Sinon, créer un Blob directement
-        blob = new Blob([content], { type: mimeType });
-      }
-      
-      // Créer une URL à partir du Blob
-      const url = URL.createObjectURL(blob);
-      
-      // Créer un lien de téléchargement
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${fileName}${extension}`;
-      document.body.appendChild(a);
-      a.click();
-      
-      // Nettoyer
-      setTimeout(() => {
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }, 100);
-      
-      return true;
-    } catch (error) {
-      console.error('Erreur lors du téléchargement du document:', error);
-      return false;
+// Helper function to create a blob from document content
+const createDocumentBlob = (content: string, type: string) => {
+  const mimeType = type.toLowerCase() === "pdf"
+    ? "application/pdf"
+    : type.toLowerCase() === "docx"
+      ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      : "application/octet-stream";
+  
+  // Handle base64 content
+  if (content.startsWith('data:')) {
+    const base64Content = content.split(',')[1];
+    const binaryString = window.atob(base64Content);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
     }
-  },
-
-  // Récupérer le contenu d'un document
-  getDocumentContent: async (documentId: string): Promise<{content: string | null; type: string; name: string} | null> => {
-    try {
-      const { data, error } = await supabase
-        .from('documents')
-        .select('content, type, name, file_path')
-        .eq('id', documentId)
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      // Si le document a une URL de fichier mais pas de contenu, essayez de récupérer le fichier
-      if (!data.content && data.file_path) {
-        // Vous pouvez implémenter la récupération du fichier depuis l'URL ici
-        // Par exemple, en utilisant fetch pour obtenir le contenu
-      }
-
-      return {
-        content: data.content || data.file_path,
-        type: data.type || 'pdf',
-        name: data.name
-      };
-    } catch (error) {
-      console.error('Erreur lors de la récupération du contenu du document:', error);
-      return null;
-    }
-  },
-
-  // Exporter tous les documents
-  exportAllDocuments: async (documents: any[]): Promise<boolean> => {
-    try {
-      // Implémenter la logique pour télécharger tous les documents
-      // Par exemple, créer un fichier ZIP
-      // Pour l'instant, nous téléchargeons simplement le premier document
-      if (documents.length === 0) {
-        return false;
-      }
-
-      // Télécharger le premier document comme exemple
-      const doc = documents[0];
-      return await documentService.downloadDocument(doc.content, doc.name, doc.type);
-    } catch (error) {
-      console.error('Erreur lors de l\'exportation de tous les documents:', error);
-      return false;
-    }
+    return new Blob([bytes], { type: mimeType });
   }
+  
+  // Handle regular content
+  return new Blob([content], { type: mimeType });
+};
+
+// Download a document
+export const downloadDocument = async (
+  content: string, 
+  fileName: string, 
+  fileType: string
+): Promise<boolean> => {
+  try {
+    const blob = createDocumentBlob(content, fileType);
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${fileName}.${fileType.toLowerCase()}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    
+    // Clean up the URL object
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+    return true;
+  } catch (error) {
+    console.error("Error downloading document:", error);
+    return false;
+  }
+};
+
+// Download all documents as a zip
+export const exportAllDocuments = async (documents: AdministrativeDocument[]): Promise<boolean> => {
+  try {
+    // Currently just downloads the first document as proof of concept
+    // In a real implementation, this would create a zip file with all documents
+    if (documents.length === 0) return false;
+    
+    const doc = documents[0];
+    if (doc.content) {
+      return await downloadDocument(doc.content, doc.name, doc.type);
+    }
+    
+    return false;
+  } catch (error) {
+    console.error("Error exporting all documents:", error);
+    return false;
+  }
+};
+
+// Get document content by ID (simulate API call)
+export const getDocumentContent = async (documentId: string): Promise<AdministrativeDocument | null> => {
+  try {
+    // This would typically be an API call to get the document content
+    // For now just returning dummy content
+    return {
+      id: documentId,
+      name: "Document Sample",
+      type: "pdf",
+      content: "Sample content that would be binary data",
+      status: "generated",
+      description: "",
+      order: 0
+    };
+  } catch (error) {
+    console.error("Error getting document content:", error);
+    return null;
+  }
+};
+
+// Create a document preview URL
+export const createDocumentPreviewUrl = (content: string, type: string): string => {
+  try {
+    if (content.startsWith('data:')) {
+      // Already a data URL
+      return content;
+    }
+    
+    const blob = createDocumentBlob(content, type);
+    return URL.createObjectURL(blob);
+  } catch (error) {
+    console.error("Error creating document preview URL:", error);
+    return "";
+  }
+};
+
+export const documentService = {
+  downloadDocument,
+  exportAllDocuments,
+  getDocumentContent,
+  createDocumentPreviewUrl
 };

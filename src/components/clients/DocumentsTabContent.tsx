@@ -1,17 +1,13 @@
-
 import { useState, useEffect } from "react";
 import { useAdministrativeDocuments } from "@/hooks/useAdministrativeDocuments";
 import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search, FileUp, FileDown, RefreshCcw, FileText, Eye } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
-import { DocumentStatusBadge } from "@/components/documents/DocumentStatusBadge";
-import DocumentActionButtons from "@/components/documents/DocumentActionButtons";
+import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { DocumentPreview } from "@/components/documents/DocumentPreview";
 import { documentService } from "@/services/documentService";
+import { DocumentsHeader } from "./documents/DocumentsHeader";
+import { DocumentsList } from "./documents/DocumentsList";
+import { DocumentsFooter } from "./documents/DocumentsFooter";
 
 interface DocumentsTabContentProps {
   clientId?: string;
@@ -37,10 +33,10 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const { toast } = useToast();
 
-  // Quand les documents administratifs sont chargés
+  // When administrative documents are loaded
   useEffect(() => {
     if (clientId && adminDocuments) {
-      // Transformer les AdminDocuments pour s'assurer qu'ils ont toutes les propriétés requises
+      // Transform AdminDocuments to ensure they have all required properties
       const transformedDocs = adminDocuments.map(doc => ({
         ...doc,
         description: (doc as any).description || "",
@@ -51,7 +47,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
         status: doc.status as DocumentStatus,
       }));
       
-      // Créer une liste combinée
+      // Create a combined list
       const combinedDocs: AdministrativeDocument[] = [
         ...transformedDocs,
         ...clientDocuments.map(doc => ({
@@ -65,24 +61,24 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
     }
   }, [clientId, adminDocuments, clientDocuments]);
 
-  // Mettre à jour le type de projet quand il change
+  // Update project type when it changes
   useEffect(() => {
     if (projectType) {
       updateProjectType(projectType);
     }
   }, [projectType, updateProjectType]);
 
-  // Gérer le changement de recherche
+  // Handle search change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
-  // Gérer les actions de document avec prévisualisation
+  // Handle document actions with preview
   const handleDocumentAction = async (documentId: string, action: string) => {
     try {
       switch (action) {
         case "view":
-          // Trouver le document à prévisualiser
+          // Find document to preview
           const docToPreview = filteredDocuments.find(doc => doc.id === documentId);
           if (docToPreview) {
             // Convert to AdministrativeDocument type with required properties
@@ -113,7 +109,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
             return;
           }
           
-          // Si nous avons le contenu directement, l'utiliser
+          // If we have the content directly, use it
           if (docToDownload.content) {
             const success = await documentService.downloadDocument(
               docToDownload.content, 
@@ -134,7 +130,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
               });
             }
           } else {
-            // Sinon, récupérer le contenu du document
+            // Otherwise, fetch document content
             toast({
               title: "Téléchargement en cours",
               description: "Récupération du document...",
@@ -172,7 +168,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
           break;
           
         default:
-          // Pour toutes les autres actions, utiliser le gestionnaire existant
+          // For all other actions, use the existing handler
           baseHandleDocumentAction(documentId, action);
       }
     } catch (error) {
@@ -185,7 +181,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
     }
   };
 
-  // Gérer l'exportation de tous les documents
+  // Handle exporting all documents
   const handleExportAll = async () => {
     try {
       toast({
@@ -217,7 +213,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
     }
   };
 
-  // Fermer la prévisualisation
+  // Close preview
   const handleClosePreview = () => {
     setIsPreviewOpen(false);
     setPreviewDocument(null);
@@ -226,142 +222,33 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-lg">Documents du client</CardTitle>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleExportAll}
-              disabled={isLoading || filteredDocuments.length === 0}
-            >
-              <FileDown className="h-4 w-4 mr-1" />
-              Exporter tout
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              disabled={isLoading}
-            >
-              <FileUp className="h-4 w-4 mr-1" />
-              Ajouter
-            </Button>
-          </div>
-        </div>
-        <div className="flex items-center space-x-2 my-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Rechercher un document..."
-            className="h-9"
-            value={searchQuery}
-            onChange={handleSearchChange}
-          />
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-9 w-9" 
-            onClick={() => setSearchQuery("")}
-            disabled={isLoading}
-          >
-            <RefreshCcw className="h-4 w-4" />
-          </Button>
-        </div>
+        <DocumentsHeader 
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+          onClearSearch={() => setSearchQuery("")}
+          onExportAll={handleExportAll}
+          isLoading={isLoading}
+          documentCount={filteredDocuments.length}
+        />
       </CardHeader>
       
       <CardContent>
-        {isLoading ? (
-          <div className="space-y-3">
-            {Array(5).fill(0).map((_, i) => (
-              <div key={i} className="flex items-center justify-between p-3 border rounded-md">
-                <div className="flex items-center space-x-3">
-                  <Skeleton className="h-10 w-10 rounded-md" />
-                  <div>
-                    <Skeleton className="h-5 w-40" />
-                    <Skeleton className="h-4 w-20 mt-2" />
-                  </div>
-                </div>
-                <Skeleton className="h-8 w-24" />
-              </div>
-            ))}
-          </div>
-        ) : filteredDocuments.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">Aucun document trouvé</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredDocuments.map((doc) => (
-              <div key={doc.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-muted/50 transition-colors">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-muted p-2 rounded-md">
-                    <FileText className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium">{doc.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {doc.category} • {new Date(doc.created_at || '').toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <DocumentStatusBadge status={doc.status as DocumentStatus} />
-                  
-                  {/* Boutons d'action principaux (Voir/Télécharger) */}
-                  <div className="flex space-x-2">
-                    {(doc.status === "generated" || doc.status === "linked") && (
-                      <>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleDocumentAction(doc.id, "view")}
-                          className="flex items-center"
-                        >
-                          <Eye className="h-4 w-4 mr-1.5" />
-                          <span>Voir</span>
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleDocumentAction(doc.id, "download")}
-                          className="flex items-center"
-                        >
-                          <FileDown className="h-4 w-4 mr-1.5" />
-                          <span>Télécharger</span>
-                        </Button>
-                      </>
-                    )}
-                    
-                    {/* Autres boutons d'action spécifiques, sans voir/télécharger (pour éviter les doublons) */}
-                    <DocumentActionButtons 
-                      documentType={doc.type} 
-                      status={doc.status as DocumentStatus}
-                      onAction={(action) => handleDocumentAction(doc.id, action)}
-                      showViewDownload={false} // Ne pas afficher les boutons Voir et Télécharger pour éviter les doublons
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <DocumentsList 
+          documents={filteredDocuments}
+          isLoading={isLoading}
+          onAction={handleDocumentAction}
+        />
       </CardContent>
       
       <CardFooter className="pt-2">
-        <div className="flex justify-end w-full">
-          <Button 
-            variant="default" 
-            size="sm" 
-            onClick={handleExportAll}
-            disabled={isLoading || filteredDocuments.length === 0}
-            className="flex items-center"
-          >
-            <FileDown className="h-4 w-4 mr-2" />
-            Tout télécharger
-          </Button>
-        </div>
+        <DocumentsFooter 
+          onExportAll={handleExportAll}
+          documentCount={filteredDocuments.length}
+          isLoading={isLoading}
+        />
       </CardFooter>
 
-      {/* Composant de prévisualisation de document */}
+      {/* Document preview component */}
       <DocumentPreview
         isOpen={isPreviewOpen}
         onClose={handleClosePreview}
@@ -371,4 +258,3 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
     </Card>
   );
 };
-
