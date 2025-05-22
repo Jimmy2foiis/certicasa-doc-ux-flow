@@ -8,15 +8,17 @@ import {
 } from "@/components/ui/accordion";
 import { useState } from "react";
 import DocumentStatusBadge from "./DocumentStatusBadge";
-import { Eye, Download, MoreHorizontal, FileText } from "lucide-react";
+import { Eye, Download, MoreHorizontal, FileText, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { PDFViewer } from "./PDFViewer";
+import { useToast } from "@/hooks/use-toast";
 
 interface DocumentsAccordionProps {
   documents: AdministrativeDocument[];
@@ -26,6 +28,7 @@ interface DocumentsAccordionProps {
 
 const DocumentsAccordion = ({ documents, onDocumentAction, title }: DocumentsAccordionProps) => {
   const [openItem, setOpenItem] = useState<string | null>(null);
+  const { toast } = useToast();
   
   const handleValueChange = (value: string) => {
     setOpenItem(value === openItem ? null : value);
@@ -41,6 +44,17 @@ const DocumentsAccordion = ({ documents, onDocumentAction, title }: DocumentsAcc
     ready: allDocuments.filter(doc => doc.status === "ready").length,
     pending: allDocuments.filter(doc => doc.status === "pending" || doc.status === "action-required").length,
     missing: allDocuments.filter(doc => doc.status === "missing").length,
+  };
+  
+  // Handle document deletion with confirmation
+  const handleDelete = (documentId: string, documentName: string) => {
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer le document "${documentName}" ?`)) {
+      onDocumentAction(documentId, "delete");
+      toast({
+        title: "Document supprimé",
+        description: `Le document ${documentName} a été supprimé avec succès.`,
+      });
+    }
   };
   
   return (
@@ -150,9 +164,33 @@ const DocumentsAccordion = ({ documents, onDocumentAction, title }: DocumentsAcc
                               Actualiser depuis CEE
                             </DropdownMenuItem>
                           )}
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => handleDelete(document.id, document.name)}
+                            className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                          >
+                            <Trash className="h-4 w-4 mr-2" />
+                            Supprimer
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
+                  )}
+                  
+                  {/* Add delete button for documents not generated or linked */}
+                  {(document.status !== "generated" && document.status !== "linked") && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(document.id, document.name);
+                      }}
+                    >
+                      <Trash className="h-4 w-4" />
+                      <span className="sr-only">Supprimer</span>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -162,6 +200,7 @@ const DocumentsAccordion = ({ documents, onDocumentAction, title }: DocumentsAcc
               <DocumentAccordionContent 
                 document={document} 
                 onAction={onDocumentAction}
+                onDelete={(documentId) => handleDelete(documentId, document.name)}
               />
             </AccordionContent>
           </AccordionItem>
@@ -172,9 +211,10 @@ const DocumentsAccordion = ({ documents, onDocumentAction, title }: DocumentsAcc
 };
 
 // Component for the content of the document accordion
-const DocumentAccordionContent = ({ document, onAction }: { 
+const DocumentAccordionContent = ({ document, onAction, onDelete }: { 
   document: AdministrativeDocument, 
-  onAction: (documentId: string, action: string) => void 
+  onAction: (documentId: string, action: string) => void,
+  onDelete: (documentId: string) => void 
 }) => {
   // Determine contextual content to display based on status
   const renderContextualContent = () => {
@@ -186,12 +226,21 @@ const DocumentAccordionContent = ({ document, onAction }: {
               <p className="text-blue-700 font-medium">Document prêt à être généré</p>
               <p className="text-sm text-blue-600">Toutes les données sont disponibles pour générer ce document.</p>
             </div>
-            <div className="flex justify-start">
+            <div className="flex justify-between">
               <Button 
                 onClick={() => onAction(document.id, "generate")}
                 className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
               >
                 ✅ Générer ce document
+              </Button>
+              
+              <Button 
+                variant="outline"
+                className="px-4 py-2 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 transition-colors"
+                onClick={() => onDelete(document.id)}
+              >
+                <Trash className="h-4 w-4 mr-2" />
+                Supprimer
               </Button>
             </div>
           </div>
@@ -220,121 +269,186 @@ const DocumentAccordionContent = ({ document, onAction }: {
               </div>
             )}
             
-            <div className="flex space-x-2">
-              <Button 
-                onClick={() => onAction(document.id, "view")}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                Ouvrir le document
-              </Button>
-              <Button 
-                onClick={() => onAction(document.id, "download")}
-                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Télécharger
-              </Button>
-              <Button 
-                onClick={() => onAction(document.id, "regenerate")}
-                variant="outline"
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                Régénérer le document
-              </Button>
-              {document.type === "ficha" && (
+            <div className="flex justify-between">
+              <div className="flex space-x-2">
                 <Button 
-                  onClick={() => onAction(document.id, "refresh-ocr")}
+                  onClick={() => onAction(document.id, "view")}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  Ouvrir le document
+                </Button>
+                <Button 
+                  onClick={() => onAction(document.id, "download")}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Télécharger
+                </Button>
+                <Button 
+                  onClick={() => onAction(document.id, "regenerate")}
                   variant="outline"
                   className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
                 >
-                  Mettre à jour CEE
+                  Régénérer le document
                 </Button>
-              )}
+                {document.type === "ficha" && (
+                  <Button 
+                    onClick={() => onAction(document.id, "refresh-ocr")}
+                    variant="outline"
+                    className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  >
+                    Mettre à jour CEE
+                  </Button>
+                )}
+              </div>
+              
+              <Button 
+                variant="outline"
+                className="px-4 py-2 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 transition-colors"
+                onClick={() => onDelete(document.id)}
+              >
+                <Trash className="h-4 w-4 mr-2" />
+                Supprimer
+              </Button>
             </div>
           </div>
         );
       
       case "pending":
         return (
-          <div className="bg-amber-50 p-4 rounded-md">
-            <p className="text-amber-700 font-medium">Document en attente</p>
-            <p className="text-sm text-amber-600">
-              {document.statusLabel || "En attente de données complémentaires"}
-            </p>
-            {document.statusLabel?.includes("CEE") && (
-              <Button 
-                onClick={() => onAction(document.id, document.type === "certificado" ? "update-cee" : "refresh-ocr")}
-                className="mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded hover:bg-amber-200 transition-colors text-sm"
-                variant="outline"
-              >
-                ⚙️ {document.type === "ficha" ? "Traiter CEE PREVIO (OCR)" : "Actualiser depuis CEE"}
-              </Button>
-            )}
+          <div className="space-y-4">
+            <div className="bg-amber-50 p-4 rounded-md">
+              <p className="text-amber-700 font-medium">Document en attente</p>
+              <p className="text-sm text-amber-600">
+                {document.statusLabel || "En attente de données complémentaires"}
+              </p>
+              {document.statusLabel?.includes("CEE") && (
+                <Button 
+                  onClick={() => onAction(document.id, document.type === "certificado" ? "update-cee" : "refresh-ocr")}
+                  className="mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded hover:bg-amber-200 transition-colors text-sm"
+                  variant="outline"
+                >
+                  ⚙️ {document.type === "ficha" ? "Traiter CEE PREVIO (OCR)" : "Actualiser depuis CEE"}
+                </Button>
+              )}
+              
+              {document.statusLabel?.includes("signature") && (
+                <div className="mt-2 p-2 bg-amber-100 text-amber-800 rounded text-sm">
+                  ✒️ Signatures client en attente (via Safety Culture)
+                </div>
+              )}
+            </div>
             
-            {document.statusLabel?.includes("signature") && (
-              <div className="mt-2 p-2 bg-amber-100 text-amber-800 rounded text-sm">
-                ✒️ Signatures client en attente (via Safety Culture)
-              </div>
-            )}
+            <div className="flex justify-end">
+              <Button 
+                variant="outline"
+                className="px-4 py-2 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 transition-colors"
+                onClick={() => onDelete(document.id)}
+              >
+                <Trash className="h-4 w-4 mr-2" />
+                Supprimer
+              </Button>
+            </div>
           </div>
         );
       
       case "action-required":
         return (
-          <div className="bg-amber-50 p-4 rounded-md">
-            <p className="text-amber-700 font-medium">Action requise</p>
-            <p className="text-sm text-amber-600">{document.statusLabel || "Une action est requise"}</p>
-            {document.type === "fotos" && (
-              <Button 
-                onClick={() => onAction(document.id, "link-photos")}
-                className="mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded hover:bg-amber-200 transition-colors text-sm"
-                variant="outline"
-              >
-                Ajouter des photos
-              </Button>
-            )}
+          <div className="space-y-4">
+            <div className="bg-amber-50 p-4 rounded-md">
+              <p className="text-amber-700 font-medium">Action requise</p>
+              <p className="text-sm text-amber-600">{document.statusLabel || "Une action est requise"}</p>
+              {document.type === "fotos" && (
+                <Button 
+                  onClick={() => onAction(document.id, "link-photos")}
+                  className="mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded hover:bg-amber-200 transition-colors text-sm"
+                  variant="outline"
+                >
+                  Ajouter des photos
+                </Button>
+              )}
+              
+              {document.type === "certificado" && (
+                <Button 
+                  onClick={() => onAction(document.id, "add-signature")}
+                  className="mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded hover:bg-amber-200 transition-colors text-sm"
+                  variant="outline"
+                >
+                  ✒️ Appliquer signature E. Chiche
+                </Button>
+              )}
+            </div>
             
-            {document.type === "certificado" && (
+            <div className="flex justify-end">
               <Button 
-                onClick={() => onAction(document.id, "add-signature")}
-                className="mt-2 px-3 py-1.5 bg-amber-100 text-amber-800 rounded hover:bg-amber-200 transition-colors text-sm"
                 variant="outline"
+                className="px-4 py-2 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 transition-colors"
+                onClick={() => onDelete(document.id)}
               >
-                ✒️ Appliquer signature E. Chiche
+                <Trash className="h-4 w-4 mr-2" />
+                Supprimer
               </Button>
-            )}
+            </div>
           </div>
         );
       
       case "missing":
         return (
-          <div className="bg-gray-50 p-4 rounded-md">
-            <p className="text-gray-700 font-medium">Document manquant</p>
-            <p className="text-sm text-gray-600">Ce document doit être ajouté au dossier.</p>
-            {document.type === "ceee" && (
+          <div className="space-y-4">
+            <div className="bg-gray-50 p-4 rounded-md">
+              <p className="text-gray-700 font-medium">Document manquant</p>
+              <p className="text-sm text-gray-600">Ce document doit être ajouté au dossier.</p>
+              {document.type === "ceee" && (
+                <Button 
+                  onClick={() => onAction(document.id, "link-files")}
+                  className="mt-2 px-3 py-1.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors text-sm"
+                  variant="outline"
+                >
+                  Lier des fichiers
+                </Button>
+              )}
+              {document.type === "dni" && (
+                <Button 
+                  onClick={() => onAction(document.id, "link-dni")}
+                  className="mt-2 px-3 py-1.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors text-sm"
+                  variant="outline"
+                >
+                  Lier le DNI
+                </Button>
+              )}
+            </div>
+            
+            <div className="flex justify-end">
               <Button 
-                onClick={() => onAction(document.id, "link-files")}
-                className="mt-2 px-3 py-1.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors text-sm"
                 variant="outline"
+                className="px-4 py-2 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 transition-colors"
+                onClick={() => onDelete(document.id)}
               >
-                Lier des fichiers
+                <Trash className="h-4 w-4 mr-2" />
+                Supprimer
               </Button>
-            )}
-            {document.type === "dni" && (
-              <Button 
-                onClick={() => onAction(document.id, "link-dni")}
-                className="mt-2 px-3 py-1.5 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors text-sm"
-                variant="outline"
-              >
-                Lier le DNI
-              </Button>
-            )}
+            </div>
           </div>
         );
       
       default:
-        return <p className="text-muted-foreground">Aucune action disponible</p>;
+        return (
+          <div className="space-y-4">
+            <p className="text-muted-foreground">Aucune action disponible</p>
+            
+            <div className="flex justify-end">
+              <Button 
+                variant="outline"
+                className="px-4 py-2 text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700 transition-colors"
+                onClick={() => onDelete(document.id)}
+              >
+                <Trash className="h-4 w-4 mr-2" />
+                Supprimer
+              </Button>
+            </div>
+          </div>
+        );
     }
   };
 
