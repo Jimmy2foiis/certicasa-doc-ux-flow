@@ -1,8 +1,7 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Mail, Save, AlertCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 import { 
   Dialog, 
@@ -40,7 +39,7 @@ const DocumentActions = ({
   const validateDocumentContent = async (docId: string): Promise<{valid: boolean; message?: string}> => {
     try {
       // Récupérer le document depuis Supabase
-      const { data: document, error: documentError } = await supabase
+      const { data: document, error: documentError } = await apiClient
         .from('documents')
         .select('content, type')
         .eq('id', docId)
@@ -149,7 +148,7 @@ const DocumentActions = ({
       let emailToSend = recipientEmail;
       
       if (!emailToSend) {
-        const { data: client, error: clientError } = await supabase
+        const { data: client, error: clientError } = await apiClient
           .from('clients')
           .select('email')
           .eq('id', clientId)
@@ -170,7 +169,7 @@ const DocumentActions = ({
       console.log(`Envoi d'email à ${emailToSend} avec le document ${documentId}`);
       
       // En production, vous appelleriez ici une API ou une fonction Edge pour envoyer l'email
-      // Exemple: await supabase.functions.invoke('send-email', { documentId, recipientEmail: emailToSend })
+      // Exemple: await apiClient.functions.invoke('send-email', { documentId, recipientEmail: emailToSend })
       
       setTimeout(() => {
         setSendingEmail(false);

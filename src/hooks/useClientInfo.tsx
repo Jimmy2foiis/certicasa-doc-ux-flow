@@ -1,14 +1,23 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { clientsData } from "@/data/mock"; // Pour la transition, on garde temporairement les données mock
-import { 
-  getClientById,
-  getProjectsForClient,
-  updateClientRecord,
-  Project,
-  Client
-} from "@/services/supabaseService";
 import { useToast } from "@/components/ui/use-toast";
+import { Client, Project } from "@/types/clientTypes";
+
+// Mock functions that will replace the Supabase calls
+const getClientById = async (clientId: string): Promise<Client | null> => {
+  console.log("Mock getClientById called", clientId);
+  return null;
+};
+
+const getProjectsForClient = async (clientId: string): Promise<Project[]> => {
+  console.log("Mock getProjectsForClient called", clientId);
+  return [];
+};
+
+const updateClientRecord = async (clientId: string, data: Partial<Client>): Promise<Client | null> => {
+  console.log("Mock updateClientRecord called", clientId, data);
+  return null;
+};
 
 export const useClientInfo = (clientId: string) => {
   const { toast } = useToast();
@@ -21,7 +30,7 @@ export const useClientInfo = (clientId: string) => {
   
   // État pour stocker l'adresse du client actuelle
   const [clientAddress, setClientAddress] = useState("");
-  
+
   // Fonction pour charger les données du client depuis Supabase
   const loadClientFromSupabase = useCallback(async () => {
     try {

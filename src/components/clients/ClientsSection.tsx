@@ -56,7 +56,7 @@ const ClientsSection = () => {
         description: "Le client a été supprimé avec succès.",
       });
       
-      return Promise.resolve(); // Explicitement retourner une Promise résolue
+      return Promise.resolve();
     } catch (error) {
       console.error("Erreur lors de la suppression du client:", error);
       toast({
@@ -65,7 +65,7 @@ const ClientsSection = () => {
         variant: "destructive",
       });
       
-      return Promise.reject(error); // Explicitement retourner une Promise rejetée
+      return Promise.reject(error);
     }
   };
 

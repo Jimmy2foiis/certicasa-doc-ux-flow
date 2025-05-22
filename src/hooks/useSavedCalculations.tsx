@@ -1,9 +1,6 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { getCadastralDataForClient } from "@/services/supabaseService";
-import { supabase } from '@/integrations/supabase/client';
-import { Json } from '@/integrations/supabase/types';
+import { apiClient } from "@/lib/api-client";
 
 interface SavedCalculation {
   id: string;
@@ -16,6 +13,12 @@ interface SavedCalculation {
   improvement: number;
   calculationData: any;
 }
+
+// Mock function to replace the Supabase call
+const getCadastralDataForClient = async (clientId: string) => {
+  console.log("Mock getCadastralDataForClient called", clientId);
+  return null;
+};
 
 export const useSavedCalculations = (clientId: string) => {
   const { toast } = useToast();
@@ -41,10 +44,11 @@ export const useSavedCalculations = (clientId: string) => {
       }
       
       // Si ce n'est pas un ID local, récupérer depuis Supabase
-      const { data, error } = await supabase
+      const { data, error } = await apiClient
         .from('saved_calculations')
         .select('*')
-        .eq('client_id', clientId);
+        .eq('client_id', clientId)
+        .then((res: any) => res);
       
       if (error) {
         throw error;
@@ -52,7 +56,7 @@ export const useSavedCalculations = (clientId: string) => {
       
       if (data) {
         // Convertir du format Supabase au format local
-        const formattedCalculations: SavedCalculation[] = data.map(calc => {
+        const formattedCalculations: SavedCalculation[] = data.map((calc: any) => {
           const calcData = calc.calculation_data as Record<string, any> | null;
           
           return {

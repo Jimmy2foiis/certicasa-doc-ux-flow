@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { Form } from "@/components/ui/form";
 import { useCoordinates } from "@/hooks/useCoordinates";
 import { clientSchema, ClientFormValues } from "./schemas/clientSchema";
-import { Client } from "@/services/supabaseService";
+import { Client } from "@/types/clientTypes";
 
 // Import form field components
 import { NameField } from "./form-fields/NameField";

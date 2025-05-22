@@ -1,11 +1,15 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { getDocumentsForClient } from "@/services/supabase/documentService";
 import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
 import { determineDocumentCategory, generateDemoDocuments } from "./useDemoDocuments";
 import { useDocumentSearch } from "./useDocumentSearch";
 import { useDocumentActions } from "./useDocumentActions";
+
+// Mock function to replace the Supabase call
+const getDocumentsForClient = async (clientId: string) => {
+  console.log("Mock getDocumentsForClient called", clientId);
+  return [];
+};
 
 export const useClientDocuments = (clientId?: string, clientName?: string) => {
   const [adminDocuments, setAdminDocuments] = useState<AdministrativeDocument[]>([]);
