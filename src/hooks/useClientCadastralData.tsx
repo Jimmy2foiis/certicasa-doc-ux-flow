@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { useCadastralData } from "@/hooks/useCadastralData";
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
 import { useToast } from "@/components/ui/use-toast";
-import { saveCadastralData, CadastralData as SupabaseCadastralData } from "@/services/supabaseService";
+import { saveCadastralData } from "@/services/clientApiService";
 
 export const useClientCadastralData = (clientId: string, clientAddress: string, coordinates?: GeoCoordinates) => {
   const { toast } = useToast();
@@ -22,31 +22,31 @@ export const useClientCadastralData = (clientId: string, clientAddress: string, 
     coordinates
   );
 
-  // Fonction pour rafraîchir les données cadastrales et les sauvegarder dans Supabase
+  // Fonction pour rafraîchir les données cadastrales et les sauvegarder dans localStorage
   const handleRefreshCadastralData = useCallback(async () => {
     try {
       await refreshCadastralData();
       
-      // Sauvegarder les nouvelles données dans Supabase
+      // Sauvegarder les nouvelles données
       if (utmCoordinates || cadastralReference || climateZone) {
-        const cadastralDataToSave: SupabaseCadastralData = {
-          client_id: clientId,
-          utm_coordinates: utmCoordinates,
-          cadastral_reference: cadastralReference,
-          climate_zone: climateZone,
-          api_source: apiSource
+        const cadastralDataToSave = {
+          clientId: clientId,
+          utmCoordinates: utmCoordinates,
+          cadastralReference: cadastralReference,
+          climateZone: climateZone,
+          apiSource: apiSource
         };
         
-        const savedData = await saveCadastralData(cadastralDataToSave);
+        const saved = await saveCadastralData(cadastralDataToSave);
         
-        if (savedData) {
-          console.log("Données cadastrales sauvegardées dans Supabase:", savedData);
+        if (saved) {
+          console.log("Données cadastrales sauvegardées:", cadastralDataToSave);
         }
       }
       
       toast({
         title: "Données cadastrales rafraîchies",
-        description: "Les données cadastrales ont été mises à jour avec succès et sauvegardées dans la base de données.",
+        description: "Les données cadastrales ont été mises à jour avec succès et sauvegardées.",
         duration: 3000,
       });
     } catch (error) {
