@@ -29,7 +29,7 @@ export const extractTemplateTags = (content: string | null, type?: string): stri
     tags.push(match[0]);
   }
   
-  return [...new Set(tags)]; // Remove duplicates
+  return Array.from(new Set(tags)); // Fixed: use Array.from() instead of spread operator
 };
 
 // Helper function to determine the most likely category for a tag
