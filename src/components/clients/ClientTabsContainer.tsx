@@ -28,7 +28,7 @@ export const ClientTabsContainer = ({
             value="projects" 
             className={`${currentTab === "projects" ? "bg-primary text-primary-foreground" : ""} transition-all`}
           >
-            Projets
+            Informations Maison
           </TabsTrigger>
           <TabsTrigger 
             value="calculations" 

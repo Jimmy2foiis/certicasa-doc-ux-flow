@@ -66,7 +66,7 @@ const ClientDetailsTabs = ({
         </TabsTrigger>
         <TabsTrigger value="projects" className="flex items-center gap-1">
           <Home className="h-4 w-4" />
-          <span>Projets</span>
+          <span>Informations Maison</span>
         </TabsTrigger>
         <TabsTrigger value="calculations" className="flex items-center gap-1">
           <Calculator className="h-4 w-4" />
