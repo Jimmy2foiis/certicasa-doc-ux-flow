@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -22,15 +22,17 @@ const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsV
   const [activeCalculationProject, setActiveCalculationProject] = useState<string | undefined>(undefined);
   const { toast } = useToast();
   
-  // Afficher le message d'erreur si nécessaire
-  if (error) {
-    toast({
-      title: "Erreur",
-      description: `Impossible de charger les détails du client: ${error}`,
-      variant: "destructive",
-      duration: 5000,
-    });
-  }
+  // Use useEffect to show error toasts instead of doing it in render
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: `Impossible de charger les détails du client: ${error}`,
+        variant: "destructive",
+        duration: 5000,
+      });
+    }
+  }, [error, toast]);
 
   const handleShowCalculation = (projectId?: string) => {
     setActiveCalculationProject(projectId);

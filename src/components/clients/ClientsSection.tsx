@@ -124,7 +124,7 @@ const ClientsSection = () => {
                   loading={loading}
                   onClientSelect={setSelectedClient}
                   onDeleteClient={handleDeleteClient}
-                  onOpenCreateDialog={() => {}} // Cette fonction sera gérée par le bouton dans le CardHeader
+                  onOpenCreateDialog={() => {}} 
                 />
               </>
             )}
