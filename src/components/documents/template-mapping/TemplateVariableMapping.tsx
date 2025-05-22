@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { TemplateTag } from "@/types/documents";
-import TagsList from "./TagsList";
-import VariableCategoryTabs from "./VariableCategoryTabs";
-import AddNewTagField from "./AddNewTagField";
-import { extractDocumentTags } from "./utils";
+import { TagsList } from "./TagsList";
+import { VariableCategoryTabs } from "./VariableCategoryTabs";
+import { AddNewTagField } from "./AddNewTagField";
+import { extractTemplateTags } from "./utils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Info } from "lucide-react";
@@ -43,14 +42,14 @@ export const TemplateVariableMapping = ({
       
       // Tenter d'extraire des balises du texte
       if (template.extracted_text) {
-        extractedTags = extractDocumentTags(template.extracted_text);
+        extractedTags = extractTemplateTags(template.extracted_text);
       }
     } else if (template.type === 'docx' && template.extracted_text) {
       // Pour les DOCX, extraire les tags du texte
-      extractedTags = extractDocumentTags(template.extracted_text);
+      extractedTags = extractTemplateTags(template.extracted_text);
     } else if (template.content) {
       // Pour les autres types, tenter sur le contenu
-      extractedTags = extractDocumentTags(template.content);
+      extractedTags = extractTemplateTags(template.content);
     }
     
     // Créer les mappings par défaut pour les tags trouvés
