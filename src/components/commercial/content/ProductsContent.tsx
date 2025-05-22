@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Package, Warehouse, Search, Plus, ArrowLeftRight, ArrowUp, ArrowDown, Pencil, AlertTriangle } from "lucide-react";
 
