@@ -38,7 +38,11 @@ export const DocumentPreview = ({ isOpen, onClose, document, onDownload }: Docum
         // Si ce n'est pas un PDF, on ne peut pas l'afficher directement
         if (fileType !== 'pdf') {
           setIsLoading(false);
-          setError(`La prévisualisation n'est pas disponible pour les fichiers ${fileType.toUpperCase()}. Veuillez télécharger le document.`);
+          if (fileType === 'docx') {
+            setError(`La prévisualisation n'est pas disponible pour les fichiers DOCX. Veuillez télécharger le document.`);
+          } else {
+            setError(`La prévisualisation n'est pas disponible pour les fichiers ${fileType.toUpperCase()}. Veuillez télécharger le document.`);
+          }
           return;
         }
         

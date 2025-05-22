@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -253,50 +252,64 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
           if (templateData.type === 'docx') {
             // Pour les DOCX avec Docxtemplater
             if (templateData.content && templateData.content.includes('base64')) {
-              // Construire l'objet data à partir des mappings pour Docxtemplater
-              const dataObj: Record<string, any> = {};
-              
-              // Préparer les données pour docxtemplater
-              for (const mapping of mappings) {
-                if (!mapping.tag || !mapping.mappedTo) continue;
-                
-                const [category, field] = mapping.mappedTo.split('.');
-                
-                // Gestion de l'alias adresse -> address
-                if (category === "client" && field === "adresse") {
-                  if (!clientData.client?.adresse && clientData.client?.address) {
-                    clientData.client.adresse = clientData.client.address;
-                  }
-                }
-                
-                if (clientData && clientData[category] && field && clientData[category][field] !== undefined) {
-                  // Extraire le nom de la balise sans les caractères spéciaux
-                  const tagName = mapping.tag.replace(/[{}<>%$]/g, '').trim();
-                  dataObj[tagName] = String(clientData[category][field]);
-                }
-              }
-              
-              console.log("Données pour Docxtemplater:", dataObj);
-              
               try {
-                // Traiter le document DOCX avec Docxtemplater
-                const contentBase64 = templateData.content.split(",")[1]; // retire le prefixe data:
-                const zip = new PizZip(atob(contentBase64), { base64: false });
-                const doc = new Docxtemplater(zip);
+                // Décoder le base64 -> ArrayBuffer
+                const base64 = templateData.content.split(",")[1];
+                const binaryString = atob(base64);
+                const uint8Array = Uint8Array.from(binaryString, c => c.charCodeAt(0));
+
+                const zip = new PizZip(uint8Array);
+                const doc = new Docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+
+                // Construire l'objet de remplacement
+                const dataObj: Record<string, any> = {};
+                mappings.forEach(m => {
+                  if (!m.tag || !m.mappedTo) return;
+                  
+                  const [category, field] = m.mappedTo.split('.');
+                  
+                  // Gestion de l'alias adresse -> address
+                  if (category === "client" && field === "adresse") {
+                    if (!clientData.client?.adresse && clientData.client?.address) {
+                      clientData.client.adresse = clientData.client.address;
+                    }
+                  }
+                  
+                  // Extraire le nom de la balise sans les caractères spéciaux
+                  const tagName = m.tag.replace(/[{}<>%$]/g, '').trim();
+                  const tagRegex = new RegExp(m.tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+                  
+                  if (clientData && clientData[category] && field && clientData[category][field] !== undefined) {
+                    dataObj[tagName] = String(clientData[category][field]);
+                  } else {
+                    dataObj[tagName] = `[${m.mappedTo || m.tag}]`;
+                  }
+                  
+                  // Remplacement dans extracted_text (fallback)
+                  if (templateData.extracted_text) {
+                    templateData.extracted_text = templateData.extracted_text.replace(
+                      tagRegex, 
+                      dataObj[tagName]
+                    );
+                  }
+                });
+                
+                console.log("Données pour Docxtemplater:", dataObj);
                 
                 // Définir les données pour le rendu
                 doc.setData(dataObj);
                 
                 try {
                   doc.render();
+                  const out = doc.getZip().generate({ type: "base64" });
+                  documentContent = "data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64," + out;
+                  documentType = "docx";
                 } catch (e) {
-                  console.error("Docxtemplater render error", e);
-                  throw e;
+                  console.error("Docxtemplater render error, fallback TXT:", e);
+                  // Fallback à la méthode de remplacement de texte
+                  documentContent = templateData.extracted_text || '';
+                  documentType = 'txt'; // Changer le type en texte pour les DOCX mappés
                 }
-                
-                const out = doc.getZip().generate({ type: "base64" });
-                documentContent = "data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64," + out;
-                documentType = "docx";
               } catch (docxError) {
                 console.error("Erreur avec Docxtemplater:", docxError);
                 
@@ -315,7 +328,6 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
                 
                 documentContent = mappedContent;
                 documentType = 'txt'; // Changer le type en texte pour les DOCX mappés
-                documentName = `${templateData.name}-mapped`; // Ajouter un suffixe pour identifier
               }
             } else {
               // Utiliser le texte extrait comme base si pas de contenu base64
