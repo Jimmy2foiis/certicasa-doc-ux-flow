@@ -1,10 +1,13 @@
+import { Prisma } from '@prisma/client';
 
-import { FilesType, FoldersKey } from "@prisma/client";
+// Use Prisma namespace to access the enums
+type FilesType = Prisma.FilesType;
+type FoldersKey = Prisma.FoldersKey;
 
 // Generate mock files based on a beetoolToken
 export const generateMockFiles = (beetoolToken: string) => {
-  const folderTypes = Object.values(FoldersKey);
-  const fileTypes = Object.values(FilesType);
+  const folderTypes = Object.values(Prisma.FoldersKey);
+  const fileTypes = Object.values(Prisma.FilesType);
   
   const files = [];
   

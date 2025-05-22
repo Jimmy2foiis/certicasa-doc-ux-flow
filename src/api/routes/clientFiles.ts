@@ -1,5 +1,5 @@
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "../../lib/prisma";
 import { Request, Response } from "express";
 
 // Get files for a specific client by beetoolToken
