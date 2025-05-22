@@ -5,6 +5,7 @@ import { TemplateTag } from "@/types/documents";
 import { documentService } from "@/services/documentService";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
+import { PDFDocument, StandardFonts } from "pdf-lib";
 
 interface UseDocumentGenerationProps {
   (onDocumentGenerated?: (documentId: string) => void, clientName?: string): {
@@ -346,8 +347,80 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
               documentType = 'txt'; // Changer le type en texte pour les DOCX mappés
               documentName = `${templateData.name}-mapped`; // Ajouter un suffixe pour identifier
             }
+          } else if (templateData.type === 'pdf' && templateData.content?.startsWith("data:application/pdf")) {
+            try {
+              // Convertir base64 → Uint8Array
+              const base64 = templateData.content.split(",")[1];
+              const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+
+              // Charger le PDF
+              const pdfDoc = await PDFDocument.load(bytes);
+
+              // Utiliser la première page comme canvas texte
+              const page = pdfDoc.getPage(0);
+              const { width, height } = page.getSize();
+              const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+              // Construire l'objet data pour remplacement
+              const dataObj: Record<string, string> = {};
+              mappings.forEach(m => {
+                if (!m.tag || !m.mappedTo) return;
+                
+                const [cat, key] = m.mappedTo.split('.');
+                
+                // Gestion de l'alias adresse -> address
+                if (cat === "client" && key === "adresse") {
+                  if (!clientData.client?.adresse && clientData.client?.address) {
+                    clientData.client.adresse = clientData.client.address;
+                  }
+                }
+                
+                if (clientData && clientData[cat] && key && clientData[cat][key] !== undefined) {
+                  dataObj[m.tag] = String(clientData[cat][key]);
+                } else {
+                  dataObj[m.tag] = `[${m.mappedTo || m.tag}]`;
+                }
+              });
+
+              // Remplacer dans extracted_text (si présent) pour conserver le flux
+              let textContent = '';
+              if (templateData.extracted_text) {
+                textContent = templateData.extracted_text;
+                Object.entries(dataObj).forEach(([tag, val]) => {
+                  const re = new RegExp(tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
+                  textContent = textContent.replace(re, String(val));
+                });
+              }
+
+              // Écrire le texte final sur la page (simplifié)
+              if (textContent) {
+                page.drawText(textContent.substring(0, 1000), { // Limiter pour éviter les erreurs
+                  x: 50,
+                  y: height - 100,
+                  size: 12,
+                  font,
+                  maxWidth: width - 100,
+                  lineHeight: 14,
+                });
+              } else {
+                page.drawText("PDF généré - variables remplacées", {
+                  x: 50,
+                  y: height - 100,
+                  size: 12,
+                  font,
+                });
+              }
+
+              const pdfBytes = await pdfDoc.saveAsBase64({ dataUri: true });
+              documentContent = pdfBytes; // data:application/pdf;base64,...
+              documentType = "pdf";
+              console.log("PDF généré avec succès");
+            } catch (pdfError) {
+              console.error("Erreur lors de la manipulation du PDF:", pdfError);
+              throw new Error(`Erreur lors de la manipulation du PDF: ${pdfError instanceof Error ? pdfError.message : String(pdfError)}`);
+            }
           } else {
-            // Pour les PDF et autres types, conserver le contenu binaire original
+            // Pour les autres types, conserver le contenu binaire original
             documentContent = templateData.content || '';
           }
         } catch (err) {
