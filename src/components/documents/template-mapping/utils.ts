@@ -1,4 +1,5 @@
 
+
 import { supabase } from "@/integrations/supabase/client";
 import { TemplateTag, Json, availableVariables } from "@/types/documents";
 
@@ -15,7 +16,7 @@ export const extractTemplateTags = (content: string | null): string[] => {
     tags.push(match[0]);
   }
   
-  return [...new Set(tags)]; // Remove duplicates
+  return Array.from(new Set(tags)); // Remove duplicates using Array.from instead of spread
 };
 
 // Helper function to determine the most likely category for a tag
@@ -134,3 +135,4 @@ export const createInitialMapping = (
     mappedTo: getDefaultMapping(tag)
   }));
 };
+
