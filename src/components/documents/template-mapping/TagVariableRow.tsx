@@ -76,7 +76,7 @@ export const TagVariableRow = ({
       
       <div className="col-span-1 flex justify-center">
         {variableExists ? (
-          <Badge variant="success" className="bg-green-50 text-green-700">
+          <Badge variant="outline" className="bg-green-50 text-green-700">
             ✓
           </Badge>
         ) : (
