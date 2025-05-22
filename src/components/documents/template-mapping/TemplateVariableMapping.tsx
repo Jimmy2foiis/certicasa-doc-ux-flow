@@ -1,317 +1,165 @@
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { TemplateVariableMappingProps, TemplateTag, MappingContentProps } from './types';
-import { AddNewTagField } from './AddNewTagField';
-import { VariableCategoryTabs } from './VariableCategoryTabs';
-import { TagsList } from './TagsList';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from "react";
+import { TemplateTag } from "@/types/documents";
+import TagsList from "./TagsList";
+import VariableCategoryTabs from "./VariableCategoryTabs";
+import AddNewTagField from "./AddNewTagField";
+import { extractDocumentTags } from "./utils";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Info } from "lucide-react";
 
-export const TemplateVariableMapping = ({ template, clientData, onMappingComplete }: TemplateVariableMappingProps) => {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [templateTags, setTemplateTags] = useState<TemplateTag[]>([]);
-  const [newTag, setNewTag] = useState<string>('');
-  const [activeCategory, setActiveCategory] = useState<string>('client');
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
+interface TemplateVariableMappingProps {
+  template: any;
+  clientData: any;
+  onMappingComplete?: (mappings: TemplateTag[]) => void;
+}
 
-  // Extraire les balises du contenu du template au chargement
+export const TemplateVariableMapping = ({
+  template,
+  clientData,
+  onMappingComplete,
+}: TemplateVariableMappingProps) => {
+  const [mappings, setMappings] = useState<TemplateTag[]>([]);
+  const [isPDFWithFormFields, setIsPDFWithFormFields] = useState<boolean>(false);
+  
+  // Fonction pour extraire les balises et créer les mappings initiaux
   useEffect(() => {
-    if (!template) {
-      setError("Aucun template fourni");
-      setLoading(false);
-      return;
-    }
-    
-    if (!template.content) {
-      setError("Le template n'a pas de contenu");
-      setLoading(false);
-      return;
-    }
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      // Extraire les balises du contenu
-      const extractedTags: TemplateTag[] = extractTemplateTags(template.content);
-      
-      if (extractedTags.length === 0) {
-        setError("Aucune variable n'a été détectée dans ce modèle. Vous pouvez ajouter des variables manuellement.");
-      }
-      
-      setTemplateTags(extractedTags);
-      setLoading(false);
-    } catch (error) {
-      console.error('Erreur lors de l\'extraction des balises:', error);
-      setError(error instanceof Error ? error.message : "Erreur lors de l'extraction des variables");
-      setLoading(false);
-      
-      toast({
-        title: "Erreur",
-        description: "Impossible d'extraire les variables du modèle",
-        variant: "destructive",
-      });
-    }
-  }, [template, toast]);
+    if (!template) return;
 
-  // Fonction pour extraire les balises du contenu (logique simplifiée)
-  const extractTemplateTags = (content: string | null): TemplateTag[] => {
-    if (!content) return [];
+    let extractedTags: string[] = [];
+    const defaultMappings: TemplateTag[] = [];
     
-    // Exemple de logique d'extraction - à adapter selon le format réel des templates
-    const tagRegex = /\{\{([^}]+)\}\}/g;
-    let matches;
-    const tags: TemplateTag[] = [];
-    
-    try {
-      const workingContent = content.toString();
+    // Détection des tags selon le type de document
+    if (template.type === 'pdf') {
+      // Pour les PDF, on vérifie d'abord s'il s'agit d'un AcroForm
+      // Cette détection est approximative car nous n'avons pas un moyen direct de vérifier
+      const hasPotentialFormFields = 
+        template.content?.includes('AcroForm') || 
+        template.content?.includes('/T(') ||
+        template.extracted_text?.includes('Form Field:');
       
-      // Utiliser exec dans une boucle pour extraire toutes les balises
-      while ((matches = tagRegex.exec(workingContent)) !== null) {
-        const tag = matches[0].trim(); // Utiliser la balise complète avec {{}}
-        const tagInside = matches[1].trim(); // Le contenu à l'intérieur des {{}}
-        
-        // Éviter les doublons
-        if (!tags.some(t => t.tag === tag)) {
-          // Déterminer la catégorie basée sur le contenu de la balise
-          let category = 'client'; // Catégorie par défaut
-          
-          if (tagInside.toLowerCase().includes('projet') || tagInside.toLowerCase().includes('project')) {
-            category = 'project';
-          } else if (tagInside.toLowerCase().includes('calcul')) {
-            category = 'calcul';
-          } else if (tagInside.toLowerCase().includes('cadastre')) {
-            category = 'cadastre';
-          }
-          
-          tags.push({
-            tag: tag,
-            category: category,
-            mappedTo: ''
-          });
+      setIsPDFWithFormFields(hasPotentialFormFields);
+      
+      // Tenter d'extraire des balises du texte
+      if (template.extracted_text) {
+        extractedTags = extractDocumentTags(template.extracted_text);
+      }
+    } else if (template.type === 'docx' && template.extracted_text) {
+      // Pour les DOCX, extraire les tags du texte
+      extractedTags = extractDocumentTags(template.extracted_text);
+    } else if (template.content) {
+      // Pour les autres types, tenter sur le contenu
+      extractedTags = extractDocumentTags(template.content);
+    }
+    
+    // Créer les mappings par défaut pour les tags trouvés
+    extractedTags.forEach(tag => {
+      // Nettoyer le tag des caractères de formatage
+      const cleanTag = tag.replace(/[{}]/g, '').trim();
+      
+      // Créer une suggestion de mapping par défaut
+      let category = "client"; // par défaut
+      let field = cleanTag;
+      
+      // Détecter la catégorie probable
+      if (cleanTag.includes('.')) {
+        const [probableCategory, probableField] = cleanTag.split('.');
+        category = probableCategory;
+        field = probableField;
+      } else {
+        // Essayer de deviner la catégorie
+        if (['surface', 'type_projet', 'date_debut', 'description'].includes(cleanTag)) {
+          category = 'project';
+        } else if (['ref', 'reference', 'parcelle', 'coordonnees'].includes(cleanTag)) {
+          category = 'cadastre';
+        } else if (['economie', 'montant', 'resultat', 'estimation'].includes(cleanTag)) {
+          category = 'calcul';
         }
       }
       
-      return tags;
-    } catch (e) {
-      console.error("Erreur lors de l'analyse du contenu pour extraire les balises:", e);
-      setError("Impossible d'analyser le contenu du modèle pour extraire les variables");
-      return [];
+      defaultMappings.push({
+        tag,
+        category,
+        mappedTo: `${category}.${field}`
+      });
+    });
+    
+    setMappings(defaultMappings);
+    
+    // Notifier le parent des mappings initiaux
+    if (onMappingComplete) {
+      onMappingComplete(defaultMappings);
+    }
+  }, [template, onMappingComplete]);
+
+  // Gérer les modifications de mapping
+  const handleMappingChange = (updatedMappings: TemplateTag[]) => {
+    setMappings(updatedMappings);
+    
+    if (onMappingComplete) {
+      onMappingComplete(updatedMappings);
     }
   };
 
-  // Gérer l'ajout d'une nouvelle balise manuelle
-  const handleAddTag = () => {
-    if (!newTag.trim()) {
-      toast({
-        title: "Avertissement",
-        description: "Veuillez entrer un nom de variable",
-        variant: "default",
-      });
-      return;
-    }
+  // Ajouter un nouveau tag
+  const handleAddTag = (newTag: string, category: string) => {
+    if (!newTag || newTag.trim() === '') return;
     
-    // Formater correctement la nouvelle balise
-    const formattedTag = newTag.includes('{{') ? newTag.trim() : `{{${newTag.trim()}}}`;
-    
-    // Vérifier si la balise existe déjà
-    if (templateTags.some(tag => tag.tag.toLowerCase() === formattedTag.toLowerCase())) {
-      toast({
-        title: "Information",
-        description: "Cette variable existe déjà dans la liste",
-        variant: "default",
-      });
-      return;
-    }
-    
-    setTemplateTags([...templateTags, {
+    // Formater le tag si nécessaire
+    const formattedTag = newTag.includes('{{') ? newTag : `{{${newTag}}}`;
+    const newMapping = {
       tag: formattedTag,
-      category: activeCategory,
-      mappedTo: ''
-    }]);
-    setNewTag('');
+      category,
+      mappedTo: `${category}.${newTag.replace(/[{}]/g, '')}`
+    };
     
-    toast({
-      title: "Variable ajoutée",
-      description: `La variable ${formattedTag} a été ajoutée à la liste`,
-    });
-  };
-
-  // Mettre à jour la valeur mappée pour une balise
-  const updateMapping = (index: number, value: string) => {
-    const updatedTags = [...templateTags];
-    updatedTags[index].mappedTo = value;
-    setTemplateTags(updatedTags);
-  };
-
-  // Mettre à jour la catégorie d'une balise
-  const updateCategory = (index: number, category: string) => {
-    const updatedTags = [...templateTags];
-    updatedTags[index].category = category;
-    setTemplateTags(updatedTags);
-  };
-
-  // Vérifier que le mapping est complet et valide
-  const validateMapping = (): {valid: boolean, message: string} => {
-    if (templateTags.length === 0) {
-      return {
-        valid: false, 
-        message: "Aucune variable n'a été définie pour ce modèle"
-      };
+    const updatedMappings = [...mappings, newMapping];
+    setMappings(updatedMappings);
+    
+    if (onMappingComplete) {
+      onMappingComplete(updatedMappings);
     }
-    
-    const unmappedTags = templateTags.filter(tag => !tag.mappedTo || tag.mappedTo.trim() === '');
-    
-    if (unmappedTags.length > 0) {
-      return {
-        valid: false,
-        message: `${unmappedTags.length} variable(s) n'ont pas été mappées`
-      };
-    }
-    
-    // Vérifier les mappings invalides
-    const invalidMappings = templateTags.filter(tag => {
-      return tag.mappedTo === "undefined.undefined" || !tag.mappedTo.includes(".");
-    });
-    
-    if (invalidMappings.length > 0) {
-      return {
-        valid: false,
-        message: `${invalidMappings.length} variable(s) ont un mapping invalide`
-      };
-    }
-    
-    return { valid: true, message: "" };
-  };
-
-  // Fonction pour terminer et enregistrer le mapping
-  const handleSaveMapping = () => {
-    setError(null);
-    
-    // Vérifier la validité du mapping
-    const validationResult = validateMapping();
-    
-    if (!validationResult.valid) {
-      setError(`${validationResult.message}. Veuillez associer toutes les variables correctement.`);
-      
-      toast({
-        title: "Association incomplète",
-        description: validationResult.message,
-        variant: "default",
-      });
-      
-      return;
-    }
-    
-    onMappingComplete(templateTags);
-    
-    toast({
-      title: "Association terminée",
-      description: `${templateTags.length} variable(s) ont été associées avec succès`,
-    });
-  };
-
-  // Fonction pour supprimer une balise
-  const handleDeleteTag = (index: number) => {
-    const updatedTags = [...templateTags];
-    updatedTags.splice(index, 1);
-    setTemplateTags(updatedTags);
-    
-    toast({
-      title: "Variable supprimée",
-      description: "La variable a été supprimée de la liste",
-    });
-  };
-
-  // Sélectionner une variable pour la balise active
-  const handleSelectVariable = (variable: string) => {
-    // Si une balise est sélectionnée dans l'UI, on pourrait l'associer à cette variable
-    // Sinon, on ajoute simplement la variable au champ de nouvelle balise
-    setNewTag(variable);
-  };
-
-  // Props communs pour les composants de contenu de mapping
-  const mappingContentProps: MappingContentProps = {
-    loading,
-    templateTags,
-    newTag,
-    setNewTag,
-    handleAddTag,
-    activeCategory,
-    setActiveCategory,
-    updateMapping,
-    updateCategory,
-    clientData,
-    handleDeleteTag
   };
 
   return (
-    <Card className="w-full">
-      <CardContent className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Association des Variables</h2>
-        
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Erreur</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        
-        {loading ? (
-          <div className="space-y-4">
-            <Skeleton className="h-12 w-full" />
-            <Skeleton className="h-32 w-full" />
-            <Skeleton className="h-10 w-1/3" />
-          </div>
-        ) : (
-          <>
-            <AddNewTagField 
-              {...mappingContentProps} 
-            />
-            
-            <div className="mt-6">
-              <VariableCategoryTabs 
-                {...mappingContentProps}
-                onSelectVariable={handleSelectVariable}
-              />
-              
-              <TagsList 
-                {...mappingContentProps}
-                tags={templateTags}
-              />
-            </div>
-            
-            <div className="mt-6 flex justify-between items-center">
-              <div className="text-sm text-muted-foreground">
-                {templateTags.length === 0 ? (
-                  <span>Aucune variable n'a été définie</span>
-                ) : (
-                  <span>
-                    {templateTags.filter(t => t.mappedTo).length}/{templateTags.length} variables associées
-                  </span>
-                )}
-              </div>
-              
-              <Button 
-                variant="default"
-                onClick={handleSaveMapping}
-                disabled={templateTags.length === 0}
-              >
-                Confirmer l'association
-              </Button>
-            </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      {template?.type === 'pdf' && isPDFWithFormFields && (
+        <Alert className="bg-blue-50">
+          <Info className="h-4 w-4" />
+          <AlertTitle>PDF avec champs de formulaire</AlertTitle>
+          <AlertDescription>
+            Ce modèle PDF contient des champs de formulaire. Les variables seront remplies dans ces champs.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Mapping des variables</CardTitle>
+          <CardDescription>
+            Configurez la correspondance entre les balises du modèle et les données client
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <AddNewTagField onAddTag={handleAddTag} />
+          
+          <TagsList 
+            mappings={mappings} 
+            onMappingsChange={handleMappingChange} 
+          />
+          
+          <VariableCategoryTabs 
+            clientData={clientData}
+            onVariableSelect={(variable) => {
+              const [category, field] = variable.split('.');
+              handleAddTag(field, category);
+            }}
+          />
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
-// Export default for backward compatibility
 export default TemplateVariableMapping;

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -308,22 +307,18 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
               throw new Error("Impossible de générer le DOCX. Vérifiez les balises.");
             }
           }
-          // ======== FIN DOCX HANDLING ========
-          else if (templateData.type === 'pdf' && templateData.content?.startsWith("data:application/pdf")) {
+          // ======== PDF HANDLING (AcroForm) ========
+          else if (templateData.type === "pdf" && templateData.content?.startsWith("data:application/pdf")) {
             try {
-              // Convertir base64 → Uint8Array
+              // Décoder le base64
               const base64 = templateData.content.split(",")[1];
               const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
 
               // Charger le PDF
               const pdfDoc = await PDFDocument.load(bytes);
+              const form = pdfDoc.getForm();
 
-              // Utiliser la première page comme canvas texte
-              const page = pdfDoc.getPage(0);
-              const { width, height } = page.getSize();
-              const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-
-              // Construire l'objet data pour remplacement
+              // Construire l'objet de remplacement
               const dataObj: Record<string, string> = {};
               mappings.forEach(m => {
                 if (!m.tag || !m.mappedTo) return;
@@ -337,51 +332,48 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
                   }
                 }
                 
+                // Extraire le nom du champ (supposé être le même que la clé)
+                const fieldName = key;
+                
                 if (clientData && clientData[cat] && key && clientData[cat][key] !== undefined) {
-                  dataObj[m.tag] = String(clientData[cat][key]);
-                } else {
-                  dataObj[m.tag] = `[${m.mappedTo || m.tag}]`;
+                  dataObj[fieldName] = String(clientData[cat][key]);
                 }
               });
 
-              // Remplacer dans extracted_text (si présent) pour conserver le flux
-              let textContent = '';
-              if (templateData.extracted_text) {
-                textContent = templateData.extracted_text;
-                Object.entries(dataObj).forEach(([tag, val]) => {
-                  const re = new RegExp(tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
-                  textContent = textContent.replace(re, String(val));
-                });
-              }
+              // Parcourir tous les champs du formulaire
+              const fields = form.getFields();
+              console.log(`PDF Form contient ${fields.length} champs:`);
+              
+              fields.forEach(f => {
+                const name = f.getName(); // ex: "name" ou "adresse"
+                console.log(`- Champ trouvé: "${name}"`);
+                
+                if (dataObj[name] !== undefined) {
+                  try { 
+                    console.log(`  Remplissage avec: "${dataObj[name]}"`);
+                    (f as any).setText(dataObj[name]); 
+                  } catch (err) {
+                    console.error(`  Erreur de remplissage du champ "${name}":`, err);
+                  }
+                } else {
+                  console.log(`  Pas de données pour ce champ`);
+                }
+              });
 
-              // Écrire le texte final sur la page (simplifié)
-              if (textContent) {
-                page.drawText(textContent.substring(0, 1000), { // Limiter pour éviter les erreurs
-                  x: 50,
-                  y: height - 100,
-                  size: 12,
-                  font,
-                  maxWidth: width - 100,
-                  lineHeight: 14,
-                });
-              } else {
-                page.drawText("PDF généré - variables remplacées", {
-                  x: 50,
-                  y: height - 100,
-                  size: 12,
-                  font,
-                });
-              }
+              // Aplatir le formulaire (optionnel)
+              form.flatten();
 
+              // Sauver en base64 dataURL
               const pdfBytes = await pdfDoc.saveAsBase64({ dataUri: true });
               documentContent = pdfBytes; // data:application/pdf;base64,...
               documentType = "pdf";
-              console.log("PDF généré avec succès");
+              console.log("PDF AcroForm rempli avec succès");
             } catch (pdfError) {
-              console.error("Erreur lors de la manipulation du PDF:", pdfError);
-              throw new Error(`Erreur lors de la manipulation du PDF: ${pdfError instanceof Error ? pdfError.message : String(pdfError)}`);
+              console.error("Erreur lors de la manipulation du PDF AcroForm:", pdfError);
+              throw new Error(`Erreur lors de la manipulation du PDF AcroForm: ${pdfError instanceof Error ? pdfError.message : String(pdfError)}`);
             }
-          } else {
+          }
+          else {
             // Pour les autres types, conserver le contenu binaire original
             documentContent = templateData.content || '';
           }
