@@ -1,137 +1,212 @@
-
-import { useState } from "react";
-import { 
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import React, { useState, useEffect, useCallback } from "react";
+import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import { Client } from "@/types/clientTypes";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2, Eye, Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import ClientDetails from "@/components/clients/ClientDetails";
-import ClientCreateDialog from "@/components/clients/ClientCreateDialog";
-import ClientFilters from "@/components/clients/ClientFilters";
-import ClientsTable from "@/components/clients/ClientsTable";
-import { useClients } from "@/hooks/useClients";
-import { Skeleton } from "@/components/ui/skeleton";
+import { deleteClient, fetchClients } from "@/lib/api-client";
+import ClientForm from "./ClientForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import ClientDetails from "./ClientDetails";
+import { Badge } from "@/components/ui/badge";
 
 const ClientsSection = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClient, setSelectedClient] = useState<string | null>(null);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { toast } = useToast();
-  const { clients, loading, error } = useClients();
-  
-  // Filtrer les clients selon le terme de recherche
-  const filteredClients = clients.filter(client => 
-    `${client.prenom} ${client.nom}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.tel?.includes(searchTerm)
-  );
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [clientToEdit, setClientToEdit] = useState<Client | null>(null);
 
-  // Convertir les données au format attendu par le composant ClientsTable
-  const formattedClients = filteredClients.map(client => ({
-    id: client.id,
-    name: `${client.prenom} ${client.nom}`,
-    email: client.email || "",
-    phone: client.tel || "",
-    projects: client._count.File,
-    status: client.status
-  }));
+  const columns: GridColDef[] = [
+    { field: "id", headerName: "ID", width: 90 },
+    { field: "name", headerName: "Nom", width: 200, editable: true },
+    { field: "email", headerName: "Email", width: 200, editable: true },
+    {
+      field: "phone",
+      headerName: "Téléphone",
+      width: 150,
+      editable: true,
+    },
+    {
+      field: "type",
+      headerName: "Type",
+      width: 120,
+      editable: true,
+    },
+    {
+      field: "status",
+      headerName: "Statut",
+      width: 120,
+      editable: true,
+      renderCell: (params: GridRenderCellParams) => (
+        <Badge
+          variant="secondary"
+        >
+          {params.value}
+        </Badge>
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 200,
+      renderCell: (params: GridRenderCellParams<Client>) => (
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handleViewDetails(params.row)}
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => handleEditClient(params.row)}
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="destructive"
+            size="icon"
+            onClick={() => handleDeleteConfirmation(params.row.id || "")}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
-  // Gérer la suppression d'un client - appel direct à l'API externe
-  const handleDeleteClient = async (clientId: string): Promise<void> => {
+  useEffect(() => {
+    loadClients();
+  }, []);
+
+  const loadClients = async () => {
+    setLoading(true);
     try {
-      const response = await fetch(`https://certicasa.mitain.com/api/prospects/${clientId}`, {
-        method: 'DELETE',
-        headers: {
-          "Content-Type": "application/json",
-        }
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      toast({
-        title: "Client supprimé",
-        description: "Le client a été supprimé avec succès.",
-      });
-      
-      return Promise.resolve();
+      const clientsData = await fetchClients();
+      setClients(clientsData);
     } catch (error) {
-      console.error("Erreur lors de la suppression du client:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de supprimer le client. Veuillez réessayer.",
+        description: "Impossible de charger les clients",
         variant: "destructive",
       });
-      
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewDetails = (client: Client) => {
+    setSelectedClient(client);
+    setIsDetailsOpen(true);
+  };
+
+  const handleCloseDetails = () => {
+    setIsDetailsOpen(false);
+  };
+
+  const handleEditClient = (client: Client) => {
+    setClientToEdit(client);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setClientToEdit(null);
+  };
+
+  const handleDeleteConfirmation = (clientId: string) => {
+    // Show a confirmation dialog or use a state to manage confirmation
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer ce client ?")) {
+      handleDeleteClient(clientId);
+    }
+  };
+
+  // In the ClientsSection component
+  const handleDeleteClient = async (clientId: string): Promise<void> => {
+    try {
+      await deleteClient(clientId);
+      toast({
+        title: "Client supprimé",
+        description: "Le client a été supprimé avec succès",
+      });
+      // Return a resolved promise
+      return Promise.resolve();
+    } catch (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le client",
+        variant: "destructive",
+      });
+      // Return a rejected promise
       return Promise.reject(error);
     }
   };
 
-  // Afficher un message d'erreur si la récupération des clients a échoué
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold">Clients</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="p-4 bg-red-50 text-red-800 rounded-md">
-            <p className="font-semibold">Erreur lors du chargement des clients</p>
-            <p className="text-sm">{error}</p>
-            <button 
-              onClick={() => window.location.reload()}
-              className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 rounded text-sm"
-            >
-              Réessayer
-            </button>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const handleClientUpdated = useCallback(() => {
+    loadClients();
+  }, []);
 
   return (
-    <>
-      {selectedClient ? (
-        <ClientDetails 
-          clientId={selectedClient} 
-          onBack={() => setSelectedClient(null)} 
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Liste des Clients</h2>
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Ajouter un Client
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[625px]">
+            <DialogHeader>
+              <DialogTitle>{clientToEdit ? "Modifier Client" : "Ajouter un Client"}</DialogTitle>
+              <DialogDescription>
+                {clientToEdit ? "Modifiez les informations du client." : "Entrez les informations du nouveau client ici."}
+              </DialogDescription>
+            </DialogHeader>
+            <ClientForm
+              onClose={handleCloseForm}
+              client={clientToEdit}
+              onClientUpdated={handleClientUpdated}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+      <div style={{ height: 400, width: "100%" }}>
+        <DataGrid
+          rows={clients}
+          columns={columns}
+          loading={loading}
+          getRowId={(row) => row.id || ""}
+          disableRowSelectionOnClick
         />
-      ) : (
-        <Card>
-          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-4">
-            <CardTitle className="text-xl font-semibold">Clients</CardTitle>
-            <ClientCreateDialog onClientCreated={() => window.location.reload()} />
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="space-y-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-96 w-full" />
-              </div>
-            ) : (
-              <>
-                <ClientFilters 
-                  searchTerm={searchTerm}
-                  onSearchChange={setSearchTerm}
-                />
-                <ClientsTable
-                  clients={formattedClients}
-                  filteredClients={formattedClients}
-                  searchTerm={searchTerm}
-                  loading={loading}
-                  onClientSelect={setSelectedClient}
-                  onDeleteClient={handleDeleteClient}
-                  onOpenCreateDialog={() => {}} 
-                />
-              </>
-            )}
-          </CardContent>
-        </Card>
-      )}
-    </>
+      </div>
+
+      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <DialogContent className="sm:max-w-[625px]">
+          <DialogHeader>
+            <DialogTitle>Détails du Client</DialogTitle>
+            <DialogDescription>
+              Informations complètes sur le client sélectionné.
+            </DialogDescription>
+          </DialogHeader>
+          <ClientDetails client={selectedClient} onClose={handleCloseDetails} />
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 
