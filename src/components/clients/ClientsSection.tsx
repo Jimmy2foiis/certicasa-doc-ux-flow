@@ -13,7 +13,6 @@ import ClientFilters from "@/components/clients/ClientFilters";
 import ClientsTable from "@/components/clients/ClientsTable";
 import { useClients } from "@/hooks/useClients";
 import { Skeleton } from "@/components/ui/skeleton";
-import axios from "axios";
 
 const ClientsSection = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -41,7 +40,16 @@ const ClientsSection = () => {
   // Gérer la suppression d'un client - appel direct à l'API externe
   const handleDeleteClient = async (clientId: string): Promise<void> => {
     try {
-      await axios.delete(`https://certicasa.mitain.com/api/prospects/${clientId}`);
+      const response = await fetch(`https://certicasa.mitain.com/api/prospects/${clientId}`, {
+        method: 'DELETE',
+        headers: {
+          "Content-Type": "application/json",
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       
       toast({
         title: "Client supprimé",

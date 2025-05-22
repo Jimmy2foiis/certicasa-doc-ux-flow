@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 
 export interface ProspectRow {
@@ -21,19 +22,23 @@ export const useClients = () => {
       try {
         setLoading(true);
 
-        const res = await fetch("https://certicasa.mitain.com/api/prospects", {
+        const response = await fetch("https://certicasa.mitain.com/api/prospects", {
           headers: {
             "Content-Type": "application/json",
           },
         });
 
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data = await res.json();
-
-        const mappedData: ProspectRow[] = data.map((client: any) => ({
+        const responseData = await response.json();
+        
+        // Access the data array from the response structure
+        const clientsData = responseData.data || [];
+        
+        // Map the external API data to match our expected interface
+        const mappedData: ProspectRow[] = clientsData.map((client: any) => ({
           id: client.id || client._id || "",
           prenom: client.prenom || "",
           nom: client.nom || "",
@@ -41,9 +46,9 @@ export const useClients = () => {
           tel: client.tel || client.telephone || null,
           ville: client.ville || null,
           status: client.status || "DONNEE_RECUPEREE",
-          _count: { File: client.files?.length || client._count?.File || 0 },
+          _count: { File: client.File?.length || 0 }
         }));
-
+        
         setClients(mappedData);
         setError(null);
       } catch (e) {
@@ -53,7 +58,7 @@ export const useClients = () => {
         setLoading(false);
       }
     };
-
+    
     fetchClients();
   }, []);
 

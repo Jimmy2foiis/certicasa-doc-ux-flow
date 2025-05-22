@@ -1,6 +1,5 @@
 
 import { useEffect, useState } from "react";
-import axios from "axios";
 
 export interface ClientDetail {
   id: string;
@@ -39,32 +38,48 @@ export const useClientDetails = (clientId: string | null) => {
     const fetchClientDetails = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`https://certicasa.mitain.com/api/prospects/${clientId}`);
         
-        const data = response.data;
+        const response = await fetch(`https://certicasa.mitain.com/api/prospects/${clientId}`, {
+          headers: {
+            "Content-Type": "application/json",
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const responseData = await response.json();
+        
+        // Access the client data from the response, checking for data property
+        const clientData = responseData.data || responseData;
+        
+        if (!clientData) {
+          throw new Error("No client data received");
+        }
         
         // Map the external API data to our interface
         const mappedClient: ClientDetail = {
-          id: data.id || "",
-          beetoolToken: data.beetoolToken || "",
-          prenom: data.prenom || "",
-          nom: data.nom || "",
-          sexe: data.sexe || null,
-          adresse: data.adresse || "",
-          codePostal: data.codePostal || "",
-          ville: data.ville || "",
-          pays: data.pays || "",
-          tel: data.tel || null,
-          email: data.email || null,
-          cadastralReference: data.cadastralReference || null,
-          utm30: data.utm30 || null,
-          safetyCultureAuditId: data.safetyCultureAuditId || null,
-          geoPosition: data.geoPosition || null,
-          status: data.status || "",
-          createdAt: data.createdAt || new Date().toISOString(),
-          updatedAt: data.updatedAt || new Date().toISOString(),
-          File: data.File || [],
-          GoogleDriveFolder: data.GoogleDriveFolder || null
+          id: clientData.id || "",
+          beetoolToken: clientData.beetoolToken || "",
+          prenom: clientData.prenom || "",
+          nom: clientData.nom || "",
+          sexe: clientData.sexe || null,
+          adresse: clientData.adresse || "",
+          codePostal: clientData.codePostal || "",
+          ville: clientData.ville || "",
+          pays: clientData.pays || "",
+          tel: clientData.tel || null,
+          email: clientData.email || null,
+          cadastralReference: clientData.cadastralReference || null,
+          utm30: clientData.utm30 || null,
+          safetyCultureAuditId: clientData.safetyCultureAuditId || null,
+          geoPosition: clientData.geoPosition || null,
+          status: clientData.status || "",
+          createdAt: clientData.createdAt || new Date().toISOString(),
+          updatedAt: clientData.updatedAt || new Date().toISOString(),
+          File: clientData.File || [],
+          GoogleDriveFolder: clientData.GoogleDriveFolder || null
         };
         
         setClient(mappedClient);
