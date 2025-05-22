@@ -1,63 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
+model File {
+  id                String            @id
+  fileId            String
+  fileUrl           String
+  folderType        FoldersKey
+  fileType          FilesType
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime
+  name              String?
+  beetoolToken      String
+  driveFolderId     String
+  subFolderId       String?
+  Prospect          Prospect          @relation(fields: [beetoolToken], references: [beetoolToken], onDelete: Cascade)
+  GoogleDriveFolder GoogleDriveFolder @relation(fields: [driveFolderId], references: [id], onDelete: Cascade)
+  SubFolder         SubFolder?        @relation(fields: [subFolderId], references: [id])
 }
 
-/// Modèle principal pour la table `clients`
-model Client {
-  id                     String   @id @default(uuid()) @db.Uuid
-  beetoolToken           String   @db.VarChar(50)
-  prenom                 String   @db.VarChar(100)
-  nom                    String   @db.VarChar(100)
-  sexe                   String   @db.VarChar(10)
-  adresse                String   @db.Text
-  codePostal             String   @db.VarChar(20)
-  ville                  String   @db.VarChar(100)
-  pays                   String   @db.VarChar(100)
-  tel                    String   @db.VarChar(30)
-  email                  String   @db.VarChar(150)
-  cadastralReference     String   @db.VarChar(100)
-  utm30                  String?  @db.VarChar(100)
-  safetyCultureAuditId   String   @db.VarChar(100)
-  geoPosition            String   @db.VarChar(100)
-  status                 String   @default("INITIALISATION_DONE_WAITING_FOR_CEE") @db.VarChar(100)
-  createdAt              DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt              DateTime @updatedAt @db.Timestamptz(6)
-
-  // Relations
-  projects   Project[]
-  documents  Document[]
+model GoogleDriveFolder {
+  id           String      @id
+  beetoolToken String      @unique
+  folderId     String
+  folderUrl    String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime
+  File         File[]
+  Prospect     Prospect    @relation(fields: [beetoolToken], references: [beetoolToken], onDelete: Cascade)
+  SubFolder    SubFolder[]
 }
 
-/// Projet énergétique réalisé pour un client (structure minimale, à détailler plus tard)
-model Project {
-  id         String   @id @default(uuid()) @db.Uuid
-  clientId   String   @db.Uuid
-  name       String   @db.VarChar(150)
-  type       String?  @db.VarChar(100)
-  status     String   @default("En cours") @db.VarChar(50)
-  surface    Float?   @db.Decimal(10,2)
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
-
-  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  documents  Document[]
+model Prospect {
+  id                   String             @id
+  beetoolToken         String             @unique
+  prenom               String
+  nom                  String
+  sexe                 String?
+  adresse              String
+  codePostal           String
+  ville                String
+  pays                 String
+  tel                  String?
+  email                String?
+  cadastralReference   String?
+  utm30                String?
+  safetyCultureAuditId String?
+  geoPosition          String?
+  status               Status             @default(DONNEE_RECUPEREE)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime
+  File                 File[]
+  GoogleDriveFolder    GoogleDriveFolder?
+  Webhook              Webhook[]
 }
 
-/// Documents (PDF, etc.) liés à un client ou un projet
-model Document {
-  id         String   @id @default(uuid()) @db.Uuid
-  clientId   String?  @db.Uuid
-  projectId  String?  @db.Uuid
-  name       String   @db.VarChar(200)
-  type       String?  @db.VarChar(100)
-  status     String   @default("Actif") @db.VarChar(50)
-  filePath   String?  @db.Text
-  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+model SubFolder {
+  id                String            @id
+  folderId          String
+  folderType        FoldersKey
+  driveFolderId     String
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime
+  File              File[]
+  GoogleDriveFolder GoogleDriveFolder @relation(fields: [driveFolderId], references: [id], onDelete: Cascade)
+  Webhook           Webhook[]
+}
 
-  client     Client?  @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  project    Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
-} 
+model Webhook {
+  id           String     @id
+  beetoolToken String
+  webhookId    String
+  folderType   FoldersKey
+  folderId     String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime
+  Prospect     Prospect   @relation(fields: [beetoolToken], references: [beetoolToken], onDelete: Cascade)
+  SubFolder    SubFolder  @relation(fields: [folderId], references: [id])
+}
+
+enum FilesType {
+  SIGNATURE_NOMBRE_APELLIDO
+  FIRMA
+  NIF
+  NIE
+  UNKNOWN
+}
+
+enum FoldersKey {
+  FICHA
+  DR_AYUDA
+  FACTURAS
+  INFORMES_FOTOGRAFICOS
+  CERTIFICADO_INSTALADOR
+  CEEE
+  ACUERDO_CESION_DE_AHORROS
+  DNI_CLIENT
+  SIGNATURE
+  PHOTOS
+}
+
+enum Status {
+  DONNEE_RECUPEREE
+  INITIALISATION_DONE_WAITING_FOR_CEE
+  CEE_CREATED
+  CONTACTED
+  CONVERTED
+  REJECTED
+}
