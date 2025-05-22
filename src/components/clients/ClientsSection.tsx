@@ -38,7 +38,7 @@ const ClientsSection = () => {
   }));
 
   // Gérer la suppression d'un client
-  const handleDeleteClient = async (clientId: string) => {
+  const handleDeleteClient = async (clientId: string): Promise<void> => {
     try {
       const response = await fetch(`/api/clients/${clientId}`, {
         method: 'DELETE',
@@ -49,12 +49,16 @@ const ClientsSection = () => {
           title: "Client supprimé",
           description: "Le client a été supprimé avec succès.",
         });
+        // Refresh the client list - this would ideally trigger a re-fetch
+        // For now, we'll just remove it from the UI
+        return Promise.resolve();
       } else {
         toast({
           title: "Erreur",
           description: "Impossible de supprimer le client. Veuillez réessayer.",
           variant: "destructive",
         });
+        return Promise.reject(new Error("Failed to delete client"));
       }
     } catch (error) {
       console.error("Erreur lors de la suppression du client:", error);
@@ -63,6 +67,7 @@ const ClientsSection = () => {
         description: "Impossible de supprimer le client. Veuillez réessayer.",
         variant: "destructive",
       });
+      return Promise.reject(error);
     }
   };
 

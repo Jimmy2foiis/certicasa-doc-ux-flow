@@ -78,6 +78,17 @@ const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsV
     );
   }
 
+  // Préparer les données du client pour l'affichage
+  const clientDisplayData = {
+    id: client.id,
+    name: `${client.prenom} ${client.nom}`,
+    email: client.email || "",
+    phone: client.tel || "",
+    address: clientAddress,
+    nif: client.cadastralReference || "",
+    status: client.status
+  };
+
   return (
     <div>
       {showCalculation ? (
@@ -92,15 +103,7 @@ const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsV
         <>
           <ClientDetailsHeader 
             onBack={onBack} 
-            client={{
-              id: client.id,
-              name: `${client.prenom} ${client.nom}`,
-              email: client.email || "",
-              phone: client.tel || "",
-              address: clientAddress,
-              nif: client.cadastralReference || "",
-              status: client.status
-            }}
+            client={clientDisplayData}
           />
           
           <ClientTabsContainer 

@@ -9,20 +9,20 @@ import ClientDocumentGenerator from "@/components/documents/ClientDocumentGenera
 
 interface ClientDetailsHeaderProps {
   onBack: () => void;
-  clientId: string;
-  clientName: string;
-  client: any; // The full client object
-  onDocumentGenerated?: (documentId: string) => void;
-  onClientUpdated?: () => void;
+  client: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    nif: string;
+    status: string;
+  };
 }
 
 const ClientDetailsHeader = ({
   onBack,
-  clientId,
-  clientName,
   client,
-  onDocumentGenerated,
-  onClientUpdated,
 }: ClientDetailsHeaderProps) => {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const { toast } = useToast();
@@ -30,10 +30,6 @@ const ClientDetailsHeader = ({
   // Function to handle client updates
   const handleClientUpdated = () => {
     setShowEditDialog(false);
-    
-    if (onClientUpdated) {
-      onClientUpdated();
-    }
     
     toast({
       title: "Client modifié",
@@ -44,13 +40,9 @@ const ClientDetailsHeader = ({
 
   // Function to handle document generation
   const handleDocumentGenerated = (documentId: string) => {
-    if (onDocumentGenerated) {
-      onDocumentGenerated(documentId);
-    }
-    
     toast({
       title: "Document généré",
-      description: `Document créé pour ${clientName}`,
+      description: `Document créé pour ${client.name}`,
       duration: 3000,
     });
   };
@@ -67,13 +59,13 @@ const ClientDetailsHeader = ({
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">{clientName}</h1>
+          <h1 className="text-2xl font-bold">{client.name}</h1>
           <div className="flex items-center gap-2">
             <Badge variant={client?.status === "Actif" ? "default" : "secondary"}>
               {client?.status || "Actif"}
             </Badge>
             <span className="text-sm text-gray-500">
-              {client?.type || "Client particulier"}
+              {"Client particulier"}
             </span>
           </div>
         </div>
@@ -81,8 +73,8 @@ const ClientDetailsHeader = ({
       
       <div className="flex items-center gap-2 self-end md:self-auto">
         <ClientDocumentGenerator
-          clientId={clientId}
-          clientName={clientName}
+          clientId={client.id}
+          clientName={client.name}
           clientData={{
             client: client,
             // Other data will be fetched in the component
@@ -100,7 +92,7 @@ const ClientDetailsHeader = ({
         <DialogContent className="sm:max-w-[600px]">
           <ClientForm
             client={client}
-            clientId={clientId}
+            clientId={client.id}
             onSubmitSuccess={handleClientUpdated}
             submitButtonText="Enregistrer les modifications"
           />

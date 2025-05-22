@@ -20,12 +20,38 @@ export class PrismaClient {
     return this;
   }
   
-  // Ajout d'une propriété file simulée qui contient les méthodes nécessaires
+  // Ajout d'une propriété prospect simulée
+  prospect = {
+    findMany: async (params?: any) => {
+      console.log('Mock prospect.findMany called with params:', params);
+      return []; // Retourner un tableau vide ou des données simulées
+    },
+    findUnique: async (params?: any) => {
+      console.log('Mock prospect.findUnique called with params:', params);
+      return {
+        id: 'mock-id',
+        beetoolToken: 'mock-token',
+        prenom: 'Prénom',
+        nom: 'Nom',
+        email: 'email@test.com',
+        tel: '0123456789',
+        ville: 'Paris',
+        status: 'DONNEE_RECUPEREE',
+        File: [],
+        GoogleDriveFolder: null
+      };
+    },
+    delete: async (params?: any) => {
+      console.log('Mock prospect.delete called with params:', params);
+      return { id: 'mock-id' };
+    }
+  };
+  
+  // Ajout d'une propriété file simulée
   file = {
     findMany: async (params?: any) => {
       console.log('Mock file.findMany called with params:', params);
-      // Retourner un tableau vide ou des données simulées
-      return [];
+      return []; // Retourner un tableau vide ou des données simulées
     },
     create: async (params?: any) => {
       console.log('Mock file.create called with params:', params);
@@ -40,8 +66,6 @@ export class PrismaClient {
       return { id: 'mock-file-id' };
     }
   };
-  
-  // D'autres méthodes peuvent être ajoutées selon les besoins
 }
 
 // Éviter de multiplier les connexions en dev avec hot reload
