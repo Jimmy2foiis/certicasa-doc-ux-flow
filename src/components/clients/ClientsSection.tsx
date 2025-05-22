@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   Card,
@@ -40,7 +41,7 @@ const ClientsSection = () => {
   // Gérer la suppression d'un client - appel direct à l'API externe
   const handleDeleteClient = async (clientId: string): Promise<void> => {
     try {
-      const response = await axios.delete(`https://certicasa.mitain.com/api/prospects/${clientId}`);
+      await axios.delete(`https://certicasa.mitain.com/api/prospects/${clientId}`);
       
       toast({
         title: "Client supprimé",
