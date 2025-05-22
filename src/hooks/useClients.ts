@@ -34,10 +34,10 @@ export const useClients = () => {
 
         const responseData = await response.json();
         
-        // Access the data array from the response structure
+        // Accéder au tableau de données depuis la structure de la réponse
         const clientsData = responseData.data || [];
         
-        // Map the external API data to match our expected interface
+        // Mapper les données de l'API externe pour correspondre à notre interface attendue
         const mappedData: ProspectRow[] = clientsData.map((client: any) => ({
           id: client.id || client._id || "",
           prenom: client.prenom || "",
@@ -52,8 +52,8 @@ export const useClients = () => {
         setClients(mappedData);
         setError(null);
       } catch (e) {
-        console.error("Error fetching clients:", e);
-        setError((e as Error).message || "Failed to fetch clients data");
+        console.error("Erreur lors de la récupération des clients:", e);
+        setError((e as Error).message || "Échec de la récupération des données clients");
       } finally {
         setLoading(false);
       }

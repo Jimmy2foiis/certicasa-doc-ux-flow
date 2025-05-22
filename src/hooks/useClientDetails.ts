@@ -51,14 +51,14 @@ export const useClientDetails = (clientId: string | null) => {
         
         const responseData = await response.json();
         
-        // Access the client data from the response, checking for data property
+        // Accéder aux données du client depuis la réponse, en vérifiant la propriété data
         const clientData = responseData.data || responseData;
         
         if (!clientData) {
-          throw new Error("No client data received");
+          throw new Error("Aucune donnée client reçue");
         }
         
-        // Map the external API data to our interface
+        // Mapper les données de l'API externe à notre interface
         const mappedClient: ClientDetail = {
           id: clientData.id || "",
           beetoolToken: clientData.beetoolToken || "",

@@ -55,6 +55,7 @@ const ClientsSection = () => {
         title: "Client supprimé",
         description: "Le client a été supprimé avec succès.",
       });
+      
       return Promise.resolve();
     } catch (error) {
       console.error("Erreur lors de la suppression du client:", error);
@@ -63,6 +64,7 @@ const ClientsSection = () => {
         description: "Impossible de supprimer le client. Veuillez réessayer.",
         variant: "destructive",
       });
+      
       return Promise.reject(error);
     }
   };
