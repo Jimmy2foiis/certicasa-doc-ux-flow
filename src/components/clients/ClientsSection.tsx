@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   Card,
@@ -26,7 +27,7 @@ const ClientsSection = () => {
     client.tel?.includes(searchTerm)
   );
 
-  // Convertir les données Prisma au format attendu par le composant ClientsTable
+  // Convertir les données au format attendu par le composant ClientsTable
   const formattedClients = filteredClients.map(client => ({
     id: client.id,
     name: `${client.prenom} ${client.nom}`,
@@ -36,7 +37,7 @@ const ClientsSection = () => {
     status: client.status
   }));
 
-  // Gérer la suppression d'un client
+  // Gérer la suppression d'un client - ensure this returns a Promise<void>
   const handleDeleteClient = async (clientId: string): Promise<void> => {
     try {
       const response = await fetch(`/api/clients/${clientId}`, {

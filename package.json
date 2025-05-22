@@ -65,6 +65,7 @@
     "lucide-react": "^0.462.0",
     "mammoth": "^1.9.0",
     "next-themes": "^0.3.0",
+    "node-fetch": "^2.6.7",
     "pdfjs-dist": "^3.11.174",
     "pizzip": "^3.2.0",
     "proj4": "^2.17.0",

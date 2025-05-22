@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Routes
+// Routes - properly mount the router at the base path
 app.use("/api/clients", clientsRouter);
 app.use("/api/client-files", clientFilesRouter);
 

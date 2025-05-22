@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 
 export interface ProspectRow {
@@ -20,16 +19,39 @@ export const useClients = () => {
   useEffect(() => {
     const fetchClients = async () => {
       try {
+        setLoading(true);
         const res = await fetch("/api/clients");
-        if (!res.ok) throw new Error("API error");
-        const data = (await res.json()) as ProspectRow[];
-        setClients(data);
+        
+        if (!res.ok) {
+          throw new Error(`API error: ${res.status}`);
+        }
+        
+        // Get data from external API
+        const data = await res.json();
+        
+        // Map the external API data to match our expected interface if needed
+        // This ensures UI components don't need to change
+        const mappedData: ProspectRow[] = data.map((client: any) => ({
+          id: client.id || client._id || "",
+          prenom: client.prenom || "",
+          nom: client.nom || "",
+          email: client.email || null,
+          tel: client.tel || client.telephone || null,
+          ville: client.ville || null,
+          status: client.status || "DONNEE_RECUPEREE",
+          _count: { File: client.files?.length || client._count?.File || 0 }
+        }));
+        
+        setClients(mappedData);
+        setError(null);
       } catch (e) {
+        console.error("Error fetching clients:", e);
         setError((e as Error).message);
       } finally {
         setLoading(false);
       }
     };
+    
     fetchClients();
   }, []);
 
