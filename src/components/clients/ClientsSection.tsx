@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { 
   Card,
   CardContent,
@@ -7,86 +7,54 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { getClients, deleteClientRecord, Client } from "@/services/supabaseService";
 import ClientDetails from "@/components/clients/ClientDetails";
 import ClientCreateDialog from "@/components/clients/ClientCreateDialog";
 import ClientFilters from "@/components/clients/ClientFilters";
 import ClientsTable from "@/components/clients/ClientsTable";
+import { useClients } from "@/hooks/useClients";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const ClientsSection = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [openDialog, setOpenDialog] = useState(false);
   const { toast } = useToast();
+  const { clients, loading, error } = useClients();
   
-  // Charger les clients depuis Supabase et le stockage local
-  const loadClients = async () => {
-    try {
-      setLoading(true);
-      
-      // Obtenir tous les clients (la fonction getClients gère maintenant les erreurs RLS)
-      const allClients = await getClients();
-      
-      // Créer un Map pour éliminer les doublons potentiels
-      const uniqueClientsMap = new Map<string, Client>();
-      
-      allClients.forEach(client => {
-        if (client.id) {
-          uniqueClientsMap.set(client.id, client);
-        }
-      });
-      
-      // Convertir le Map en tableau
-      const uniqueClients = Array.from(uniqueClientsMap.values());
-      
-      setClients(uniqueClients);
-      console.log("Clients chargés (uniques):", uniqueClients);
-    } catch (error) {
-      console.error("Erreur lors du chargement des clients:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les clients. Les données locales seront utilisées.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Charger les clients au montage du composant
-  useEffect(() => {
-    loadClients();
-  }, []);
-
   // Filtrer les clients selon le terme de recherche
   const filteredClients = clients.filter(client => 
-    client.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    `${client.prenom} ${client.nom}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.phone?.includes(searchTerm)
+    client.tel?.includes(searchTerm)
   );
+
+  // Convertir les données Prisma au format attendu par le composant ClientsTable
+  const formattedClients = filteredClients.map(client => ({
+    id: client.id,
+    name: `${client.prenom} ${client.nom}`,
+    email: client.email || "",
+    phone: client.tel || "",
+    projects: client._count.File,
+    status: client.status
+  }));
 
   // Gérer la suppression d'un client
   const handleDeleteClient = async (clientId: string) => {
     try {
-      const success = await deleteClientRecord(clientId);
+      const response = await fetch(`/api/clients/${clientId}`, {
+        method: 'DELETE',
+      });
       
-      if (success) {
+      if (response.ok) {
         toast({
           title: "Client supprimé",
           description: "Le client a été supprimé avec succès.",
         });
-        
-        // Recharger la liste des clients
-        await loadClients();
       } else {
         toast({
-          title: "Attention",
-          description: "Le client a été supprimé localement mais pas dans la base de données.",
+          title: "Erreur",
+          description: "Impossible de supprimer le client. Veuillez réessayer.",
           variant: "destructive",
         });
-        await loadClients();
       }
     } catch (error) {
       console.error("Erreur lors de la suppression du client:", error);
@@ -97,6 +65,29 @@ const ClientsSection = () => {
       });
     }
   };
+
+  // Afficher un message d'erreur si la récupération des clients a échoué
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold">Clients</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="p-4 bg-red-50 text-red-800 rounded-md">
+            <p className="font-semibold">Erreur lors du chargement des clients</p>
+            <p className="text-sm">{error}</p>
+            <button 
+              onClick={() => window.location.reload()}
+              className="mt-2 px-3 py-1 bg-red-100 hover:bg-red-200 rounded text-sm"
+            >
+              Réessayer
+            </button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>
@@ -109,22 +100,31 @@ const ClientsSection = () => {
         <Card>
           <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-4">
             <CardTitle className="text-xl font-semibold">Clients</CardTitle>
-            <ClientCreateDialog onClientCreated={loadClients} />
+            <ClientCreateDialog onClientCreated={() => window.location.reload()} />
           </CardHeader>
           <CardContent>
-            <ClientFilters 
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-            />
-            <ClientsTable
-              clients={clients}
-              filteredClients={filteredClients}
-              searchTerm={searchTerm}
-              loading={loading}
-              onClientSelect={setSelectedClient}
-              onDeleteClient={handleDeleteClient}
-              onOpenCreateDialog={() => setOpenDialog(true)}
-            />
+            {loading ? (
+              <div className="space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-96 w-full" />
+              </div>
+            ) : (
+              <>
+                <ClientFilters 
+                  searchTerm={searchTerm}
+                  onSearchChange={setSearchTerm}
+                />
+                <ClientsTable
+                  clients={formattedClients}
+                  filteredClients={formattedClients}
+                  searchTerm={searchTerm}
+                  loading={loading}
+                  onClientSelect={setSelectedClient}
+                  onDeleteClient={handleDeleteClient}
+                  onOpenCreateDialog={() => {}} // Cette fonction sera gérée par le bouton dans le CardHeader
+                />
+              </>
+            )}
           </CardContent>
         </Card>
       )}
