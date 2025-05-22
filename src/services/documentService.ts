@@ -19,6 +19,16 @@ export const validateDocumentContent = (content: string | null, type: string): {
         error: "Format de document PDF invalide"
       };
     }
+  } else if (fileType === 'docx') {
+    // Pour les DOCX, vérifier qu'il s'agit d'une dataURL DOCX ou d'un blob
+    if (!content.startsWith('data:application/vnd.openxmlformats-officedocument') && 
+        !content.startsWith('blob:') && 
+        content.trim().length === 0) {
+      return {
+        success: false,
+        error: "Format de document DOCX invalide"
+      };
+    }
   } else if (fileType === 'txt') {
     // Pour les fichiers texte, on vérifie simplement que le contenu n'est pas vide
     if (content.trim().length === 0) {
@@ -63,6 +73,14 @@ export const createDocumentPreviewUrl = (content: string, type: string): { succe
     if (fileType === 'pdf') {
       // Pour PDF, on crée un blob à partir du contenu
       const blob = new Blob([content], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      return {
+        success: true,
+        data: url
+      };
+    } else if (fileType === 'docx') {
+      // Pour DOCX, on crée un blob à partir du contenu
+      const blob = new Blob([content], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
       const url = URL.createObjectURL(blob);
       return {
         success: true,

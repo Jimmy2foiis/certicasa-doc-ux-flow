@@ -4,6 +4,8 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { TemplateTag } from "@/types/documents";
 import { documentService } from "@/services/documentService";
+import PizZip from "pizzip";
+import Docxtemplater from "docxtemplater";
 
 interface UseDocumentGenerationProps {
   (onDocumentGenerated?: (documentId: string) => void, clientName?: string): {
@@ -63,6 +65,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       case 'pdf':
         return content.startsWith('data:application/pdf') || content.startsWith('blob:');
       case 'docx':
+        return content.startsWith('data:application/vnd.openxmlformats-officedocument') || content.length > 0;
       case 'txt':
         return content.length > 0;
       default:
@@ -102,6 +105,14 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
         // Récupérer la valeur depuis les données client en fonction du mapping
         const [category, field] = mapping.mappedTo.split('.');
         let value: string;
+        
+        // Gestion de l'alias adresse -> address
+        if (category === "client" && field === "adresse") {
+          // alias vers address
+          if (!clientData.client?.adresse && clientData.client?.address) {
+            clientData.client.adresse = clientData.client.address;
+          }
+        }
         
         if (clientData && clientData[category] && field && clientData[category][field] !== undefined) {
           value = String(clientData[category][field]);
@@ -240,21 +251,89 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       if (mappings && mappings.length > 0) {
         try {
           if (templateData.type === 'docx') {
-            // Pour les DOCX, utiliser le texte extrait comme base
-            const { documentContent: mappedContent, replacementsCount } = await applyMappingToContent(
-              templateData.extracted_text || '', 
-              mappings, 
-              clientData
-            );
-            
-            // Vérifier si des remplacements ont été effectués
-            if (replacementsCount === 0) {
-              throw new Error("Aucun remplacement n'a été effectué lors du mapping des variables. Vérifiez les mappings.");
+            // Pour les DOCX avec Docxtemplater
+            if (templateData.content && templateData.content.includes('base64')) {
+              // Construire l'objet data à partir des mappings pour Docxtemplater
+              const dataObj: Record<string, any> = {};
+              
+              // Préparer les données pour docxtemplater
+              for (const mapping of mappings) {
+                if (!mapping.tag || !mapping.mappedTo) continue;
+                
+                const [category, field] = mapping.mappedTo.split('.');
+                
+                // Gestion de l'alias adresse -> address
+                if (category === "client" && field === "adresse") {
+                  if (!clientData.client?.adresse && clientData.client?.address) {
+                    clientData.client.adresse = clientData.client.address;
+                  }
+                }
+                
+                if (clientData && clientData[category] && field && clientData[category][field] !== undefined) {
+                  // Extraire le nom de la balise sans les caractères spéciaux
+                  const tagName = mapping.tag.replace(/[{}<>%$]/g, '').trim();
+                  dataObj[tagName] = String(clientData[category][field]);
+                }
+              }
+              
+              console.log("Données pour Docxtemplater:", dataObj);
+              
+              try {
+                // Traiter le document DOCX avec Docxtemplater
+                const contentBase64 = templateData.content.split(",")[1]; // retire le prefixe data:
+                const zip = new PizZip(atob(contentBase64), { base64: false });
+                const doc = new Docxtemplater(zip);
+                
+                // Définir les données pour le rendu
+                doc.setData(dataObj);
+                
+                try {
+                  doc.render();
+                } catch (e) {
+                  console.error("Docxtemplater render error", e);
+                  throw e;
+                }
+                
+                const out = doc.getZip().generate({ type: "base64" });
+                documentContent = "data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64," + out;
+                documentType = "docx";
+              } catch (docxError) {
+                console.error("Erreur avec Docxtemplater:", docxError);
+                
+                // Fallback à la méthode de remplacement de texte
+                console.log("Fallback à la méthode de texte simple");
+                const { documentContent: mappedContent, replacementsCount } = await applyMappingToContent(
+                  templateData.extracted_text || '', 
+                  mappings, 
+                  clientData
+                );
+                
+                // Vérifier si des remplacements ont été effectués
+                if (replacementsCount === 0) {
+                  throw new Error("Aucun remplacement n'a été effectué lors du mapping des variables. Vérifiez les mappings.");
+                }
+                
+                documentContent = mappedContent;
+                documentType = 'txt'; // Changer le type en texte pour les DOCX mappés
+                documentName = `${templateData.name}-mapped`; // Ajouter un suffixe pour identifier
+              }
+            } else {
+              // Utiliser le texte extrait comme base si pas de contenu base64
+              const { documentContent: mappedContent, replacementsCount } = await applyMappingToContent(
+                templateData.extracted_text || '', 
+                mappings, 
+                clientData
+              );
+              
+              // Vérifier si des remplacements ont été effectués
+              if (replacementsCount === 0) {
+                throw new Error("Aucun remplacement n'a été effectué lors du mapping des variables. Vérifiez les mappings.");
+              }
+              
+              documentContent = mappedContent;
+              documentType = 'txt'; // Changer le type en texte pour les DOCX mappés
+              documentName = `${templateData.name}-mapped`; // Ajouter un suffixe pour identifier
             }
-            
-            documentContent = mappedContent;
-            documentType = 'txt'; // Changer le type en texte pour les DOCX mappés
-            documentName = `${templateData.name}-mapped`; // Ajouter un suffixe pour identifier
           } else {
             // Pour les PDF et autres types, conserver le contenu binaire original
             documentContent = templateData.content || '';
