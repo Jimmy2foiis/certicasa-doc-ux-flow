@@ -1,6 +1,3 @@
 
-declare module 'docxtemplater/js/inspect-module' {
-  export default class InspectModule {
-    getAllTags(): Record<string, number>;
-  }
-}
+// This file now points to the more specific declaration file
+// The implementation is in src/types/docxtemplater-inspect-module.d.ts

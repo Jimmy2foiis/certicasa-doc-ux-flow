@@ -1,8 +1,8 @@
 
 import PizZip from 'pizzip';
 import Docxtemplater from 'docxtemplater';
-// Note: The import path may vary depending on how the package exposes the module
-import InspectModule from 'docxtemplater/js/inspect-module';
+// Note: Adding .js extension for ESM/Vite compatibility
+import InspectModule from 'docxtemplater/js/inspect-module.js';
 
 /**
  * Extracts template tags from a DOCX document
