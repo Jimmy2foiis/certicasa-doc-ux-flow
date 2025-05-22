@@ -1,4 +1,5 @@
 
+import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TemplateTag, availableVariables } from "./types";
@@ -33,7 +34,7 @@ export const TagVariableRow = ({
       <div className="col-span-3">
         <Select 
           value={tag.category} 
-          onValueChange={(value) => updateCategory(index, value)}
+          onValueChange={(value: string) => updateCategory(index, value)}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Catégorie" />
@@ -51,7 +52,7 @@ export const TagVariableRow = ({
       <div className="col-span-4">
         <Select 
           value={tag.mappedTo.split('.')[1] || ''} 
-          onValueChange={(value) => updateMapping(index, `${tag.category}.${value}`)}
+          onValueChange={(value: string) => updateMapping(index, `${tag.category}.${value}`)}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Variable" />
