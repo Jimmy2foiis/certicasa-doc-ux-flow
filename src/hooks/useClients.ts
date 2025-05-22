@@ -22,6 +22,8 @@ export const useClients = () => {
       try {
         setLoading(true);
         const res = await fetch(" https://certicasa.mitain.com/api/prospects");
+
+        console.log(res)
         
         
         // Get data from external API
