@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { TemplateTag, Json, availableVariables } from "@/types/documents";
 import PizZip from "pizzip";
