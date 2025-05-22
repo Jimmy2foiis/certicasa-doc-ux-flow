@@ -1,22 +1,34 @@
 
 import { Badge } from "@/components/ui/badge";
 import { TagVariableRow } from "./TagVariableRow";
-import { TemplateTag } from "./types";
+import { TemplateTag } from "@/types/documents";
 
-interface TagsListProps {
-  tags: TemplateTag[];
-  clientData?: any;
-  updateCategory: (index: number, category: string) => void;
-  updateMapping: (index: number, value: string) => void;
+export interface TagsListProps {
+  mappings: TemplateTag[];
+  onMappingsChange: (updatedMappings: TemplateTag[]) => void;
 }
 
-export const TagsList = ({ 
-  tags, 
-  clientData, 
-  updateCategory, 
-  updateMapping 
-}: TagsListProps) => {
-  if (tags.length === 0) {
+export const TagsList = ({ mappings, onMappingsChange }: TagsListProps) => {
+  // Handle category update
+  const updateCategory = (index: number, category: string) => {
+    const updatedMappings = [...mappings];
+    updatedMappings[index].category = category;
+    
+    // Also update mappedTo to reflect new category
+    const currentField = updatedMappings[index].mappedTo.split('.')[1];
+    updatedMappings[index].mappedTo = `${category}.${currentField}`;
+    
+    onMappingsChange(updatedMappings);
+  };
+  
+  // Handle mapping update
+  const updateMapping = (index: number, value: string) => {
+    const updatedMappings = [...mappings];
+    updatedMappings[index].mappedTo = value;
+    onMappingsChange(updatedMappings);
+  };
+  
+  if (mappings.length === 0) {
     return (
       <div className="border border-dashed rounded-md p-8 text-center">
         <p className="text-gray-500">
@@ -30,14 +42,13 @@ export const TagsList = ({
 
   return (
     <div className="border rounded-md p-4">
-      <h3 className="font-medium mb-3">Balises détectées ({tags.length})</h3>
+      <h3 className="font-medium mb-3">Balises détectées ({mappings.length})</h3>
       <div className="space-y-3">
-        {tags.map((tag, index) => (
+        {mappings.map((tag, index) => (
           <TagVariableRow 
             key={index}
             tag={tag}
             index={index}
-            clientData={clientData}
             updateCategory={updateCategory}
             updateMapping={updateMapping}
           />

@@ -1,19 +1,17 @@
 
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { availableVariables } from "./types";
 
-interface VariableCategoryTabsProps {
-  activeCategory: string;
-  setActiveCategory: (category: string) => void;
-  onSelectVariable: (variable: string) => void;
+export interface VariableCategoryTabsProps {
+  clientData: any;
+  onVariableSelect: (variable: string) => void;
 }
 
-export const VariableCategoryTabs = ({ 
-  activeCategory, 
-  setActiveCategory,
-  onSelectVariable
-}: VariableCategoryTabsProps) => {
+export const VariableCategoryTabs = ({ clientData, onVariableSelect }: VariableCategoryTabsProps) => {
+  const [activeCategory, setActiveCategory] = useState("client");
+  
   return (
     <div>
       <h3 className="font-medium mb-3">Variables disponibles</h3>
@@ -35,7 +33,7 @@ export const VariableCategoryTabs = ({
                     key={variable} 
                     variant="outline" 
                     className="cursor-pointer hover:bg-slate-200"
-                    onClick={() => onSelectVariable(variable)}
+                    onClick={() => onVariableSelect(`${category}.${variable}`)}
                   >
                     {`${category}.${variable}`}
                   </Badge>
