@@ -1,7 +1,8 @@
 
+import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TemplateTag, availableVariables } from "./types";
+import { TemplateTag, availableVariables } from "@/types/documents";
 
 interface TagVariableRowProps {
   tag: TemplateTag;
@@ -18,6 +19,13 @@ export const TagVariableRow = ({
   updateCategory, 
   updateMapping 
 }: TagVariableRowProps) => {
+  // Helper to check if the variable data exists in clientData
+  const variableExists = React.useMemo(() => {
+    if (!clientData) return false;
+    const field = tag.mappedTo.split('.')[1] || '';
+    return Boolean(clientData[tag.category]?.[field]);
+  }, [clientData, tag.category, tag.mappedTo]);
+
   return (
     <div className="grid grid-cols-12 gap-2 items-center">
       <div className="col-span-3">
@@ -33,7 +41,7 @@ export const TagVariableRow = ({
       <div className="col-span-3">
         <Select 
           value={tag.category} 
-          onValueChange={(value) => updateCategory(index, value)}
+          onValueChange={(value: string) => updateCategory(index, value)}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Catégorie" />
@@ -51,7 +59,7 @@ export const TagVariableRow = ({
       <div className="col-span-4">
         <Select 
           value={tag.mappedTo.split('.')[1] || ''} 
-          onValueChange={(value) => updateMapping(index, `${tag.category}.${value}`)}
+          onValueChange={(value: string) => updateMapping(index, `${tag.category}.${value}`)}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Variable" />
@@ -67,8 +75,8 @@ export const TagVariableRow = ({
       </div>
       
       <div className="col-span-1 flex justify-center">
-        {clientData && clientData[tag.category]?.[tag.mappedTo.split('.')[1]] ? (
-          <Badge variant="outline" className="bg-green-50 text-green-700">
+        {variableExists ? (
+          <Badge variant="success" className="bg-green-50 text-green-700">
             ✓
           </Badge>
         ) : (
