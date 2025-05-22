@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -164,9 +163,9 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
 
       // Vérifier si le contenu du template est valide selon son type
       if (templateData.type === 'docx') {
-        // Pour les DOCX, on vérifie que le contenu est disponible
-        if (!templateData.content || templateData.content.trim().length === 0) {
-          throw new Error("Le contenu du template DOCX est vide ou invalide. Impossible de générer un document.");
+        // Pour les DOCX, on vérifie que le texte extrait est disponible
+        if (!templateData.extracted_text || templateData.extracted_text.trim().length === 0) {
+          throw new Error("Le texte extrait du template DOCX est vide ou invalide. Impossible de générer un document.");
         }
       } else if (templateData.type === 'pdf') {
         // Pour les PDF, on vérifie le contenu binaire
@@ -276,12 +275,22 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
                     }
                   }
                   
-                  const tagName = m.tag.replace(/[{}]/g, '').trim();   // ex: {{name}} -> name
+                  // Extraire le nom de la balise sans les caractères spéciaux
+                  const tagName = m.tag.replace(/[{}<>%$]/g, '').trim();
+                  const tagRegex = new RegExp(m.tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "g");
                   
                   if (clientData && clientData[category] && field && clientData[category][field] !== undefined) {
                     dataObj[tagName] = String(clientData[category][field]);
                   } else {
                     dataObj[tagName] = `[${m.mappedTo || m.tag}]`;
+                  }
+                  
+                  // Remplacement dans extracted_text (fallback)
+                  if (templateData.extracted_text) {
+                    templateData.extracted_text = templateData.extracted_text.replace(
+                      tagRegex, 
+                      dataObj[tagName]
+                    );
                   }
                 });
                 
@@ -289,23 +298,53 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
                 
                 // Définir les données pour le rendu
                 doc.setData(dataObj);
-                doc.render();
-
-                const out = doc.getZip().generate({
-                  type: "base64",
-                  mimeType: 
-                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                });
-                documentContent =
-                  "data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64," +
-                  out;
-                documentType = "docx";
+                
+                try {
+                  doc.render();
+                  const out = doc.getZip().generate({ type: "base64" });
+                  documentContent = "data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64," + out;
+                  documentType = "docx";
+                } catch (e) {
+                  console.error("Docxtemplater render error, fallback TXT:", e);
+                  // Fallback à la méthode de remplacement de texte
+                  documentContent = templateData.extracted_text || '';
+                  documentType = 'txt'; // Changer le type en texte pour les DOCX mappés
+                }
               } catch (docxError) {
                 console.error("Erreur avec Docxtemplater:", docxError);
-                throw new Error(`Erreur lors du rendu DOCX: ${docxError instanceof Error ? docxError.message : String(docxError)}`);
+                
+                // Fallback à la méthode de remplacement de texte
+                console.log("Fallback à la méthode de texte simple");
+                const { documentContent: mappedContent, replacementsCount } = await applyMappingToContent(
+                  templateData.extracted_text || '', 
+                  mappings, 
+                  clientData
+                );
+                
+                // Vérifier si des remplacements ont été effectués
+                if (replacementsCount === 0) {
+                  throw new Error("Aucun remplacement n'a été effectué lors du mapping des variables. Vérifiez les mappings.");
+                }
+                
+                documentContent = mappedContent;
+                documentType = 'txt'; // Changer le type en texte pour les DOCX mappés
               }
             } else {
-              throw new Error("Le contenu DOCX est invalide ou ne contient pas de données base64");
+              // Utiliser le texte extrait comme base si pas de contenu base64
+              const { documentContent: mappedContent, replacementsCount } = await applyMappingToContent(
+                templateData.extracted_text || '', 
+                mappings, 
+                clientData
+              );
+              
+              // Vérifier si des remplacements ont été effectués
+              if (replacementsCount === 0) {
+                throw new Error("Aucun remplacement n'a été effectué lors du mapping des variables. Vérifiez les mappings.");
+              }
+              
+              documentContent = mappedContent;
+              documentType = 'txt'; // Changer le type en texte pour les DOCX mappés
+              documentName = `${templateData.name}-mapped`; // Ajouter un suffixe pour identifier
             }
           } else {
             // Pour les PDF et autres types, conserver le contenu binaire original
@@ -317,7 +356,9 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
         }
       } else {
         // Si pas de mapping, simplement copier le contenu original
-        documentContent = templateData.content || '';
+        documentContent = templateData.type === 'docx' 
+          ? (templateData.extracted_text || '')
+          : (templateData.content || '');
       }
       
       // Valider le contenu final
@@ -473,4 +514,3 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
     reset
   };
 };
-
