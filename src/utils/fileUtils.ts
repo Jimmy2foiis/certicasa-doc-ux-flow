@@ -1,6 +1,7 @@
 
 import { ClientFile } from "@/hooks/useClientFiles";
-import { FilesType, FoldersKey } from '@prisma/client';
+// Import des enums depuis notre fichier local plutôt que de @prisma/client
+import { FilesType, FoldersKey } from "@/types/appEnums";
 
 // Filter files by folder type
 export const filterFilesByFolder = (

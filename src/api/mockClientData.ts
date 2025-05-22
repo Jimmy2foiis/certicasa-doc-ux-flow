@@ -1,4 +1,4 @@
-import { FilesType, FoldersKey } from '@prisma/client';
+import { FilesType, FoldersKey } from '@/types/appEnums';
 
 // Generate mock files based on a beetoolToken
 export const generateMockFiles = (beetoolToken: string) => {

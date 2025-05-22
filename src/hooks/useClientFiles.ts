@@ -1,6 +1,8 @@
+
 import { useState, useEffect } from "react";
-import { FilesType, FoldersKey, Status } from '@prisma/client';
 import { useToast } from "@/components/ui/use-toast";
+// Import des enums depuis notre fichier local plutôt que de @prisma/client
+import { FilesType, FoldersKey, Status } from "@/types/appEnums";
 
 export interface ClientFile {
   id: string;
