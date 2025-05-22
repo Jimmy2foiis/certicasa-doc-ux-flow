@@ -1,8 +1,6 @@
-
 import { useState, useEffect } from "react";
-import { prisma } from "../lib/prisma";
-import { useToast } from "@/components/ui/use-toast";
 import { FilesType, FoldersKey, Status } from '@prisma/client';
+import { useToast } from "@/components/ui/use-toast";
 
 export interface ClientFile {
   id: string;
@@ -123,7 +121,32 @@ export const useClientFiles = (beetoolToken: string) => {
       setFiles(data);
       
       // Group files by category (same logic as above)
-      // ...
+      const groupedFiles: Record<FoldersKey, ClientFile[]> = {} as Record<FoldersKey, ClientFile[]>;
+      
+      // Initialize all categories with empty arrays
+      Object.values(FoldersKey).forEach(key => {
+        groupedFiles[key as FoldersKey] = [];
+      });
+      
+      // Group files by folderType
+      data.forEach((file: ClientFile) => {
+        if (groupedFiles[file.folderType]) {
+          groupedFiles[file.folderType].push(file);
+        }
+      });
+      
+      // Convert to array of categories
+      const categoryArray: ClientFileCategory[] = Object.entries(groupedFiles)
+        .map(([key, files]) => ({
+          key: key as FoldersKey,
+          label: folderLabels[key as FoldersKey] || key,
+          count: files.length,
+          files
+        }))
+        .filter(category => category.count > 0) // Only include categories with files
+        .sort((a, b) => b.count - a.count); // Sort by count descending
+        
+      setCategories(categoryArray);
       
       toast({
         title: "Succès",
