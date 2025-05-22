@@ -21,7 +21,7 @@ export const useClients = () => {
     const fetchClients = async () => {
       try {
         setLoading(true);
-        const res = await fetch("/api/clients");
+        const res = await fetch(" https://certicasa.mitain.com/api/prospects/");
         
         if (!res.ok) {
           throw new Error(`API error: ${res.status}`);
