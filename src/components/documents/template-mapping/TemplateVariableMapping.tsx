@@ -43,14 +43,14 @@ export const TemplateVariableMapping = ({
       
       // Tenter d'extraire des balises du texte
       if (template.extracted_text) {
-        extractedTags = extractTemplateTags(template.extracted_text);
+        extractedTags = extractTemplateTags(template.extracted_text, template.type);
       }
     } else if (template.type === 'docx' && template.extracted_text) {
-      // Pour les DOCX, extraire les tags du texte
-      extractedTags = extractTemplateTags(template.extracted_text);
+      // Pour les DOCX, extraire les tags avec Docxtemplater
+      extractedTags = extractTemplateTags(template.content, template.type);
     } else if (template.content) {
       // Pour les autres types, tenter sur le contenu
-      extractedTags = extractTemplateTags(template.content);
+      extractedTags = extractTemplateTags(template.content, template.type);
     }
     
     // Créer les mappings par défaut pour les tags trouvés
