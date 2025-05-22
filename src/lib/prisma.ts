@@ -20,6 +20,27 @@ export class PrismaClient {
     return this;
   }
   
+  // Ajout d'une propriété file simulée qui contient les méthodes nécessaires
+  file = {
+    findMany: async (params?: any) => {
+      console.log('Mock file.findMany called with params:', params);
+      // Retourner un tableau vide ou des données simulées
+      return [];
+    },
+    create: async (params?: any) => {
+      console.log('Mock file.create called with params:', params);
+      return { id: 'mock-file-id', ...params.data };
+    },
+    update: async (params?: any) => {
+      console.log('Mock file.update called with params:', params);
+      return { id: 'mock-file-id', ...params.data };
+    },
+    delete: async (params?: any) => {
+      console.log('Mock file.delete called with params:', params);
+      return { id: 'mock-file-id' };
+    }
+  };
+  
   // D'autres méthodes peuvent être ajoutées selon les besoins
 }
 
