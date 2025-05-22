@@ -88,6 +88,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
     let replacementsCount = 0;
     
     try {
+      // Journaliser les données disponibles pour faciliter le débogage
       console.log("Données client pour mapping:", clientData);
       console.log("Application des mappings au document:", mappings);
       
@@ -115,11 +116,14 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
           }
         }
         
+        // MODIFICATION: Rendre la substitution plus tolérante avec une valeur par défaut vide
+        // au lieu d'afficher [category.field] qui pourrait être confondu avec une variable
         if (clientData && clientData[category] && field && clientData[category][field] !== undefined) {
           value = String(clientData[category][field]);
         } else {
-          // Utiliser une valeur par défaut visible dans le document final
-          value = `[${mapping.mappedTo || mapping.tag}]`;
+          // Utiliser une chaîne vide comme valeur par défaut
+          value = "";
+          console.warn(`Valeur manquante pour ${mapping.mappedTo}, utilisation d'une valeur vide`);
         }
         
         // Remplacer dans le contenu
@@ -286,7 +290,7 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
                 if (clientData && clientData[category] && field && clientData[category][field] !== undefined) {
                   dataObj[field] = String(clientData[category][field]);
                 } else {
-                  dataObj[field] = `[${m.mappedTo}]`;
+                  dataObj[field] = `[${m.mappedTo || mapping.tag}]`;
                 }
               });
 

@@ -19,6 +19,13 @@ export const TagVariableRow = ({
   updateCategory, 
   updateMapping 
 }: TagVariableRowProps) => {
+  // Vérifie si la donnée correspondante au mapping existe dans clientData
+  const mappedField = tag.mappedTo.split('.')[1] || '';
+  const dataExists = clientData && 
+                     clientData[tag.category] && 
+                     mappedField && 
+                     clientData[tag.category][mappedField] !== undefined;
+  
   return (
     <div className="grid grid-cols-12 gap-2 items-center">
       <div className="col-span-3">
@@ -68,13 +75,13 @@ export const TagVariableRow = ({
       </div>
       
       <div className="col-span-1 flex justify-center">
-        {clientData && clientData[tag.category]?.[tag.mappedTo.split('.')[1]] ? (
+        {dataExists ? (
           <Badge variant="outline" className="bg-green-50 text-green-700">
             ✓
           </Badge>
         ) : (
           <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
-            ?
+            !
           </Badge>
         )}
       </div>
