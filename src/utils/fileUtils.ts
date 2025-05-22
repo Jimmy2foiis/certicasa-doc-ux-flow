@@ -1,6 +1,6 @@
 
 import { ClientFile } from "@/hooks/useClientFiles";
-import { PrismaClient, Prisma, FilesType, FoldersKey } from '@prisma/client';
+import { FilesType, FoldersKey } from '@prisma/client';
 
 // Filter files by folder type
 export const filterFilesByFolder = (

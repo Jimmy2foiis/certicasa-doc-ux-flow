@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { prisma } from "../lib/prisma";
 import { useToast } from "@/components/ui/use-toast";
-import { PrismaClient, Prisma, FilesType, FoldersKey, Status } from '@prisma/client';
+import { FilesType, FoldersKey, Status } from '@prisma/client';
 
 export interface ClientFile {
   id: string;
