@@ -1,6 +1,4 @@
-
 import { useEffect, useState } from "react";
-import axios from "axios";
 
 export interface ProspectRow {
   id: string;
@@ -22,16 +20,20 @@ export const useClients = () => {
     const fetchClients = async () => {
       try {
         setLoading(true);
-        
-        // Utiliser directement l'endpoint externe avec proxy CORS
-        const response = await axios.get("https://certicasa.mitain.com/api/prospects", {
+
+        const res = await fetch("https://certicasa.mitain.com/api/prospects", {
           headers: {
-            'Content-Type': 'application/json',
-          }
+            "Content-Type": "application/json",
+          },
         });
-        
-        // Map the external API data to match our expected interface
-        const mappedData: ProspectRow[] = response.data.map((client: any) => ({
+
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
+        const data = await res.json();
+
+        const mappedData: ProspectRow[] = data.map((client: any) => ({
           id: client.id || client._id || "",
           prenom: client.prenom || "",
           nom: client.nom || "",
@@ -39,9 +41,9 @@ export const useClients = () => {
           tel: client.tel || client.telephone || null,
           ville: client.ville || null,
           status: client.status || "DONNEE_RECUPEREE",
-          _count: { File: client.files?.length || client._count?.File || 0 }
+          _count: { File: client.files?.length || client._count?.File || 0 },
         }));
-        
+
         setClients(mappedData);
         setError(null);
       } catch (e) {
@@ -51,7 +53,7 @@ export const useClients = () => {
         setLoading(false);
       }
     };
-    
+
     fetchClients();
   }, []);
 
