@@ -1,5 +1,51 @@
 
 // Simple API client to replace Supabase client
+import { Client } from "@/types/clientTypes";
+
+const mockClients: Client[] = [
+  { 
+    id: "1", 
+    name: "Entreprise Martin", 
+    email: "contact@martin.fr", 
+    phone: "01 23 45 67 89", 
+    type: "Entreprise",
+    status: "Active",
+    projects: 3
+  },
+  { 
+    id: "2", 
+    name: "Pierre Dubois", 
+    email: "pierre.dubois@email.com", 
+    phone: "06 12 34 56 78", 
+    type: "Particulier",
+    status: "En cours",
+    projects: 1
+  },
+  { 
+    id: "3", 
+    name: "Société Dupont", 
+    email: "contact@dupont.fr", 
+    phone: "01 98 76 54 32", 
+    type: "Entreprise",
+    status: "Terminé",
+    projects: 2
+  }
+];
+
+// Function to fetch clients
+export const fetchClients = async (): Promise<Client[]> => {
+  // Simulate API request delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  return [...mockClients];
+};
+
+// Function to delete a client
+export const deleteClient = async (clientId: string): Promise<void> => {
+  // Simulate API request delay
+  await new Promise(resolve => setTimeout(resolve, 500));
+  console.log(`Client ${clientId} deleted (mock)`);
+  return Promise.resolve();
+};
 
 const apiClient = {
   from: (tableName: string) => {

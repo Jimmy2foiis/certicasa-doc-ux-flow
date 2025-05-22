@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import { Client } from "@/types/clientTypes";
@@ -5,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Edit, Trash2, Eye, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import { deleteClient, fetchClients } from "@/lib/api-client";
 import ClientForm from "./ClientForm";
 import {
   Dialog,
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import ClientDetails from "./ClientDetails";
 import { Badge } from "@/components/ui/badge";
+import { fetchClients, deleteClient } from "@/lib/api-client";
 
 const ClientsSection = () => {
   const [clients, setClients] = useState<Client[]>([]);
@@ -142,6 +143,8 @@ const ClientsSection = () => {
         title: "Client supprimé",
         description: "Le client a été supprimé avec succès",
       });
+      // Load updated clients list
+      loadClients();
       // Return a resolved promise
       return Promise.resolve();
     } catch (error) {
@@ -178,9 +181,9 @@ const ClientsSection = () => {
               </DialogDescription>
             </DialogHeader>
             <ClientForm
-              onClose={handleCloseForm}
               client={clientToEdit}
               onClientUpdated={handleClientUpdated}
+              onClose={handleCloseForm}
             />
           </DialogContent>
         </Dialog>

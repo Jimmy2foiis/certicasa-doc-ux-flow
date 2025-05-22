@@ -133,5 +133,18 @@ class CatastroCache {
   }
 }
 
+// Functions for backward compatibility
+export const getCachedCadastralData = (key: string) => {
+  return catastroCache.get(key);
+};
+
+export const setCachedCadastralData = (key: string, data: any) => {
+  catastroCache.set(key, data);
+};
+
+export const clearCadastralCache = (key?: string) => {
+  catastroCache.clear(key);
+};
+
 // Singleton instance
 export const catastroCache = new CatastroCache();

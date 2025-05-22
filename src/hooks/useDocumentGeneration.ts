@@ -1,8 +1,12 @@
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { apiClient } from "@/lib/api-client";
-import { TemplateTag } from "@/types/documents";
+
+export interface TemplateTag {
+  id: string;
+  name: string;
+  value: string;
+}
 
 export const useDocumentGeneration = (onDocumentGenerated?: (documentId: string) => void, clientName?: string) => {
   const [generating, setGenerating] = useState(false);
@@ -61,7 +65,7 @@ export const useDocumentGeneration = (onDocumentGenerated?: (documentId: string)
     }
   };
   
-  const handleDownload = async () => {
+  const handleDownload = async (): Promise<void> => {
     try {
       toast({
         title: "Téléchargement",
@@ -69,7 +73,7 @@ export const useDocumentGeneration = (onDocumentGenerated?: (documentId: string)
       });
       
       // Mock download action
-      return true;
+      return Promise.resolve();
     } catch (error) {
       console.error("Erreur lors du téléchargement:", error);
       toast({
@@ -77,7 +81,7 @@ export const useDocumentGeneration = (onDocumentGenerated?: (documentId: string)
         description: "Impossible de télécharger le document.",
         variant: "destructive",
       });
-      return false;
+      return Promise.reject(error);
     }
   };
   
@@ -93,5 +97,4 @@ export const useDocumentGeneration = (onDocumentGenerated?: (documentId: string)
   };
 };
 
-// For backward compatibility with default imports
 export default useDocumentGeneration;
