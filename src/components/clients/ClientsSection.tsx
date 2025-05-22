@@ -49,8 +49,7 @@ const ClientsSection = () => {
           title: "Client supprimé",
           description: "Le client a été supprimé avec succès.",
         });
-        // Refresh the client list - this would ideally trigger a re-fetch
-        // For now, we'll just remove it from the UI
+        // Return a resolved promise
         return Promise.resolve();
       } else {
         toast({
