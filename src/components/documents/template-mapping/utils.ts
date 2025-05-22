@@ -1,28 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { TemplateTag, Json, availableVariables } from "@/types/documents";
-import PizZip from "pizzip";
-import Docxtemplater from "docxtemplater";
-import { extractDocxTags } from "@/lib/extractDocxTags";
 
 // Helper function to extract tags from a document content
-export const extractTemplateTags = (content: string | null, type?: string): string[] => {
+export const extractTemplateTags = (content: string | null): string[] => {
   if (!content) return [];
   
-  // ---- Si DOCX (content base64 + type === 'docx')
-  if (type?.toLowerCase() === "docx" && content.startsWith("data:application/vnd.openxmlformats")) {
-    try {
-      // Utiliser notre nouvelle fonction spécialisée
-      const tags = extractDocxTags(content);
-      // Convertir en format {{tag}}
-      return tags.map(t => `{{${t}}}`);
-    } catch(e) {
-      console.error("Docxtemplater tag extraction error", e);
-    }
-  }
-  
-  // ---- Fallback texte brut pour PDF ou texte
-  const tagRegex = /{{\s*([^{}]+)\s*}}/g;
+  // Match {{tag}} patterns in the content
+  const tagRegex = /\{\{([^{}]+)\}\}/g;
   const tags: string[] = [];
   let match;
   
@@ -30,7 +15,7 @@ export const extractTemplateTags = (content: string | null, type?: string): stri
     tags.push(match[0]);
   }
   
-  return Array.from(new Set(tags)); // Fixed: use Array.from() instead of spread operator
+  return [...new Set(tags)]; // Remove duplicates
 };
 
 // Helper function to determine the most likely category for a tag
@@ -139,10 +124,9 @@ export const saveTemplateMapping = async (
 
 // Extract tags from template content and create initial mapping
 export const createInitialMapping = (
-  content: string | null,
-  type?: string
+  content: string | null
 ): TemplateTag[] => {
-  const extractedTags = extractTemplateTags(content, type);
+  const extractedTags = extractTemplateTags(content);
   
   return extractedTags.map(tag => ({
     tag,

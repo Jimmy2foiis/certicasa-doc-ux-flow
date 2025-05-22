@@ -40,18 +40,6 @@ export const DocumentPreview = ({ isOpen, onClose, document, onDownload }: Docum
           setIsLoading(false);
           if (fileType === 'docx') {
             setError(`La prévisualisation n'est pas disponible pour les fichiers DOCX. Veuillez télécharger le document.`);
-          } else if (fileType === 'txt') {
-            // Pour les fichiers texte, on peut afficher le contenu brut
-            if (document.content) {
-              // Créer un blob URL pour le contenu texte
-              const blob = new Blob([document.content.startsWith('data:text/plain;base64,') 
-                ? atob(document.content.split(',')[1]) 
-                : document.content], 
-                { type: 'text/plain' });
-              setPdfUrl(URL.createObjectURL(blob));
-            } else {
-              setError(`Le contenu du fichier texte est vide ou inaccessible.`);
-            }
           } else {
             setError(`La prévisualisation n'est pas disponible pour les fichiers ${fileType.toUpperCase()}. Veuillez télécharger le document.`);
           }
@@ -106,27 +94,6 @@ export const DocumentPreview = ({ isOpen, onClose, document, onDownload }: Docum
     }
   };
 
-  // Fonction pour afficher le contenu textuel
-  const renderTextContent = () => {
-    if (!document?.content) return null;
-    
-    // Si c'est encoded en base64
-    let content = document.content;
-    if (content.startsWith('data:text/plain;base64,')) {
-      try {
-        content = atob(content.split(',')[1]);
-      } catch (e) {
-        console.error("Erreur de décodage base64:", e);
-      }
-    }
-    
-    return (
-      <div className="bg-white p-4 border rounded shadow-inner h-full overflow-auto whitespace-pre-wrap">
-        {content}
-      </div>
-    );
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={() => onClose()}>
       <DialogContent className="max-w-4xl h-[90vh]">
@@ -167,8 +134,6 @@ export const DocumentPreview = ({ isOpen, onClose, document, onDownload }: Docum
             </div>
           ) : document?.type?.toLowerCase() === 'pdf' && pdfUrl ? (
             <PDFViewer fileUrl={pdfUrl} fileName={document.name} />
-          ) : document?.type?.toLowerCase() === 'txt' ? (
-            renderTextContent()
           ) : (
             <div className="flex h-full items-center justify-center">
               <div className="text-center">

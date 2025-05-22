@@ -1,25 +1,16 @@
 
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Tag } from "lucide-react";
 
-export interface AddNewTagFieldProps {
-  onAddTag: (newTag: string, category: string) => void;
+interface AddNewTagFieldProps {
+  newTag: string;
+  setNewTag: (tag: string) => void;
+  handleAddTag: () => void;
 }
 
-export const AddNewTagField = ({ onAddTag }: AddNewTagFieldProps) => {
-  const [newTag, setNewTag] = useState("");
-  const [category, setCategory] = useState("client");
-  
-  const handleAddTag = () => {
-    if (newTag.trim()) {
-      onAddTag(newTag, category);
-      setNewTag("");
-    }
-  };
-
+export const AddNewTagField = ({ newTag, setNewTag, handleAddTag }: AddNewTagFieldProps) => {
   return (
     <div className="space-y-2">
       <Label>Ajouter une nouvelle balise</Label>

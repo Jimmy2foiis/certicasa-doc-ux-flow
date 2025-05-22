@@ -1,5 +1,4 @@
 
-import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TemplateTag, availableVariables } from "./types";
@@ -19,13 +18,6 @@ export const TagVariableRow = ({
   updateCategory, 
   updateMapping 
 }: TagVariableRowProps) => {
-  // Vérifie si la donnée correspondante au mapping existe dans clientData
-  const mappedField = tag.mappedTo.split('.')[1] || '';
-  const dataExists = clientData && 
-                     clientData[tag.category] && 
-                     mappedField && 
-                     clientData[tag.category][mappedField] !== undefined;
-  
   return (
     <div className="grid grid-cols-12 gap-2 items-center">
       <div className="col-span-3">
@@ -41,7 +33,7 @@ export const TagVariableRow = ({
       <div className="col-span-3">
         <Select 
           value={tag.category} 
-          onValueChange={(value: string) => updateCategory(index, value)}
+          onValueChange={(value) => updateCategory(index, value)}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Catégorie" />
@@ -59,7 +51,7 @@ export const TagVariableRow = ({
       <div className="col-span-4">
         <Select 
           value={tag.mappedTo.split('.')[1] || ''} 
-          onValueChange={(value: string) => updateMapping(index, `${tag.category}.${value}`)}
+          onValueChange={(value) => updateMapping(index, `${tag.category}.${value}`)}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Variable" />
@@ -75,13 +67,13 @@ export const TagVariableRow = ({
       </div>
       
       <div className="col-span-1 flex justify-center">
-        {dataExists ? (
+        {clientData && clientData[tag.category]?.[tag.mappedTo.split('.')[1]] ? (
           <Badge variant="outline" className="bg-green-50 text-green-700">
             ✓
           </Badge>
         ) : (
           <Badge variant="outline" className="bg-yellow-50 text-yellow-700">
-            !
+            ?
           </Badge>
         )}
       </div>
