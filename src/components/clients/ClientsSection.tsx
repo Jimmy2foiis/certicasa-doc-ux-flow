@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Card,
@@ -13,6 +12,7 @@ import ClientFilters from "@/components/clients/ClientFilters";
 import ClientsTable from "@/components/clients/ClientsTable";
 import { useClients } from "@/hooks/useClients";
 import { Skeleton } from "@/components/ui/skeleton";
+import axios from "axios";
 
 const ClientsSection = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -37,27 +37,16 @@ const ClientsSection = () => {
     status: client.status
   }));
 
-  // Gérer la suppression d'un client - ensure this returns a Promise<void>
+  // Gérer la suppression d'un client - appel direct à l'API externe
   const handleDeleteClient = async (clientId: string): Promise<void> => {
     try {
-      const response = await fetch(`/api/clients/${clientId}`, {
-        method: 'DELETE',
-      });
+      const response = await axios.delete(`https://certicasa.mitain.com/api/prospects/${clientId}`);
       
-      if (response.ok) {
-        toast({
-          title: "Client supprimé",
-          description: "Le client a été supprimé avec succès.",
-        });
-        return Promise.resolve();
-      } else {
-        toast({
-          title: "Erreur",
-          description: "Impossible de supprimer le client. Veuillez réessayer.",
-          variant: "destructive",
-        });
-        return Promise.reject(new Error("Failed to delete client"));
-      }
+      toast({
+        title: "Client supprimé",
+        description: "Le client a été supprimé avec succès.",
+      });
+      return Promise.resolve();
     } catch (error) {
       console.error("Erreur lors de la suppression du client:", error);
       toast({

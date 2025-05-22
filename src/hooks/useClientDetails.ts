@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 export interface ClientDetail {
   id: string;
@@ -38,15 +39,11 @@ export const useClientDetails = (clientId: string | null) => {
     const fetchClientDetails = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/clients/${clientId}`);
+        const response = await axios.get(`https://certicasa.mitain.com/api/prospects/${clientId}`);
         
-        if (!res.ok) {
-          throw new Error(`API error: ${res.status}`);
-        }
+        const data = response.data;
         
-        const data = await res.json();
-        
-        // Map the external API data to our interface if needed
+        // Map the external API data to our interface
         const mappedClient: ClientDetail = {
           id: data.id || "",
           beetoolToken: data.beetoolToken || "",

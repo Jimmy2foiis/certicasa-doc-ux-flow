@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from "react";
+import axios from "axios";
 
 export interface ProspectRow {
   id: string;
@@ -21,17 +22,16 @@ export const useClients = () => {
     const fetchClients = async () => {
       try {
         setLoading(true);
-        const res = await fetch(" https://certicasa.mitain.com/api/prospects");
-
-        console.log(res)
         
+        // Utiliser directement l'endpoint externe avec proxy CORS
+        const response = await axios.get("https://certicasa.mitain.com/api/prospects", {
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
         
-        // Get data from external API
-        const data = await res.json();
-        
-        // Map the external API data to match our expected interface if needed
-        // This ensures UI components don't need to change
-        const mappedData: ProspectRow[] = data.map((client: any) => ({
+        // Map the external API data to match our expected interface
+        const mappedData: ProspectRow[] = response.data.map((client: any) => ({
           id: client.id || client._id || "",
           prenom: client.prenom || "",
           nom: client.nom || "",
@@ -46,7 +46,7 @@ export const useClients = () => {
         setError(null);
       } catch (e) {
         console.error("Error fetching clients:", e);
-        setError((e as Error).message);
+        setError((e as Error).message || "Failed to fetch clients data");
       } finally {
         setLoading(false);
       }
