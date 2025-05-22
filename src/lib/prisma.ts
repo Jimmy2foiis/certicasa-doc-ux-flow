@@ -38,7 +38,10 @@ export class PrismaClient {
         ville: 'Paris',
         status: 'DONNEE_RECUPEREE',
         File: [],
-        GoogleDriveFolder: null
+        GoogleDriveFolder: null,
+        updatedAt: new Date(),
+        createdAt: new Date(),
+        _count: { File: 0 }
       };
     },
     delete: async (params?: any) => {

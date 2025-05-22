@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Card,
@@ -49,7 +48,6 @@ const ClientsSection = () => {
           title: "Client supprimé",
           description: "Le client a été supprimé avec succès.",
         });
-        // Return a resolved promise
         return Promise.resolve();
       } else {
         toast({
