@@ -1,12 +1,7 @@
 import { useState, useEffect } from "react";
 import { prisma } from "../lib/prisma";
 import { useToast } from "@/components/ui/use-toast";
-import { Prisma } from '@prisma/client';
-
-// Use Prisma namespace to access the enums
-type FilesType = Prisma.FilesType;
-type FoldersKey = Prisma.FoldersKey;
-type Status = Prisma.Status;
+import { PrismaClient, Prisma, FilesType, FoldersKey, Status } from '@prisma/client';
 
 export interface ClientFile {
   id: string;

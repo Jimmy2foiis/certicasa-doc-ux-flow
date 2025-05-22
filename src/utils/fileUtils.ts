@@ -1,10 +1,6 @@
 
 import { ClientFile } from "@/hooks/useClientFiles";
-import { Prisma } from '@prisma/client';
-
-// Use Prisma namespace to access the enums
-type FilesType = Prisma.FilesType;
-type FoldersKey = Prisma.FoldersKey;
+import { PrismaClient, Prisma, FilesType, FoldersKey } from '@prisma/client';
 
 // Filter files by folder type
 export const filterFilesByFolder = (
