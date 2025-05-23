@@ -1,5 +1,8 @@
+// Rétro-compatibilité : on continue d'exposer le client Supabase afin que
+// les services documents / cadastrales, etc. fonctionnent le temps de la
+// migration complète.  Il pointe vers le client centralisé dans
+// src/integrations/supabase/client.ts.
 
-// Ce fichier est conservé pour la rétrocompatibilité
-// Il ne fait plus appel à Supabase mais aux APIs REST
+import { supabase } from '@/integrations/supabase/client';
 
-// Aucune exportation de client Supabase n'est nécessaire
+export { supabase };
