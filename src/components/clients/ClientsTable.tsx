@@ -19,12 +19,15 @@ import { MoreHorizontal, Edit, Trash2, UserPlus, Loader2 } from 'lucide-react';
 
 interface ClientsTableProps {
   clients: Client[];
-  filteredClients: Client[];
-  searchTerm: string;
+  filteredClients?: Client[];
+  searchTerm?: string;
   loading: boolean;
-  onClientSelect: (clientId: string) => void;
-  onDeleteClient: (clientId: string) => void;
-  onOpenCreateDialog: () => void;
+  onClientSelect?: (clientId: string) => void;
+  onDeleteClient?: (clientId: string) => void;
+  onOpenCreateDialog?: () => void;
+  selectedClients?: string[];
+  onSelectClient?: (clientId: string, isSelected: boolean) => void;
+  onSelectAll?: (isSelected: boolean) => void;
 }
 
 const ClientsTable = ({
@@ -35,6 +38,9 @@ const ClientsTable = ({
   onClientSelect,
   onDeleteClient,
   onOpenCreateDialog,
+  selectedClients,
+  onSelectClient,
+  onSelectAll,
 }: ClientsTableProps) => {
   return (
     <div className="rounded-md border">
@@ -59,7 +65,7 @@ const ClientsTable = ({
                 </div>
               </TableCell>
             </TableRow>
-          ) : filteredClients.length === 0 ? (
+          ) : filteredClients?.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className="text-center py-10">
                 <p className="text-gray-500">Aucun client trouvé</p>
@@ -68,7 +74,7 @@ const ClientsTable = ({
                     Essayez avec un autre terme de recherche
                   </p>
                 ) : (
-                  <Button variant="outline" className="mt-4" onClick={onOpenCreateDialog}>
+                  <Button variant="outline" className="mt-4" onClick={() => onOpenCreateDialog?.()}>
                     <UserPlus className="h-4 w-4 mr-2" />
                     <span>Ajouter un client</span>
                   </Button>
@@ -76,11 +82,11 @@ const ClientsTable = ({
               </TableCell>
             </TableRow>
           ) : (
-            filteredClients.map((client) => (
+            (filteredClients ?? clients).map((client) => (
               <TableRow
                 key={client.id}
                 className="cursor-pointer hover:bg-gray-50"
-                onClick={() => client.id && onClientSelect(client.id)}
+                onClick={() => client.id && onClientSelect?.(client.id)}
               >
                 <TableCell className="font-medium">{client.name}</TableCell>
                 <TableCell>{client.email}</TableCell>
@@ -113,7 +119,7 @@ const ClientsTable = ({
                         className="flex items-center text-red-600"
                         onClick={(e) => {
                           e.stopPropagation();
-                          if (client.id) onDeleteClient(client.id);
+                          if (client.id) onDeleteClient?.(client.id);
                         }}
                       >
                         <Trash2 className="mr-2 h-4 w-4" />

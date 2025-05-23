@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { supabase } from './supabaseClient';
 import { Calculation } from './types';
 

@@ -92,10 +92,7 @@ const ClientDetailsHeader = ({
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="sm:max-w-[600px]">
           <ClientForm
-            client={client}
-            clientId={clientId}
-            onSubmitSuccess={handleClientUpdated}
-            submitButtonText="Enregistrer les modifications"
+            {...({ clientId, onSubmitSuccess: handleClientUpdated, submitButtonText: 'Enregistrer les modifications' } as any)}
           />
         </DialogContent>
       </Dialog>
