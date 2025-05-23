@@ -1,268 +1,223 @@
-
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import React, { useState } from "react";
 import { Client } from "@/services/api/types";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-// Schéma de validation du formulaire client
-const clientSchema = z.object({
-  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
-  email: z.string().email("Format d'email invalide").optional().or(z.literal("")),
-  phone: z.string().optional().or(z.literal("")),
-  address: z.string().optional().or(z.literal("")),
-  nif: z.string().optional().or(z.literal("")),
-  type: z.string().optional().or(z.literal("")),
-  ficheType: z.string().optional().or(z.literal("")),
-  climateZone: z.string().optional().or(z.literal("")),
-  isolationType: z.string().optional().or(z.literal("")),
-  floorType: z.string().optional().or(z.literal("")),
-});
-
-type ClientFormValues = z.infer<typeof clientSchema>;
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { updateClientRecord } from "@/services/api";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ClientFormProps {
+  clientId: string;
   initialData?: Client;
-  onSubmit: (data: Client) => Promise<void>;
+  onSuccess: () => void;
   onCancel: () => void;
-  isSubmitting?: boolean;
 }
 
-const ClientForm = ({ initialData, onSubmit, onCancel, isSubmitting }: ClientFormProps) => {
-  const [isSaving, setIsSaving] = useState(false);
+export const ClientForm = ({ clientId, initialData, onSuccess, onCancel }: ClientFormProps) => {
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formData, setFormData] = useState<Partial<Client>>(initialData || {});
 
-  const form = useForm<ClientFormValues>({
-    resolver: zodResolver(clientSchema),
-    defaultValues: {
-      name: initialData?.name || "",
-      email: initialData?.email || "",
-      phone: initialData?.phone || "",
-      address: initialData?.address || "",
-      nif: initialData?.nif || "",
-      type: initialData?.type || "RES010",
-      ficheType: initialData?.ficheType || "RES010",
-      climateZone: initialData?.climateZone || "C",
-      isolationType: initialData?.isolationType || "Combles",
-      floorType: initialData?.floorType || "Bois",
-    },
-  });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleSubmit = async (values: ClientFormValues) => {
-    setIsSaving(true);
+  const handleSelectChange = (name: string, value: string) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
     try {
-      // Construire l'objet client complet
-      const clientData: Client = {
-        ...values,
-        id: initialData?.id, // Réutiliser l'ID existant si modification
-        status: initialData?.status || "En cours",
-        projects: initialData?.projects || 0,
-      };
+      const updatedClient = await updateClientRecord(clientId, formData);
       
-      await onSubmit(clientData);
+      if (updatedClient) {
+        toast({
+          title: "Client mis à jour",
+          description: "Les informations du client ont été mises à jour avec succès.",
+        });
+        onSuccess();
+      } else {
+        toast({
+          title: "Erreur",
+          description: "Impossible de mettre à jour les informations du client.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour du client:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la mise à jour du client.",
+        variant: "destructive",
+      });
     } finally {
-      setIsSaving(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-        {/* Informations de base */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="name">Nom complet</Label>
+          <Input
+            id="name"
             name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nom complet*</FormLabel>
-                <FormControl>
-                  <Input placeholder="Nom complet" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            value={formData.name || ""}
+            onChange={handleChange}
+            placeholder="Nom du client"
+            required
           />
-          
-          <FormField
-            control={form.control}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
             name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="Email" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            type="email"
+            value={formData.email || ""}
+            onChange={handleChange}
+            placeholder="email@exemple.com"
           />
-          
-          <FormField
-            control={form.control}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="phone">Téléphone</Label>
+          <Input
+            id="phone"
             name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Téléphone</FormLabel>
-                <FormControl>
-                  <Input placeholder="Téléphone" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="nif"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>NIF</FormLabel>
-                <FormControl>
-                  <Input placeholder="NIF" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            value={formData.phone || ""}
+            onChange={handleChange}
+            placeholder="06 12 34 56 78"
           />
         </div>
 
-        {/* Adresse */}
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Adresse complète</FormLabel>
-              <FormControl>
-                <Input placeholder="Adresse complète" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Informations techniques */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <FormField
-            control={form.control}
-            name="ficheType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Type de fiche</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="RES010">RES010</SelectItem>
-                    <SelectItem value="RES020">RES020</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="climateZone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Zone climatique</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner une zone" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="A">A</SelectItem>
-                    <SelectItem value="B">B</SelectItem>
-                    <SelectItem value="C">C</SelectItem>
-                    <SelectItem value="D">D</SelectItem>
-                    <SelectItem value="E">E</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="isolationType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Type d'isolation</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="Combles">Combles</SelectItem>
-                    <SelectItem value="Rampants">Rampants</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
+        <div className="space-y-2">
+          <Label htmlFor="address">Adresse</Label>
+          <Input
+            id="address"
+            name="address"
+            value={formData.address || ""}
+            onChange={handleChange}
+            placeholder="Adresse complète"
           />
         </div>
 
-        {/* Actions du formulaire */}
-        <div className="flex justify-end space-x-2 pt-4">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel}
-            disabled={isSaving || isSubmitting}
+        <div className="space-y-2">
+          <Label htmlFor="ficheType">Type de fiche</Label>
+          <Select
+            value={formData.ficheType || "RES010"}
+            onValueChange={(value) => handleSelectChange("ficheType", value)}
           >
-            Annuler
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={isSaving || isSubmitting}
-          >
-            {isSaving || isSubmitting 
-              ? "Enregistrement..." 
-              : initialData?.id 
-                ? "Mettre à jour" 
-                : "Créer le client"}
-          </Button>
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner un type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="RES010">RES010</SelectItem>
+              <SelectItem value="RES020">RES020</SelectItem>
+              <SelectItem value="RES030">RES030</SelectItem>
+              <SelectItem value="RES040">RES040</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      </form>
-    </Form>
+
+        <div className="space-y-2">
+          <Label htmlFor="climateZone">Zone climatique</Label>
+          <Select
+            value={formData.climateZone || "C"}
+            onValueChange={(value) => handleSelectChange("climateZone", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner une zone" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="A">Zone A</SelectItem>
+              <SelectItem value="B">Zone B</SelectItem>
+              <SelectItem value="C">Zone C</SelectItem>
+              <SelectItem value="D">Zone D</SelectItem>
+              <SelectItem value="E">Zone E</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="isolationType">Type d'isolation</Label>
+          <Select
+            value={formData.isolationType || "Combles"}
+            onValueChange={(value) => handleSelectChange("isolationType", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner un type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Combles">Combles</SelectItem>
+              <SelectItem value="Murs">Murs</SelectItem>
+              <SelectItem value="Plancher">Plancher</SelectItem>
+              <SelectItem value="Toiture">Toiture</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="floorType">Type de plancher</Label>
+          <Select
+            value={formData.floorType || "Bois"}
+            onValueChange={(value) => handleSelectChange("floorType", value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner un type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Bois">Bois</SelectItem>
+              <SelectItem value="Béton">Béton</SelectItem>
+              <SelectItem value="Terre-plein">Terre-plein</SelectItem>
+              <SelectItem value="Vide sanitaire">Vide sanitaire</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="lotNumber">Numéro de lot</Label>
+          <Input
+            id="lotNumber"
+            name="lotNumber"
+            value={formData.lotNumber || ""}
+            onChange={handleChange}
+            placeholder="Numéro de lot"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="installationDate">Date d'installation</Label>
+          <Input
+            id="installationDate"
+            name="installationDate"
+            type="date"
+            value={formData.installationDate || ""}
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end space-x-2 pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
+          Annuler
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Enregistrement..." : "Enregistrer"}
+        </Button>
+      </div>
+    </form>
   );
 };
-
-export default ClientForm;
