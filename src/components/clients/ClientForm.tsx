@@ -14,6 +14,8 @@ export interface ClientFormProps {
   onSubmit?: (data: Client) => Promise<void>;
   onCancel?: () => void;
   isSubmitting?: boolean;
+  submitButtonText?: string;
+  onSubmitSuccess?: () => void;
 }
 
 const ClientForm: React.FC<ClientFormProps> = ({
@@ -22,7 +24,9 @@ const ClientForm: React.FC<ClientFormProps> = ({
   onClose,
   onSubmit,
   onCancel,
-  isSubmitting = false
+  isSubmitting = false,
+  submitButtonText,
+  onSubmitSuccess,
 }) => {
   const { toast } = useToast();
   const defaultValues = {
@@ -53,6 +57,10 @@ const ClientForm: React.FC<ClientFormProps> = ({
         
         if (onClientUpdated) {
           onClientUpdated();
+        }
+        
+        if (onSubmitSuccess) {
+          onSubmitSuccess();
         }
         
         if (onClose) {
@@ -140,7 +148,7 @@ const ClientForm: React.FC<ClientFormProps> = ({
           Annuler
         </Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Sauvegarde..." : client ? "Mettre à jour" : "Créer"}
+          {isSubmitting ? "Sauvegarde..." : submitButtonText || (client ? "Mettre à jour" : "Créer")}
         </Button>
       </div>
     </form>
