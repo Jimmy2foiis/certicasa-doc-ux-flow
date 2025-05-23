@@ -9,7 +9,7 @@ import DocumentUploadDialog from './documents/DocumentUploadDialog';
 import DocumentLoadingState from './documents/DocumentLoadingState';
 import { RequiredDocumentsList } from './documents/RequiredDocumentsList';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import type { AdministrativeDocument } from '@/types/documents';
+import type { AdministrativeDocument, DocumentStatus } from '@/types/documents';
 
 interface DocumentsTabProps {
   clientId: string;
@@ -98,7 +98,7 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
     ];
 
     // Mapper les documents existants aux documents requis
-    const mappedDocuments = requiredDocsList.map(reqDoc => {
+    const mappedDocuments: AdministrativeDocument[] = requiredDocsList.map(reqDoc => {
       // Chercher si un document correspondant existe déjà
       const existingDoc = documents.find(doc => 
         doc.type?.toLowerCase() === reqDoc.type.toLowerCase()
@@ -118,7 +118,7 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
       } else {
         return {
           ...reqDoc,
-          status: "missing",
+          status: "missing" as DocumentStatus,
           statusLabel: "Document manquant",
           created_at: new Date().toISOString()
         };
