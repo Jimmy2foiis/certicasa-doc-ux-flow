@@ -34,23 +34,31 @@ export const useClients = () => {
 
         const responseData = await response.json();
         
-        // Accéder au tableau de données depuis la structure de la réponse
-        const clientsData = responseData.data || [];
-        
-        // Mapper les données de l'API externe pour correspondre à notre interface attendue
-        const mappedData: ProspectRow[] = clientsData.map((client: any) => ({
-          id: client.id || client._id || "",
-          prenom: client.prenom || "",
-          nom: client.nom || "",
-          email: client.email || null,
-          tel: client.tel || client.telephone || null,
-          ville: client.ville || null,
-          status: client.status || "DONNEE_RECUPEREE",
-          _count: { File: client.File?.length || 0 }
-        }));
-        
-        setClients(mappedData);
-        setError(null);
+        // Make sure we're accessing the data array properly from the response
+        // The response structure is { success: true, data: [...clients] }
+        if (responseData && Array.isArray(responseData.data)) {
+          // Accéder au tableau de données depuis la structure de la réponse
+          const clientsData = responseData.data;
+          
+          // Mapper les données de l'API externe pour correspondre à notre interface attendue
+          const mappedData: ProspectRow[] = clientsData.map((client: any) => ({
+            id: client.id || client._id || "",
+            prenom: client.prenom || "",
+            nom: client.nom || "",
+            email: client.email || null,
+            tel: client.tel || client.telephone || null,
+            ville: client.ville || null,
+            status: client.status || "DONNEE_RECUPEREE",
+            _count: { File: client.File?.length || 0 }
+          }));
+          
+          setClients(mappedData);
+          setError(null);
+        } else {
+          // Handle case where data is not an array
+          console.error("Unexpected API response format:", responseData);
+          setError("Format de réponse API inattendu");
+        }
       } catch (e) {
         console.error("Erreur lors de la récupération des clients:", e);
         setError((e as Error).message || "Échec de la récupération des données clients");
