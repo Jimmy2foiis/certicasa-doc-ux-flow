@@ -9,14 +9,14 @@ export const useDocumentTemplates = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   
-  // Utiliser un objet vide car nous n'avons pas besoin de resetUploadedFiles ici
-  const { getTemplates, deleteTemplate } = useTemplateStorage(() => {});
+  // Get the template storage hook functionality
+  const { templates: storedTemplates, deleteTemplate } = useTemplateStorage();
 
   const fetchTemplates = useCallback(async () => {
     setLoading(true);
     try {
-      const fetchedTemplates = await getTemplates();
-      setTemplates(fetchedTemplates);
+      // Use the templates directly from the hook
+      setTemplates(storedTemplates);
     } catch (error) {
       console.error("Erreur lors du chargement des modèles:", error);
       toast({
@@ -27,7 +27,7 @@ export const useDocumentTemplates = () => {
     } finally {
       setLoading(false);
     }
-  }, [getTemplates, toast]);
+  }, [storedTemplates, toast]);
 
   useEffect(() => {
     fetchTemplates();
@@ -38,11 +38,10 @@ export const useDocumentTemplates = () => {
   }, [fetchTemplates]);
 
   const removeTemplate = useCallback(async (templateId: string) => {
-    const success = await deleteTemplate(templateId);
-    if (success) {
-      // Mettre à jour l'état local après la suppression
-      setTemplates(prev => prev.filter(template => template.id !== templateId));
-    }
+    deleteTemplate(templateId);
+    // Mettre à jour l'état local après la suppression
+    setTemplates(prev => prev.filter(template => template.id !== templateId));
+    return true;
   }, [deleteTemplate]);
 
   const forceRefresh = useCallback(() => {

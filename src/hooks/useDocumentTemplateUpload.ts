@@ -1,107 +1,80 @@
 
-import { useFileUpload } from "./useFileUpload";
+import { useState, useCallback } from "react";
+import { DocumentTemplate, UploadedFile } from "@/types/documents";
+import { useToast } from "@/components/ui/use-toast";
 import { useTemplateStorage } from "./useTemplateStorage";
-import { useToast } from "@/hooks/use-toast";
-import { UploadedFile } from "@/types/documents";
-import { useState } from "react";
 
-export const useDocumentTemplateUpload = () => {
-  const {
-    uploadedFiles,
-    uploading,
-    fileToDelete,
-    handleFileUpload,
-    confirmDeleteFile,
-    handleDeleteFile,
-    cancelDelete,
-    resetUploadedFiles,
-    hasValidFiles
-  } = useFileUpload();
-
-  const [error, setError] = useState<string | null>(null);
+export const useDocumentTemplateUpload = (resetUploadedFiles: () => void) => {
+  const [uploadingTemplates, setUploadingTemplates] = useState<boolean>(false);
   const { toast } = useToast();
+  const { saveTemplate } = useTemplateStorage();
 
-  const showNotification = (title: string, description: string, variant?: "default" | "destructive") => {
-    toast({
-      title,
-      description,
-      variant
-    });
-  };
-
-  const { saveAllTemplates } = useTemplateStorage(resetUploadedFiles);
-  
-  const handleSaveTemplates = async () => {
+  const uploadFilesAsTemplates = useCallback(async (files: UploadedFile[]) => {
+    if (!files || files.length === 0) {
+      toast({
+        title: "Aucun fichier à importer",
+        description: "Veuillez sélectionner au moins un fichier.",
+        variant: "default",
+      });
+      return [];
+    }
+    
+    setUploadingTemplates(true);
+    
     try {
-      setError(null);
+      const createdTemplates: DocumentTemplate[] = [];
       
-      if (uploadedFiles.length === 0) {
-        setError("Aucun fichier à enregistrer. Veuillez d'abord téléverser des modèles.");
-        toast({
-          title: "Avertissement",
-          description: "Aucun fichier à enregistrer",
-          variant: "default",
-        });
-        return;
+      // Process each file
+      for (const file of files) {
+        if (!file.content) {
+          console.error("Missing content in file:", file.name);
+          continue;
+        }
+        
+        const templateData: Partial<DocumentTemplate> = {
+          name: file.name,
+          type: file.type,
+          content: file.content,
+          description: `Modèle importé depuis ${file.name}`,
+          size: file.size,
+          dateUploaded: new Date().toISOString(),
+          lastModified: new Date(file.lastModified).toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        
+        // Save the template
+        const newTemplate = saveTemplate(templateData);
+        createdTemplates.push(newTemplate);
       }
       
-      // Vérifier si tous les fichiers sont complètement téléversés
-      const incompleteFiles = uploadedFiles.filter(file => 
-        file.status !== 'complete' || !file.content
-      );
-      
-      if (incompleteFiles.length > 0) {
-        setError(`${incompleteFiles.length} fichier(s) n'ont pas été correctement téléversés. Veuillez réessayer.`);
+      if (createdTemplates.length > 0) {
         toast({
-          title: "Erreur",
-          description: "Certains fichiers ne sont pas prêts à être enregistrés",
-          variant: "destructive",
+          title: "Import réussi",
+          description: `${createdTemplates.length} modèle${createdTemplates.length > 1 ? 's' : ''} importé${createdTemplates.length > 1 ? 's' : ''} avec succès.`
         });
-        return;
+        
+        resetUploadedFiles();
       }
       
-      // Vérifier si le texte a été extrait pour chaque fichier
-      const filesWithoutText = uploadedFiles.filter(file =>
-        !file.extractedText || file.extractedText.trim().length === 0
-      );
-      
-      if (filesWithoutText.length > 0) {
-        const fileNames = filesWithoutText.map(f => f.name).join(', ');
-        setError(`Impossible d'extraire du texte de: ${fileNames}. Ces modèles ne pourront pas être utilisés pour le mapping de variables.`);
-        toast({
-          title: "Erreur",
-          description: "Certains fichiers ne contiennent pas de texte extractible",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Enregistrer les modèles
-      await saveAllTemplates(uploadedFiles as UploadedFile[]);
-    } catch (err) {
-      console.error("Erreur lors de l'enregistrement des modèles:", err);
-      setError(err instanceof Error ? err.message : "Erreur lors de l'enregistrement des modèles");
+      return createdTemplates;
+    } catch (error) {
+      console.error("Error uploading templates:", error);
       
       toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer les modèles",
-        variant: "destructive",
+        title: "Erreur d'import",
+        description: "Une erreur s'est produite lors de l'import des modèles.",
+        variant: "destructive"
       });
+      
+      return [];
+    } finally {
+      setUploadingTemplates(false);
     }
-  };
+  }, [toast, saveTemplate, resetUploadedFiles]);
 
   return {
-    uploadedFiles,
-    uploading,
-    fileToDelete,
-    handleFileUpload,
-    confirmDeleteFile,
-    handleDeleteFile,
-    cancelDelete,
-    saveAllTemplates: handleSaveTemplates,
-    showNotification,
-    error,
-    setError,
-    hasValidFiles
+    uploadingTemplates,
+    uploadFilesAsTemplates
   };
 };
