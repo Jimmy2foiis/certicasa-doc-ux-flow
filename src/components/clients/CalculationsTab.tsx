@@ -15,7 +15,7 @@ interface CalculationsTabProps {
   clientId: string;
   clientName?: string;
   clientAddress?: string;
-  savedCalculations: Array<{
+  savedCalculations?: Array<{
     id: string;
     projectId: string;
     projectName: string;
@@ -34,11 +34,11 @@ const CalculationsTab = ({
   clientId, 
   clientName = "Client",
   clientAddress = "",
-  savedCalculations = [], // Provide default empty array to prevent undefined
+  savedCalculations = [], // Valeur par défaut: tableau vide pour éviter undefined
   onOpenCalculation, 
   onCreateNewCalculation 
 }: CalculationsTabProps) => {
-  // Make sure savedCalculations is always an array
+  // S'assurer que savedCalculations est toujours un tableau
   const calculations = Array.isArray(savedCalculations) ? savedCalculations : [];
 
   return (
