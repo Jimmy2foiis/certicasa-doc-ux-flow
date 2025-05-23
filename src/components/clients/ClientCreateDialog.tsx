@@ -6,6 +6,7 @@ import { UserPlus } from "lucide-react";
 import { Client } from "@/services/supabaseService";
 import ClientForm from "./ClientForm";
 import { useClientCreate } from "@/hooks/useClientCreate";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ClientCreateDialogProps {
   onClientCreated: () => Promise<void>;
@@ -13,13 +14,29 @@ interface ClientCreateDialogProps {
 
 const ClientCreateDialog = ({ onClientCreated }: ClientCreateDialogProps) => {
   const [openDialog, setOpenDialog] = useState(false);
+  const { toast } = useToast();
   const { createClient, isCreating } = useClientCreate({
     onClientCreated,
-    onSuccess: () => setOpenDialog(false)
+    onSuccess: () => {
+      setOpenDialog(false);
+      toast({
+        title: "Client créé",
+        description: "Le client a été créé avec succès",
+      });
+    }
   });
 
   const handleCreateClient = async (clientData: Client) => {
-    await createClient(clientData);
+    try {
+      await createClient(clientData);
+    } catch (error) {
+      console.error("Erreur lors de la création du client:", error);
+      toast({
+        title: "Erreur",
+        description: "Une erreur est survenue lors de la création du client",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

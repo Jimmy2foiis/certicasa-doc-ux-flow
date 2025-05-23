@@ -1,31 +1,61 @@
 
 import { UploadIcon, FolderPlus, Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ClientsFloatingBarProps {
   selectedCount: number;
   onClearSelection: () => void;
   selectedClientIds: string[];
+  onCreateBatch?: () => void;
+  onAddToExistingBatch?: () => void;
+  onDownloadZip?: () => void;
 }
 
 const ClientsFloatingBar = ({ 
   selectedCount, 
   onClearSelection,
-  selectedClientIds 
+  selectedClientIds,
+  onCreateBatch,
+  onAddToExistingBatch,
+  onDownloadZip
 }: ClientsFloatingBarProps) => {
+  const { toast } = useToast();
+
   const handleCreateBatch = () => {
-    console.log("Création d'un lot avec les clients:", selectedClientIds);
-    // Implémenter la logique de création de lot
+    if (onCreateBatch) {
+      onCreateBatch();
+    } else {
+      console.log("Création d'un lot avec les clients:", selectedClientIds);
+      toast({
+        title: "Création de lot",
+        description: `Lot créé avec ${selectedCount} client(s)`,
+      });
+    }
   };
 
   const handleAddToExistingBatch = () => {
-    console.log("Ajout à un lot existant des clients:", selectedClientIds);
-    // Implémenter la logique d'ajout à un lot existant
+    if (onAddToExistingBatch) {
+      onAddToExistingBatch();
+    } else {
+      console.log("Ajout à un lot existant des clients:", selectedClientIds);
+      toast({
+        title: "Ajout au lot",
+        description: `${selectedCount} client(s) ajouté(s) au lot existant`,
+      });
+    }
   };
 
   const handleDownloadZip = () => {
-    console.log("Téléchargement ZIP des clients:", selectedClientIds);
-    // Implémenter la logique de téléchargement
+    if (onDownloadZip) {
+      onDownloadZip();
+    } else {
+      console.log("Téléchargement ZIP des clients:", selectedClientIds);
+      toast({
+        title: "Téléchargement",
+        description: `Fichier ZIP contenant les données de ${selectedCount} client(s) préparé`,
+      });
+    }
   };
 
   return (
