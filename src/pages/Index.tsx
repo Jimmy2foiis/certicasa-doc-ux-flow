@@ -32,7 +32,7 @@ const Index = () => {
         navigate('/clients');
         break;
       case 'finances':
-        navigate('/billing');
+        navigate('/finances'); // Mis à jour pour rediriger vers la nouvelle page
         break;
       case 'calculettes':
         navigate('/calculations');

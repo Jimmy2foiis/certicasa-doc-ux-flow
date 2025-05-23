@@ -8,13 +8,14 @@ import {
   FileText, 
   Settings, 
   HelpCircle,
+  LineChart,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Tableau de bord", value: "/" },
   { icon: Users, label: "Clients", value: "/clients" },
-  { icon: Receipt, label: "Finances", value: "/billing" },
+  { icon: Receipt, label: "Finances", value: "/finances" }, // Mis à jour vers la nouvelle route
   { icon: Calculator, label: "Calculettes", value: "/calculations" },
   { icon: FileText, label: "Templates", value: "/documents" },
   { icon: Settings, label: "Paramètres", value: "/settings" },

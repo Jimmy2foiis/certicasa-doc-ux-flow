@@ -19,6 +19,7 @@ import Billing from "./pages/Billing";
 import Help from "./pages/Help";
 import ProjectsList from "./pages/ProjectsList";
 import ProjectDetails from "./pages/ProjectDetails";
+import Finances from "./pages/Finances"; // Nouvelle page Finances
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
             <Route path="/documents" element={<Documents />} />
             <Route path="/workflow/*" element={<Workflow />} />
             <Route path="/billing" element={<Billing />} />
+            <Route path="/finances" element={<Finances />} /> {/* Nouvelle route */}
             <Route path="/help" element={<Help />} />
             <Route path="/projects" element={<ProjectsList />} />
             <Route path="/projects/:id" element={<ProjectDetails />} />
