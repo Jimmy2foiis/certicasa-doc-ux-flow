@@ -87,8 +87,44 @@ const ClientsTable = ({
     }
   };
 
+  // Fonction pour formater la date au format JJ/MM/AAAA
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR');
+  };
+
+  // Fonction pour déterminer la variante du badge selon le statut
+  const getStatusVariant = (status?: string) => {
+    switch (status) {
+      case 'En cours': return 'outline';
+      case 'Prêt à déposer': return 'secondary';
+      case 'Déposé': return 'default';
+      case 'Validé': return 'success';
+      case 'Rejeté': return 'destructive';
+      case 'Blocage': return 'destructive';
+      default: return 'outline';
+    }
+  };
+
+  // Fonction pour déterminer la variante du badge selon le statut de dépôt
+  const getDepositVariant = (status?: string) => {
+    switch (status) {
+      case 'Non déposé': return 'outline';
+      case 'Déposé': return 'default';
+      case 'Accepté': return 'success';
+      case 'Rejeté': return 'destructive';
+      default: return 'outline';
+    }
+  };
+
+  // Fonction pour déterminer la variante du badge selon le type de fiche
+  const getFicheTypeVariant = (type?: string) => {
+    return type === 'RES010' ? 'secondary' : 'outline';
+  };
+
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
@@ -104,15 +140,23 @@ const ClientsTable = ({
             <TableHead>Nom</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Téléphone</TableHead>
-            <TableHead>Projets</TableHead>
-            <TableHead>Statut</TableHead>
+            <TableHead>Code postal</TableHead>
+            <TableHead>Type de fiche</TableHead>
+            <TableHead>Zone climat.</TableHead>
+            <TableHead>Surface (m²)</TableHead>
+            <TableHead>Type isolation</TableHead>
+            <TableHead>Type plancher</TableHead>
+            <TableHead>Statut dossier</TableHead>
+            <TableHead>Date de pose</TableHead>
+            <TableHead>Lot</TableHead>
+            <TableHead>Statut dépôt</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {loading ? (
             <TableRow>
-              <TableCell colSpan={onSelectClient ? 7 : 6} className="text-center py-10">
+              <TableCell colSpan={onSelectClient ? 15 : 14} className="text-center py-10">
                 <div className="flex justify-center items-center">
                   <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
                   <span className="ml-2 text-gray-500">Chargement des clients...</span>
@@ -121,7 +165,7 @@ const ClientsTable = ({
             </TableRow>
           ) : displayClients.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={onSelectClient ? 7 : 6} className="text-center py-10">
+              <TableCell colSpan={onSelectClient ? 15 : 14} className="text-center py-10">
                 <p className="text-gray-500">Aucun client trouvé</p>
                 {searchTerm ? (
                   <p className="text-sm text-gray-400 mt-1">
@@ -154,16 +198,28 @@ const ClientsTable = ({
                 <TableCell className="font-medium">{client.name}</TableCell>
                 <TableCell>{client.email}</TableCell>
                 <TableCell>{client.phone}</TableCell>
-                <TableCell>{client.projects || 0}</TableCell>
+                <TableCell>{client.postalCode}</TableCell>
                 <TableCell>
-                  <Badge
-                    variant={
-                      client.status === 'Actif' || client.status === 'Activo'
-                        ? 'default'
-                        : 'outline'
-                    }
-                  >
-                    {client.status === 'Activo' ? 'Actif' : client.status || 'Actif'}
+                  <Badge variant={getFicheTypeVariant(client.ficheType)}>
+                    {client.ficheType || 'RES010'}
+                  </Badge>
+                </TableCell>
+                <TableCell>{client.climateZone || 'C'}</TableCell>
+                <TableCell>{client.isolatedArea} m²</TableCell>
+                <TableCell>{client.isolationType || 'Combles'}</TableCell>
+                <TableCell>{client.floorType || 'Bois'}</TableCell>
+                <TableCell>
+                  <Badge variant={getStatusVariant(client.status)}>
+                    {client.status || 'En cours'}
+                  </Badge>
+                </TableCell>
+                <TableCell>{formatDate(client.installationDate)}</TableCell>
+                <TableCell>
+                  {client.lotNumber ? `Oui - ${client.lotNumber}` : 'Non'}
+                </TableCell>
+                <TableCell>
+                  <Badge variant={getDepositVariant(client.depositStatus)}>
+                    {client.depositStatus || 'Non déposé'}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
