@@ -107,7 +107,7 @@ const AddressSearch = ({
           }
         }}
         placeholder="Saisissez une adresse espagnole..."
-        disabled={isLoadingGoogleMaps}
+        // L'input reste actif même si l'API Google Maps est indisponible
       />
       
       {errorToShow && <AddressError error={errorToShow} />}
