@@ -31,14 +31,14 @@ const Index = () => {
       case 'clients':
         navigate('/clients');
         break;
-      case 'calculations':
+      case 'finances':
+        navigate('/billing');
+        break;
+      case 'calculettes':
         navigate('/calculations');
         break;
-      case 'template':
+      case 'templates':
         navigate('/documents');
-        break;
-      case 'finance':
-        navigate('/billing');
         break;
       default:
         // Rester sur la page d'accueil pour le tableau de bord
@@ -66,9 +66,9 @@ const Index = () => {
             <TabsList className="mb-6 bg-white p-1 shadow-sm rounded-md">
               <TabsTrigger value="dashboard">Tableau de bord</TabsTrigger>
               <TabsTrigger value="clients">Clients</TabsTrigger>
-              <TabsTrigger value="calculations">Calculs</TabsTrigger>
-              <TabsTrigger value="template">Template</TabsTrigger>
-              <TabsTrigger value="finance">Finance</TabsTrigger>
+              <TabsTrigger value="finances">Finances</TabsTrigger>
+              <TabsTrigger value="calculettes">Calculettes</TabsTrigger>
+              <TabsTrigger value="templates">Templates</TabsTrigger>
             </TabsList>
             <TabsContent value="dashboard">
               <Dashboard />
@@ -76,14 +76,14 @@ const Index = () => {
             <TabsContent value="clients">
               <ClientsSection />
             </TabsContent>
-            <TabsContent value="calculations">
+            <TabsContent value="finances">
+              <Billing />
+            </TabsContent>
+            <TabsContent value="calculettes">
               <ProjectCalculation />
             </TabsContent>
-            <TabsContent value="template">
+            <TabsContent value="templates">
               <DocumentGeneration />
-            </TabsContent>
-            <TabsContent value="finance">
-              <Billing />
             </TabsContent>
           </Tabs>
         </main>

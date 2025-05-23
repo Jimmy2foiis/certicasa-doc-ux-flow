@@ -3,24 +3,22 @@ import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
   Users, 
+  Receipt, 
   Calculator, 
   FileText, 
-  Receipt, 
   Settings, 
   HelpCircle,
-  Upload,
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Tableau de bord", value: "/" },
   { icon: Users, label: "Clients", value: "/clients" },
-  { icon: Calculator, label: "Calculs", value: "/calculations" },
-  { icon: FileText, label: "Template", value: "/documents" },
-  { icon: Upload, label: "Dépôts des Lots", value: "/lots" },
-  { icon: Receipt, label: "Finance", value: "/billing" },
+  { icon: Receipt, label: "Finances", value: "/billing" },
+  { icon: Calculator, label: "Calculettes", value: "/calculations" },
+  { icon: FileText, label: "Templates", value: "/documents" },
   { icon: Settings, label: "Paramètres", value: "/settings" },
-  { icon: HelpCircle, label: "Aide", value: "/help" },
+  { icon: HelpCircle, label: "Aides", value: "/help" },
 ];
 
 const Sidebar = () => {
