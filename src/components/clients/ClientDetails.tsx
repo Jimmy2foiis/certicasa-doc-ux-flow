@@ -61,6 +61,8 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
         client={client}
         clientId={clientId}
         clientName={client?.name || "Client"}
+        documentStats={documentStats}
+        onViewMissingDocs={handleViewMissingDocs}
         onBack={onBack}
       />
 

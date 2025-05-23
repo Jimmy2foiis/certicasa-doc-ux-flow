@@ -1,4 +1,3 @@
-
 import { Circle, CheckCircle } from 'lucide-react';
 import React from 'react';
 
@@ -12,6 +11,26 @@ export const getStatusVariant = (status?: string) => {
     case 'Rejeté': return 'destructive';
     case 'Blocage': return 'destructive';
     default: return 'outline';
+  }
+};
+
+// Function to determine the color class for status badges
+export const getStatusColor = (status: string) => {
+  switch (status.toLowerCase()) {
+    case "en cours":
+      return "bg-blue-100 text-blue-800";
+    case "à déposer":
+    case "prêt à déposer":
+      return "bg-amber-100 text-amber-800";
+    case "déposé":
+      return "bg-indigo-100 text-indigo-800";
+    case "validé":
+      return "bg-green-100 text-green-800";
+    case "rejeté":
+    case "blocage":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
   }
 };
 
