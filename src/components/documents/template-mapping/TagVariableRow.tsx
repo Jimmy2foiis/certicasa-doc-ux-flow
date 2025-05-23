@@ -2,6 +2,8 @@
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 import { TemplateTag, availableVariables } from "@/types/documents";
 
 interface TagVariableRowProps {
@@ -10,6 +12,7 @@ interface TagVariableRowProps {
   clientData?: any;
   updateCategory: (index: number, category: string) => void;
   updateMapping: (index: number, value: string) => void;
+  handleDeleteTag?: (index: number) => void;
 }
 
 export const TagVariableRow = ({ 
@@ -17,13 +20,14 @@ export const TagVariableRow = ({
   index, 
   clientData, 
   updateCategory, 
-  updateMapping 
+  updateMapping,
+  handleDeleteTag 
 }: TagVariableRowProps) => {
   // Helper to check if the variable data exists in clientData
   const variableExists = React.useMemo(() => {
-    if (!clientData) return false;
+    if (!clientData || !tag.mappedTo) return false;
     const field = tag.mappedTo.split('.')[1] || '';
-    return Boolean(clientData[tag.category]?.[field]);
+    return Boolean(clientData[tag.category || '']?.[field]);
   }, [clientData, tag.category, tag.mappedTo]);
 
   return (
@@ -58,14 +62,14 @@ export const TagVariableRow = ({
       
       <div className="col-span-4">
         <Select 
-          value={tag.mappedTo.split('.')[1] || ''} 
+          value={tag.mappedTo?.split('.')[1] || ''} 
           onValueChange={(value: string) => updateMapping(index, `${tag.category}.${value}`)}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Variable" />
           </SelectTrigger>
           <SelectContent>
-            {availableVariables[tag.category as keyof typeof availableVariables]?.map(variable => (
+            {tag.category && availableVariables[tag.category as keyof typeof availableVariables]?.map(variable => (
               <SelectItem key={variable} value={variable}>
                 {variable}
               </SelectItem>
@@ -75,7 +79,17 @@ export const TagVariableRow = ({
       </div>
       
       <div className="col-span-1 flex justify-center">
-        {variableExists ? (
+        {handleDeleteTag ? (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 w-8 p-0" 
+            onClick={() => handleDeleteTag(index)}
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Supprimer</span>
+          </Button>
+        ) : variableExists ? (
           <Badge variant="outline" className="bg-green-50 text-green-700">
             ✓
           </Badge>

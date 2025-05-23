@@ -1,53 +1,90 @@
+import { useState } from "react";
+import { DocumentTemplate } from "@/types/documents";
 
-import { useToast } from "@/hooks/use-toast";
-import { apiClient } from "@/lib/api-client";
-import { DocumentTemplate, UploadedFile } from "@/types/documents";
+// Mock implementation of template storage functions
+export const useTemplateStorage = () => {
+  const [templates, setTemplates] = useState<DocumentTemplate[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-export const useTemplateStorage = (resetUploadedFiles: () => void) => {
-  const { toast } = useToast();
-  
-  const saveAllTemplates = async (files: any[]) => {
-    toast({
-      title: "Fonctionnalité non disponible",
-      description: "Le stockage de modèles nécessite une intégration Supabase.",
-      variant: "destructive",
-    });
-    return [];
-  };
-
-  const getTemplates = async (): Promise<DocumentTemplate[]> => {
-    // Return mock templates for demo purposes
-    return [
-      {
-        id: "template1",
-        name: "Contrat Standard",
-        type: "docx",
-        dateUploaded: "2025-05-15",
-        lastModified: "2025-05-15",
-        content: "mock-content",
-        userId: "user1",
-        size: 250000
-      },
-      {
-        id: "template2",
-        name: "Facture Client",
-        type: "pdf",
-        dateUploaded: "2025-05-10",
-        lastModified: "2025-05-12",
-        content: "mock-content",
-        userId: "user1",
-        size: 180000
+  // Function to fetch a template by ID
+  const getTemplate = (templateId: string) => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Simulate fetching from a database or API
+      const template = templates.find(t => t.id === templateId);
+      
+      if (!template) {
+        setError("Template not found");
+        return null;
       }
-    ];
+      
+      return template;
+    } catch (err) {
+      setError("Failed to fetch template");
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const deleteTemplate = async (templateId: string): Promise<boolean> => {
-    toast({
-      title: "Modèle supprimé",
-      description: "Le modèle a été supprimé avec succès (simulation).",
-    });
-    return true;
+  // Function to delete a template
+  const deleteTemplate = (templateId: string) => {
+    setTemplates(prevTemplates => prevTemplates.filter(template => template.id !== templateId));
+  };
+
+  // Function to save a template
+  const saveTemplate = (template: Partial<DocumentTemplate>) => {
+    // Simulate saving to a database or API
+    console.log("Saving template:", template);
+    
+    // Create a complete template object with all required fields
+    const newTemplate: DocumentTemplate = {
+      id: template.id || `template_${Date.now()}`,
+      name: template.name || "Template sans nom",
+      type: template.type || "unknown",
+      content: template.content || "",
+      createdAt: template.createdAt || new Date().toISOString(),
+      updatedAt: template.updatedAt || new Date().toISOString(),
+      dateUploaded: template.dateUploaded || new Date().toISOString(),
+      lastModified: template.lastModified || new Date().toISOString(),
+      userId: template.userId || "current_user",
+      size: template.size || 0,
+      description: template.description
+    };
+    
+    // Update the state with the new template
+    setTemplates(prevTemplates => [...prevTemplates, newTemplate]);
+    
+    return newTemplate;
   };
   
-  return { saveAllTemplates, getTemplates, deleteTemplate };
+  // Function to update an existing template
+  const updateTemplate = (templateId: string, data: Partial<DocumentTemplate>) => {
+    setTemplates(prevTemplates => 
+      prevTemplates.map(template => 
+        template.id === templateId 
+          ? {
+              ...template,
+              ...data,
+              updatedAt: new Date().toISOString() // Always update the updatedAt timestamp
+            } 
+          : template
+      )
+    );
+  };
+
+  return {
+    templates,
+    saveTemplate,
+    getTemplate,
+    updateTemplate,
+    deleteTemplate,
+    isLoading,
+    error
+  };
 };
+
+export default useTemplateStorage;

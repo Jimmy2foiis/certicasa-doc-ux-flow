@@ -1,81 +1,90 @@
+import { useState } from "react";
+import { AdministrativeDocument } from "@/types/documents";
 
-import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
+export const useDemoDocuments = () => {
+  const [demoDocuments, setDemoDocuments] = useState<AdministrativeDocument[]>([
+    {
+      id: "doc1",
+      name: "Fiche d'identification",
+      type: "identity",
+      description: "Document d'identification du client",
+      status: "generated",
+      statusLabel: "Généré",
+      order: 1,
+      content: "...",
+      category: "administrative", // Now properly typed
+      created_at: "2023-05-15T09:30:00Z" // Now properly typed
+    },
+    {
+      id: "doc2",
+      name: "Contrat de vente",
+      type: "contract",
+      description: "Contrat de vente pour le projet",
+      status: "ready",
+      statusLabel: "Prêt",
+      order: 2,
+      content: "...",
+      category: "contract", // Now properly typed
+      created_at: "2023-05-16T10:15:00Z" // Now properly typed
+    },
+    {
+      id: "doc3",
+      name: "Annexe technique",
+      type: "technical",
+      description: "Détails techniques du projet",
+      status: "pending",
+      statusLabel: "En attente",
+      order: 3,
+      content: null,
+      category: "technical", // Now properly typed
+      created_at: "2023-05-17T14:45:00Z" // Now properly typed
+    },
+    {
+      id: "doc4",
+      name: "Facture d'acompte",
+      type: "invoice",
+      description: "Facture pour l'acompte initial",
+      status: "action-required",
+      statusLabel: "Action requise",
+      order: 4,
+      content: "...",
+      category: "financial", // Now properly typed
+      created_at: "2023-05-18T16:20:00Z" // Now properly typed
+    },
+    {
+      id: "doc5",
+      name: "Attestation de conformité",
+      type: "compliance",
+      description: "Attestation de conformité aux normes",
+      status: "missing",
+      statusLabel: "Manquant",
+      order: 5,
+      content: null,
+      category: "certification", // Now properly typed
+      created_at: "2023-05-19T11:10:00Z" // Now properly typed
+    }
+  ]);
 
-// Function to determine the category of a document based on its name
-export const determineDocumentCategory = (name: string): string => {
-  const documentCategories = {
-    "administratif": ["Contrat", "Facture", "Devis", "Certificat"],
-    "technique": ["Plans", "Cadastre", "Calculs", "Rapports"],
-    "commercial": ["Présentation", "Brochure", "Offre commerciale"]
+  const addDocument = (newDocument: AdministrativeDocument) => {
+    setDemoDocuments(prevDocuments => [...prevDocuments, newDocument]);
   };
-  
-  const lowerCaseName = name.toLowerCase();
-  
-  for (const [category, keywords] of Object.entries(documentCategories)) {
-    for (const keyword of keywords) {
-      if (lowerCaseName.includes(keyword.toLowerCase())) {
-        return category;
-      }
-    }
-  }
-  
-  return "administratif";
+
+  const updateDocument = (id: string, updatedDocument: Partial<AdministrativeDocument>) => {
+    setDemoDocuments(prevDocuments =>
+      prevDocuments.map(doc => (doc.id === id ? { ...doc, ...updatedDocument } : doc))
+    );
+  };
+
+  const deleteDocument = (id: string) => {
+    setDemoDocuments(prevDocuments => prevDocuments.filter(doc => doc.id !== id));
+  };
+
+  return {
+    demoDocuments,
+    addDocument,
+    updateDocument,
+    deleteDocument
+  };
 };
 
-// Function to generate demo documents when no real documents are available
-export const generateDemoDocuments = (clientName?: string, projectType: string = "RES010"): AdministrativeDocument[] => {
-  const demoClient = clientName || "Demo Client";
-  
-  return [
-    {
-      id: "1",
-      name: `Contrat - ${demoClient}`,
-      type: "pdf",
-      category: "administratif",
-      status: "signed" as DocumentStatus,
-      created_at: new Date().toISOString(),
-      description: "Contrat client standard",
-      order: 1
-    },
-    {
-      id: "2",
-      name: `Plans d'installation - Projet ${projectType}`,
-      type: "dwg",
-      category: "technique",
-      status: "available" as DocumentStatus,
-      created_at: new Date().toISOString(),
-      description: "Plans techniques",
-      order: 2
-    },
-    {
-      id: "3",
-      name: `Facture N°F20230001 - ${demoClient}`,
-      type: "pdf",
-      category: "administratif",
-      status: "sent" as DocumentStatus,
-      created_at: new Date().toISOString(),
-      description: "Facture initiale",
-      order: 3
-    },
-    {
-      id: "4",
-      name: `Rapport technique - Bilan énergétique`,
-      type: "docx",
-      category: "technique",
-      status: "draft" as DocumentStatus,
-      created_at: new Date().toISOString(),
-      description: "Rapport d'analyse énergétique",
-      order: 4
-    },
-    {
-      id: "5",
-      name: `Présentation commerciale - Solutions ${projectType}`,
-      type: "pptx",
-      category: "commercial",
-      status: "available" as DocumentStatus,
-      created_at: new Date().toISOString(),
-      description: "Présentation de la solution",
-      order: 5
-    }
-  ];
-};
+export default useDemoDocuments;

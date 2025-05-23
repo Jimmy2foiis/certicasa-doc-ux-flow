@@ -5,6 +5,9 @@ import { TemplateTag as DocumentGenerationTemplateTag } from "@/hooks/useDocumen
 // Update the TemplateTag interface to match the one from useDocumentGeneration
 export interface TemplateTag extends DocumentGenerationTemplateTag {
   // Additional properties can be added here if needed in the future
+  tag?: string;
+  category?: string;
+  mappedTo?: string;
 }
 
 // Export other types as needed
@@ -43,6 +46,8 @@ export interface AdministrativeDocument {
   statusLabel?: string;
   order: number;
   content?: string;
+  category?: string; // Added to fix type errors
+  created_at?: string; // Added to fix type errors
 }
 
 // Add additional types used by components
