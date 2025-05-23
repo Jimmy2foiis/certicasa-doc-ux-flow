@@ -60,12 +60,13 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
     });
 
     // Integration with real document upload
-    handleDocumentAction('upload', 'upload', {
+    const uploadData = {
       file: uploadFile,
       type: documentType,
       name: uploadFile.name,
       clientId
-    });
+    };
+    handleDocumentAction('upload', 'upload', uploadData);
     
     // Close the dialog and reset fields
     setShowUploadDialog(false);

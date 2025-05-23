@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import ClientsTable from '@/components/clients/ClientsTable';
 import ClientsFloatingBar from '@/components/clients/ClientsFloatingBar';
@@ -99,9 +98,10 @@ const ClientsList = ({
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent className="sm:max-w-[600px]">
           <ClientForm 
-            onSubmit={handleSubmitCreate}
+            clientId=""
+            initialData={{} as Client}
+            onSuccess={() => handleSubmitCreate({} as Client)}
             onCancel={() => setShowCreateDialog(false)}
-            isSubmitting={false}
           />
         </DialogContent>
       </Dialog>
