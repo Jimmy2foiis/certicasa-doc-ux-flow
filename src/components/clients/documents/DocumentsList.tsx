@@ -1,8 +1,10 @@
 
 import React from "react";
-import { AdministrativeDocument } from "@/types/documents";
-import { LoadingState } from "@/components/documents/template-mapping/LoadingState";
-import DocumentsAccordion from "@/components/documents/DocumentsAccordion";
+import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
+import { DocumentStatusBadge } from "@/components/documents/DocumentStatusBadge";
+import DocumentActionButtons from "@/components/documents/DocumentActionButtons";
+import { FileText, Eye, FileDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface DocumentsListProps {
   documents: AdministrativeDocument[];
@@ -24,10 +26,60 @@ export const DocumentsList: React.FC<DocumentsListProps> = ({
   }
 
   return (
-    <DocumentsAccordion 
-      documents={documents}
-      onDocumentAction={onAction}
-    />
+    <div className="space-y-3">
+      {documents.map((doc) => (
+        <div key={doc.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-muted/50 transition-colors">
+          <div className="flex items-center space-x-3">
+            <div className="bg-muted p-2 rounded-md">
+              <FileText className="h-6 w-6 text-primary" />
+            </div>
+            <div>
+              <p className="font-medium">{doc.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {doc.category} • {new Date(doc.created_at || '').toLocaleDateString()}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-3">
+            <DocumentStatusBadge status={doc.status as DocumentStatus} />
+            
+            {/* Boutons d'action principaux (Voir/Télécharger) */}
+            <div className="flex space-x-2">
+              {(doc.status === "generated" || doc.status === "linked") && (
+                <>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => onAction(doc.id, "view")}
+                    className="flex items-center"
+                  >
+                    <Eye className="h-4 w-4 mr-1.5" />
+                    <span>Voir</span>
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => onAction(doc.id, "download")}
+                    className="flex items-center"
+                  >
+                    <FileDown className="h-4 w-4 mr-1.5" />
+                    <span>Télécharger</span>
+                  </Button>
+                </>
+              )}
+              
+              {/* Autres boutons d'action spécifiques */}
+              <DocumentActionButtons 
+                documentType={doc.type} 
+                status={doc.status as DocumentStatus}
+                onAction={(action) => onAction(doc.id, action)}
+                showViewDownload={false}
+              />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   );
 };
 

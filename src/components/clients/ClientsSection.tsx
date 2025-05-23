@@ -1,63 +1,134 @@
 
-import React, { useState, useEffect } from "react";
-import { Client } from "@/types/clientTypes";
-import ClientsTable from "./table/ClientsTable";
-import ClientFormDialog from "./dialogs/ClientFormDialog";
-import ClientDetailsDialog from "./dialogs/ClientDetailsDialog";
-import { useClientsData } from "@/hooks/useClientsData";
+import { useState, useEffect } from "react";
+import { 
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useToast } from "@/components/ui/use-toast";
+import { getClients, deleteClientRecord, Client } from "@/services/supabaseService";
+import ClientDetails from "@/components/clients/ClientDetails";
+import ClientCreateDialog from "@/components/clients/ClientCreateDialog";
+import ClientFilters from "@/components/clients/ClientFilters";
+import ClientsTable from "@/components/clients/ClientsTable";
 
 const ClientsSection = () => {
-  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [clientToEdit, setClientToEdit] = useState<Client | null>(null);
-  const { clients, loading, loadClients, handleDeleteConfirmation } = useClientsData();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClient, setSelectedClient] = useState<string | null>(null);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [openDialog, setOpenDialog] = useState(false);
+  const { toast } = useToast();
+  
+  // Charger les clients depuis Supabase et le stockage local
+  const loadClients = async () => {
+    try {
+      setLoading(true);
+      
+      // Obtenir tous les clients (la fonction getClients gère maintenant les erreurs RLS)
+      const allClients = await getClients();
+      
+      // Créer un Map pour éliminer les doublons potentiels
+      const uniqueClientsMap = new Map<string, Client>();
+      
+      allClients.forEach(client => {
+        if (client.id) {
+          uniqueClientsMap.set(client.id, client);
+        }
+      });
+      
+      // Convertir le Map en tableau
+      const uniqueClients = Array.from(uniqueClientsMap.values());
+      
+      setClients(uniqueClients);
+      console.log("Clients chargés (uniques):", uniqueClients);
+    } catch (error) {
+      console.error("Erreur lors du chargement des clients:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les clients. Les données locales seront utilisées.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Charger les clients au montage du composant
   useEffect(() => {
     loadClients();
   }, []);
 
-  const handleViewDetails = (client: Client) => {
-    setSelectedClient(client);
-    setIsDetailsOpen(true);
-  };
+  // Filtrer les clients selon le terme de recherche
+  const filteredClients = clients.filter(client => 
+    client.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    client.phone?.includes(searchTerm)
+  );
 
-  const handleEditClient = (client: Client) => {
-    setClientToEdit(client);
-    setIsFormOpen(true);
-  };
-
-  const handleClientUpdated = () => {
-    loadClients();
+  // Gérer la suppression d'un client
+  const handleDeleteClient = async (clientId: string) => {
+    try {
+      const success = await deleteClientRecord(clientId);
+      
+      if (success) {
+        toast({
+          title: "Client supprimé",
+          description: "Le client a été supprimé avec succès.",
+        });
+        
+        // Recharger la liste des clients
+        await loadClients();
+      } else {
+        toast({
+          title: "Attention",
+          description: "Le client a été supprimé localement mais pas dans la base de données.",
+          variant: "destructive",
+        });
+        await loadClients();
+      }
+    } catch (error) {
+      console.error("Erreur lors de la suppression du client:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le client. Veuillez réessayer.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Liste des Clients</h2>
-        <ClientFormDialog 
-          isOpen={isFormOpen}
-          onOpenChange={setIsFormOpen}
-          client={clientToEdit}
-          onClientUpdated={handleClientUpdated}
-          triggerButton={true}
+    <>
+      {selectedClient ? (
+        <ClientDetails 
+          clientId={selectedClient} 
+          onBack={() => setSelectedClient(null)} 
         />
-      </div>
-      
-      <ClientsTable 
-        clients={clients}
-        loading={loading}
-        onViewDetails={handleViewDetails}
-        onEditClient={handleEditClient}
-        onDeleteConfirmation={handleDeleteConfirmation}
-      />
-
-      <ClientDetailsDialog 
-        client={selectedClient}
-        isOpen={isDetailsOpen}
-        onOpenChange={setIsDetailsOpen}
-      />
-    </div>
+      ) : (
+        <Card>
+          <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-4">
+            <CardTitle className="text-xl font-semibold">Clients</CardTitle>
+            <ClientCreateDialog onClientCreated={loadClients} />
+          </CardHeader>
+          <CardContent>
+            <ClientFilters 
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+            />
+            <ClientsTable
+              clients={clients}
+              filteredClients={filteredClients}
+              searchTerm={searchTerm}
+              loading={loading}
+              onClientSelect={setSelectedClient}
+              onDeleteClient={handleDeleteClient}
+              onOpenCreateDialog={() => setOpenDialog(true)}
+            />
+          </CardContent>
+        </Card>
+      )}
+    </>
   );
 };
 

@@ -18,8 +18,8 @@ const ProjectsTab = ({ clientId }: ProjectsTabProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Toutes les Informations Maison</CardTitle>
-        <CardDescription>Liste complète des Informations Maison du client</CardDescription>
+        <CardTitle>Tous les projets</CardTitle>
+        <CardDescription>Liste complète des projets du client</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

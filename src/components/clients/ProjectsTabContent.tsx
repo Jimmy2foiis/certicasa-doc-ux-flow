@@ -19,9 +19,9 @@ const ProjectsTabContent = ({ onShowCalculation, clientId }: ProjectsTabContentP
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Informations Maison</CardTitle>
+        <CardTitle>Projets du client</CardTitle>
         <CardDescription>
-          Informations Maison associées au client
+          Projets associés au client
         </CardDescription>
       </CardHeader>
       <CardContent>

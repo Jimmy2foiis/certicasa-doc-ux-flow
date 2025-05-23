@@ -1,55 +1,131 @@
 
-import { useState, useEffect } from 'react';
-import { AdministrativeDocument } from '@/types/documents';
-import { useDemoDocuments } from './useDemoDocuments'; 
+import { useState, useEffect, useCallback } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { getDocumentsForClient } from "@/services/supabase/documentService";
+import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
+import { determineDocumentCategory, generateDemoDocuments } from "./useDemoDocuments";
+import { useDocumentSearch } from "./useDocumentSearch";
+import { useDocumentActions } from "./useDocumentActions";
 
-export const useClientDocuments = (clientId: string | undefined) => {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [documents, setDocuments] = useState<AdministrativeDocument[]>([]);
-  const { generateDemoDocuments, determineDocumentCategory } = useDemoDocuments();
-
+export const useClientDocuments = (clientId?: string, clientName?: string) => {
+  const [adminDocuments, setAdminDocuments] = useState<AdministrativeDocument[]>([]);
+  const [projectType, setProjectType] = useState("RES010");
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+  
+  // Load client documents
   useEffect(() => {
-    const fetchDocuments = async () => {
-      if (!clientId) return;
-      
-      setLoading(true);
+    const loadDocuments = async () => {
+      setIsLoading(true);
       
       try {
-        // For demo purposes, generate mock documents with a delay
-        setTimeout(() => {
-          const demoDocuments = generateDemoDocuments(clientId);
-          setDocuments(demoDocuments);
-          setLoading(false);
-        }, 1000);
+        if (clientId) {
+          const documents = await getDocumentsForClient(clientId);
+          
+          // Transform documents into AdminDocument format
+          const formattedDocs = documents.map(doc => ({
+            id: doc.id,
+            name: doc.name,
+            type: doc.type || "pdf",
+            category: determineDocumentCategory(doc.name),
+            // Convert string status to DocumentStatus type
+            status: (doc.status || "available") as DocumentStatus,
+            created_at: doc.created_at,
+            content: doc.content,
+            file_path: doc.file_path,
+            description: "",  // Default empty description
+            order: 0,         // Default order
+            // Add status label based on document type and status
+            statusLabel: getStatusLabelForDocument(doc.type || "pdf", doc.status || "available")
+          }));
+          
+          setAdminDocuments(formattedDocs);
+        } else {
+          // If no clientId, load demo documents
+          const demoDocuments = generateDemoDocuments(clientName, projectType);
+          setAdminDocuments(demoDocuments);
+        }
       } catch (error) {
-        console.error('Error fetching client documents:', error);
-        setLoading(false);
+        console.error("Erreur lors du chargement des documents:", error);
+        toast({
+          title: "Erreur",
+          description: "Impossible de charger les documents. Veuillez réessayer.",
+          variant: "destructive",
+        });
+        
+        // Load demo documents in case of error
+        const demoDocuments = generateDemoDocuments(clientName, projectType);
+        setAdminDocuments(demoDocuments);
+      } finally {
+        setIsLoading(false);
       }
     };
     
-    fetchDocuments();
-  }, [clientId, generateDemoDocuments]);
-
-  const addDocument = (document: AdministrativeDocument) => {
-    setDocuments(prev => [...prev, document]);
-  };
+    loadDocuments();
+  }, [clientId, clientName, projectType, toast]);
   
-  const updateDocument = (updatedDoc: AdministrativeDocument) => {
-    setDocuments(prev => 
-      prev.map(doc => doc.id === updatedDoc.id ? updatedDoc : doc)
-    );
-  };
-
-  const deleteDocument = (documentId: string) => {
-    setDocuments(prev => prev.filter(doc => doc.id !== documentId));
-  };
-
+  // Document search functionality
+  const { searchQuery, setSearchQuery, filteredDocuments } = useDocumentSearch(adminDocuments);
+  
+  // Document actions
+  const { handleDocumentAction, handleExportAll } = useDocumentActions();
+  
+  // Function to update project type
+  const updateProjectType = useCallback((type: string) => {
+    setProjectType(type);
+  }, []);
+  
+  // Function to handle document actions with ID lookup
+  const handleDocumentActionById = useCallback((documentId: string, action: string) => {
+    const document = adminDocuments.find(doc => doc.id === documentId);
+    return handleDocumentAction(document, action);
+  }, [adminDocuments, handleDocumentAction]);
+  
+  // Function to handle export all for filtered documents
+  const handleExportAllFiltered = useCallback(() => {
+    handleExportAll(filteredDocuments);
+  }, [filteredDocuments, handleExportAll]);
+  
   return {
-    loading,
-    documents,
-    addDocument,
-    updateDocument,
-    deleteDocument,
-    determineDocumentCategory
+    adminDocuments,
+    filteredDocuments,
+    searchQuery,
+    setSearchQuery,
+    projectType,
+    updateProjectType,
+    handleDocumentAction: handleDocumentActionById,
+    handleExportAll: handleExportAllFiltered,
+    isLoading
   };
 };
+
+// Helper function to determine status label based on document type and status
+function getStatusLabelForDocument(type: string, status: string): string {
+  if (status === "pending") {
+    switch (type.toLowerCase()) {
+      case "ficha":
+        return "En attente CEE PREVIO";
+      case "certificado":
+        return "En attente CEE POSTERIOR";
+      case "anexo":
+        return "En attente signatures";
+      case "factura":
+        return "En attente de validation";
+      default:
+        return "En attente de données";
+    }
+  }
+  
+  if (status === "action-required") {
+    switch (type.toLowerCase()) {
+      case "fotos":
+        return "Photos requises";
+      case "certificado":
+        return "Signature E. Chiche requise";
+      default:
+        return "Action requise";
+    }
+  }
+  
+  return "";
+}

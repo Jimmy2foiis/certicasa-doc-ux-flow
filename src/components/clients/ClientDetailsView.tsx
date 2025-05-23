@@ -1,14 +1,10 @@
 
-import { useState, useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useToast } from "@/hooks/use-toast";
-import { ClientDetailsHeader } from "./ClientDetailsHeader";
-import { ClientTabsContainer } from "./ClientTabsContainer";
+import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { useClientData } from "@/hooks/useClientData";
+import ClientDetailsHeader from "./ClientDetailsHeader";
+import ClientDetailsTabs from "./ClientDetailsTabs";
 import CalculationHandler from "./CalculationHandler";
-import { useClientDetails } from "@/hooks/useClientDetails";
 
 interface ClientDetailsViewProps {
   clientId: string;
@@ -17,104 +13,112 @@ interface ClientDetailsViewProps {
 }
 
 const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsViewProps) => {
-  const { client, loading, error } = useClientDetails(clientId);
-  const [showCalculation, setShowCalculation] = useState(false);
-  const [activeCalculationProject, setActiveCalculationProject] = useState<string | undefined>(undefined);
+  const { 
+    client, 
+    clientAddress, 
+    setClientAddress, 
+    coordinates,
+    setClientCoordinates,
+    savedCalculations, 
+    loadingCadastral, 
+    utmCoordinates, 
+    cadastralReference, 
+    climateZone,
+    apiSource,
+    refreshCadastralData 
+  } = useClientData(clientId);
+  const [showCalculations, setShowCalculations] = useState(false);
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("client-info");
   const { toast } = useToast();
-  
-  // Use useEffect to show error toasts instead of doing it in render
-  useEffect(() => {
-    if (error) {
-      toast({
-        title: "Erreur",
-        description: `Impossible de charger les détails du client: ${error}`,
-        variant: "destructive",
-        duration: 5000,
-      });
-    }
-  }, [error, toast]);
 
+  // Fonction pour mettre à jour l'adresse et rafraîchir les données cadastrales
+  const handleAddressChange = (newAddress: string) => {
+    setClientAddress(newAddress);
+    
+    // Afficher une notification
+    toast({
+      title: "Adresse mise à jour",
+      description: "Les données cadastrales sont en cours de mise à jour...",
+      duration: 3000
+    });
+  };
+
+  // Fonction pour mettre à jour les coordonnées
+  const handleCoordinatesChange = (coordinates: any) => {
+    setClientCoordinates(coordinates);
+    
+    // Afficher une notification
+    toast({
+      title: "Coordonnées mises à jour",
+      description: "Récupération des données cadastrales avec précision GPS...",
+      duration: 3000
+    });
+  };
+
+  // Ouvrir un calcul existant ou en créer un nouveau
   const handleShowCalculation = (projectId?: string) => {
-    setActiveCalculationProject(projectId);
-    setShowCalculation(true);
-  };
-
-  const handleBackFromCalculation = () => {
-    setShowCalculation(false);
-    setActiveCalculationProject(undefined);
+    setCurrentProjectId(projectId || null);
+    setShowCalculations(true);
   };
   
-  // Construire une adresse complète à partir des données du client
-  const clientAddress = client ? 
-    `${client.adresse}, ${client.codePostal} ${client.ville}, ${client.pays}` : 
-    "";
-
-  // Remplacer par l'écran de chargement si les données sont en cours de chargement
-  if (loading) {
-    return (
-      <Card className="p-6">
-        <div className="flex items-center mb-6">
-          <Button variant="ghost" size="sm" onClick={onBack} className="mr-4">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <Skeleton className="h-8 w-64" />
-        </div>
-        <Skeleton className="h-16 w-full mb-6" />
-        <Skeleton className="h-[500px] w-full" />
-      </Card>
-    );
-  }
-
-  if (!client) {
-    return (
-      <Card className="p-6">
-        <div className="flex items-center mb-6">
-          <Button variant="ghost" size="sm" onClick={onBack} className="mr-4">
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h2 className="text-2xl font-bold">Client non trouvé</h2>
-        </div>
-        <p className="text-gray-500">Ce client n'existe pas ou a été supprimé.</p>
-        <Button onClick={onBack} className="mt-4">Retour à la liste des clients</Button>
-      </Card>
-    );
-  }
-
-  // Préparer les données du client pour l'affichage
-  const clientDisplayData = {
-    id: client.id,
-    name: `${client.prenom} ${client.nom}`,
-    email: client.email || "",
-    phone: client.tel || "",
-    address: clientAddress,
-    nif: client.cadastralReference || "",
-    status: client.status
+  // Fonction pour gérer la génération d'un document
+  const handleDocumentGenerated = (documentId: string) => {
+    toast({
+      title: "Document généré",
+      description: `Document ajouté au dossier client de ${client?.name}`,
+      duration: 3000
+    });
+    
+    // Si on n'est pas déjà sur l'onglet documents, y naviguer
+    if (activeTab !== "documents") {
+      setActiveTab("documents");
+    }
   };
+  
+  if (!client) return null;
+
+  if (showCalculations) {
+    return (
+      <CalculationHandler 
+        client={{...client, climateZone}} 
+        clientId={clientId}
+        currentProjectId={currentProjectId}
+        savedCalculations={savedCalculations}
+        onBack={() => setShowCalculations(false)}
+      />
+    );
+  }
 
   return (
-    <div>
-      {showCalculation ? (
-        <CalculationHandler
-          onBack={handleBackFromCalculation}
-          projectId={activeCalculationProject}
-          clientId={clientId}
-          clientName={`${client.prenom} ${client.nom}`}
-          clientAddress={clientAddress}
-        />
-      ) : (
-        <>
-          <ClientDetailsHeader 
-            onBack={onBack} 
-            client={clientDisplayData}
-          />
-          
-          <ClientTabsContainer 
-            onShowCalculation={handleShowCalculation}
-            clientId={client.id}
-            clientName={`${client.prenom} ${client.nom}`}
-          />
-        </>
-      )}
+    <div className="space-y-6">
+      <ClientDetailsHeader 
+        onBack={onBack} 
+        clientId={clientId} 
+        clientName={client.name}
+        client={client}
+        onDocumentGenerated={handleDocumentGenerated}
+        onClientUpdated={onClientUpdated}
+      />
+
+      <ClientDetailsTabs 
+        clientId={clientId}
+        clientAddress={clientAddress}
+        client={client}
+        utmCoordinates={utmCoordinates}
+        cadastralReference={cadastralReference}
+        climateZone={climateZone}
+        apiSource={apiSource}
+        loadingCadastral={loadingCadastral}
+        coordinates={coordinates}
+        savedCalculations={savedCalculations}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onShowCalculation={handleShowCalculation}
+        onAddressChange={handleAddressChange}
+        onCoordinatesChange={handleCoordinatesChange}
+        onRefreshCadastralData={refreshCadastralData}
+      />
     </div>
   );
 };

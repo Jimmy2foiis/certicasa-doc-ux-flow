@@ -22,8 +22,7 @@ export const getCadastralInfoFromCoordinates = async (
     }
     
     // Vérifier si les données sont dans le cache
-    const cacheKey = `${latitude}_${longitude}`;
-    const cachedData = getCachedCadastralData(cacheKey);
+    const cachedData = getCachedCadastralData(latitude, longitude);
     if (cachedData) {
       console.log("Données cadastrales trouvées dans le cache");
       return cachedData;
@@ -74,7 +73,7 @@ export const getCadastralInfoFromCoordinates = async (
     }
     
     // Mise en cache des résultats
-    setCachedCadastralData(cacheKey, cadastralData);
+    setCachedCadastralData(latitude, longitude, cadastralData);
     
     return cadastralData;
     
@@ -123,8 +122,7 @@ export const refreshCadastralData = async (coordinates: GeoCoordinates): Promise
     }
     
     // Mise en cache des résultats rafraîchis
-    const cacheKey = `${coordinates.lat}_${coordinates.lng}`;
-    setCachedCadastralData(cacheKey, cadastralData);
+    setCachedCadastralData(coordinates.lat, coordinates.lng, cadastralData);
     
     return cadastralData;
     

@@ -1,5 +1,5 @@
 
-import EnhancedDocumentsTab from "./EnhancedDocumentsTab"; 
+import { DocumentsTabContent } from "./DocumentsTabContent"; // Using named import
 import { useClientData } from "@/hooks/useClientData";
 
 interface DocumentsTabProps {
@@ -9,15 +9,11 @@ interface DocumentsTabProps {
 const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
   const { client } = useClientData(clientId);
   
-  if (!client) return null;
-  
-  // Convert client.id to beetoolToken if available (for mock data)
-  const beetoolToken = (client as any).beetoolToken || client.id;
-  
   return (
-    <EnhancedDocumentsTab 
-      beetoolToken={beetoolToken} 
-      clientName={client.name} 
+    <DocumentsTabContent 
+      clientId={clientId} 
+      clientName={client?.name} 
+      projectType={client?.type || "RES010"}
     />
   );
 };

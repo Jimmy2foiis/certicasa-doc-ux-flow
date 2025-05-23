@@ -1,7 +1,7 @@
 
 import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { apiClient } from "@/lib/api-client";
+import { supabase } from '@/integrations/supabase/client';
 
 export const useTemplateNotification = () => {
   const { toast } = useToast();
@@ -10,11 +10,20 @@ export const useTemplateNotification = () => {
   useEffect(() => {
     const fetchTemplates = async () => {
       try {
-        // Mock data instead of Supabase call
-        toast({
-          title: "Modèles disponibles",
-          description: `Les modèles sont disponibles dans votre bibliothèque.`,
-        });
+        const { data, error } = await supabase
+          .from('document_templates')
+          .select('*');
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data && data.length > 0) {
+          toast({
+            title: "Modèles disponibles",
+            description: `${data.length} modèle(s) sont disponibles dans votre bibliothèque.`,
+          });
+        }
       } catch (error) {
         console.error("Erreur lors du chargement initial des modèles:", error);
       }

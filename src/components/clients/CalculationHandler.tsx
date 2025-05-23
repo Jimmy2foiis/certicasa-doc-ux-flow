@@ -1,34 +1,22 @@
-
 import { useToast } from "@/components/ui/use-toast";
 import ProjectCalculationView from "./ProjectCalculationView";
 
 interface CalculationHandlerProps {
+  client: any;
   clientId: string;
-  projectId?: string;
-  clientName: string;
-  clientAddress: string;
+  currentProjectId: string | null;
+  savedCalculations: any[];
   onBack: () => void;
 }
 
 const CalculationHandler = ({
+  client,
   clientId,
-  projectId,
-  clientName,
-  clientAddress,
+  currentProjectId,
+  savedCalculations,
   onBack
 }: CalculationHandlerProps) => {
   const { toast } = useToast();
-  
-  // Mock data for saved calculations - this would be fetched from the API in a real app
-  const savedCalculations = [];
-  
-  // Prepare client data object
-  const client = {
-    id: clientId,
-    name: clientName,
-    address: clientAddress,
-    climateZone: "B3" // Default climate zone, could be fetched from API
-  };
   
   // Fonction pour sauvegarder un nouveau calcul
   const saveCalculation = (calculationData: any) => {
@@ -39,7 +27,7 @@ const CalculationHandler = ({
       
       const newCalculation = {
         id: calculationId,
-        projectId: projectId || `project_${projectNumber}`,
+        projectId: currentProjectId || `project_${projectNumber}`,
         projectName: `Réhabilitation Énergétique #${projectNumber}`,
         clientId: clientId,
         type: calculationData.projectType || "RES010",
@@ -92,9 +80,9 @@ const CalculationHandler = ({
 
   return (
     <ProjectCalculationView 
-      client={client} 
+      client={{...client, climateZone: client.climateZone}} 
       clientId={clientId}
-      currentProjectId={projectId}
+      currentProjectId={currentProjectId}
       savedCalculations={savedCalculations}
       onBack={onBack}
       onSave={saveCalculation}

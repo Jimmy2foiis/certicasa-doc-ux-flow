@@ -1,86 +1,81 @@
 
-import { useState } from 'react';
-import { AdministrativeDocument, DocumentStatus } from '@/types/documents';
+import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
 
-export const useDemoDocuments = () => {
-  const [demoDocuments, setDemoDocuments] = useState<AdministrativeDocument[]>([]);
-  
-  // Function to determine document category based on type
-  const determineDocumentCategory = (type: string): string => {
-    const typeCategories: Record<string, string> = {
-      'facture': 'billing',
-      'reçu': 'billing',
-      'devis': 'quotes',
-      'contrat': 'contracts',
-      'certificat': 'certificates',
-      'ficha': 'cadastral',
-      'annexo': 'cadastral',
-      'nota': 'legal',
-      'permis': 'permits'
-    };
-    
-    return typeCategories[type.toLowerCase()] || 'other';
+// Function to determine the category of a document based on its name
+export const determineDocumentCategory = (name: string): string => {
+  const documentCategories = {
+    "administratif": ["Contrat", "Facture", "Devis", "Certificat"],
+    "technique": ["Plans", "Cadastre", "Calculs", "Rapports"],
+    "commercial": ["Présentation", "Brochure", "Offre commerciale"]
   };
   
-  // Function to generate mock status and label
-  const generateMockStatus = (): {status: DocumentStatus, label?: string} => {
-    const statuses: DocumentStatus[] = ['generated', 'ready', 'pending', 'missing', 'action-required', 'error', 'linked'];
-    const randomIndex = Math.floor(Math.random() * statuses.length);
-    const status = statuses[randomIndex];
-    
-    let label;
-    switch(status) {
-      case 'action-required':
-        label = 'Nécessite votre attention';
-        break;
-      case 'pending':
-        label = 'En attente de traitement';
-        break;
-      case 'missing':
-        label = 'Document manquant';
-        break;
-      default:
-        label = undefined;
+  const lowerCaseName = name.toLowerCase();
+  
+  for (const [category, keywords] of Object.entries(documentCategories)) {
+    for (const keyword of keywords) {
+      if (lowerCaseName.includes(keyword.toLowerCase())) {
+        return category;
+      }
     }
-    
-    return { status, label };
-  };
+  }
   
-  // Function to generate demo documents for a client
-  const generateDemoDocuments = (clientId: string): AdministrativeDocument[] => {
-    const documentTypes = [
-      { name: 'Facture d\'installation', type: 'facture' },
-      { name: 'Contrat de travaux', type: 'contrat' },
-      { name: 'Permis de construction', type: 'permis' },
-      { name: 'Fiche Cadastrale', type: 'ficha' },
-      { name: 'Certificat de conformité', type: 'certificat' },
-      { name: 'Annexe technique', type: 'annexo' },
-      { name: 'Note légale', type: 'nota' },
-      { name: 'Devis initial', type: 'devis' },
-      { name: 'Reçu de paiement', type: 'reçu' }
-    ];
-    
-    const docs = documentTypes.map((docType, index) => {
-      const { status, label } = generateMockStatus();
-      
-      return {
-        id: `doc_${clientId}_${index}`,
-        name: docType.name,
-        type: docType.type,
-        description: `Description pour ${docType.name.toLowerCase()}`,
-        status,
-        statusLabel: label,
-        order: index + 1,
-        category: determineDocumentCategory(docType.type)
-      };
-    });
-    
-    return docs;
-  };
+  return "administratif";
+};
+
+// Function to generate demo documents when no real documents are available
+export const generateDemoDocuments = (clientName?: string, projectType: string = "RES010"): AdministrativeDocument[] => {
+  const demoClient = clientName || "Demo Client";
   
-  return {
-    demoDocuments,
-    generateDemoDocuments,
-    determineDocumentCategory
-  };
+  return [
+    {
+      id: "1",
+      name: `Contrat - ${demoClient}`,
+      type: "pdf",
+      category: "administratif",
+      status: "signed" as DocumentStatus,
+      created_at: new Date().toISOString(),
+      description: "Contrat client standard",
+      order: 1
+    },
+    {
+      id: "2",
+      name: `Plans d'installation - Projet ${projectType}`,
+      type: "dwg",
+      category: "technique",
+      status: "available" as DocumentStatus,
+      created_at: new Date().toISOString(),
+      description: "Plans techniques",
+      order: 2
+    },
+    {
+      id: "3",
+      name: `Facture N°F20230001 - ${demoClient}`,
+      type: "pdf",
+      category: "administratif",
+      status: "sent" as DocumentStatus,
+      created_at: new Date().toISOString(),
+      description: "Facture initiale",
+      order: 3
+    },
+    {
+      id: "4",
+      name: `Rapport technique - Bilan énergétique`,
+      type: "docx",
+      category: "technique",
+      status: "draft" as DocumentStatus,
+      created_at: new Date().toISOString(),
+      description: "Rapport d'analyse énergétique",
+      order: 4
+    },
+    {
+      id: "5",
+      name: `Présentation commerciale - Solutions ${projectType}`,
+      type: "pptx",
+      category: "commercial",
+      status: "available" as DocumentStatus,
+      created_at: new Date().toISOString(),
+      description: "Présentation de la solution",
+      order: 5
+    }
+  ];
 };

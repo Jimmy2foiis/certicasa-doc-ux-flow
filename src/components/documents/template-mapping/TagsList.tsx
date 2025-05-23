@@ -1,22 +1,20 @@
 
 import { Badge } from "@/components/ui/badge";
 import { TagVariableRow } from "./TagVariableRow";
-import { TemplateTag } from "@/types/documents";
+import { TemplateTag } from "./types";
 
 interface TagsListProps {
   tags: TemplateTag[];
   clientData?: any;
   updateCategory: (index: number, category: string) => void;
   updateMapping: (index: number, value: string) => void;
-  handleDeleteTag?: (index: number) => void;
 }
 
 export const TagsList = ({ 
   tags, 
   clientData, 
   updateCategory, 
-  updateMapping,
-  handleDeleteTag 
+  updateMapping 
 }: TagsListProps) => {
   if (tags.length === 0) {
     return (
@@ -42,7 +40,6 @@ export const TagsList = ({
             clientData={clientData}
             updateCategory={updateCategory}
             updateMapping={updateMapping}
-            handleDeleteTag={handleDeleteTag}
           />
         ))}
       </div>

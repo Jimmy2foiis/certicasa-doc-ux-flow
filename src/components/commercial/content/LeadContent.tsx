@@ -92,7 +92,7 @@ const LeadContent = () => {
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-white">
+            <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
@@ -219,55 +219,55 @@ const LeadContent = () => {
             <TabsTrigger value="kanban" className="flex-1 sm:flex-none">Vue Kanban</TabsTrigger>
             <TabsTrigger value="list" className="flex-1 sm:flex-none">Liste</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="kanban" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-[calc(100vh-230px)]">
-              {renderLeadColumn("Nouveaux", "new", "outline", "bg-blue-50")}
-              {renderLeadColumn("En Qualification", "qualification", "outline", "bg-amber-50")}
-              {renderLeadColumn("Confirmés", "confirmed", "outline", "bg-green-50")}
-              {renderLeadColumn("Rejetés", "rejected", "outline", "bg-red-50")}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="list" className="mt-0">
-            <Card>
-              <CardHeader>
-                <CardTitle>Liste des leads</CardTitle>
-                <CardDescription>Vue détaillée de tous les leads</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {Object.entries(leads).flatMap(([status, statusLeads]) => 
-                    filterLeads(statusLeads, searchTerm).map(lead => (
-                      <div key={lead.id} className="p-3 border rounded-md flex justify-between items-center">
-                        <div>
-                          <div className="font-medium">{lead.name}</div>
-                          <div className="text-sm text-muted-foreground">{lead.phone} • {lead.email}</div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge 
-                            variant="outline"
-                            className={
-                              status === "new" ? "bg-blue-50 text-blue-800" :
-                              status === "qualification" ? "bg-amber-50 text-amber-800" :
-                              status === "confirmed" ? "bg-green-50 text-green-800" :
-                              "bg-red-50 text-red-800"
-                            }
-                          >
-                            {lead.status}
-                          </Badge>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
         </Tabs>
+
+        <TabsContent value="kanban" className="mt-0">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-[calc(100vh-230px)]">
+            {renderLeadColumn("Nouveaux", "new", "outline", "bg-blue-50")}
+            {renderLeadColumn("En Qualification", "qualification", "outline", "bg-amber-50")}
+            {renderLeadColumn("Confirmés", "confirmed", "outline", "bg-green-50")}
+            {renderLeadColumn("Rejetés", "rejected", "outline", "bg-red-50")}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="list" className="mt-0">
+          <Card>
+            <CardHeader>
+              <CardTitle>Liste des leads</CardTitle>
+              <CardDescription>Vue détaillée de tous les leads</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {Object.entries(leads).flatMap(([status, statusLeads]) => 
+                  filterLeads(statusLeads, searchTerm).map(lead => (
+                    <div key={lead.id} className="p-3 border rounded-md flex justify-between items-center">
+                      <div>
+                        <div className="font-medium">{lead.name}</div>
+                        <div className="text-sm text-muted-foreground">{lead.phone} • {lead.email}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge 
+                          variant="outline"
+                          className={
+                            status === "new" ? "bg-blue-50 text-blue-800" :
+                            status === "qualification" ? "bg-amber-50 text-amber-800" :
+                            status === "confirmed" ? "bg-green-50 text-green-800" :
+                            "bg-red-50 text-red-800"
+                          }
+                        >
+                          {lead.status}
+                        </Badge>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </div>
     </div>
   );

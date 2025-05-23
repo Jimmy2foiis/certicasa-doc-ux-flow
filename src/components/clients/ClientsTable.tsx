@@ -1,4 +1,5 @@
-import { Client } from "@/types/clientTypes";
+
+import { Client } from "@/services/supabaseService";
 import {
   Table,
   TableBody,
