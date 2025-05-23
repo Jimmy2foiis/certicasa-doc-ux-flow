@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from "lucide-react";
@@ -39,8 +39,21 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
     console.log("Creating new calculation");
   };
 
+  // Handle document generation completion
+  const handleDocumentGenerated = (documentId: string) => {
+    console.log("Document generated:", documentId);
+    // Vous pourriez vouloir rafraîchir les statistiques des documents ici
+    setActiveTab("documents");
+  };
+
+  // Handle client information updated
+  const handleClientUpdated = () => {
+    console.log("Client updated");
+    // Vous pourriez vouloir rafraîchir les informations client ici
+  };
+
   // Make sure savedCalculations is always defined as an array
-  const calculationsData = savedCalculations || [];
+  const calculationsData = Array.isArray(savedCalculations) ? savedCalculations : [];
   
   console.log("ClientDetails - savedCalculations:", savedCalculations); // Debug log
 
@@ -64,6 +77,8 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
         documentStats={documentStats}
         onViewMissingDocs={handleViewMissingDocs}
         onBack={onBack}
+        onDocumentGenerated={handleDocumentGenerated}
+        onClientUpdated={handleClientUpdated}
       />
 
       <div className="grid grid-cols-12 gap-6">
@@ -92,7 +107,6 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
             </TabsList>
             
             <TabsContent value="calculations" className="space-y-4">
-              {/* Pass all required props to CalculationsTab */}
               <CalculationsTab 
                 clientId={clientId} 
                 clientName={client?.name}

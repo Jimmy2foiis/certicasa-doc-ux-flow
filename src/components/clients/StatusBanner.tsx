@@ -24,8 +24,8 @@ const StatusBanner = ({
   client,
   documentStats,
   onViewMissingDocs,
-  onGenerateDocument,
-  onEditClient,
+  onGenerateDocument = () => {},
+  onEditClient = () => {},
 }: StatusBannerProps) => {
   if (!client) return null;
 

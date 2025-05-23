@@ -63,6 +63,9 @@ const ClientsTable = ({
     floorType: '',
   });
 
+  // Assurons-nous que filteredClients est un tableau
+  const clientsToFilter = Array.isArray(filteredClients) ? filteredClients : (Array.isArray(clients) ? clients : []);
+
   const {
     filteredByColumns,
     uniqueFicheTypes,
@@ -73,7 +76,7 @@ const ClientsTable = ({
     uniqueFloorTypes,
     uniqueClimateZones,
     uniqueCommunities
-  } = useClientFilters(clients, columnFilters, filteredClients);
+  } = useClientFilters(clients, columnFilters, clientsToFilter);
 
   // Calculate if all clients are selected
   const allSelected = filteredByColumns.length > 0 && selectedClients.length === filteredByColumns.length;
@@ -89,6 +92,12 @@ const ClientsTable = ({
   
   // Calculate colspan for empty state
   const colSpan = showSelectionColumn ? 13 : 12;
+
+  // Sécurité pour éviter de rendre si les données ne sont pas valides
+  if (!Array.isArray(filteredByColumns)) {
+    console.error("filteredByColumns n'est pas un tableau:", filteredByColumns);
+    return <div>Erreur de chargement des données</div>;
+  }
   
   return (
     <div className="rounded-md border border-gray-200 shadow-sm bg-white overflow-hidden">
