@@ -6,11 +6,13 @@ import ClientsTable from "@/components/clients/ClientsTable";
 import ClientsFilters from "@/components/clients/ClientsFilters";
 import ClientsActions from "@/components/clients/ClientsActions";
 import ClientsFloatingBar from "@/components/clients/ClientsFloatingBar";
+import ClientDetails from "@/components/clients/ClientDetails";
 import { useClients } from "@/hooks/useClients";
 import { useToast } from "@/components/ui/use-toast";
 
 const Clients = () => {
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
   const { toast } = useToast();
   const { 
     clients,
@@ -39,6 +41,14 @@ const Clients = () => {
 
   const clearSelection = () => {
     setSelectedClients([]);
+  };
+
+  const handleClientSelect = (clientId: string) => {
+    setSelectedClientId(clientId);
+  };
+
+  const handleBackFromDetails = () => {
+    setSelectedClientId(null);
   };
 
   const handleCreateBatch = () => {
@@ -93,6 +103,22 @@ const Clients = () => {
     }
   };
 
+  // Si un client est sélectionné, afficher ses détails
+  if (selectedClientId) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header />
+          <main className="flex-1 overflow-y-auto p-4">
+            <ClientDetails clientId={selectedClientId} onBack={handleBackFromDetails} />
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  // Sinon, afficher la liste des clients
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />
@@ -122,6 +148,7 @@ const Clients = () => {
             onSelectClient={handleSelectClient}
             onSelectAll={handleSelectAll}
             onDeleteClient={handleDeleteClient}
+            onClientSelect={handleClientSelect}
             onOpenCreateDialog={() => {
               // Ouvrir la modal de création via référence (à implémenter si nécessaire)
             }}

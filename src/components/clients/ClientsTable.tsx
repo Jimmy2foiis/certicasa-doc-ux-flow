@@ -159,7 +159,7 @@ const ClientsTable = ({
                   <Badge
                     variant={
                       client.status === 'Actif' || client.status === 'Activo'
-                        ? 'success'
+                        ? 'default'
                         : 'outline'
                     }
                   >
@@ -174,9 +174,15 @@ const ClientsTable = ({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem className="flex items-center">
+                      <DropdownMenuItem 
+                        className="flex items-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          client.id && handleRowClick(client.id);
+                        }}
+                      >
                         <Edit className="mr-2 h-4 w-4" />
-                        <span>Modifier</span>
+                        <span>Voir détails</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem
                         className="flex items-center text-red-600"
