@@ -1,6 +1,5 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { clientsData } from "@/data/mock"; // Pour la transition, on garde temporairement les données mock
 import { 
   getClientById,
   getProjectsForClient,
@@ -16,58 +15,48 @@ export const useClientInfo = (clientId: string) => {
   // État pour le client
   const [client, setClient] = useState<Client | null>(null);
   
-  // États pour les données de Supabase
+  // États pour les données de l'API
   const [projects, setProjects] = useState<Project[]>([]);
   
   // État pour stocker l'adresse du client actuelle
   const [clientAddress, setClientAddress] = useState("");
   
-  // Fonction pour charger les données du client depuis Supabase
-  const loadClientFromSupabase = useCallback(async () => {
+  // Fonction pour charger les données du client depuis l'API
+  const loadClientFromApi = useCallback(async () => {
     try {
       const clientData = await getClientById(clientId);
       if (clientData) {
-        console.log("Client chargé depuis Supabase:", clientData);
+        console.log("Client chargé depuis l'API:", clientData);
         setClient(clientData);
         setClientAddress(clientData.address || "");
       } else {
-        // Fallback aux données mock si le client n'est pas trouvé dans Supabase
-        const mockClient = clientsData.find(c => c.id === clientId);
-        if (mockClient) {
-          console.log("Client chargé depuis les données mock:", mockClient);
-          setClient(mockClient as unknown as Client);
-          setClientAddress((mockClient as any).address || "");
-        } else {
-          console.error("Client non trouvé dans Supabase ni dans les données mock");
-          toast({
-            title: "Erreur",
-            description: "Client introuvable. Veuillez réessayer.",
-            variant: "destructive",
-          });
-        }
+        console.error("Client introuvable dans l'API");
+        toast({
+          title: "Erreur",
+          description: "Client introuvable. Veuillez réessayer.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error("Erreur lors du chargement du client depuis Supabase:", error);
-      // Fallback aux données mock en cas d'erreur
-      const mockClient = clientsData.find(c => c.id === clientId);
-      if (mockClient) {
-        console.log("Client chargé depuis les données mock (fallback):", mockClient);
-        setClient(mockClient as unknown as Client);
-        setClientAddress((mockClient as any).address || "");
-      }
+      console.error("Erreur lors du chargement du client depuis l'API:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les données client.",
+        variant: "destructive",
+      });
     }
   }, [clientId, toast]);
   
-  // Fonction pour charger les projets du client depuis Supabase
-  const loadProjectsFromSupabase = useCallback(async () => {
+  // Fonction pour charger les projets du client depuis l'API
+  const loadProjectsFromApi = useCallback(async () => {
     try {
       const projectsData = await getProjectsForClient(clientId);
       if (projectsData && projectsData.length > 0) {
-        console.log("Projets chargés depuis Supabase:", projectsData);
+        console.log("Projets chargés depuis l'API:", projectsData);
         setProjects(projectsData);
       }
     } catch (error) {
-      console.error("Erreur lors du chargement des projets depuis Supabase:", error);
+      console.error("Erreur lors du chargement des projets depuis l'API:", error);
     }
   }, [clientId]);
 
@@ -79,7 +68,7 @@ export const useClientInfo = (clientId: string) => {
     setClientAddress(newAddress);
     
     try {
-      // Mettre à jour l'adresse dans Supabase
+      // Mettre à jour l'adresse dans l'API
       const updatedClient = await updateClientRecord(clientId, { address: newAddress });
       if (updatedClient) {
         setClient((prev) => prev ? {...prev, address: newAddress} : null);
@@ -89,8 +78,8 @@ export const useClientInfo = (clientId: string) => {
         });
       } else {
         toast({
-          title: "Avertissement",
-          description: "L'adresse a été mise à jour localement mais pas dans la base de données.",
+          title: "Erreur",
+          description: "Impossible de mettre à jour l'adresse.",
           variant: "destructive",
         });
       }
@@ -98,7 +87,7 @@ export const useClientInfo = (clientId: string) => {
       console.error("Erreur lors de la mise à jour de l'adresse client:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de mettre à jour l'adresse dans la base de données.",
+        description: "Impossible de mettre à jour l'adresse.",
         variant: "destructive",
       });
     }
@@ -106,22 +95,22 @@ export const useClientInfo = (clientId: string) => {
 
   // Charger le client et les projets au montage du composant
   useEffect(() => {
-    const loadSupabaseData = async () => {
+    const loadApiData = async () => {
       // Charger le client
-      await loadClientFromSupabase();
+      await loadClientFromApi();
       
       // Charger les projets
-      await loadProjectsFromSupabase();
+      await loadProjectsFromApi();
     };
     
-    loadSupabaseData();
-  }, [clientId, loadClientFromSupabase, loadProjectsFromSupabase]);
+    loadApiData();
+  }, [clientId, loadClientFromApi, loadProjectsFromApi]);
 
   return {
     client,
     clientAddress,
     setClientAddress: updateClientAddress,
     projects,
-    loadProjectsFromSupabase
+    loadProjectsFromApi
   };
 };

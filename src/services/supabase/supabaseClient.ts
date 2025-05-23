@@ -1,5 +1,5 @@
 
-import { supabase } from '@/integrations/supabase/client';
+// Ce fichier est conservé pour la rétrocompatibilité
+// Il ne fait plus appel à Supabase mais aux APIs REST
 
-// Re-export the supabase client for backwards compatibility
-export { supabase };
+// Aucune exportation de client Supabase n'est nécessaire

@@ -18,36 +18,23 @@ const ClientsSection = () => {
   const [selectedClient, setSelectedClient] = useState<string | null>(null);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
-  const [openDialog, setOpenDialog] = useState(false);
   const { toast } = useToast();
   
-  // Charger les clients depuis Supabase et le stockage local
+  // Charger les clients depuis l'API externe
   const loadClients = async () => {
     try {
       setLoading(true);
       
-      // Obtenir tous les clients (la fonction getClients gère maintenant les erreurs RLS)
+      // Obtenir tous les clients depuis l'API REST
       const allClients = await getClients();
       
-      // Créer un Map pour éliminer les doublons potentiels
-      const uniqueClientsMap = new Map<string, Client>();
-      
-      allClients.forEach(client => {
-        if (client.id) {
-          uniqueClientsMap.set(client.id, client);
-        }
-      });
-      
-      // Convertir le Map en tableau
-      const uniqueClients = Array.from(uniqueClientsMap.values());
-      
-      setClients(uniqueClients);
-      console.log("Clients chargés (uniques):", uniqueClients);
+      setClients(allClients);
+      console.log("Clients chargés depuis l'API:", allClients);
     } catch (error) {
       console.error("Erreur lors du chargement des clients:", error);
       toast({
         title: "Erreur",
-        description: "Impossible de charger les clients. Les données locales seront utilisées.",
+        description: "Impossible de charger les clients. Veuillez réessayer.",
         variant: "destructive",
       });
     } finally {
@@ -82,11 +69,10 @@ const ClientsSection = () => {
         await loadClients();
       } else {
         toast({
-          title: "Attention",
-          description: "Le client a été supprimé localement mais pas dans la base de données.",
+          title: "Erreur",
+          description: "Impossible de supprimer le client.",
           variant: "destructive",
         });
-        await loadClients();
       }
     } catch (error) {
       console.error("Erreur lors de la suppression du client:", error);
@@ -123,7 +109,7 @@ const ClientsSection = () => {
               loading={loading}
               onClientSelect={setSelectedClient}
               onDeleteClient={handleDeleteClient}
-              onOpenCreateDialog={() => setOpenDialog(true)}
+              onOpenCreateDialog={() => ({})}
             />
           </CardContent>
         </Card>

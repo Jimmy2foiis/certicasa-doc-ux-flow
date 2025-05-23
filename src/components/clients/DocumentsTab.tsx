@@ -1,5 +1,5 @@
 
-import { DocumentsTabContent } from "./DocumentsTabContent"; // Using named import
+import { DocumentsTabContent } from "./DocumentsTabContent";
 import { useClientData } from "@/hooks/useClientData";
 
 interface DocumentsTabProps {

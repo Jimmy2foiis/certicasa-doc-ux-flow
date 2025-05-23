@@ -1,238 +1,163 @@
 
-import { supabase } from './supabaseClient';
 import { Client } from './types';
+
+const API_BASE_URL = 'https://certicasa.mitain.com/api';
 
 // Fonctions pour gérer les clients
 export const getClients = async (): Promise<Client[]> => {
   try {
-    // Essayer d'abord de récupérer depuis Supabase
-    const { data, error } = await supabase
-      .from('clients')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const response = await fetch(`${API_BASE_URL}/prospects/`);
     
-    // Récupérer les clients locaux dans tous les cas
-    const localClientsString = localStorage.getItem('local_clients');
-    const localClients = localClientsString ? JSON.parse(localClientsString) : [];
-    
-    if (error) {
-      console.error('Erreur lors de la récupération des clients depuis Supabase:', error);
-      // En cas d'erreur, retourner uniquement les clients locaux
-      return localClients;
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
     }
     
-    // En cas de succès, combiner les deux sources
-    return [...(data || []), ...localClients];
+    const data = await response.json();
+    
+    // Adapter le format des données de l'API externe au format attendu par l'interface
+    const adaptedClients: Client[] = data.map((prospect: any) => ({
+      id: prospect.id.toString(),
+      name: prospect.name || prospect.company_name || "Client sans nom",
+      email: prospect.email,
+      phone: prospect.phone,
+      address: prospect.address,
+      nif: prospect.nif || prospect.tax_id,
+      type: prospect.type || "RES010",
+      status: prospect.status || "Actif",
+      projects: prospect.projects_count || 0,
+      created_at: prospect.created_at || new Date().toISOString()
+    }));
+
+    console.log('Clients récupérés depuis l\'API:', adaptedClients);
+    return adaptedClients;
   } catch (error) {
-    console.error('Exception lors de la récupération des clients:', error);
-    // En cas d'exception, essayer de retourner les clients locaux
-    const localClientsString = localStorage.getItem('local_clients');
-    return localClientsString ? JSON.parse(localClientsString) : [];
+    console.error('Erreur lors de la récupération des clients depuis l\'API:', error);
+    return [];
   }
 };
 
 export const getClientById = async (clientId: string): Promise<Client | null> => {
   try {
-    // Vérifier d'abord si c'est un client local
-    if (clientId.startsWith('local_')) {
-      const localClientsString = localStorage.getItem('local_clients');
-      if (localClientsString) {
-        const localClients = JSON.parse(localClientsString);
-        const client = localClients.find((c: Client) => c.id === clientId);
-        return client || null;
-      }
-      return null;
+    const response = await fetch(`${API_BASE_URL}/prospects/${clientId}`);
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
     }
     
-    // Si ce n'est pas un client local, interroger Supabase
-    const { data, error } = await supabase
-      .from('clients')
-      .select('*')
-      .eq('id', clientId)
-      .single();
+    const prospect = await response.json();
     
-    if (error) {
-      console.error('Erreur lors de la récupération du client depuis Supabase:', error);
-      return null;
-    }
-    
-    return data;
+    // Adapter le format des données
+    const adaptedClient: Client = {
+      id: prospect.id.toString(),
+      name: prospect.name || prospect.company_name || "Client sans nom",
+      email: prospect.email,
+      phone: prospect.phone,
+      address: prospect.address,
+      nif: prospect.nif || prospect.tax_id,
+      type: prospect.type || "RES010",
+      status: prospect.status || "Actif",
+      projects: prospect.projects_count || 0,
+      created_at: prospect.created_at || new Date().toISOString()
+    };
+
+    return adaptedClient;
   } catch (error) {
-    console.error('Exception lors de la récupération du client:', error);
+    console.error('Erreur lors de la récupération du client depuis l\'API:', error);
     return null;
   }
 };
 
 export const createClientRecord = async (clientData: Client): Promise<Client | null> => {
-  // S'assurer que les données d'adresse sont présentes
-  console.log('Création du client avec les données:', clientData);
-  
-  // Créer un client local avec un ID temporaire
-  const localClient = {
-    ...clientData,
-    id: `local_${Date.now()}`,
-    created_at: new Date().toISOString(),
-    status: "Actif"
-  };
-  
-  // Toujours stocker localement d'abord pour éviter la perte de données
-  let localClientsUpdated = false;
   try {
-    const existingClients = localStorage.getItem('local_clients');
-    const clients = existingClients ? JSON.parse(existingClients) : [];
-    clients.push(localClient);
-    localStorage.setItem('local_clients', JSON.stringify(clients));
-    localClientsUpdated = true;
-    console.log('Client créé localement:', localClient);
-  } catch (storageError) {
-    console.error('Erreur lors du stockage local du client:', storageError);
-  }
-  
-  try {
-    // Essayer de créer dans Supabase
-    const { data, error } = await supabase
-      .from('clients')
-      .insert([clientData])
-      .select();
+    const response = await fetch(`${API_BASE_URL}/prospects/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: clientData.name,
+        email: clientData.email,
+        phone: clientData.phone,
+        address: clientData.address,
+        nif: clientData.nif,
+        type: clientData.type || "RES010",
+        status: clientData.status || "Actif"
+      })
+    });
     
-    if (error) {
-      console.error('Erreur lors de la création du client dans Supabase:', error);
-      // On retourne le client local puisque Supabase a échoué
-      return localClientsUpdated ? localClient : null;
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
     }
     
-    // Si Supabase a réussi, on supprime le client local
-    if (localClientsUpdated) {
-      try {
-        const existingClients = localStorage.getItem('local_clients');
-        if (existingClients) {
-          const clients = JSON.parse(existingClients);
-          const updatedClients = clients.filter((c: Client) => c.id !== localClient.id);
-          localStorage.setItem('local_clients', JSON.stringify(updatedClients));
-        }
-      } catch (cleanupError) {
-        console.error('Erreur lors du nettoyage du client local:', cleanupError);
-      }
-    }
+    const createdProspect = await response.json();
     
-    console.log('Client créé dans Supabase:', data?.[0]);
-    return data?.[0] || localClient;
+    // Adapter le format des données
+    const adaptedClient: Client = {
+      id: createdProspect.id.toString(),
+      name: createdProspect.name || createdProspect.company_name || "Client sans nom", 
+      email: createdProspect.email,
+      phone: createdProspect.phone,
+      address: createdProspect.address,
+      nif: createdProspect.nif || createdProspect.tax_id,
+      type: createdProspect.type || "RES010",
+      status: createdProspect.status || "Actif",
+      projects: createdProspect.projects_count || 0,
+      created_at: createdProspect.created_at || new Date().toISOString()
+    };
+
+    return adaptedClient;
   } catch (error) {
-    console.error('Exception lors de la création du client dans Supabase:', error);
-    // En cas d'erreur, on retourne le client local si disponible
-    return localClientsUpdated ? localClient : null;
+    console.error('Erreur lors de la création du client dans l\'API:', error);
+    return null;
   }
 };
 
 export const updateClientRecord = async (clientId: string, clientData: Partial<Client>): Promise<Client | null> => {
-  console.log('Mise à jour du client:', clientId, 'avec données:', clientData);
-  
   try {
-    // Vérifier s'il s'agit d'un client local
-    if (clientId.startsWith('local_')) {
-      const localClientsString = localStorage.getItem('local_clients');
-      if (localClientsString) {
-        const localClients = JSON.parse(localClientsString);
-        const updatedClients = localClients.map((client: Client) => {
-          if (client.id === clientId) {
-            // S'assurer que l'adresse est bien mise à jour
-            const updatedClient = { ...client, ...clientData };
-            console.log('Client local mis à jour:', updatedClient);
-            return updatedClient;
-          }
-          return client;
-        });
-        localStorage.setItem('local_clients', JSON.stringify(updatedClients));
-        
-        const updatedClient = updatedClients.find((client: Client) => client.id === clientId);
-        return updatedClient || null;
-      }
-      return null;
+    const response = await fetch(`${API_BASE_URL}/prospects/${clientId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(clientData)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
     }
     
-    // Si c'est un client Supabase
-    const { data, error } = await supabase
-      .from('clients')
-      .update(clientData)
-      .eq('id', clientId)
-      .select();
+    const updatedProspect = await response.json();
     
-    if (error) {
-      console.error('Erreur lors de la mise à jour du client dans Supabase:', error);
-      
-      // Créer une version locale du client mis à jour
-      try {
-        const client = await getClientById(clientId);
-        if (client) {
-          const localClient = {
-            ...client,
-            ...clientData,
-            id: `local_${Date.now()}`,
-          };
-          
-          const localClientsString = localStorage.getItem('local_clients');
-          const localClients = localClientsString ? JSON.parse(localClientsString) : [];
-          localClients.push(localClient);
-          localStorage.setItem('local_clients', JSON.stringify(localClients));
-          
-          return localClient;
-        }
-      } catch (localError) {
-        console.error('Erreur lors du stockage local du client mis à jour:', localError);
-      }
-      return null;
-    }
-    
-    console.log('Client mis à jour dans Supabase:', data?.[0]);
-    return data?.[0] || null;
+    // Adapter le format des données
+    const adaptedClient: Client = {
+      id: updatedProspect.id.toString(),
+      name: updatedProspect.name || updatedProspect.company_name || "Client sans nom",
+      email: updatedProspect.email,
+      phone: updatedProspect.phone,
+      address: updatedProspect.address,
+      nif: updatedProspect.nif || updatedProspect.tax_id,
+      type: updatedProspect.type || "RES010",
+      status: updatedProspect.status || "Actif",
+      projects: updatedProspect.projects_count || 0,
+      created_at: updatedProspect.created_at || new Date().toISOString()
+    };
+
+    return adaptedClient;
   } catch (error) {
-    console.error('Exception lors de la mise à jour du client:', error);
+    console.error('Erreur lors de la mise à jour du client dans l\'API:', error);
     return null;
   }
 };
 
 export const deleteClientRecord = async (clientId: string): Promise<boolean> => {
   try {
-    // Vérifier s'il s'agit d'un client local
-    if (clientId.startsWith('local_')) {
-      try {
-        const localClientsString = localStorage.getItem('local_clients');
-        if (localClientsString) {
-          const localClients = JSON.parse(localClientsString);
-          const updatedClients = localClients.filter((client: Client) => client.id !== clientId);
-          localStorage.setItem('local_clients', JSON.stringify(updatedClients));
-          return true;
-        }
-        return false;
-      } catch (error) {
-        console.error('Erreur lors de la suppression du client local:', error);
-        return false;
-      }
-    }
+    const response = await fetch(`${API_BASE_URL}/prospects/${clientId}`, {
+      method: 'DELETE'
+    });
     
-    // Si c'est un client Supabase
-    const { error } = await supabase
-      .from('clients')
-      .delete()
-      .eq('id', clientId);
-    
-    if (error) {
-      console.error('Erreur lors de la suppression du client dans Supabase:', error);
-      // Marquer comme supprimé localement
-      try {
-        const localClientsToDeleteString = localStorage.getItem('local_clients_to_delete') || '[]';
-        const localClientsToDelete = JSON.parse(localClientsToDeleteString);
-        localClientsToDelete.push(clientId);
-        localStorage.setItem('local_clients_to_delete', JSON.stringify(localClientsToDelete));
-      } catch (localError) {
-        console.error('Erreur lors du marquage local du client comme supprimé:', localError);
-      }
-      return false;
-    }
-    
-    return true;
+    return response.ok;
   } catch (error) {
-    console.error('Exception lors de la suppression du client:', error);
+    console.error('Erreur lors de la suppression du client dans l\'API:', error);
     return false;
   }
 };
