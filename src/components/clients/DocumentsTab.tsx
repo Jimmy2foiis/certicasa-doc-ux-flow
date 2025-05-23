@@ -28,17 +28,17 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
 
   // Handle document actions
   const handleDeleteDocument = (documentId: string) => {
-    handleDocumentAction('delete', documentId);
+    handleDocumentAction(documentId, 'delete');
   };
 
   // Handle downloading a document
   const handleDownloadDocument = (document: any) => {
-    handleDocumentAction('download', document.id);
+    handleDocumentAction(document.id, 'download');
   };
 
   // Handle sending a document
   const handleSendDocument = (documentId: string) => {
-    handleDocumentAction('send', documentId);
+    handleDocumentAction(documentId, 'send');
   };
 
   // Handle uploading a document
@@ -48,13 +48,14 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
       description: `Upload de ${file.name}...`,
     });
 
-    // Integration with real document upload
-    // Fixed: Passing correct data structure to handleDocumentAction
-    handleDocumentAction('upload', {
-      id: Math.random().toString(36).substring(2), // Temporary ID for the new document
+    // Generate a temporary ID for the new document
+    const tempId = Math.random().toString(36).substring(2);
+    
+    // Call handleDocumentAction with 'upload' action and tempId
+    handleDocumentAction(tempId, 'upload', {
+      file: file,
       name: file.name,
-      type: documentType,
-      file: file
+      type: documentType
     });
     
     // Close the dialog

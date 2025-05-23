@@ -69,18 +69,55 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
   const { searchQuery, setSearchQuery, filteredDocuments } = useDocumentSearch(adminDocuments);
   
   // Document actions
-  const { handleDocumentAction, handleExportAll } = useDocumentActions();
+  const { handleDocumentAction: baseHandleDocumentAction, handleExportAll } = useDocumentActions();
   
   // Function to update project type
   const updateProjectType = useCallback((type: string) => {
     setProjectType(type);
   }, []);
   
-  // Function to handle document actions with ID lookup
-  const handleDocumentActionById = useCallback((documentId: string, action: string) => {
+  // Function to handle document actions with ID lookup and additional data
+  const handleDocumentAction = useCallback((documentId: string, action: string, additionalData?: any) => {
+    if (action === 'upload' && additionalData) {
+      // Handle file upload specifically
+      const { file, name, type } = additionalData;
+      
+      // Create a new document object
+      const newDocument: AdministrativeDocument = {
+        id: documentId,
+        name: name,
+        type: type,
+        status: "available" as DocumentStatus,
+        description: "",
+        reference: `REF-${type.toUpperCase()}-${documentId.substring(0, 5)}`,
+        order: 0,
+        created_at: new Date().toISOString(),
+        category: determineDocumentCategory(name)
+      };
+      
+      // Add to local state
+      setAdminDocuments(prev => [newDocument, ...prev]);
+      
+      // Here you would normally upload the file to your storage service
+      // For now we just show a success message
+      toast({
+        title: "Document ajouté",
+        description: `${name} a été ajouté avec succès.`,
+      });
+      
+      return;
+    }
+    
+    // For other actions, find the document and proceed
     const document = adminDocuments.find(doc => doc.id === documentId);
-    return handleDocumentAction(document, action);
-  }, [adminDocuments, handleDocumentAction]);
+    if (!document) {
+      console.error(`Document with id ${documentId} not found`);
+      return;
+    }
+    
+    // Use the base handler for other actions
+    return baseHandleDocumentAction(document, action);
+  }, [adminDocuments, baseHandleDocumentAction, toast]);
   
   // Function to handle export all for filtered documents
   const handleExportAllFiltered = useCallback(() => {
@@ -94,7 +131,7 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
     setSearchQuery,
     projectType,
     updateProjectType,
-    handleDocumentAction: handleDocumentActionById,
+    handleDocumentAction,
     handleExportAll: handleExportAllFiltered,
     isLoading
   };
