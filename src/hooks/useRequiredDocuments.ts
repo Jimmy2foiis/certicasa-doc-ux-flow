@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { AdministrativeDocument, DocumentStatus } from '@/types/documents';
-import { getDocumentsForClient } from '@/services/api/documentService';
+import { getDocumentsForClient } from '@/services/supabase/documentService';
 import { Document } from '@/services/api/types';
 
 // Structure fixe des 8 documents obligatoires dans l'ordre exact
@@ -84,8 +84,6 @@ const convertToAdministrativeDocument = (doc: Document): AdministrativeDocument 
     order: 0,         // Ajout d'un ordre par défaut
     content: doc.content,
     file_path: doc.file_path,
-    client_id: doc.client_id,
-    project_id: doc.project_id,
     created_at: doc.created_at,
     category: 'required',
   };
@@ -119,9 +117,17 @@ export const useRequiredDocuments = (clientId?: string) => {
           const clientDocumentsFromApi = await getDocumentsForClient(clientId);
           
           // Convertir les documents API en AdministrativeDocument
-          const clientDocuments = clientDocumentsFromApi.map(doc => 
-            convertToAdministrativeDocument(doc)
-          );
+          const clientDocuments = clientDocumentsFromApi.map(doc => {
+            const adminDoc = convertToAdministrativeDocument(doc);
+            // Trouver le template correspondant et enrichir les métadonnées
+            const template = REQUIRED_DOCUMENT_TEMPLATES.find(t => t.type === doc.type);
+            if (template) {
+              adminDoc.description = template.description;
+              adminDoc.reference = template.reference;
+              adminDoc.order = template.order;
+            }
+            return adminDoc;
+          });
           
           setExistingDocuments(clientDocuments);
           

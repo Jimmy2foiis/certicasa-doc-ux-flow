@@ -4,60 +4,13 @@ import { AdministrativeDocument, DocumentStatus } from '@/types/documents';
 import { Button } from '@/components/ui/button';
 import { Eye, FileDown, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import DocumentStatusBadge from '@/features/documents/DocumentStatusBadge';
 
 interface RequiredDocumentsListProps {
   documents: AdministrativeDocument[];
   isLoading: boolean;
   onAction: (documentId: string, action: string) => void;
 }
-
-// Fonction pour obtenir l'icône de statut
-const getStatusIcon = (status: DocumentStatus) => {
-  switch (status) {
-    case 'generated':
-    case 'available':
-      return <CheckCircle className="h-4 w-4 text-green-500" />;
-    case 'missing':
-      return <Clock className="h-4 w-4 text-amber-500" />;
-    case 'error':
-    case 'action-required':
-      return <AlertCircle className="h-4 w-4 text-red-500" />;
-    default:
-      return <Clock className="h-4 w-4 text-gray-400" />;
-  }
-};
-
-// Fonction pour obtenir le libellé de statut
-const getStatusLabel = (status: DocumentStatus) => {
-  switch (status) {
-    case 'generated':
-    case 'available':
-      return 'Généré';
-    case 'missing':
-      return 'Manquant';
-    case 'error':
-    case 'action-required':
-      return 'Erreur';
-    default:
-      return 'En attente';
-  }
-};
-
-// Fonction pour obtenir la couleur de statut
-const getStatusColor = (status: DocumentStatus) => {
-  switch (status) {
-    case 'generated':
-    case 'available':
-      return 'bg-green-50 text-green-700 border-green-200';
-    case 'missing':
-      return 'bg-amber-50 text-amber-700 border-amber-200';
-    case 'error':
-    case 'action-required':
-      return 'bg-red-50 text-red-700 border-red-200';
-    default:
-      return 'bg-gray-50 text-gray-700 border-gray-200';
-  }
-};
 
 // État de chargement pour la liste de documents
 const LoadingState = () => (
@@ -125,15 +78,10 @@ export const RequiredDocumentsList: React.FC<RequiredDocumentsListProps> = ({
           
           {/* Statut du document */}
           <div className="col-span-2">
-            <span 
-              className={cn(
-                "flex items-center px-2 py-1 text-xs font-medium rounded-full border",
-                getStatusColor(doc.status as DocumentStatus)
-              )}
-            >
-              {getStatusIcon(doc.status as DocumentStatus)}
-              <span className="ml-1.5">{getStatusLabel(doc.status as DocumentStatus)}</span>
-            </span>
+            <DocumentStatusBadge 
+              status={doc.status as DocumentStatus} 
+              customLabel={doc.statusLabel} 
+            />
           </div>
           
           {/* Actions pour le document */}
