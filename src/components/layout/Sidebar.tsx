@@ -5,13 +5,10 @@ import {
   Users, 
   Calculator, 
   FileText, 
-  GitBranch, 
   Receipt, 
   Settings, 
   HelpCircle,
-  Package,
   Upload,
-  Box
 } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
@@ -19,11 +16,9 @@ const navItems = [
   { icon: LayoutDashboard, label: "Tableau de bord", value: "/" },
   { icon: Users, label: "Clients", value: "/clients" },
   { icon: Calculator, label: "Calculs", value: "/calculations" },
-  { icon: FileText, label: "Documents", value: "/documents" },
-  { icon: GitBranch, label: "Suivi de projet", value: "/workflow" },
+  { icon: FileText, label: "Template", value: "/documents" },
   { icon: Upload, label: "Dépôts des Lots", value: "/lots" },
-  { icon: Package, label: "Produits & Stock", value: "/products" },
-  { icon: Receipt, label: "Facturation", value: "/billing" },
+  { icon: Receipt, label: "Finance", value: "/billing" },
   { icon: Settings, label: "Paramètres", value: "/settings" },
   { icon: HelpCircle, label: "Aide", value: "/help" },
 ];

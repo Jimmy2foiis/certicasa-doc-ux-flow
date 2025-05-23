@@ -1,9 +1,9 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Dashboard from '@/components/dashboard/Dashboard';
 import ClientsSection from '@/components/clients/ClientsSection';
 import ProjectCalculation from '@/components/calculations/ProjectCalculation';
 import DocumentGeneration from '@/features/documents/DocumentGeneration';
-import WorkflowManagement from '@/components/workflow/WorkflowManagement';
 import Billing from '@/components/billing/Billing';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
@@ -34,13 +34,10 @@ const Index = () => {
       case 'calculations':
         navigate('/calculations');
         break;
-      case 'documents':
+      case 'template':
         navigate('/documents');
         break;
-      case 'workflow':
-        navigate('/workflow');
-        break;
-      case 'billing':
+      case 'finance':
         navigate('/billing');
         break;
       default:
@@ -70,9 +67,8 @@ const Index = () => {
               <TabsTrigger value="dashboard">Tableau de bord</TabsTrigger>
               <TabsTrigger value="clients">Clients</TabsTrigger>
               <TabsTrigger value="calculations">Calculs</TabsTrigger>
-              <TabsTrigger value="documents">Documents</TabsTrigger>
-              <TabsTrigger value="workflow">Suivi de projet</TabsTrigger>
-              <TabsTrigger value="billing">Facturation</TabsTrigger>
+              <TabsTrigger value="template">Template</TabsTrigger>
+              <TabsTrigger value="finance">Finance</TabsTrigger>
             </TabsList>
             <TabsContent value="dashboard">
               <Dashboard />
@@ -83,13 +79,10 @@ const Index = () => {
             <TabsContent value="calculations">
               <ProjectCalculation />
             </TabsContent>
-            <TabsContent value="documents">
+            <TabsContent value="template">
               <DocumentGeneration />
             </TabsContent>
-            <TabsContent value="workflow">
-              <WorkflowManagement />
-            </TabsContent>
-            <TabsContent value="billing">
+            <TabsContent value="finance">
               <Billing />
             </TabsContent>
           </Tabs>
