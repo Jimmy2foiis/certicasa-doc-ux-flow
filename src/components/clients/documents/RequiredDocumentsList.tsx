@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { AdministrativeDocument, DocumentStatus } from '@/types/documents';
-import { Button } from '@/components/ui/button';
-import { Eye, FileDown, AlertCircle, CheckCircle, Clock } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Button } from "@/components/ui/button";
+import { Eye, FileDown, AlertCircle } from "lucide-react";
 import DocumentStatusBadge from '@/features/documents/DocumentStatusBadge';
 
 interface RequiredDocumentsListProps {
@@ -49,7 +48,7 @@ export const RequiredDocumentsList: React.FC<RequiredDocumentsListProps> = ({
       <div className="grid grid-cols-12 text-sm font-medium text-gray-500 border-b pb-2">
         <div className="col-span-1">N°</div>
         <div className="col-span-4">Nom du document</div>
-        <div className="col-span-3">Référence</div>
+        <div className="col-span-3">Nom fichier attendu</div>
         <div className="col-span-2">Statut</div>
         <div className="col-span-2 text-right">Actions</div>
       </div>
@@ -71,7 +70,7 @@ export const RequiredDocumentsList: React.FC<RequiredDocumentsListProps> = ({
             <div className="text-xs text-gray-500">{doc.description}</div>
           </div>
           
-          {/* Référence du document */}
+          {/* Nom fichier attendu */}
           <div className="col-span-3 text-sm text-gray-600">
             {doc.reference}
           </div>
@@ -121,10 +120,7 @@ export const RequiredDocumentsList: React.FC<RequiredDocumentsListProps> = ({
                     <span>Erreur</span>
                   </>
                 ) : (
-                  <>
-                    <Clock className="h-3.5 w-3.5 mr-1" />
-                    <span>Générer</span>
-                  </>
+                  <span>Générer</span>
                 )}
               </Button>
             )}
