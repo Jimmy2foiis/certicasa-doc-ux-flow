@@ -21,11 +21,22 @@ interface ClientDetailsProps {
 
 const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
   const [activeTab, setActiveTab] = useState("calculations");
-  const { client } = useClientData(clientId);
+  const { client, savedCalculations } = useClientData(clientId);
   const { documentStats } = useRequiredDocuments(clientId);
   
   const handleViewMissingDocs = () => {
     setActiveTab("documents");
+  };
+
+  // Handler functions for calculations
+  const handleOpenCalculation = (calculation: any) => {
+    // Handle opening a calculation
+    console.log("Opening calculation:", calculation);
+  };
+
+  const handleCreateNewCalculation = () => {
+    // Handle creating a new calculation
+    console.log("Creating new calculation");
   };
 
   return (
@@ -40,7 +51,13 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
         Retour à la liste
       </Button>
 
-      <ClientDetailsHeader client={client} />
+      {/* Pass all required props to ClientDetailsHeader */}
+      <ClientDetailsHeader 
+        client={client}
+        clientId={clientId}
+        clientName={client?.name || "Client"}
+        onBack={onBack}
+      />
 
       <div className="grid grid-cols-12 gap-6">
         {/* Client Info Sidebar - Left Column */}
@@ -68,7 +85,15 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
             </TabsList>
             
             <TabsContent value="calculations" className="space-y-4">
-              <CalculationsTab clientId={clientId} />
+              {/* Pass all required props to CalculationsTab */}
+              <CalculationsTab 
+                clientId={clientId} 
+                clientName={client?.name}
+                clientAddress={client?.address}
+                savedCalculations={savedCalculations || []}
+                onOpenCalculation={handleOpenCalculation}
+                onCreateNewCalculation={handleCreateNewCalculation}
+              />
             </TabsContent>
             
             <TabsContent value="documents" className="space-y-4">
