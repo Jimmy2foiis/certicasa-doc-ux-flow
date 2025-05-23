@@ -38,14 +38,14 @@ const ClientsFilters = ({ filters, setFilters }: ClientsFiltersProps) => {
         </div>
 
         <Select
-          value={filters.status || ""}
-          onValueChange={(value) => handleFilterChange("status", value || null)}
+          value={filters.status || "all"}
+          onValueChange={(value) => handleFilterChange("status", value === "all" ? null : value)}
         >
           <SelectTrigger className="w-full md:w-40">
             <SelectValue placeholder="Statut dossier" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Tous</SelectItem>
+            <SelectItem value="all">Tous</SelectItem>
             <SelectItem value="En cours">En cours</SelectItem>
             <SelectItem value="Prêt à déposer">Prêt à déposer</SelectItem>
             <SelectItem value="Déposé">Déposé</SelectItem>
@@ -56,28 +56,28 @@ const ClientsFilters = ({ filters, setFilters }: ClientsFiltersProps) => {
         </Select>
 
         <Select
-          value={filters.ficheType || ""}
-          onValueChange={(value) => handleFilterChange("ficheType", value || null)}
+          value={filters.ficheType || "all"}
+          onValueChange={(value) => handleFilterChange("ficheType", value === "all" ? null : value)}
         >
           <SelectTrigger className="w-full md:w-40">
             <SelectValue placeholder="Type fiche" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Tous</SelectItem>
+            <SelectItem value="all">Tous</SelectItem>
             <SelectItem value="RES010">RES010</SelectItem>
             <SelectItem value="RES020">RES020</SelectItem>
           </SelectContent>
         </Select>
 
         <Select
-          value={filters.climateZone || ""}
-          onValueChange={(value) => handleFilterChange("climateZone", value || null)}
+          value={filters.climateZone || "all"}
+          onValueChange={(value) => handleFilterChange("climateZone", value === "all" ? null : value)}
         >
           <SelectTrigger className="w-full md:w-40">
             <SelectValue placeholder="Zone climatique" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Toutes</SelectItem>
+            <SelectItem value="all">Toutes</SelectItem>
             <SelectItem value="A">A</SelectItem>
             <SelectItem value="B">B</SelectItem>
             <SelectItem value="C">C</SelectItem>
@@ -89,42 +89,42 @@ const ClientsFilters = ({ filters, setFilters }: ClientsFiltersProps) => {
 
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center mt-4">
         <Select
-          value={filters.isolationType || ""}
-          onValueChange={(value) => handleFilterChange("isolationType", value || null)}
+          value={filters.isolationType || "all"}
+          onValueChange={(value) => handleFilterChange("isolationType", value === "all" ? null : value)}
         >
           <SelectTrigger className="w-full md:w-40">
             <SelectValue placeholder="Type d'isolation" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Tous</SelectItem>
+            <SelectItem value="all">Tous</SelectItem>
             <SelectItem value="Combles">Combles</SelectItem>
             <SelectItem value="Rampants">Rampants</SelectItem>
           </SelectContent>
         </Select>
 
         <Select
-          value={filters.floorType || ""}
-          onValueChange={(value) => handleFilterChange("floorType", value || null)}
+          value={filters.floorType || "all"}
+          onValueChange={(value) => handleFilterChange("floorType", value === "all" ? null : value)}
         >
           <SelectTrigger className="w-full md:w-40">
             <SelectValue placeholder="Type de plancher" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Tous</SelectItem>
+            <SelectItem value="all">Tous</SelectItem>
             <SelectItem value="Bois">Bois</SelectItem>
             <SelectItem value="Béton">Béton</SelectItem>
           </SelectContent>
         </Select>
 
         <Select
-          value={filters.depositStatus || ""}
-          onValueChange={(value) => handleFilterChange("depositStatus", value || null)}
+          value={filters.depositStatus || "all"}
+          onValueChange={(value) => handleFilterChange("depositStatus", value === "all" ? null : value)}
         >
           <SelectTrigger className="w-full md:w-40">
             <SelectValue placeholder="Statut de dépôt" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Tous</SelectItem>
+            <SelectItem value="all">Tous</SelectItem>
             <SelectItem value="Non déposé">Non déposé</SelectItem>
             <SelectItem value="Déposé">Déposé</SelectItem>
             <SelectItem value="Accepté">Accepté</SelectItem>

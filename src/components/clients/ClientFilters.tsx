@@ -65,7 +65,7 @@ const ClientFilters = ({ searchTerm, onSearchChange }: ClientFiltersProps) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuRadioGroup value={status} onValueChange={setStatus}>
-                <DropdownMenuRadioItem value="">Tous</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="all">Tous</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="Actif">Actifs</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="Inactif">Inactifs</DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
@@ -81,7 +81,7 @@ const ClientFilters = ({ searchTerm, onSearchChange }: ClientFiltersProps) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuRadioGroup value={city} onValueChange={setCity}>
-                <DropdownMenuRadioItem value="">Toutes</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="all">Toutes</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="Madrid">Madrid</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="Barcelone">Barcelone</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="Valence">Valence</DropdownMenuRadioItem>
@@ -98,7 +98,7 @@ const ClientFilters = ({ searchTerm, onSearchChange }: ClientFiltersProps) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuRadioGroup value={type} onValueChange={setType}>
-                <DropdownMenuRadioItem value="">Tous</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="all">Tous</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="RES010">RES010</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="RES020">RES020</DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
@@ -111,7 +111,7 @@ const ClientFilters = ({ searchTerm, onSearchChange }: ClientFiltersProps) => {
         <div className="flex flex-wrap gap-2 pt-2">
           {status && (
             <Badge variant="secondary" className="flex items-center gap-1">
-              Statut: {status}
+              Statut: {status === "all" ? "Tous" : status}
               <X 
                 className="h-3 w-3 cursor-pointer" 
                 onClick={() => setStatus(undefined)} 
@@ -120,7 +120,7 @@ const ClientFilters = ({ searchTerm, onSearchChange }: ClientFiltersProps) => {
           )}
           {city && (
             <Badge variant="secondary" className="flex items-center gap-1">
-              Ville: {city}
+              Ville: {city === "all" ? "Toutes" : city}
               <X 
                 className="h-3 w-3 cursor-pointer" 
                 onClick={() => setCity(undefined)} 
@@ -129,7 +129,7 @@ const ClientFilters = ({ searchTerm, onSearchChange }: ClientFiltersProps) => {
           )}
           {type && (
             <Badge variant="secondary" className="flex items-center gap-1">
-              Type: {type}
+              Type: {type === "all" ? "Tous" : type}
               <X 
                 className="h-3 w-3 cursor-pointer" 
                 onClick={() => setType(undefined)} 

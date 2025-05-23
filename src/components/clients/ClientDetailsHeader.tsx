@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { ArrowLeft, Edit, FileText } from 'lucide-react';
+import { ArrowLeft, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import ClientForm from './ClientForm';
+import ClientForm from '@/components/clients/ClientForm';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import ClientDocumentGenerator from '@/features/documents/ClientDocumentGenerator';
@@ -92,7 +92,13 @@ const ClientDetailsHeader = ({
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="sm:max-w-[600px]">
           <ClientForm
-            {...({ clientId, onSubmitSuccess: handleClientUpdated, submitButtonText: 'Enregistrer les modifications' } as any)}
+            initialData={client}
+            onSubmit={async (data) => {
+              // Handle submit logic here
+              handleClientUpdated();
+            }}
+            onCancel={() => setShowEditDialog(false)}
+            isSubmitting={false}
           />
         </DialogContent>
       </Dialog>
