@@ -13,6 +13,7 @@ export * from './cadastralService';
 export * from './projectService';
 export * from './calculationService';
 export * from './documentService';
+export * from './batchService';
 
 // Ré-export du client HTTP pour les cas particuliers
 export { httpClient } from './httpClient';

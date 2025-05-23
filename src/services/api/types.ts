@@ -1,3 +1,4 @@
+
 /**
  * Types communs pour l'API
  */
@@ -21,6 +22,16 @@ export interface Client {
   status?: string;
   projects?: number;
   created_at?: string;
+  // Nouveaux champs pour la vue améliorée
+  postalCode?: string;
+  ficheType?: string;
+  climateZone?: string;
+  isolatedArea?: number;
+  isolationType?: string;
+  floorType?: string;
+  installationDate?: string;
+  lotNumber?: string | null;
+  depositStatus?: string;
 }
 
 // Type pour les données cadastrales
@@ -79,4 +90,14 @@ export interface Document {
   file_path?: string;
   created_at?: string;
   content?: string;
+}
+
+// Type pour les lots
+export interface Batch {
+  id: string;
+  name: string;
+  status: string;
+  client_count: number;
+  created_at: string;
+  submitted_at?: string;
 }

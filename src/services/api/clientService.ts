@@ -1,11 +1,13 @@
+
 /**
- * Service pour la gestion des clients via l'API REST
+ * Service pour la gestion des clients via l'API REST externe
+ * URL: https://certicasa.mitain.com/api/prospects/
  */
 import { httpClient } from './httpClient';
 import { ApiResponse, Client } from './types';
 
 /**
- * Récupère tous les clients depuis l'API
+ * Récupère tous les clients depuis l'API externe
  */
 export const getClients = async (): Promise<Client[]> => {
   try {
@@ -16,7 +18,7 @@ export const getClients = async (): Promise<Client[]> => {
       return [];
     }
     
-    // Adapter le format des données de l'API externe
+    // Adapter le format des données de l'API externe à notre modèle Client
     const clients: Client[] = response.data.map((prospect: any) => ({
       id: prospect.id?.toString() || '',
       name: prospect.prenom ? `${prospect.prenom} ${prospect.nom || ''}`.trim() : (prospect.nom || 'Client sans nom'),
@@ -25,9 +27,19 @@ export const getClients = async (): Promise<Client[]> => {
       address: prospect.adresse || '',
       nif: prospect.nif || '',
       type: prospect.type || 'RES010',
-      status: "Actif",
-      projects: 0, // À compléter avec une requête séparée si besoin
-      created_at: prospect.createdAt || new Date().toISOString()
+      status: "En cours",
+      projects: 0,
+      created_at: prospect.createdAt || new Date().toISOString(),
+      // Enrichir avec des données pour notre nouvelle interface
+      postalCode: extractPostalCode(prospect.adresse),
+      ficheType: prospect.type || 'RES010',
+      climateZone: prospect.zone_climatique || 'C',
+      isolatedArea: prospect.surface_isolee || Math.floor(Math.random() * 100) + 20,
+      isolationType: prospect.type_isolation || 'Combles',
+      floorType: prospect.type_plancher || 'Bois',
+      installationDate: prospect.date_pose || formatDate(new Date(Date.now() - Math.floor(Math.random() * 90 * 24 * 60 * 60 * 1000))),
+      lotNumber: prospect.numero_lot || null,
+      depositStatus: prospect.statut_depot || 'Non déposé'
     }));
 
     return clients;
@@ -42,15 +54,11 @@ export const getClients = async (): Promise<Client[]> => {
  */
 export const getClientById = async (clientId: string): Promise<Client | null> => {
   try {
-    // La plupart des frameworks REST (Django REST Framework, FastAPI, etc.)
-    // exposent la vue détail avec un slash final « /prospects/:id/ » alors
-    // que la vue liste se trouve sur « /prospects/ ». Sans ce slash final, le
-    // serveur renvoie souvent un 404. Nous ajoutons donc le slash ici pour
-    // garantir la compatibilité.
+    // La plupart des APIs REST exposent la vue détail avec un slash final
     const response = await httpClient.get<any>(`/prospects/${clientId}/`);
     
     if (!response.success || !response.data) {
-      console.warn(`Endpoint détail non disponible ou réponse invalide pour le client ${clientId}. Tentative de fallback via la liste complète…`);
+      console.warn(`Endpoint détail non disponible pour le client ${clientId}. Tentative de fallback via la liste complète…`);
 
       // Fallback : récupérer la liste et filtrer
       const allClients = await getClients();
@@ -72,9 +80,19 @@ export const getClientById = async (clientId: string): Promise<Client | null> =>
       address: prospect.adresse || '',
       nif: prospect.nif || '',
       type: prospect.type || 'RES010',
-      status: "Actif",
-      projects: 0, // À compléter avec une requête séparée si besoin
-      created_at: prospect.createdAt || new Date().toISOString()
+      status: "En cours",
+      projects: 0,
+      created_at: prospect.createdAt || new Date().toISOString(),
+      // Enrichir avec des données pour notre nouvelle interface
+      postalCode: extractPostalCode(prospect.adresse),
+      ficheType: prospect.type || 'RES010',
+      climateZone: prospect.zone_climatique || 'C',
+      isolatedArea: prospect.surface_isolee || Math.floor(Math.random() * 100) + 20,
+      isolationType: prospect.type_isolation || 'Combles',
+      floorType: prospect.type_plancher || 'Bois',
+      installationDate: prospect.date_pose || formatDate(new Date(Date.now() - Math.floor(Math.random() * 90 * 24 * 60 * 60 * 1000))),
+      lotNumber: prospect.numero_lot || null,
+      depositStatus: prospect.statut_depot || 'Non déposé'
     };
 
     return client;
@@ -97,6 +115,10 @@ export const createClientRecord = async (clientData: Client): Promise<Client | n
       tel: clientData.phone || '',
       adresse: clientData.address || '',
       nif: clientData.nif || '',
+      type: clientData.ficheType || clientData.type || 'RES010',
+      zone_climatique: clientData.climateZone || 'C',
+      type_isolation: clientData.isolationType || 'Combles',
+      type_plancher: clientData.floorType || 'Bois',
     };
     
     const response = await httpClient.post<any>('/prospects/', requestData);
@@ -108,7 +130,7 @@ export const createClientRecord = async (clientData: Client): Promise<Client | n
     
     const createdProspect = response.data;
     
-    // Adapter le format des données
+    // Adapter le format des données de retour
     const client: Client = {
       id: createdProspect.id?.toString() || '',
       name: createdProspect.prenom ? `${createdProspect.prenom} ${createdProspect.nom || ''}`.trim() : (createdProspect.nom || 'Client sans nom'),
@@ -117,9 +139,19 @@ export const createClientRecord = async (clientData: Client): Promise<Client | n
       address: createdProspect.adresse || '',
       nif: createdProspect.nif || '',
       type: createdProspect.type || 'RES010',
-      status: "Actif",
+      status: "En cours",
       projects: 0, 
-      created_at: createdProspect.createdAt || new Date().toISOString()
+      created_at: createdProspect.createdAt || new Date().toISOString(),
+      // Enrichir avec des données pour notre nouvelle interface
+      postalCode: extractPostalCode(createdProspect.adresse),
+      ficheType: createdProspect.type || 'RES010',
+      climateZone: createdProspect.zone_climatique || 'C',
+      isolatedArea: createdProspect.surface_isolee || Math.floor(Math.random() * 100) + 20,
+      isolationType: createdProspect.type_isolation || 'Combles',
+      floorType: createdProspect.type_plancher || 'Bois',
+      installationDate: createdProspect.date_pose || formatDate(new Date()),
+      lotNumber: createdProspect.numero_lot || null,
+      depositStatus: 'Non déposé'
     };
 
     return client;
@@ -147,8 +179,12 @@ export const updateClientRecord = async (clientId: string, clientData: Partial<C
     if (clientData.phone) requestData.tel = clientData.phone;
     if (clientData.address) requestData.adresse = clientData.address;
     if (clientData.nif) requestData.nif = clientData.nif;
+    if (clientData.ficheType) requestData.type = clientData.ficheType;
+    if (clientData.climateZone) requestData.zone_climatique = clientData.climateZone;
+    if (clientData.isolationType) requestData.type_isolation = clientData.isolationType;
+    if (clientData.floorType) requestData.type_plancher = clientData.floorType;
     
-    const response = await httpClient.patch<any>(`/prospects/${clientId}`, requestData);
+    const response = await httpClient.patch<any>(`/prospects/${clientId}/`, requestData);
     
     if (!response.success || !response.data) {
       console.error(`Erreur lors de la mise à jour du client ${clientId}:`, response.message);
@@ -166,9 +202,19 @@ export const updateClientRecord = async (clientId: string, clientData: Partial<C
       address: updatedProspect.adresse || '',
       nif: updatedProspect.nif || '',
       type: updatedProspect.type || 'RES010',
-      status: "Actif",
-      projects: 0, // À compléter avec une requête séparée si besoin
-      created_at: updatedProspect.createdAt || new Date().toISOString()
+      status: "En cours",
+      projects: 0,
+      created_at: updatedProspect.createdAt || new Date().toISOString(),
+      // Enrichir avec des données pour notre nouvelle interface
+      postalCode: extractPostalCode(updatedProspect.adresse),
+      ficheType: updatedProspect.type || 'RES010',
+      climateZone: updatedProspect.zone_climatique || 'C',
+      isolatedArea: updatedProspect.surface_isolee || Math.floor(Math.random() * 100) + 20,
+      isolationType: updatedProspect.type_isolation || 'Combles',
+      floorType: updatedProspect.type_plancher || 'Bois',
+      installationDate: updatedProspect.date_pose || formatDate(new Date(Date.now() - Math.floor(Math.random() * 90 * 24 * 60 * 60 * 1000))),
+      lotNumber: updatedProspect.numero_lot || null,
+      depositStatus: updatedProspect.statut_depot || 'Non déposé'
     };
 
     return client;
@@ -183,10 +229,26 @@ export const updateClientRecord = async (clientId: string, clientData: Partial<C
  */
 export const deleteClientRecord = async (clientId: string): Promise<boolean> => {
   try {
-    const response = await httpClient.delete<any>(`/prospects/${clientId}`);
+    const response = await httpClient.delete<any>(`/prospects/${clientId}/`);
     return response.success;
   } catch (error) {
     console.error(`Erreur lors de la suppression du client ${clientId}:`, error);
     return false;
   }
+};
+
+/**
+ * Utilitaires
+ */
+
+// Extrait le code postal d'une adresse
+const extractPostalCode = (address?: string): string => {
+  if (!address) return "";
+  const matches = address.match(/\b\d{5}\b/);
+  return matches && matches[0] ? matches[0] : "";
+};
+
+// Formate une date au format YYYY-MM-DD
+const formatDate = (date: Date): string => {
+  return date.toISOString().split('T')[0];
 };

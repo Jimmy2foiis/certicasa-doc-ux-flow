@@ -1,59 +1,33 @@
+
 /**
- * Stub pour compatibilité avec le code existant.
- * Ce fichier fournit un objet factice qui simule l'API Supabase
- * mais redirige toutes les opérations vers l'API REST externe.
+ * Stub pour la transition vers l'API REST
+ * Ce fichier existe pour maintenir la compatibilité avec le code existant
  */
 
-/* Stub Supabase ultra-générique : toutes les propriétés et appels renvoient un
-   nouvel objet « chainable » pour que TypeScript n'exige aucun paramètre
-   particulier. Les méthodes terminant une requête renvoient une promesse
-   résolue avec { data:null, error:{ message:'SUPABASE_REMOVED' } }. */
-
-// Objet résultat pour les appels finaux
-const stubResponse: Promise<any> = Promise.resolve({
-  data: null as any,
-  error: { message: 'SUPABASE_REMOVED' },
-});
-
-// Fabrique un maillon chaînable
-function createChain(): any {
-  const fn: any = (..._args: any[]) => createChain();
-
-  // Méthodes courantes
-  const chainMethods = [
-    'select',
-    'insert',
-    'update',
-    'delete',
-    'upsert',
-    'order',
-    'eq',
-    'neq',
-    'limit',
-    'range',
-  ];
-  chainMethods.forEach((m) => {
-    fn[m] = (..._a: any[]) => createChain();
-  });
-
-  // Méthodes terminant la requête
-  fn.single = () => stubResponse;
-  fn.maybeSingle = () => stubResponse;
-  fn.then = (...args: any[]) => stubResponse.then(...args);
-
-  return fn;
-}
-
-export const supabase: any = {
-  from: (_table?: string) => createChain(),
+// Créer un client factice pour éviter les erreurs lors de la migration
+export const supabase = {
+  from: () => ({
+    select: () => ({
+      eq: () => ({
+        single: async () => ({ data: null, error: { message: 'Méthode non implémentée dans la migration REST' } }),
+        order: () => ({ data: null, error: { message: 'Méthode non implémentée dans la migration REST' } })
+      }),
+      order: () => ({ data: null, error: { message: 'Méthode non implémentée dans la migration REST' } })
+    }),
+    insert: () => ({ select: () => ({ data: null, error: { message: 'Méthode non implémentée dans la migration REST' } }) }),
+    update: () => ({ eq: () => ({ data: null, error: { message: 'Méthode non implémentée dans la migration REST' } }) }),
+    delete: () => ({ eq: () => ({ data: null, error: { message: 'Méthode non implémentée dans la migration REST' } }) }),
+  }),
   auth: {
-    getSession: () => stubResponse,
-    signInWithPassword: () => stubResponse,
-    signUp: () => stubResponse,
-    signOut: () => stubResponse,
-    getUser: () => stubResponse,
+    getUser: async () => ({ data: null, error: { message: 'Méthode non implémentée dans la migration REST' } }),
+    signOut: async () => ({ error: { message: 'Méthode non implémentée dans la migration REST' } }),
+    signInWithPassword: async () => ({ data: null, error: { message: 'Méthode non implémentée dans la migration REST' } }),
+    signUp: async () => ({ data: null, error: { message: 'Méthode non implémentée dans la migration REST' } })
   },
-  functions: {
-    invoke: () => stubResponse,
-  },
+  storage: {
+    from: () => ({
+      upload: async () => ({ data: null, error: { message: 'Méthode non implémentée dans la migration REST' } }),
+      getPublicUrl: () => ({ data: { publicUrl: '' }, error: null })
+    })
+  }
 };

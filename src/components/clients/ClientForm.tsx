@@ -1,177 +1,265 @@
 
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect, useState } from "react";
-import { Form } from "@/components/ui/form";
-import { useCoordinates } from "@/hooks/useCoordinates";
-import { clientSchema, ClientFormValues } from "./schemas/clientSchema";
-import { Client } from "@/services/supabaseService";
+import { z } from "zod";
+import { Client } from "@/services/api/types";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-// Import form field components
-import { NameField } from "./form-fields/NameField";
-import { EmailField } from "./form-fields/EmailField";
-import { PhoneField } from "./form-fields/PhoneField";
-import { AddressField } from "./form-fields/AddressField";
-import { ClientIdFields } from "./form-fields/ClientIdFields";
-import { FormActions } from "./form-fields/FormActions";
-import { useToast } from "@/components/ui/use-toast";
-import { AlertCircle } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+// Schéma de validation du formulaire client
+const clientSchema = z.object({
+  name: z.string().min(2, "Le nom doit contenir au moins 2 caractères"),
+  email: z.string().email("Format d'email invalide").optional().or(z.literal("")),
+  phone: z.string().optional().or(z.literal("")),
+  address: z.string().optional().or(z.literal("")),
+  nif: z.string().optional().or(z.literal("")),
+  type: z.string().optional().or(z.literal("")),
+  ficheType: z.string().optional().or(z.literal("")),
+  climateZone: z.string().optional().or(z.literal("")),
+  isolationType: z.string().optional().or(z.literal("")),
+  floorType: z.string().optional().or(z.literal("")),
+});
+
+type ClientFormValues = z.infer<typeof clientSchema>;
 
 interface ClientFormProps {
-  onSubmit?: (data: Client) => Promise<void>;
-  onCancel?: () => void;
-  initialValues?: Partial<ClientFormValues>;
+  initialData?: Client;
+  onSubmit: (data: Client) => Promise<void>;
+  onCancel: () => void;
   isSubmitting?: boolean;
-  clientId?: string;
-  client?: any;
-  onSubmitSuccess?: () => void;
-  submitButtonText?: string;
 }
 
-export const ClientForm = ({ 
-  onSubmit, 
-  onCancel, 
-  initialValues, 
-  isSubmitting = false, 
-  clientId,
-  client,
-  onSubmitSuccess,
-  submitButtonText 
-}: ClientFormProps) => {
-  const { coordinates, setClientCoordinates } = useCoordinates();
-  const { toast } = useToast();
-  const [addressSelected, setAddressSelected] = useState(false);
-  const [addressWarning, setAddressWarning] = useState<string | null>(null);
-  const [isAddressProcessing, setIsAddressProcessing] = useState(false);
-  
-  // Use client prop if provided, otherwise use initialValues
-  const formInitialValues = client || initialValues;
-  
-  // Initialize form with react-hook-form and zod validation
+const ClientForm = ({ initialData, onSubmit, onCancel, isSubmitting }: ClientFormProps) => {
+  const [isSaving, setIsSaving] = useState(false);
+
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
     defaultValues: {
-      name: formInitialValues?.name || "",
-      email: formInitialValues?.email || "",
-      phone: formInitialValues?.phone || "",
-      address: formInitialValues?.address || "",
-      nif: formInitialValues?.nif || "",
-      type: formInitialValues?.type || "010"
-    }
+      name: initialData?.name || "",
+      email: initialData?.email || "",
+      phone: initialData?.phone || "",
+      address: initialData?.address || "",
+      nif: initialData?.nif || "",
+      type: initialData?.type || "RES010",
+      ficheType: initialData?.ficheType || "RES010",
+      climateZone: initialData?.climateZone || "C",
+      isolationType: initialData?.isolationType || "Combles",
+      floorType: initialData?.floorType || "Bois",
+    },
   });
 
-  console.log("Valeurs initiales du formulaire:", formInitialValues);
-  console.log("État actuel des coordonnées:", coordinates);
-
-  // Si une adresse initiale existe, considérer qu'elle a été sélectionnée
-  useEffect(() => {
-    if (formInitialValues?.address) {
-      setAddressSelected(true);
-    }
-  }, [formInitialValues?.address]);
-
-  // Handle address selection from Google Maps autocomplete
-  const handleAddressSelected = (address: string) => {
-    console.log("Adresse sélectionnée:", address);
-    if (!isAddressProcessing) {
-      setAddressSelected(true);
-      setAddressWarning(null);
-    }
-  };
-  
-  const handleCoordinatesSelected = (coords: {lat: number, lng: number}) => {
-    console.log("Coordonnées sélectionnées:", coords);
-    setClientCoordinates(coords);
-  };
-
-  const handleCreateClient = async (data: ClientFormValues) => {
+  const handleSubmit = async (values: ClientFormValues) => {
+    setIsSaving(true);
     try {
-      console.log("Données du formulaire soumises:", data);
-      
-      // Vérifier si l'adresse a été sélectionnée via Google Maps
-      if (data.address && !addressSelected) {
-        setAddressWarning("Pour une meilleure précision, veuillez sélectionner une adresse dans les suggestions Google Maps.");
-        toast({
-          title: "Attention",
-          description: "L'adresse n'a pas été sélectionnée dans les suggestions. Les coordonnées pourraient ne pas être précises.",
-          variant: "destructive",
-          duration: 5000,
-        });
-      }
-      
-      // Empêcher la soumission si traitement d'adresse en cours
-      if (isAddressProcessing) {
-        toast({
-          title: "Traitement en cours",
-          description: "Veuillez attendre que le géocodage de l'adresse soit terminé.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Create a Client object ensuring name is not undefined
+      // Construire l'objet client complet
       const clientData: Client = {
-        name: data.name,
-        email: data.email || undefined,
-        phone: data.phone || undefined,
-        address: data.address || undefined,
-        nif: data.nif || undefined,
-        type: data.type || "010",
+        ...values,
+        id: initialData?.id, // Réutiliser l'ID existant si modification
+        status: initialData?.status || "En cours",
+        projects: initialData?.projects || 0,
       };
       
-      console.log("Données client à envoyer:", clientData);
-      console.log("Coordonnées à enregistrer:", coordinates);
-      
-      // If onSubmit is provided, call it with client data
-      if (onSubmit) {
-        await onSubmit(clientData);
-      }
-      
-      // If onSubmitSuccess is provided, call it
-      if (onSubmitSuccess) {
-        onSubmitSuccess();
-      }
-      
-    } catch (error) {
-      console.error("Erreur lors de la création du client:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible d'enregistrer le client",
-        variant: "destructive",
-      });
+      await onSubmit(clientData);
+    } finally {
+      setIsSaving(false);
     }
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleCreateClient)} className="space-y-4 py-2">
-        <NameField control={form.control} />
-        <EmailField control={form.control} />
-        <PhoneField control={form.control} />
-        
-        <AddressField 
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+        {/* Informations de base */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nom complet*</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nom complet" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="Email" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Téléphone</FormLabel>
+                <FormControl>
+                  <Input placeholder="Téléphone" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="nif"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>NIF</FormLabel>
+                <FormControl>
+                  <Input placeholder="NIF" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Adresse */}
+        <FormField
           control={form.control}
-          onAddressSelected={handleAddressSelected}
-          onCoordinatesSelected={handleCoordinatesSelected}
+          name="address"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Adresse complète</FormLabel>
+              <FormControl>
+                <Input placeholder="Adresse complète" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-        
-        {addressWarning && (
-          <Alert variant="destructive" className="py-2">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription className="text-xs">
-              {addressWarning}
-            </AlertDescription>
-          </Alert>
-        )}
-        
-        <ClientIdFields control={form.control} />
-        
-        <FormActions 
-          onCancel={onCancel}
-          isSubmitting={isSubmitting || isAddressProcessing}
-          submitText={submitButtonText}
-        />
+
+        {/* Informations techniques */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField
+            control={form.control}
+            name="ficheType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Type de fiche</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner un type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="RES010">RES010</SelectItem>
+                    <SelectItem value="RES020">RES020</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="climateZone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Zone climatique</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner une zone" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="A">A</SelectItem>
+                    <SelectItem value="B">B</SelectItem>
+                    <SelectItem value="C">C</SelectItem>
+                    <SelectItem value="D">D</SelectItem>
+                    <SelectItem value="E">E</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="isolationType"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Type d'isolation</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner un type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="Combles">Combles</SelectItem>
+                    <SelectItem value="Rampants">Rampants</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Actions du formulaire */}
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel}
+            disabled={isSaving || isSubmitting}
+          >
+            Annuler
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={isSaving || isSubmitting}
+          >
+            {isSaving || isSubmitting 
+              ? "Enregistrement..." 
+              : initialData?.id 
+                ? "Mettre à jour" 
+                : "Créer le client"}
+          </Button>
+        </div>
       </form>
     </Form>
   );
