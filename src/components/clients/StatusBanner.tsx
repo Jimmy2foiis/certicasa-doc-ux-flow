@@ -50,30 +50,27 @@ const StatusBanner = ({
             </Badge>
           </div>
           
-          {/* Lot number - cliquable */}
-          <div>
-            {isLotNumber ? (
-              <Link to={`/lots/${client.lotNumber}`} className="text-sm text-primary flex items-center hover:underline">
-                Lot: <span className="font-semibold ml-1">{client.lotNumber}</span>
-              </Link>
-            ) : (
-              <span className="text-sm text-gray-500">Lot: <span className="font-semibold text-gray-700">-</span></span>
-            )}
-          </div>
-          
-          {/* Délégataire */}
-          <div>
-            <span className="text-xs text-gray-500">Délégataire:</span> 
-            <span className="text-sm font-medium ml-1">{client.delegate || "SOLATEC"}</span>
-          </div>
-          
           {/* Date de pose */}
           <div>
             <span className="text-xs text-gray-500">Date pose:</span>
             <span className="text-sm font-medium ml-1">{client.installationDate || "-"}</span>
           </div>
           
-          {/* Date de dépôt */}
+          {/* Numéro de lot - remplace les éléments entre Date de pose et Documents */}
+          <div>
+            <span className="text-xs text-gray-500">Numéro lot:</span>
+            <span className="text-sm font-medium ml-1">
+              {isLotNumber ? (
+                <Link to={`/lots/${client.lotNumber}`} className="text-primary hover:underline">
+                  {client.lotNumber}
+                </Link>
+              ) : (
+                "-"
+              )}
+            </span>
+          </div>
+          
+          {/* Date de dépôt - remplace les éléments entre Date de pose et Documents */}
           <div>
             <span className="text-xs text-gray-500">Date dépôt:</span>
             <span className="text-sm font-medium ml-1">{client.depositDate || "-"}</span>
