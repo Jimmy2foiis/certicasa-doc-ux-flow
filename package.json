@@ -16,6 +16,7 @@
     "setup-db": "bash ./scripts/setup-db.sh"
   },
   "dependencies": {
+    "@emotion/styled": "^11.14.0",
     "@hookform/resolvers": "^3.9.0",
     "@mui/material": "^7.1.0",
     "@mui/x-data-grid": "^8.4.0",
