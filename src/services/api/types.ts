@@ -1,4 +1,3 @@
-
 /**
  * Types communs pour l'API
  */
@@ -32,6 +31,7 @@ export interface Client {
   installationDate?: string;
   lotNumber?: string | null;
   depositStatus?: string;
+  community?: string; // Nouveau champ pour la communauté autonome
 }
 
 // Type pour les données cadastrales

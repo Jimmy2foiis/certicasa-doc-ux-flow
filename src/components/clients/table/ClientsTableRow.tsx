@@ -11,6 +11,7 @@ import IsolationTypeCell from './cells/IsolationTypeCell';
 import FloorTypeCell from './cells/FloorTypeCell';
 import ClimateZoneCell from './cells/ClimateZoneCell';
 import ClientActionsCell from './cells/ClientActionsCell';
+import CommunityCell from './cells/CommunityCell';
 
 interface ClientsTableRowProps {
   client: Client;
@@ -74,30 +75,35 @@ const ClientsTableRow = ({
         <LotNumberCell lotNumber={client.lotNumber} />
       </TableCell>
       
-      {/* 7. Date de pose */}
-      <TableCell className="text-sm text-gray-600">{formatDate(client.installationDate)}</TableCell>
-      
-      {/* 8. Surface isolée */}
-      <TableCell className={`text-right ${Number(client.isolatedArea) >= 80 ? 'font-medium' : ''}`}>
-        {client.isolatedArea} m²
-      </TableCell>
-      
-      {/* 9. Type isolation */}
-      <TableCell>
-        <IsolationTypeCell type={client.isolationType} />
-      </TableCell>
-      
-      {/* 10. Type plancher */}
-      <TableCell>
-        <FloorTypeCell type={client.floorType} />
-      </TableCell>
-      
-      {/* 11. Zone climatique */}
+      {/* 7. Zone climatique (déplacée à côté du lot) */}
       <TableCell>
         <ClimateZoneCell zone={client.climateZone} />
       </TableCell>
       
-      {/* 12. Actions */}
+      {/* 8. Communauté autonome (nouvelle colonne) */}
+      <TableCell>
+        <CommunityCell community={client.community} />
+      </TableCell>
+      
+      {/* 9. Date de pose */}
+      <TableCell className="text-sm text-gray-600">{formatDate(client.installationDate)}</TableCell>
+      
+      {/* 10. Surface isolée */}
+      <TableCell className={`text-right ${Number(client.isolatedArea) >= 80 ? 'font-medium' : ''}`}>
+        {client.isolatedArea} m²
+      </TableCell>
+      
+      {/* 11. Type isolation */}
+      <TableCell>
+        <IsolationTypeCell type={client.isolationType} />
+      </TableCell>
+      
+      {/* 12. Type plancher */}
+      <TableCell>
+        <FloorTypeCell type={client.floorType} />
+      </TableCell>
+      
+      {/* 13. Actions */}
       <TableCell className="text-right">
         <ClientActionsCell 
           clientId={client.id} 

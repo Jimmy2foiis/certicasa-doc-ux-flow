@@ -16,11 +16,12 @@ interface TableFilters {
   status: string;
   depositStatus: string;
   lotNumber: string;
+  climateZone: string;
+  community: string;
   installationDate: string;
   isolatedArea: string;
   isolationType: string;
   floorType: string;
-  climateZone: string;
 }
 
 interface ClientsTableHeaderProps {
@@ -33,6 +34,7 @@ interface ClientsTableHeaderProps {
   uniqueIsolationTypes: string[];
   uniqueFloorTypes: string[];
   uniqueClimateZones: string[];
+  uniqueCommunities: string[];
   allSelected: boolean;
   handleSelectAll: () => void;
   showSelectionColumn: boolean;
@@ -48,6 +50,7 @@ const ClientsTableHeader = ({
   uniqueIsolationTypes,
   uniqueFloorTypes,
   uniqueClimateZones,
+  uniqueCommunities,
   allSelected,
   handleSelectAll,
   showSelectionColumn,
@@ -136,7 +139,33 @@ const ClientsTableHeader = ({
           </FilteredColumnHeader>
         </TableHead>
         
-        {/* 7. Date de pose */}
+        {/* 7. Zone climatique (déplacée à côté du lot) */}
+        <TableHead className="w-24">
+          <FilteredColumnHeader title="Zone climat.">
+            <ColumnFilterDropdown 
+              title="Zone" 
+              options={uniqueClimateZones} 
+              filterKey="climateZone"
+              value={columnFilters.climateZone}
+              onChange={handleFilterChange}
+            />
+          </FilteredColumnHeader>
+        </TableHead>
+        
+        {/* 8. Communauté autonome (nouvelle colonne) */}
+        <TableHead className="w-36">
+          <FilteredColumnHeader title="Communauté">
+            <ColumnFilterDropdown 
+              title="Communauté" 
+              options={uniqueCommunities} 
+              filterKey="community"
+              value={columnFilters.community}
+              onChange={handleFilterChange}
+            />
+          </FilteredColumnHeader>
+        </TableHead>
+        
+        {/* 9. Date de pose */}
         <TableHead className="w-28">
           <FilteredColumnHeader title="Date de pose">
             <TextFilterInput
@@ -147,7 +176,7 @@ const ClientsTableHeader = ({
           </FilteredColumnHeader>
         </TableHead>
         
-        {/* 8. Surface isolée */}
+        {/* 10. Surface isolée */}
         <TableHead className="text-right w-24">
           <FilteredColumnHeader title="Surface (m²)">
             <TextFilterInput
@@ -158,7 +187,7 @@ const ClientsTableHeader = ({
           </FilteredColumnHeader>
         </TableHead>
         
-        {/* 9. Type isolation */}
+        {/* 11. Type isolation */}
         <TableHead className="w-32">
           <FilteredColumnHeader title="Type isolation">
             <ColumnFilterDropdown 
@@ -171,7 +200,7 @@ const ClientsTableHeader = ({
           </FilteredColumnHeader>
         </TableHead>
         
-        {/* 10. Type plancher */}
+        {/* 12. Type plancher */}
         <TableHead className="w-32">
           <FilteredColumnHeader title="Type plancher">
             <ColumnFilterDropdown 
@@ -184,20 +213,7 @@ const ClientsTableHeader = ({
           </FilteredColumnHeader>
         </TableHead>
         
-        {/* 11. Zone climatique */}
-        <TableHead className="w-28">
-          <FilteredColumnHeader title="Zone climat.">
-            <ColumnFilterDropdown 
-              title="Zone" 
-              options={uniqueClimateZones} 
-              filterKey="climateZone"
-              value={columnFilters.climateZone}
-              onChange={handleFilterChange}
-            />
-          </FilteredColumnHeader>
-        </TableHead>
-        
-        {/* 12. Actions */}
+        {/* 13. Actions */}
         <TableHead className="text-right w-20">
           <SimpleColumnHeader title="Actions" />
         </TableHead>

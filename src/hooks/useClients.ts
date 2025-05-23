@@ -11,6 +11,7 @@ export interface ClientFilters {
   isolationType: string | null;
   floorType: string | null;
   depositStatus: string | null;
+  community: string | null;
 }
 
 export const useClients = () => {
@@ -24,13 +25,35 @@ export const useClients = () => {
     climateZone: null,
     isolationType: null,
     floorType: null,
-    depositStatus: null
+    depositStatus: null,
+    community: null
   });
 
   const loadClients = async () => {
     try {
       setLoading(true);
       const data = await getClients();
+      
+      // Communautés autonomes espagnoles pour les exemples
+      const communities = [
+        'Andalucía', 
+        'Aragón', 
+        'Asturias', 
+        'Baleares', 
+        'Canarias', 
+        'Cantabria',
+        'Castilla-La Mancha', 
+        'Castilla y León', 
+        'Cataluña', 
+        'Extremadura',
+        'Galicia', 
+        'Madrid', 
+        'Murcia', 
+        'Navarra', 
+        'País Vasco', 
+        'La Rioja',
+        'Valencia'
+      ];
       
       // Enrichir les données avec des valeurs par défaut pour les nouveaux champs requis
       const enrichedClients = data.map(client => ({
@@ -43,7 +66,8 @@ export const useClients = () => {
         floorType: client.floorType || (Math.random() > 0.5 ? 'Bois' : 'Béton'),
         depositStatus: client.depositStatus || 'Non déposé',
         installationDate: client.installationDate || getRandomPastDate(),
-        lotNumber: client.lotNumber || (Math.random() > 0.7 ? `LOT-${Math.floor(Math.random() * 100)}` : null)
+        lotNumber: client.lotNumber || (Math.random() > 0.7 ? `LOT-${Math.floor(Math.random() * 100)}` : null),
+        community: client.community || (Math.random() > 0.3 ? communities[Math.floor(Math.random() * communities.length)] : undefined)
       }));
       
       setClients(enrichedClients);

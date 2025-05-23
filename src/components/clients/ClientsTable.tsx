@@ -43,22 +43,24 @@ const ClientsTable = ({
     status: string;
     depositStatus: string;
     lotNumber: string;
+    climateZone: string;
+    community: string;
     installationDate: string;
     isolatedArea: string;
     isolationType: string;
     floorType: string;
-    climateZone: string;
   }>({
     name: '',
     ficheType: '',
     status: '',
     depositStatus: '',
     lotNumber: '',
+    climateZone: '',
+    community: '',
     installationDate: '',
     isolatedArea: '',
     isolationType: '',
     floorType: '',
-    climateZone: '',
   });
 
   const {
@@ -69,7 +71,8 @@ const ClientsTable = ({
     uniqueLots,
     uniqueIsolationTypes,
     uniqueFloorTypes,
-    uniqueClimateZones
+    uniqueClimateZones,
+    uniqueCommunities
   } = useClientFilters(clients, columnFilters, filteredClients);
 
   // Calculate if all clients are selected
@@ -85,7 +88,7 @@ const ClientsTable = ({
   const showSelectionColumn = !!onSelectClient;
   
   // Calculate colspan for empty state
-  const colSpan = showSelectionColumn ? 12 : 11;
+  const colSpan = showSelectionColumn ? 13 : 12;
   
   return (
     <div className="rounded-md border border-gray-200 shadow-sm bg-white overflow-hidden">
@@ -101,6 +104,7 @@ const ClientsTable = ({
             uniqueIsolationTypes={uniqueIsolationTypes}
             uniqueFloorTypes={uniqueFloorTypes}
             uniqueClimateZones={uniqueClimateZones}
+            uniqueCommunities={uniqueCommunities}
             allSelected={allSelected}
             handleSelectAll={handleSelectAll}
             showSelectionColumn={showSelectionColumn}

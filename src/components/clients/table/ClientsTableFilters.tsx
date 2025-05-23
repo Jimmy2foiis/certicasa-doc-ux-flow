@@ -8,11 +8,12 @@ interface TableFilters {
   status: string;
   depositStatus: string;
   lotNumber: string;
+  climateZone: string;
+  community: string;
   installationDate: string;
   isolatedArea: string;
   isolationType: string;
   floorType: string;
-  climateZone: string;
 }
 
 export const useClientFilters = (clients: Client[], columnFilters: TableFilters, filteredClients?: Client[]) => {
@@ -27,11 +28,12 @@ export const useClientFilters = (clients: Client[], columnFilters: TableFilters,
         (!columnFilters.status || client.status === columnFilters.status) &&
         (!columnFilters.depositStatus || client.depositStatus === columnFilters.depositStatus) &&
         (!columnFilters.lotNumber || (client.lotNumber?.includes(columnFilters.lotNumber))) &&
+        (!columnFilters.climateZone || client.climateZone === columnFilters.climateZone) &&
+        (!columnFilters.community || (client.community?.includes(columnFilters.community))) &&
         (!columnFilters.installationDate || (client.installationDate?.includes(columnFilters.installationDate))) &&
         (!columnFilters.isolatedArea || (client.isolatedArea?.toString().includes(columnFilters.isolatedArea))) &&
         (!columnFilters.isolationType || client.isolationType === columnFilters.isolationType) &&
-        (!columnFilters.floorType || client.floorType === columnFilters.floorType) &&
-        (!columnFilters.climateZone || client.climateZone === columnFilters.climateZone)
+        (!columnFilters.floorType || client.floorType === columnFilters.floorType)
       );
     });
   }, [displayClients, columnFilters]);
@@ -44,6 +46,7 @@ export const useClientFilters = (clients: Client[], columnFilters: TableFilters,
   const uniqueIsolationTypes = [...new Set(clients.map(client => client.isolationType).filter(Boolean) as string[])];
   const uniqueFloorTypes = [...new Set(clients.map(client => client.floorType).filter(Boolean) as string[])];
   const uniqueClimateZones = [...new Set(clients.map(client => client.climateZone).filter(Boolean) as string[])];
+  const uniqueCommunities = [...new Set(clients.map(client => client.community).filter(Boolean) as string[])];
   
   return {
     filteredByColumns,
@@ -53,6 +56,7 @@ export const useClientFilters = (clients: Client[], columnFilters: TableFilters,
     uniqueLots,
     uniqueIsolationTypes,
     uniqueFloorTypes,
-    uniqueClimateZones
+    uniqueClimateZones,
+    uniqueCommunities
   };
 };
