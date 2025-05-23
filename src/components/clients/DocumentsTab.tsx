@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,7 +65,9 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
       name: uploadFile.name,
       clientId
     };
-    handleDocumentAction('upload', 'upload', uploadData);
+    
+    // Fix: Pass only 2 arguments as expected by the hook
+    handleDocumentAction('upload', uploadData);
     
     // Close the dialog and reset fields
     setShowUploadDialog(false);
