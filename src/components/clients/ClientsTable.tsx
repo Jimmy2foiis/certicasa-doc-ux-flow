@@ -63,26 +63,26 @@ const ClientsTable = ({
   // Column filtering state
   const [columnFilters, setColumnFilters] = useState<{
     name: string;
-    email: string;
-    phone: string;
-    postalCode: string;
     ficheType: string;
-    climateZone: string;
     status: string;
     depositStatus: string;
+    lotNumber: string;
+    installationDate: string;
+    isolatedArea: string;
     isolationType: string;
     floorType: string;
+    climateZone: string;
   }>({
     name: '',
-    email: '',
-    phone: '',
-    postalCode: '',
     ficheType: '',
-    climateZone: '',
     status: '',
     depositStatus: '',
+    lotNumber: '',
+    installationDate: '',
+    isolatedArea: '',
     isolationType: '',
     floorType: '',
+    climateZone: '',
   });
 
   // Apply column filters to already filtered clients
@@ -90,15 +90,15 @@ const ClientsTable = ({
     return displayClients.filter(client => {
       return (
         (!columnFilters.name || (client.name?.toLowerCase().includes(columnFilters.name.toLowerCase()))) &&
-        (!columnFilters.email || (client.email?.toLowerCase().includes(columnFilters.email.toLowerCase()))) &&
-        (!columnFilters.phone || (client.phone?.includes(columnFilters.phone))) &&
-        (!columnFilters.postalCode || (client.postalCode?.includes(columnFilters.postalCode))) &&
         (!columnFilters.ficheType || client.ficheType === columnFilters.ficheType) &&
-        (!columnFilters.climateZone || client.climateZone === columnFilters.climateZone) &&
         (!columnFilters.status || client.status === columnFilters.status) &&
         (!columnFilters.depositStatus || client.depositStatus === columnFilters.depositStatus) &&
+        (!columnFilters.lotNumber || (client.lotNumber?.includes(columnFilters.lotNumber))) &&
+        (!columnFilters.installationDate || (client.installationDate?.includes(columnFilters.installationDate))) &&
+        (!columnFilters.isolatedArea || (client.isolatedArea?.toString().includes(columnFilters.isolatedArea))) &&
         (!columnFilters.isolationType || client.isolationType === columnFilters.isolationType) &&
-        (!columnFilters.floorType || client.floorType === columnFilters.floorType)
+        (!columnFilters.floorType || client.floorType === columnFilters.floorType) &&
+        (!columnFilters.climateZone || client.climateZone === columnFilters.climateZone)
       );
     });
   }, [displayClients, columnFilters]);
@@ -174,11 +174,12 @@ const ClientsTable = ({
 
   // Fix for TypeScript errors: Filter out undefined values
   const uniqueFicheTypes = [...new Set(clients.map(client => client.ficheType).filter(Boolean) as string[])];
-  const uniqueClimateZones = [...new Set(clients.map(client => client.climateZone).filter(Boolean) as string[])];
   const uniqueStatuses = [...new Set(clients.map(client => client.status).filter(Boolean) as string[])];
   const uniqueDepositStatuses = [...new Set(clients.map(client => client.depositStatus).filter(Boolean) as string[])];
+  const uniqueLots = [...new Set(clients.map(client => client.lotNumber).filter(Boolean) as string[])];
   const uniqueIsolationTypes = [...new Set(clients.map(client => client.isolationType).filter(Boolean) as string[])];
   const uniqueFloorTypes = [...new Set(clients.map(client => client.floorType).filter(Boolean) as string[])];
+  const uniqueClimateZones = [...new Set(clients.map(client => client.climateZone).filter(Boolean) as string[])];
 
   // Create Column Filter Dropdown
   const ColumnFilterDropdown = ({ 
@@ -269,6 +270,7 @@ const ClientsTable = ({
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50 border-b border-gray-200">
+              {/* 1. Checkbox for bulk actions */}
               {onSelectClient && (
                 <TableHead className="w-12 sticky left-0 bg-gray-50 border-r border-gray-100">
                   <Checkbox 
@@ -278,9 +280,11 @@ const ClientsTable = ({
                   />
                 </TableHead>
               )}
+              
+              {/* 2. Nom & Prénom */}
               <TableHead>
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold text-gray-700">Nom</span>
+                  <span className="text-xs font-semibold text-gray-700">Nom & Prénom</span>
                   <div>
                     <Input 
                       placeholder="Filtrer par nom..."
@@ -291,45 +295,8 @@ const ClientsTable = ({
                   </div>
                 </div>
               </TableHead>
-              <TableHead>
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold text-gray-700">Email</span>
-                  <div>
-                    <Input 
-                      placeholder="Filtrer par email..."
-                      className="h-7 text-xs"
-                      value={columnFilters.email}
-                      onChange={(e) => setColumnFilters({...columnFilters, email: e.target.value})}
-                    />
-                  </div>
-                </div>
-              </TableHead>
-              <TableHead>
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold text-gray-700">Téléphone</span>
-                  <div>
-                    <Input 
-                      placeholder="Filtrer par tél..."
-                      className="h-7 text-xs"
-                      value={columnFilters.phone}
-                      onChange={(e) => setColumnFilters({...columnFilters, phone: e.target.value})}
-                    />
-                  </div>
-                </div>
-              </TableHead>
-              <TableHead className="w-24">
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold text-gray-700">CP</span>
-                  <div>
-                    <Input 
-                      placeholder="CP..."
-                      className="h-7 text-xs"
-                      value={columnFilters.postalCode}
-                      onChange={(e) => setColumnFilters({...columnFilters, postalCode: e.target.value})}
-                    />
-                  </div>
-                </div>
-              </TableHead>
+              
+              {/* 3. Type de fiche */}
               <TableHead className="w-28">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-semibold text-gray-700">Type de fiche</span>
@@ -340,39 +307,8 @@ const ClientsTable = ({
                   />
                 </div>
               </TableHead>
-              <TableHead className="w-28">
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold text-gray-700">Zone climat.</span>
-                  <ColumnFilterDropdown 
-                    title="Zone" 
-                    options={uniqueClimateZones} 
-                    filterKey="climateZone" 
-                  />
-                </div>
-              </TableHead>
-              <TableHead className="text-right w-24">
-                <span className="text-xs font-semibold text-gray-700">Surface (m²)</span>
-              </TableHead>
-              <TableHead className="w-32">
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold text-gray-700">Type isolation</span>
-                  <ColumnFilterDropdown 
-                    title="Isolation" 
-                    options={uniqueIsolationTypes} 
-                    filterKey="isolationType" 
-                  />
-                </div>
-              </TableHead>
-              <TableHead className="w-32">
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold text-gray-700">Type plancher</span>
-                  <ColumnFilterDropdown 
-                    title="Plancher" 
-                    options={uniqueFloorTypes} 
-                    filterKey="floorType" 
-                  />
-                </div>
-              </TableHead>
+              
+              {/* 4. Statut du dossier */}
               <TableHead className="w-36">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-semibold text-gray-700">Statut dossier</span>
@@ -383,12 +319,8 @@ const ClientsTable = ({
                   />
                 </div>
               </TableHead>
-              <TableHead className="w-28">
-                <span className="text-xs font-semibold text-gray-700">Date de pose</span>
-              </TableHead>
-              <TableHead className="w-32">
-                <span className="text-xs font-semibold text-gray-700">Lot</span>
-              </TableHead>
+              
+              {/* 5. Statut de dépôt */}
               <TableHead className="w-32">
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-semibold text-gray-700">Statut dépôt</span>
@@ -399,6 +331,82 @@ const ClientsTable = ({
                   />
                 </div>
               </TableHead>
+              
+              {/* 6. Nom du lot */}
+              <TableHead className="w-32">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold text-gray-700">Lot</span>
+                  <ColumnFilterDropdown 
+                    title="Lot" 
+                    options={uniqueLots} 
+                    filterKey="lotNumber" 
+                  />
+                </div>
+              </TableHead>
+              
+              {/* 7. Date de pose */}
+              <TableHead className="w-28">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold text-gray-700">Date de pose</span>
+                  <Input 
+                    placeholder="JJ/MM/AAAA"
+                    className="h-7 text-xs"
+                    value={columnFilters.installationDate}
+                    onChange={(e) => setColumnFilters({...columnFilters, installationDate: e.target.value})}
+                  />
+                </div>
+              </TableHead>
+              
+              {/* 8. Surface isolée */}
+              <TableHead className="text-right w-24">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold text-gray-700">Surface (m²)</span>
+                  <Input 
+                    placeholder="m²"
+                    className="h-7 text-xs"
+                    value={columnFilters.isolatedArea}
+                    onChange={(e) => setColumnFilters({...columnFilters, isolatedArea: e.target.value})}
+                  />
+                </div>
+              </TableHead>
+              
+              {/* 9. Type isolation */}
+              <TableHead className="w-32">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold text-gray-700">Type isolation</span>
+                  <ColumnFilterDropdown 
+                    title="Isolation" 
+                    options={uniqueIsolationTypes} 
+                    filterKey="isolationType" 
+                  />
+                </div>
+              </TableHead>
+              
+              {/* 10. Type plancher */}
+              <TableHead className="w-32">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold text-gray-700">Type plancher</span>
+                  <ColumnFilterDropdown 
+                    title="Plancher" 
+                    options={uniqueFloorTypes} 
+                    filterKey="floorType" 
+                  />
+                </div>
+              </TableHead>
+              
+              {/* 11. Zone climatique */}
+              <TableHead className="w-28">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold text-gray-700">Zone climat.</span>
+                  <ColumnFilterDropdown 
+                    title="Zone" 
+                    options={uniqueClimateZones} 
+                    filterKey="climateZone" 
+                  />
+                </div>
+              </TableHead>
+              
+              {/* 12. Actions */}
               <TableHead className="text-right w-20">
                 <span className="text-xs font-semibold text-gray-700">Actions</span>
               </TableHead>
@@ -407,7 +415,7 @@ const ClientsTable = ({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={onSelectClient ? 15 : 14} className="text-center py-10">
+                <TableCell colSpan={onSelectClient ? 12 : 11} className="text-center py-10">
                   <div className="flex justify-center items-center">
                     <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
                     <span className="ml-2 text-gray-500">Chargement des clients...</span>
@@ -416,7 +424,7 @@ const ClientsTable = ({
               </TableRow>
             ) : filteredByColumns.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={onSelectClient ? 15 : 14} className="text-center py-10">
+                <TableCell colSpan={onSelectClient ? 12 : 11} className="text-center py-10">
                   <p className="text-gray-500">Aucun client trouvé</p>
                   {searchTerm ? (
                     <p className="text-sm text-gray-400 mt-1">
@@ -436,6 +444,7 @@ const ClientsTable = ({
                   className="cursor-pointer hover:bg-gray-50 transition-colors h-14"
                   onClick={() => client.id && handleRowClick(client.id)}
                 >
+                  {/* 1. Checkbox */}
                   {onSelectClient && (
                     <TableCell className="w-12 sticky left-0 bg-white border-r border-gray-100" onClick={(e) => e.stopPropagation()}>
                       <Checkbox 
@@ -445,42 +454,33 @@ const ClientsTable = ({
                       />
                     </TableCell>
                   )}
+                  
+                  {/* 2. Nom & Prénom */}
                   <TableCell className="font-medium text-gray-900">{client.name}</TableCell>
-                  <TableCell className="text-gray-600">{client.email}</TableCell>
-                  <TableCell className="text-gray-600">{client.phone}</TableCell>
-                  <TableCell className="text-center text-gray-600">{client.postalCode}</TableCell>
+                  
+                  {/* 3. Type de fiche */}
                   <TableCell>
                     <Badge variant={getFicheTypeVariant(client.ficheType)} className="font-normal bg-opacity-20">
                       {client.ficheType || 'RES010'}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="py-0 px-2 text-xs bg-gray-50">
-                      {client.climateZone || 'C'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className={`text-right ${Number(client.isolatedArea) >= 80 ? 'font-medium' : ''}`}>
-                    {client.isolatedArea} m²
-                  </TableCell>
-                  <TableCell>
-                    <span className="flex items-center">
-                      <span className="mr-1">{getIsolationTypeIcon(client.isolationType)}</span>
-                      <span className="text-sm text-gray-600">{client.isolationType || 'Combles'}</span>
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className="flex items-center">
-                      <span className="mr-1">{getFloorTypeIcon(client.floorType)}</span>
-                      <span className="text-sm text-gray-600">{client.floorType || 'Bois'}</span>
-                    </span>
-                  </TableCell>
+                  
+                  {/* 4. Statut du dossier */}
                   <TableCell>
                     <div className="flex items-center">
                       {getStatusDot(client.status)}
                       <span className="text-sm">{client.status || 'En cours'}</span>
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-gray-600">{formatDate(client.installationDate)}</TableCell>
+                  
+                  {/* 5. Statut de dépôt */}
+                  <TableCell>
+                    <Badge variant={getDepositVariant(client.depositStatus)} className="bg-opacity-20 font-normal">
+                      {client.depositStatus || 'Non déposé'}
+                    </Badge>
+                  </TableCell>
+                  
+                  {/* 6. Nom du lot */}
                   <TableCell>
                     {client.lotNumber ? (
                       <span className="text-blue-600 hover:underline cursor-pointer">
@@ -490,11 +490,39 @@ const ClientsTable = ({
                       <span className="text-gray-400 text-sm">Non assigné</span>
                     )}
                   </TableCell>
+                  
+                  {/* 7. Date de pose */}
+                  <TableCell className="text-sm text-gray-600">{formatDate(client.installationDate)}</TableCell>
+                  
+                  {/* 8. Surface isolée */}
+                  <TableCell className={`text-right ${Number(client.isolatedArea) >= 80 ? 'font-medium' : ''}`}>
+                    {client.isolatedArea} m²
+                  </TableCell>
+                  
+                  {/* 9. Type isolation */}
                   <TableCell>
-                    <Badge variant={getDepositVariant(client.depositStatus)} className="bg-opacity-20 font-normal">
-                      {client.depositStatus || 'Non déposé'}
+                    <span className="flex items-center">
+                      <span className="mr-1">{getIsolationTypeIcon(client.isolationType)}</span>
+                      <span className="text-sm text-gray-600">{client.isolationType || 'Combles'}</span>
+                    </span>
+                  </TableCell>
+                  
+                  {/* 10. Type plancher */}
+                  <TableCell>
+                    <span className="flex items-center">
+                      <span className="mr-1">{getFloorTypeIcon(client.floorType)}</span>
+                      <span className="text-sm text-gray-600">{client.floorType || 'Bois'}</span>
+                    </span>
+                  </TableCell>
+                  
+                  {/* 11. Zone climatique */}
+                  <TableCell>
+                    <Badge variant="outline" className="py-0 px-2 text-xs bg-gray-50">
+                      {client.climateZone || 'C'}
                     </Badge>
                   </TableCell>
+                  
+                  {/* 12. Actions */}
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
