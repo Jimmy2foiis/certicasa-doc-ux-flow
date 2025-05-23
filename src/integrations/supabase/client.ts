@@ -10,4 +10,4 @@ const proxy: any = new Proxy(() => proxy, {
   apply: () => proxy,
 });
 
-export const supabase: any = proxy;
+export const supabase: any = {} as any;
