@@ -22,15 +22,14 @@ import {
   MoreHorizontal, 
   Edit, 
   Trash2, 
-  UserPlus, 
-  Loader2, 
-  ChevronDown, 
   Search, 
   Filter, 
-  Eye 
+  Eye,
+  Circle,
+  CheckCircle,
+  Loader2
 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
-import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
 
 interface ClientsTableProps {
@@ -58,7 +57,6 @@ const ClientsTable = ({
   onSelectClient,
   onSelectAll,
 }: ClientsTableProps) => {
-  const { toast } = useToast();
   const displayClients = filteredClients ?? clients;
   const allSelected = displayClients.length > 0 && selectedClients.length === displayClients.length;
 
@@ -134,11 +132,6 @@ const ClientsTable = ({
         }
       } catch (error) {
         console.error("Erreur lors de la suppression du client:", error);
-        toast({
-          title: "Erreur",
-          description: "Une erreur est survenue lors de la suppression du client",
-          variant: "destructive"
-        });
       }
     }
   };
@@ -179,13 +172,13 @@ const ClientsTable = ({
     return type === 'RES010' ? 'secondary' : 'outline';
   };
 
-  // Unique values for dropdowns
-  const uniqueFicheTypes = [...new Set(clients.map(client => client.ficheType).filter(Boolean))];
-  const uniqueClimateZones = [...new Set(clients.map(client => client.climateZone).filter(Boolean))];
-  const uniqueStatuses = [...new Set(clients.map(client => client.status).filter(Boolean))];
-  const uniqueDepositStatuses = [...new Set(clients.map(client => client.depositStatus).filter(Boolean))];
-  const uniqueIsolationTypes = [...new Set(clients.map(client => client.isolationType).filter(Boolean))];
-  const uniqueFloorTypes = [...new Set(clients.map(client => client.floorType).filter(Boolean))];
+  // Fix for TypeScript errors: Filter out undefined values
+  const uniqueFicheTypes = [...new Set(clients.map(client => client.ficheType).filter(Boolean) as string[])];
+  const uniqueClimateZones = [...new Set(clients.map(client => client.climateZone).filter(Boolean) as string[])];
+  const uniqueStatuses = [...new Set(clients.map(client => client.status).filter(Boolean) as string[])];
+  const uniqueDepositStatuses = [...new Set(clients.map(client => client.depositStatus).filter(Boolean) as string[])];
+  const uniqueIsolationTypes = [...new Set(clients.map(client => client.isolationType).filter(Boolean) as string[])];
+  const uniqueFloorTypes = [...new Set(clients.map(client => client.floorType).filter(Boolean) as string[])];
 
   // Create Column Filter Dropdown
   const ColumnFilterDropdown = ({ 
@@ -200,11 +193,11 @@ const ClientsTable = ({
     <DropdownMenu>
       <DropdownMenuTrigger asChild className="data-[state=open]:bg-gray-100">
         <Button variant="ghost" size="sm" className="h-7 px-2 flex gap-1 items-center">
-          <Filter className="h-3.5 w-3.5 text-gray-500" />
-          <span>{columnFilters[filterKey] || title}</span>
+          <Filter className="h-3.5 w-3.5 text-gray-400" />
+          <span className="text-sm">{columnFilters[filterKey] || title}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="bg-white shadow-lg border rounded-md w-52">
+      <DropdownMenuContent align="start" className="bg-white shadow-lg border rounded-md w-52 z-50">
         <div className="p-2">
           <Input
             placeholder="Filtrer..."
@@ -240,15 +233,44 @@ const ClientsTable = ({
       </DropdownMenuContent>
     </DropdownMenu>
   );
+  
+  // Fonction pour déterminer le type d'icône selon le type d'isolation
+  const getIsolationTypeIcon = (type?: string) => {
+    return type === 'Combles' ? '🧱' : '🏠';
+  };
+  
+  // Fonction pour déterminer le type d'icône selon le type de plancher
+  const getFloorTypeIcon = (type?: string) => {
+    return type === 'Bois' ? '🪵' : '🧱';
+  };
 
+  // Fonction pour afficher le statut du dossier avec un point coloré
+  const getStatusDot = (status?: string) => {
+    switch (status) {
+      case 'En cours': 
+        return <Circle className="h-2 w-2 text-blue-400 fill-blue-400 mr-1.5" />;
+      case 'Prêt à déposer': 
+        return <Circle className="h-2 w-2 text-amber-400 fill-amber-400 mr-1.5" />;
+      case 'Déposé': 
+        return <Circle className="h-2 w-2 text-indigo-400 fill-indigo-400 mr-1.5" />;
+      case 'Validé': 
+        return <CheckCircle className="h-2 w-2 text-green-500 fill-green-500 mr-1.5" />;
+      case 'Rejeté': 
+      case 'Blocage': 
+        return <Circle className="h-2 w-2 text-red-400 fill-red-400 mr-1.5" />;
+      default: 
+        return <Circle className="h-2 w-2 text-gray-300 fill-gray-300 mr-1.5" />;
+    }
+  };
+  
   return (
-    <div className="rounded-lg border shadow-sm bg-white overflow-hidden">
+    <div className="rounded-md border border-gray-200 shadow-sm bg-white overflow-hidden">
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50">
+            <TableRow className="bg-gray-50 border-b border-gray-200">
               {onSelectClient && (
-                <TableHead className="w-12">
+                <TableHead className="w-12 sticky left-0 bg-gray-50 border-r border-gray-100">
                   <Checkbox 
                     checked={allSelected}
                     onCheckedChange={handleSelectAll}
@@ -258,7 +280,7 @@ const ClientsTable = ({
               )}
               <TableHead>
                 <div className="flex flex-col gap-1">
-                  <span>Nom</span>
+                  <span className="text-xs font-semibold text-gray-700">Nom</span>
                   <div>
                     <Input 
                       placeholder="Filtrer par nom..."
@@ -271,7 +293,7 @@ const ClientsTable = ({
               </TableHead>
               <TableHead>
                 <div className="flex flex-col gap-1">
-                  <span>Email</span>
+                  <span className="text-xs font-semibold text-gray-700">Email</span>
                   <div>
                     <Input 
                       placeholder="Filtrer par email..."
@@ -284,7 +306,7 @@ const ClientsTable = ({
               </TableHead>
               <TableHead>
                 <div className="flex flex-col gap-1">
-                  <span>Téléphone</span>
+                  <span className="text-xs font-semibold text-gray-700">Téléphone</span>
                   <div>
                     <Input 
                       placeholder="Filtrer par tél..."
@@ -295,9 +317,9 @@ const ClientsTable = ({
                   </div>
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-24">
                 <div className="flex flex-col gap-1">
-                  <span>Code postal</span>
+                  <span className="text-xs font-semibold text-gray-700">CP</span>
                   <div>
                     <Input 
                       placeholder="CP..."
@@ -308,9 +330,9 @@ const ClientsTable = ({
                   </div>
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-28">
                 <div className="flex flex-col gap-1">
-                  <span>Type de fiche</span>
+                  <span className="text-xs font-semibold text-gray-700">Type de fiche</span>
                   <ColumnFilterDropdown 
                     title="Type" 
                     options={uniqueFicheTypes} 
@@ -318,9 +340,9 @@ const ClientsTable = ({
                   />
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-28">
                 <div className="flex flex-col gap-1">
-                  <span>Zone climat.</span>
+                  <span className="text-xs font-semibold text-gray-700">Zone climat.</span>
                   <ColumnFilterDropdown 
                     title="Zone" 
                     options={uniqueClimateZones} 
@@ -328,10 +350,12 @@ const ClientsTable = ({
                   />
                 </div>
               </TableHead>
-              <TableHead>Surface (m²)</TableHead>
-              <TableHead>
+              <TableHead className="text-right w-24">
+                <span className="text-xs font-semibold text-gray-700">Surface (m²)</span>
+              </TableHead>
+              <TableHead className="w-32">
                 <div className="flex flex-col gap-1">
-                  <span>Type isolation</span>
+                  <span className="text-xs font-semibold text-gray-700">Type isolation</span>
                   <ColumnFilterDropdown 
                     title="Isolation" 
                     options={uniqueIsolationTypes} 
@@ -339,9 +363,9 @@ const ClientsTable = ({
                   />
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-32">
                 <div className="flex flex-col gap-1">
-                  <span>Type plancher</span>
+                  <span className="text-xs font-semibold text-gray-700">Type plancher</span>
                   <ColumnFilterDropdown 
                     title="Plancher" 
                     options={uniqueFloorTypes} 
@@ -349,9 +373,9 @@ const ClientsTable = ({
                   />
                 </div>
               </TableHead>
-              <TableHead>
+              <TableHead className="w-36">
                 <div className="flex flex-col gap-1">
-                  <span>Statut dossier</span>
+                  <span className="text-xs font-semibold text-gray-700">Statut dossier</span>
                   <ColumnFilterDropdown 
                     title="Statut" 
                     options={uniqueStatuses} 
@@ -359,11 +383,15 @@ const ClientsTable = ({
                   />
                 </div>
               </TableHead>
-              <TableHead>Date de pose</TableHead>
-              <TableHead>Lot</TableHead>
-              <TableHead>
+              <TableHead className="w-28">
+                <span className="text-xs font-semibold text-gray-700">Date de pose</span>
+              </TableHead>
+              <TableHead className="w-32">
+                <span className="text-xs font-semibold text-gray-700">Lot</span>
+              </TableHead>
+              <TableHead className="w-32">
                 <div className="flex flex-col gap-1">
-                  <span>Statut dépôt</span>
+                  <span className="text-xs font-semibold text-gray-700">Statut dépôt</span>
                   <ColumnFilterDropdown 
                     title="Dépôt" 
                     options={uniqueDepositStatuses} 
@@ -371,7 +399,9 @@ const ClientsTable = ({
                   />
                 </div>
               </TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="text-right w-20">
+                <span className="text-xs font-semibold text-gray-700">Actions</span>
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -394,7 +424,6 @@ const ClientsTable = ({
                     </p>
                   ) : (
                     <Button variant="outline" className="mt-4" onClick={() => onOpenCreateDialog?.()}>
-                      <UserPlus className="h-4 w-4 mr-2" />
                       <span>Ajouter un client</span>
                     </Button>
                   )}
@@ -404,11 +433,11 @@ const ClientsTable = ({
               filteredByColumns.map((client) => (
                 <TableRow
                   key={client.id}
-                  className="cursor-pointer hover:bg-gray-50 transition-colors"
+                  className="cursor-pointer hover:bg-gray-50 transition-colors h-14"
                   onClick={() => client.id && handleRowClick(client.id)}
                 >
                   {onSelectClient && (
-                    <TableCell className="w-12" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className="w-12 sticky left-0 bg-white border-r border-gray-100" onClick={(e) => e.stopPropagation()}>
                       <Checkbox 
                         checked={client.id ? selectedClients.includes(client.id) : false}
                         onCheckedChange={() => client.id && onSelectClient(client.id, !selectedClients.includes(client.id))}
@@ -416,30 +445,53 @@ const ClientsTable = ({
                       />
                     </TableCell>
                   )}
-                  <TableCell className="font-medium">{client.name}</TableCell>
-                  <TableCell>{client.email}</TableCell>
-                  <TableCell>{client.phone}</TableCell>
-                  <TableCell>{client.postalCode}</TableCell>
+                  <TableCell className="font-medium text-gray-900">{client.name}</TableCell>
+                  <TableCell className="text-gray-600">{client.email}</TableCell>
+                  <TableCell className="text-gray-600">{client.phone}</TableCell>
+                  <TableCell className="text-center text-gray-600">{client.postalCode}</TableCell>
                   <TableCell>
-                    <Badge variant={getFicheTypeVariant(client.ficheType)}>
+                    <Badge variant={getFicheTypeVariant(client.ficheType)} className="font-normal bg-opacity-20">
                       {client.ficheType || 'RES010'}
                     </Badge>
                   </TableCell>
-                  <TableCell>{client.climateZone || 'C'}</TableCell>
-                  <TableCell>{client.isolatedArea} m²</TableCell>
-                  <TableCell>{client.isolationType || 'Combles'}</TableCell>
-                  <TableCell>{client.floorType || 'Bois'}</TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(client.status)}>
-                      {client.status || 'En cours'}
+                    <Badge variant="outline" className="py-0 px-2 text-xs bg-gray-50">
+                      {client.climateZone || 'C'}
                     </Badge>
                   </TableCell>
-                  <TableCell>{formatDate(client.installationDate)}</TableCell>
-                  <TableCell>
-                    {client.lotNumber ? `Oui - ${client.lotNumber}` : 'Non'}
+                  <TableCell className={`text-right ${Number(client.isolatedArea) >= 80 ? 'font-medium' : ''}`}>
+                    {client.isolatedArea} m²
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getDepositVariant(client.depositStatus)}>
+                    <span className="flex items-center">
+                      <span className="mr-1">{getIsolationTypeIcon(client.isolationType)}</span>
+                      <span className="text-sm text-gray-600">{client.isolationType || 'Combles'}</span>
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="flex items-center">
+                      <span className="mr-1">{getFloorTypeIcon(client.floorType)}</span>
+                      <span className="text-sm text-gray-600">{client.floorType || 'Bois'}</span>
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      {getStatusDot(client.status)}
+                      <span className="text-sm">{client.status || 'En cours'}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-600">{formatDate(client.installationDate)}</TableCell>
+                  <TableCell>
+                    {client.lotNumber ? (
+                      <span className="text-blue-600 hover:underline cursor-pointer">
+                        {client.lotNumber}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 text-sm">Non assigné</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getDepositVariant(client.depositStatus)} className="bg-opacity-20 font-normal">
                       {client.depositStatus || 'Non déposé'}
                     </Badge>
                   </TableCell>
@@ -450,7 +502,7 @@ const ClientsTable = ({
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-white">
+                      <DropdownMenuContent align="end" className="bg-white z-50">
                         <DropdownMenuItem 
                           className="flex items-center cursor-pointer"
                           onClick={(e) => {
@@ -461,6 +513,17 @@ const ClientsTable = ({
                           <Eye className="mr-2 h-4 w-4" />
                           <span>Voir détails</span>
                         </DropdownMenuItem>
+                        <DropdownMenuItem 
+                          className="flex items-center cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            // Actions d'édition à implémenter
+                          }}
+                        >
+                          <Edit className="mr-2 h-4 w-4" />
+                          <span>Modifier</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="flex items-center text-red-600 cursor-pointer"
                           onClick={(e) => {

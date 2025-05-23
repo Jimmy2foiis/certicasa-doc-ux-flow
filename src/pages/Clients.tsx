@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Search, UserPlus, Download, Package } from "lucide-react";
+import { Search, UserPlus, Package, Download, UploadIcon, Trash2, RefreshCcw, Filter } from "lucide-react";
 import ClientForm from "@/components/clients/ClientForm";
 import ClientsFloatingBar from "@/components/clients/ClientsFloatingBar";
 
@@ -141,38 +141,94 @@ const Clients = () => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
         <main className="flex-1 overflow-y-auto p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-semibold">Clients</h1>
-            <div className="flex gap-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
-                <Input
-                  placeholder="Rechercher un client..."
-                  className="pl-9 w-64 bg-white"
-                  value={filters.search}
-                  onChange={(e) => setFilters({...filters, search: e.target.value})}
-                />
+          {/* Header avec recherche et actions */}
+          <div className="sticky top-0 z-10 bg-gray-50 pb-4">
+            <div className="flex justify-between items-center mb-6">
+              <h1 className="text-2xl font-semibold text-gray-900">Clients</h1>
+              <div className="flex gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    placeholder="Rechercher un client..."
+                    className="pl-9 w-64 bg-white"
+                    value={filters.search}
+                    onChange={(e) => setFilters({...filters, search: e.target.value})}
+                  />
+                </div>
+                <Button 
+                  onClick={() => setShowCreateDialog(true)} 
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <UserPlus className="h-4 w-4 mr-2" />
+                  Nouveau client
+                </Button>
               </div>
-              <Button 
-                onClick={() => setShowCreateDialog(true)} 
-                className="bg-green-600 hover:bg-green-700"
-              >
-                <UserPlus className="h-4 w-4 mr-2" />
-                Nouveau client
-              </Button>
+            </div>
+            
+            {/* Boutons d'action principale */}
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-1 text-sm h-9 border-gray-300"
+                  disabled={selectedClients.length === 0}
+                  onClick={handleCreateBatch}
+                >
+                  <UploadIcon className="h-4 w-4" />
+                  <span>Créer un lot</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-1 text-sm h-9 border-gray-300"
+                  disabled={selectedClients.length === 0}
+                  onClick={handleAddToExistingBatch}
+                >
+                  <Package className="h-4 w-4" />
+                  <span>Ajouter à un lot</span>
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="flex items-center gap-1 text-sm h-9 border-gray-300"
+                  disabled={selectedClients.length === 0}
+                  onClick={handleDownloadZip}
+                >
+                  <Download className="h-4 w-4" />
+                  <span>Exporter sélection</span>
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="ghost" 
+                  className="flex items-center gap-1 h-9 text-gray-600"
+                  onClick={refreshClients}
+                >
+                  <RefreshCcw className="h-4 w-4" />
+                  <span>Actualiser</span>
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  className="flex items-center gap-1 h-9 text-gray-600"
+                >
+                  <Filter className="h-4 w-4" />
+                  <span>Enregistrer filtre</span>
+                </Button>
+              </div>
             </div>
           </div>
-
-          <ClientsTable 
-            clients={filteredClients}
-            loading={loading}
-            selectedClients={selectedClients}
-            onSelectClient={handleSelectClient}
-            onSelectAll={handleSelectAll}
-            onDeleteClient={handleDeleteClient}
-            onClientSelect={handleClientSelect}
-            onOpenCreateDialog={() => setShowCreateDialog(true)}
-          />
+          
+          {/* Tableau des clients */}
+          <div className="mb-16">
+            <ClientsTable 
+              clients={filteredClients}
+              loading={loading}
+              selectedClients={selectedClients}
+              onSelectClient={handleSelectClient}
+              onSelectAll={handleSelectAll}
+              onDeleteClient={handleDeleteClient}
+              onClientSelect={handleClientSelect}
+              onOpenCreateDialog={() => setShowCreateDialog(true)}
+            />
+          </div>
           
           {selectedClients.length > 0 && (
             <ClientsFloatingBar 
