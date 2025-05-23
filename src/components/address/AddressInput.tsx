@@ -13,8 +13,8 @@ export const AddressInput = forwardRef<HTMLInputElement, AddressInputProps>(
   ({ isLoading, className, ...props }, ref) => {
     return (
       <div className="relative">
-        <MapPin className="absolute left-2.5 top-2.5 h-5 w-5 text-gray-400" />
-        {isLoading && <Loader2 className="absolute right-2.5 top-2.5 h-5 w-5 text-gray-400 animate-spin" />}
+        <MapPin className="absolute left-2.5 top-2.5 h-5 w-5 text-gray-400 pointer-events-none" />
+        {isLoading && <Loader2 className="absolute right-2.5 top-2.5 h-5 w-5 text-gray-400 animate-spin pointer-events-none" />}
         <Input
           ref={ref}
           placeholder="Saisissez une adresse espagnole..."
