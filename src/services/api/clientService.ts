@@ -50,7 +50,14 @@ export const getClientById = async (clientId: string): Promise<Client | null> =>
     const response = await httpClient.get<any>(`/prospects/${clientId}/`);
     
     if (!response.success || !response.data) {
-      console.error(`Erreur lors de la récupération du client ${clientId}:`, response.message);
+      console.warn(`Endpoint détail non disponible ou réponse invalide pour le client ${clientId}. Tentative de fallback via la liste complète…`);
+
+      // Fallback : récupérer la liste et filtrer
+      const allClients = await getClients();
+      const found = allClients.find((c) => c.id === clientId);
+      if (found) return found;
+
+      console.error(`Client ${clientId} introuvable même après fallback.`);
       return null;
     }
     
