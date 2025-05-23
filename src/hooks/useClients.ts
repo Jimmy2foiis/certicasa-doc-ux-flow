@@ -131,6 +131,11 @@ export const useClients = () => {
         return false;
       }
       
+      // Filtre par communauté autonome
+      if (filters.community && (!client.community || !client.community.includes(filters.community))) {
+        return false;
+      }
+      
       return true;
     });
   }, [clients, filters]);

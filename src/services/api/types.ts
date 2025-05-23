@@ -31,7 +31,7 @@ export interface Client {
   installationDate?: string;
   lotNumber?: string | null;
   depositStatus?: string;
-  community?: string; // Nouveau champ pour la communauté autonome
+  community?: string; // Champ pour la communauté autonome
 }
 
 // Type pour les données cadastrales
