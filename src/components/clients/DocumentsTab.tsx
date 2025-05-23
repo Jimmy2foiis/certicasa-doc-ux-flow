@@ -1,128 +1,49 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { FileText, Download, Upload, Trash2, AlertCircle, CheckCircle } from "lucide-react";
+import { FileText, Download, Upload, Trash2, CheckCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { getDocumentsForClient, deleteDocument, markDocumentAsSent } from "@/services/api";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { useClientDocuments } from "@/hooks/documents/useClientDocuments";
 
 interface DocumentsTabProps {
   clientId: string;
 }
 
 const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
-  const [documents, setDocuments] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showUploadDialog, setShowUploadDialog] = useState(false);
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState("facture");
   const { toast } = useToast();
 
-  // Charger les documents du client
-  useEffect(() => {
-    const loadDocuments = async () => {
-      try {
-        setLoading(true);
-        const docs = await getDocumentsForClient(clientId);
-        if (Array.isArray(docs)) {
-          setDocuments(docs);
-        }
-      } catch (error) {
-        console.error("Erreur lors du chargement des documents:", error);
-        toast({
-          title: "Erreur",
-          description: "Impossible de charger les documents du client",
-          variant: "destructive",
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Use the client documents hook instead of direct API calls
+  const { 
+    adminDocuments: documents,
+    isLoading: loading,
+    handleDocumentAction
+  } = useClientDocuments(clientId);
 
-    loadDocuments();
-  }, [clientId, toast]);
-
-  // Gérer la suppression d'un document
-  const handleDeleteDocument = async (documentId: string) => {
-    try {
-      const success = await deleteDocument(documentId);
-      if (success) {
-        setDocuments(prev => prev.filter(doc => doc.id !== documentId));
-        toast({
-          title: "Document supprimé",
-          description: "Le document a été supprimé avec succès",
-        });
-      } else {
-        toast({
-          title: "Erreur",
-          description: "Impossible de supprimer le document",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Erreur lors de la suppression du document:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de la suppression",
-        variant: "destructive",
-      });
-    }
+  // Handle document actions
+  const handleDeleteDocument = (documentId: string) => {
+    handleDocumentAction(documentId, 'delete');
   };
 
-  // Gérer le téléchargement d'un document
+  // Handle downloading a document
   const handleDownloadDocument = (document: any) => {
-    // Logique de téléchargement
-    console.log("Téléchargement du document:", document);
-    toast({
-      title: "Téléchargement",
-      description: `Téléchargement de ${document.name} en cours...`,
-    });
-    
-    // Simuler un téléchargement (à remplacer par la vraie logique)
-    setTimeout(() => {
-      toast({
-        title: "Téléchargement terminé",
-        description: `${document.name} a été téléchargé avec succès`,
-      });
-    }, 1500);
+    handleDocumentAction(document.id, 'download');
   };
 
-  // Gérer l'envoi d'un document
-  const handleSendDocument = async (documentId: string) => {
-    try {
-      const success = await markDocumentAsSent(documentId);
-      if (success) {
-        // Mettre à jour le statut du document dans la liste
-        setDocuments(prev => prev.map(doc => 
-          doc.id === documentId ? { ...doc, status: "Envoyé" } : doc
-        ));
-        
-        toast({
-          title: "Document envoyé",
-          description: "Le document a été marqué comme envoyé",
-        });
-      } else {
-        toast({
-          title: "Erreur",
-          description: "Impossible de marquer le document comme envoyé",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Erreur lors de l'envoi du document:", error);
-      toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors de l'envoi",
-        variant: "destructive",
-      });
-    }
+  // Handle sending a document
+  const handleSendDocument = (documentId: string) => {
+    handleDocumentAction(documentId, 'send');
   };
 
-  // Gérer l'upload d'un document
+  // Handle uploading a document
   const handleUploadDocument = () => {
     if (!uploadFile) {
       toast({
@@ -133,27 +54,24 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
       return;
     }
 
-    // Simuler l'upload (à remplacer par la vraie logique)
     toast({
       title: "Upload en cours",
       description: `Upload de ${uploadFile.name}...`,
     });
 
-    // Simuler un délai d'upload
+    // Simulate document upload - in real implementation, this would call an API
     setTimeout(() => {
-      // Ajouter le document à la liste
+      // Add the document to the list - this would normally be done by refreshing from API
       const newDocument = {
         id: `doc-${Date.now()}`,
         name: uploadFile.name,
         type: documentType,
-        status: "Nouveau",
+        status: "available", // Use consistent status
         created_at: new Date().toISOString(),
         client_id: clientId,
       };
-
-      setDocuments(prev => [...prev, newDocument]);
       
-      // Fermer le dialogue et réinitialiser les champs
+      // Close the dialog and reset fields
       setShowUploadDialog(false);
       setUploadFile(null);
       setDocumentType("facture");
@@ -165,16 +83,23 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
     }, 1500);
   };
 
-  // Obtenir la couleur du badge en fonction du statut
+  // Obtain the color for status badges
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
-      case "envoyé":
+      case "sent":
+      case "available":
+      case "signed":
         return "bg-green-100 text-green-800 hover:bg-green-200";
-      case "en attente":
+      case "pending":
+      case "missing":
         return "bg-yellow-100 text-yellow-800 hover:bg-yellow-200";
-      case "erreur":
+      case "error":
+      case "action-required":
         return "bg-red-100 text-red-800 hover:bg-red-200";
-      case "nouveau":
+      case "generated":
+      case "ready":
+      case "linked":
+      case "draft":
         return "bg-blue-100 text-blue-800 hover:bg-blue-200";
       default:
         return "bg-gray-100 text-gray-800 hover:bg-gray-200";
@@ -220,16 +145,16 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {documents.map((doc) => (
+              {documents.map((doc: any) => (
                 <TableRow key={doc.id}>
                   <TableCell className="font-medium">{doc.name}</TableCell>
                   <TableCell>{doc.type}</TableCell>
                   <TableCell>
-                    {new Date(doc.created_at).toLocaleDateString()}
+                    {new Date(doc.created_at || Date.now()).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
                     <Badge className={getStatusColor(doc.status)}>
-                      {doc.status || "Nouveau"}
+                      {doc.status || "available"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -241,7 +166,7 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
                       >
                         <Download className="h-4 w-4" />
                       </Button>
-                      {doc.status !== "Envoyé" && (
+                      {doc.status !== "sent" && (
                         <Button
                           variant="ghost"
                           size="sm"
