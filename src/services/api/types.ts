@@ -32,6 +32,14 @@ export interface Client {
   lotNumber?: string | null;
   depositStatus?: string;
   community?: string; // Champ pour la communauté autonome
+  // Nouveaux champs pour l'équipe projet
+  teleprospector?: string;
+  confirmer?: string;
+  installationTeam?: string;
+  // Nouveaux champs pour le suivi du dossier
+  delegate?: string;
+  depositDate?: string;
+  entryChannel?: string;
 }
 
 // Type pour les données cadastrales

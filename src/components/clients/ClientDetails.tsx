@@ -1,6 +1,18 @@
 
-import { useState } from "react";
-import ClientDetailsView from "./ClientDetailsView";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowLeft } from "lucide-react";
+import { useClientData } from "@/hooks/useClientData";
+import { useRequiredDocuments } from "@/hooks/useRequiredDocuments";
+
+import ClientDetailsHeader from "./ClientDetailsHeader";
+import ClientInfoSidebar from "./sidebar/ClientInfoSidebar";
+import DocumentsTab from "./DocumentsTab";
+import CalculationsTab from "./CalculationsTab";
+import BillingTab from "./BillingTab";
+import ProjectsTab from "./ProjectsTab";
+import StatisticsTab from "./StatisticsTab";
 
 interface ClientDetailsProps {
   clientId: string;
@@ -8,20 +20,76 @@ interface ClientDetailsProps {
 }
 
 const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
-  const [refreshData, setRefreshData] = useState(0);
+  const [activeTab, setActiveTab] = useState("calculations");
+  const { client } = useClientData(clientId);
+  const { documentStats } = useRequiredDocuments(clientId);
   
-  // Fonction pour déclencher un rafraîchissement des données
-  const handleClientUpdated = () => {
-    setRefreshData(prev => prev + 1);
+  const handleViewMissingDocs = () => {
+    setActiveTab("documents");
   };
-  
+
   return (
-    <ClientDetailsView 
-      clientId={clientId} 
-      onBack={onBack} 
-      key={`client-view-${refreshData}`} 
-      onClientUpdated={handleClientUpdated}
-    />
+    <div className="space-y-4">
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={onBack}
+        className="mb-2 pl-1"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Retour à la liste
+      </Button>
+
+      <ClientDetailsHeader client={client} />
+
+      <div className="grid grid-cols-12 gap-6">
+        {/* Client Info Sidebar - Left Column */}
+        <div className="col-span-12 md:col-span-3 lg:col-span-3">
+          <ClientInfoSidebar 
+            client={client} 
+            documentStats={documentStats}
+            onViewMissingDocs={handleViewMissingDocs}
+          />
+        </div>
+
+        {/* Tabs Content - Right Column */}
+        <div className="col-span-12 md:col-span-9 lg:col-span-9">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="space-y-4"
+          >
+            <TabsList className="grid grid-cols-5 w-full">
+              <TabsTrigger value="calculations">Calculs</TabsTrigger>
+              <TabsTrigger value="documents">Documents</TabsTrigger>
+              <TabsTrigger value="billing">Facturation</TabsTrigger>
+              <TabsTrigger value="projects">Photos Chantier</TabsTrigger>
+              <TabsTrigger value="statistics">Historique</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="calculations" className="space-y-4">
+              <CalculationsTab clientId={clientId} />
+            </TabsContent>
+            
+            <TabsContent value="documents" className="space-y-4">
+              <DocumentsTab clientId={clientId} />
+            </TabsContent>
+            
+            <TabsContent value="billing" className="space-y-4">
+              <BillingTab clientId={clientId} />
+            </TabsContent>
+            
+            <TabsContent value="projects" className="space-y-4">
+              <ProjectsTab clientId={clientId} />
+            </TabsContent>
+            
+            <TabsContent value="statistics" className="space-y-4">
+              <StatisticsTab clientId={clientId} />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
+    </div>
   );
 };
 
