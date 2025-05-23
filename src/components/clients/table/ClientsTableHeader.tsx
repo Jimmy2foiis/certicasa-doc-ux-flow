@@ -1,5 +1,4 @@
 
-import { Input } from '@/components/ui/input';
 import {
   TableHead,
   TableRow,
@@ -7,6 +6,9 @@ import {
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
 import ColumnFilterDropdown from './ColumnFilterDropdown';
+import FilteredColumnHeader from './headers/FilteredColumnHeader';
+import TextFilterInput from './headers/TextFilterInput';
+import SimpleColumnHeader from './headers/SimpleColumnHeader';
 
 interface TableFilters {
   name: string;
@@ -73,23 +75,18 @@ const ClientsTableHeader = ({
         
         {/* 2. Nom & Prénom */}
         <TableHead>
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-gray-700">Nom & Prénom</span>
-            <div>
-              <Input 
-                placeholder="Filtrer par nom..."
-                className="h-7 text-xs"
-                value={columnFilters.name}
-                onChange={(e) => handleFilterChange('name', e.target.value)}
-              />
-            </div>
-          </div>
+          <FilteredColumnHeader title="Nom & Prénom">
+            <TextFilterInput
+              placeholder="Filtrer par nom..."
+              value={columnFilters.name}
+              onChange={(value) => handleFilterChange('name', value)}
+            />
+          </FilteredColumnHeader>
         </TableHead>
         
         {/* 3. Type de fiche */}
         <TableHead className="w-28">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-gray-700">Type de fiche</span>
+          <FilteredColumnHeader title="Type de fiche">
             <ColumnFilterDropdown 
               title="Type" 
               options={uniqueFicheTypes} 
@@ -97,13 +94,12 @@ const ClientsTableHeader = ({
               value={columnFilters.ficheType}
               onChange={handleFilterChange}
             />
-          </div>
+          </FilteredColumnHeader>
         </TableHead>
         
         {/* 4. Statut du dossier */}
         <TableHead className="w-36">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-gray-700">Statut dossier</span>
+          <FilteredColumnHeader title="Statut dossier">
             <ColumnFilterDropdown 
               title="Statut" 
               options={uniqueStatuses} 
@@ -111,13 +107,12 @@ const ClientsTableHeader = ({
               value={columnFilters.status}
               onChange={handleFilterChange}
             />
-          </div>
+          </FilteredColumnHeader>
         </TableHead>
         
         {/* 5. Statut de dépôt */}
         <TableHead className="w-32">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-gray-700">Statut dépôt</span>
+          <FilteredColumnHeader title="Statut dépôt">
             <ColumnFilterDropdown 
               title="Dépôt" 
               options={uniqueDepositStatuses} 
@@ -125,13 +120,12 @@ const ClientsTableHeader = ({
               value={columnFilters.depositStatus}
               onChange={handleFilterChange}
             />
-          </div>
+          </FilteredColumnHeader>
         </TableHead>
         
         {/* 6. Nom du lot */}
         <TableHead className="w-32">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-gray-700">Lot</span>
+          <FilteredColumnHeader title="Lot">
             <ColumnFilterDropdown 
               title="Lot" 
               options={uniqueLots} 
@@ -139,39 +133,34 @@ const ClientsTableHeader = ({
               value={columnFilters.lotNumber}
               onChange={handleFilterChange}
             />
-          </div>
+          </FilteredColumnHeader>
         </TableHead>
         
         {/* 7. Date de pose */}
         <TableHead className="w-28">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-gray-700">Date de pose</span>
-            <Input 
+          <FilteredColumnHeader title="Date de pose">
+            <TextFilterInput
               placeholder="JJ/MM/AAAA"
-              className="h-7 text-xs"
               value={columnFilters.installationDate}
-              onChange={(e) => handleFilterChange('installationDate', e.target.value)}
+              onChange={(value) => handleFilterChange('installationDate', value)}
             />
-          </div>
+          </FilteredColumnHeader>
         </TableHead>
         
         {/* 8. Surface isolée */}
         <TableHead className="text-right w-24">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-gray-700">Surface (m²)</span>
-            <Input 
+          <FilteredColumnHeader title="Surface (m²)">
+            <TextFilterInput
               placeholder="m²"
-              className="h-7 text-xs"
               value={columnFilters.isolatedArea}
-              onChange={(e) => handleFilterChange('isolatedArea', e.target.value)}
+              onChange={(value) => handleFilterChange('isolatedArea', value)}
             />
-          </div>
+          </FilteredColumnHeader>
         </TableHead>
         
         {/* 9. Type isolation */}
         <TableHead className="w-32">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-gray-700">Type isolation</span>
+          <FilteredColumnHeader title="Type isolation">
             <ColumnFilterDropdown 
               title="Isolation" 
               options={uniqueIsolationTypes} 
@@ -179,13 +168,12 @@ const ClientsTableHeader = ({
               value={columnFilters.isolationType}
               onChange={handleFilterChange}
             />
-          </div>
+          </FilteredColumnHeader>
         </TableHead>
         
         {/* 10. Type plancher */}
         <TableHead className="w-32">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-gray-700">Type plancher</span>
+          <FilteredColumnHeader title="Type plancher">
             <ColumnFilterDropdown 
               title="Plancher" 
               options={uniqueFloorTypes} 
@@ -193,13 +181,12 @@ const ClientsTableHeader = ({
               value={columnFilters.floorType}
               onChange={handleFilterChange}
             />
-          </div>
+          </FilteredColumnHeader>
         </TableHead>
         
         {/* 11. Zone climatique */}
         <TableHead className="w-28">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs font-semibold text-gray-700">Zone climat.</span>
+          <FilteredColumnHeader title="Zone climat.">
             <ColumnFilterDropdown 
               title="Zone" 
               options={uniqueClimateZones} 
@@ -207,12 +194,12 @@ const ClientsTableHeader = ({
               value={columnFilters.climateZone}
               onChange={handleFilterChange}
             />
-          </div>
+          </FilteredColumnHeader>
         </TableHead>
         
         {/* 12. Actions */}
         <TableHead className="text-right w-20">
-          <span className="text-xs font-semibold text-gray-700">Actions</span>
+          <SimpleColumnHeader title="Actions" />
         </TableHead>
       </TableRow>
     </TableHeader>
