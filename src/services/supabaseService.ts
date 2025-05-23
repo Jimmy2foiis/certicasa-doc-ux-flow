@@ -1,28 +1,25 @@
 
-// This file re-exports all services to maintain backward compatibility
-// This helps avoid breaking changes in existing code
+/**
+ * Service de compatibilité pour maintenir l'ancienne API
+ * Redirige toutes les opérations vers les nouveaux services API REST
+ */
 
-// Re-export the mock supabase client for backward compatibility
+// Re-export le supabase stub pour la compatibilité
 export { supabase } from './supabase/supabaseClient';
 
-// Types
+// Re-export les types
 export type {
   Client,
   CadastralData,
   Project,
   Calculation,
   Document
-} from './supabase/types';
+} from './api/types';
 
-// Auth Service
-export {
-  signUp,
-  signIn,
-  signOut,
-  getCurrentUser
-} from './supabase/authService';
+// Re-export les fonctions d'auth
+export * from './supabase/authService';
 
-// Client Service - now from API service
+// Re-export les services client
 export {
   getClients,
   getClientById,
@@ -31,39 +28,45 @@ export {
   deleteClientRecord
 } from './api/clientService';
 
-// Cadastral Service
+// Re-export les services cadastraux
 export {
   saveCadastralData,
   getCadastralDataForClient
-} from './supabase/cadastralService';
+} from './api/cadastralService';
 
-// Project Service
+// Re-export les services de projet
 export {
   getProjectsForClient,
   createProject,
   updateProject,
   deleteProject
-} from './supabase/projectService';
+} from './api/projectService';
 
-// Calculation Service
+// Re-export les services de calcul
 export {
   getCalculationsForProject,
   createCalculation,
   updateCalculation,
   deleteCalculation
-} from './supabase/calculationService';
+} from './api/calculationService';
 
-// Document Service
+// Re-export les services de document
 export {
   getDocumentsForClient,
   getDocumentsForProject,
   createDocument,
   updateDocument,
-  deleteDocument
-} from './supabase/documentService';
+  deleteDocument,
+  getDocumentById,
+  markDocumentAsSent
+} from './api/documentService';
 
-// Utils Service
+// Re-export les services utilitaires
 export {
-  updateClientProjectCount,
-  updateClientDataHook
-} from './supabase/utilsService';
+  updateClientProjectCount
+} from './api/projectService';
+
+// Fonction vide pour rétrocompatibilité
+export const updateClientDataHook = (): void => {
+  console.log('Cette fonction est désuète et sera bientôt supprimée.');
+};

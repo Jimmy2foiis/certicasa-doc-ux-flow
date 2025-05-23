@@ -1,176 +1,181 @@
 
-import { Client } from './types';
-import { API_BASE_URL } from './config';
+/**
+ * Service pour la gestion des clients via l'API REST
+ */
+import { httpClient } from './httpClient';
+import { ApiResponse, Client } from './types';
 
 /**
- * Retrieves all clients from the API
+ * Récupère tous les clients depuis l'API
  */
 export const getClients = async (): Promise<Client[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/prospects/`);
+    const response = await httpClient.get<any[]>('/prospects/');
     
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+    if (!response.success || !response.data) {
+      console.error('Erreur lors de la récupération des clients:', response.message);
+      return [];
     }
     
-    const data = await response.json();
-    
-    // Adapter le format des données de l'API externe au format attendu par l'interface
-    const adaptedClients: Client[] = data.map((prospect: any) => ({
-      id: prospect.id.toString(),
-      name: prospect.name || prospect.company_name || "Client sans nom",
-      email: prospect.email,
-      phone: prospect.phone,
-      address: prospect.address,
-      nif: prospect.nif || prospect.tax_id,
-      type: prospect.type || "RES010",
-      status: prospect.status || "Actif",
-      projects: prospect.projects_count || 0,
-      created_at: prospect.created_at || new Date().toISOString()
+    // Adapter le format des données de l'API externe
+    const clients: Client[] = response.data.map((prospect: any) => ({
+      id: prospect.id?.toString() || '',
+      name: prospect.prenom ? `${prospect.prenom} ${prospect.nom || ''}`.trim() : (prospect.nom || 'Client sans nom'),
+      email: prospect.email || '',
+      phone: prospect.tel || prospect.telephone || '',
+      address: prospect.adresse || '',
+      nif: prospect.nif || '',
+      type: prospect.type || 'RES010',
+      status: "Actif",
+      projects: 0, // À compléter avec une requête séparée si besoin
+      created_at: prospect.createdAt || new Date().toISOString()
     }));
 
-    console.log('Clients récupérés depuis l\'API:', adaptedClients);
-    return adaptedClients;
+    return clients;
   } catch (error) {
-    console.error('Erreur lors de la récupération des clients depuis l\'API:', error);
+    console.error("Erreur lors de la récupération des clients:", error);
     return [];
   }
 };
 
 /**
- * Retrieves a specific client by ID
+ * Récupère un client par son identifiant
  */
 export const getClientById = async (clientId: string): Promise<Client | null> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/prospects/${clientId}`);
+    const response = await httpClient.get<any>(`/prospects/${clientId}`);
     
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+    if (!response.success || !response.data) {
+      console.error(`Erreur lors de la récupération du client ${clientId}:`, response.message);
+      return null;
     }
     
-    const prospect = await response.json();
+    const prospect = response.data;
     
     // Adapter le format des données
-    const adaptedClient: Client = {
-      id: prospect.id.toString(),
-      name: prospect.name || prospect.company_name || "Client sans nom",
-      email: prospect.email,
-      phone: prospect.phone,
-      address: prospect.address,
-      nif: prospect.nif || prospect.tax_id,
-      type: prospect.type || "RES010",
-      status: prospect.status || "Actif",
-      projects: prospect.projects_count || 0,
-      created_at: prospect.created_at || new Date().toISOString()
+    const client: Client = {
+      id: prospect.id?.toString() || '',
+      name: prospect.prenom ? `${prospect.prenom} ${prospect.nom || ''}`.trim() : (prospect.nom || 'Client sans nom'),
+      email: prospect.email || '',
+      phone: prospect.tel || prospect.telephone || '',
+      address: prospect.adresse || '',
+      nif: prospect.nif || '',
+      type: prospect.type || 'RES010',
+      status: "Actif",
+      projects: 0, // À compléter avec une requête séparée si besoin
+      created_at: prospect.createdAt || new Date().toISOString()
     };
 
-    return adaptedClient;
+    return client;
   } catch (error) {
-    console.error('Erreur lors de la récupération du client depuis l\'API:', error);
+    console.error(`Erreur lors de la récupération du client ${clientId}:`, error);
     return null;
   }
 };
 
 /**
- * Creates a new client record
+ * Crée un nouveau client
  */
 export const createClientRecord = async (clientData: Client): Promise<Client | null> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/prospects/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: clientData.name,
-        email: clientData.email,
-        phone: clientData.phone,
-        address: clientData.address,
-        nif: clientData.nif,
-        type: clientData.type || "RES010",
-        status: clientData.status || "Actif"
-      })
-    });
+    // Transformer les données au format attendu par l'API
+    const requestData = {
+      prenom: clientData.name.split(' ').slice(0, -1).join(' ') || clientData.name,
+      nom: clientData.name.split(' ').slice(-1).join(' ') || '',
+      email: clientData.email || '',
+      tel: clientData.phone || '',
+      adresse: clientData.address || '',
+      nif: clientData.nif || '',
+    };
     
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+    const response = await httpClient.post<any>('/prospects/', requestData);
+    
+    if (!response.success || !response.data) {
+      console.error('Erreur lors de la création du client:', response.message);
+      return null;
     }
     
-    const createdProspect = await response.json();
+    const createdProspect = response.data;
     
     // Adapter le format des données
-    const adaptedClient: Client = {
-      id: createdProspect.id.toString(),
-      name: createdProspect.name || createdProspect.company_name || "Client sans nom", 
-      email: createdProspect.email,
-      phone: createdProspect.phone,
-      address: createdProspect.address,
-      nif: createdProspect.nif || createdProspect.tax_id,
-      type: createdProspect.type || "RES010",
-      status: createdProspect.status || "Actif",
-      projects: createdProspect.projects_count || 0,
-      created_at: createdProspect.created_at || new Date().toISOString()
+    const client: Client = {
+      id: createdProspect.id?.toString() || '',
+      name: createdProspect.prenom ? `${createdProspect.prenom} ${createdProspect.nom || ''}`.trim() : (createdProspect.nom || 'Client sans nom'),
+      email: createdProspect.email || '',
+      phone: createdProspect.tel || createdProspect.telephone || '',
+      address: createdProspect.adresse || '',
+      nif: createdProspect.nif || '',
+      type: createdProspect.type || 'RES010',
+      status: "Actif",
+      projects: 0, 
+      created_at: createdProspect.createdAt || new Date().toISOString()
     };
 
-    return adaptedClient;
+    return client;
   } catch (error) {
-    console.error('Erreur lors de la création du client dans l\'API:', error);
+    console.error('Erreur lors de la création du client:', error);
     return null;
   }
 };
 
 /**
- * Updates an existing client record
+ * Met à jour un client existant
  */
 export const updateClientRecord = async (clientId: string, clientData: Partial<Client>): Promise<Client | null> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/prospects/${clientId}`, {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(clientData)
-    });
+    // Transformer les données au format attendu par l'API
+    const requestData: Record<string, any> = {};
     
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
+    if (clientData.name) {
+      const nameParts = clientData.name.split(' ');
+      requestData.prenom = nameParts.slice(0, -1).join(' ') || clientData.name;
+      requestData.nom = nameParts.slice(-1).join(' ') || '';
     }
     
-    const updatedProspect = await response.json();
+    if (clientData.email) requestData.email = clientData.email;
+    if (clientData.phone) requestData.tel = clientData.phone;
+    if (clientData.address) requestData.adresse = clientData.address;
+    if (clientData.nif) requestData.nif = clientData.nif;
+    
+    const response = await httpClient.patch<any>(`/prospects/${clientId}`, requestData);
+    
+    if (!response.success || !response.data) {
+      console.error(`Erreur lors de la mise à jour du client ${clientId}:`, response.message);
+      return null;
+    }
+    
+    const updatedProspect = response.data;
     
     // Adapter le format des données
-    const adaptedClient: Client = {
-      id: updatedProspect.id.toString(),
-      name: updatedProspect.name || updatedProspect.company_name || "Client sans nom",
-      email: updatedProspect.email,
-      phone: updatedProspect.phone,
-      address: updatedProspect.address,
-      nif: updatedProspect.nif || updatedProspect.tax_id,
-      type: updatedProspect.type || "RES010",
-      status: updatedProspect.status || "Actif",
-      projects: updatedProspect.projects_count || 0,
-      created_at: updatedProspect.created_at || new Date().toISOString()
+    const client: Client = {
+      id: updatedProspect.id?.toString() || '',
+      name: updatedProspect.prenom ? `${updatedProspect.prenom} ${updatedProspect.nom || ''}`.trim() : (updatedProspect.nom || 'Client sans nom'),
+      email: updatedProspect.email || '',
+      phone: updatedProspect.tel || updatedProspect.telephone || '',
+      address: updatedProspect.adresse || '',
+      nif: updatedProspect.nif || '',
+      type: updatedProspect.type || 'RES010',
+      status: "Actif",
+      projects: 0, // À compléter avec une requête séparée si besoin
+      created_at: updatedProspect.createdAt || new Date().toISOString()
     };
 
-    return adaptedClient;
+    return client;
   } catch (error) {
-    console.error('Erreur lors de la mise à jour du client dans l\'API:', error);
+    console.error(`Erreur lors de la mise à jour du client ${clientId}:`, error);
     return null;
   }
 };
 
 /**
- * Deletes a client record
+ * Supprime un client
  */
 export const deleteClientRecord = async (clientId: string): Promise<boolean> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/prospects/${clientId}`, {
-      method: 'DELETE'
-    });
-    
-    return response.ok;
+    const response = await httpClient.delete<any>(`/prospects/${clientId}`);
+    return response.success;
   } catch (error) {
-    console.error('Erreur lors de la suppression du client dans l\'API:', error);
+    console.error(`Erreur lors de la suppression du client ${clientId}:`, error);
     return false;
   }
 };

@@ -6,7 +6,7 @@ import {
   updateClientRecord,
   Project,
   Client
-} from "@/services/supabaseService";
+} from "@/services/api"; // Importation depuis la nouvelle API
 import { useToast } from "@/components/ui/use-toast";
 
 export const useClientInfo = (clientId: string) => {

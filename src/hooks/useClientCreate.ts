@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { createClientRecord, Client } from "@/services/supabaseService";
+import { createClientRecord, Client } from "@/services/api"; // Importation depuis la nouvelle API
 
 interface UseClientCreateOptions {
   onClientCreated: () => Promise<void>;

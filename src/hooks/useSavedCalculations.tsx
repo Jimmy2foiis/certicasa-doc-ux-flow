@@ -1,9 +1,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { getCadastralDataForClient } from "@/services/supabaseService";
-import { supabase } from '@/integrations/supabase/client';
-import { Json } from '@/integrations/supabase/types';
+import { getCadastralDataForClient } from "@/services/api"; // Importation depuis la nouvelle API
+import { httpClient } from "@/services/api/httpClient";
 
 interface SavedCalculation {
   id: string;
@@ -23,7 +22,7 @@ export const useSavedCalculations = (clientId: string) => {
   // État pour stocker les calculs sauvegardés
   const [savedCalculations, setSavedCalculations] = useState<SavedCalculation[]>([]);
 
-  // Fonction pour récupérer les calculs sauvegardés depuis Supabase
+  // Fonction pour récupérer les calculs sauvegardés depuis l'API
   const loadSavedCalculations = useCallback(async () => {
     try {
       // Vérifier si l'ID client commence par "local_" pour gérer les données locales
@@ -40,37 +39,35 @@ export const useSavedCalculations = (clientId: string) => {
         return;
       }
       
-      // Si ce n'est pas un ID local, récupérer depuis Supabase
-      const { data, error } = await supabase
-        .from('saved_calculations')
-        .select('*')
-        .eq('client_id', clientId);
-      
-      if (error) {
-        throw error;
-      }
-      
-      if (data) {
-        // Convertir du format Supabase au format local
-        const formattedCalculations: SavedCalculation[] = data.map(calc => {
-          const calcData = calc.calculation_data as Record<string, any> | null;
-          
-          return {
-            id: calc.id,
-            projectId: calc.project_id || '',
-            projectName: calcData?.projectName || 'Projet sans nom',
-            clientId: calc.client_id || '',
-            type: calc.type || '',
-            surface: calc.surface || 0,
-            date: new Date(calc.date).toLocaleDateString('fr-FR'),
-            improvement: calc.improvement || 0,
-            calculationData: calc.calculation_data || {}
-          };
-        });
+      // Si ce n'est pas un ID local, récupérer depuis l'API
+      // Note: cet endpoint n'existe peut-être pas encore, à adapter selon l'API réelle
+      try {
+        const response = await httpClient.get<any[]>(`/prospects/${clientId}/calculations`);
         
-        setSavedCalculations(formattedCalculations);
-      } else {
-        setSavedCalculations([]);
+        if (response.success && response.data) {
+          // Convertir du format API au format local
+          const formattedCalculations: SavedCalculation[] = response.data.map(calc => {
+            return {
+              id: calc.id || '',
+              projectId: calc.project_id || '',
+              projectName: calc.project_name || 'Projet sans nom',
+              clientId: calc.client_id || '',
+              type: calc.type || '',
+              surface: calc.surface_area || 0,
+              date: new Date(calc.created_at).toLocaleDateString('fr-FR'),
+              improvement: calc.improvement_percent || 0,
+              calculationData: calc.calculation_data || {}
+            };
+          });
+          
+          setSavedCalculations(formattedCalculations);
+        } else {
+          // Fallback au localStorage
+          useLocalStorage();
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des calculs sauvegardés depuis l'API:", error);
+        useLocalStorage();
       }
     } catch (error) {
       console.error("Erreur lors du chargement des calculs sauvegardés:", error);
@@ -79,24 +76,29 @@ export const useSavedCalculations = (clientId: string) => {
         description: "Impossible de charger les calculs sauvegardés.",
         variant: "destructive",
       });
-      // En cas d'erreur, on essaie de récupérer depuis le localStorage
-      try {
-        const localData = localStorage.getItem('saved_calculations');
-        if (localData) {
-          const allCalculations = JSON.parse(localData);
-          const clientCalculations = allCalculations.filter((calc: any) => calc.clientId === clientId);
-          setSavedCalculations(clientCalculations);
-          toast({
-            title: "Information",
-            description: "Utilisation des calculs stockés localement.",
-            duration: 3000,
-          });
-        }
-      } catch (e) {
-        console.error("Impossible de récupérer les données locales:", e);
-      }
+      // Essayer de récupérer depuis le localStorage en dernier recours
+      useLocalStorage();
     }
   }, [clientId, toast]);
+
+  // Fonction utilitaire pour récupérer les données depuis le localStorage
+  const useLocalStorage = () => {
+    try {
+      const localData = localStorage.getItem('saved_calculations');
+      if (localData) {
+        const allCalculations = JSON.parse(localData);
+        const clientCalculations = allCalculations.filter((calc: any) => calc.clientId === clientId);
+        setSavedCalculations(clientCalculations);
+        toast({
+          title: "Information",
+          description: "Utilisation des calculs stockés localement.",
+          duration: 3000,
+        });
+      }
+    } catch (e) {
+      console.error("Impossible de récupérer les données locales:", e);
+    }
+  };
 
   // Charger les calculs sauvegardés et les données cadastrales au montage du composant
   useEffect(() => {
@@ -105,12 +107,12 @@ export const useSavedCalculations = (clientId: string) => {
     // Récupérer les données cadastrales existantes
     const loadCadastralData = async () => {
       try {
-        const supabaseData = await getCadastralDataForClient(clientId);
-        if (supabaseData) {
-          console.log("Données cadastrales chargées depuis Supabase:", supabaseData);
+        const cadastralData = await getCadastralDataForClient(clientId);
+        if (cadastralData) {
+          console.log("Données cadastrales chargées:", cadastralData);
         }
       } catch (error) {
-        console.error("Erreur lors du chargement des données cadastrales depuis Supabase:", error);
+        console.error("Erreur lors du chargement des données cadastrales:", error);
       }
     };
     

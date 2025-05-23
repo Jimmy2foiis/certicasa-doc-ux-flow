@@ -1,9 +1,9 @@
 
-import { useState, useCallback } from "react";
+import { useCallback } from "react";
 import { useCadastralData } from "@/hooks/useCadastralData";
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
 import { useToast } from "@/components/ui/use-toast";
-import { saveCadastralData, CadastralData as SupabaseCadastralData } from "@/services/supabaseService";
+import { saveCadastralData, CadastralData } from "@/services/api"; // Importation depuis la nouvelle API
 
 export const useClientCadastralData = (clientId: string, clientAddress: string, coordinates?: GeoCoordinates) => {
   const { toast } = useToast();
@@ -22,14 +22,14 @@ export const useClientCadastralData = (clientId: string, clientAddress: string, 
     coordinates
   );
 
-  // Fonction pour rafraîchir les données cadastrales et les sauvegarder dans Supabase
+  // Fonction pour rafraîchir les données cadastrales et les sauvegarder dans l'API
   const handleRefreshCadastralData = useCallback(async () => {
     try {
       await refreshCadastralData();
       
-      // Sauvegarder les nouvelles données dans Supabase
+      // Sauvegarder les nouvelles données dans l'API
       if (utmCoordinates || cadastralReference || climateZone) {
-        const cadastralDataToSave: SupabaseCadastralData = {
+        const cadastralDataToSave: CadastralData = {
           client_id: clientId,
           utm_coordinates: utmCoordinates,
           cadastral_reference: cadastralReference,
@@ -40,7 +40,7 @@ export const useClientCadastralData = (clientId: string, clientAddress: string, 
         const savedData = await saveCadastralData(cadastralDataToSave);
         
         if (savedData) {
-          console.log("Données cadastrales sauvegardées dans Supabase:", savedData);
+          console.log("Données cadastrales sauvegardées:", savedData);
         }
       }
       

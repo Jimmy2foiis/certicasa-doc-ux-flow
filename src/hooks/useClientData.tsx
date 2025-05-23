@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useClientInfo } from "./useClientInfo";
 import { useClientCadastralData } from "./useClientCadastralData";
@@ -14,7 +15,7 @@ export const useClientData = (clientId: string) => {
     clientAddress,
     setClientAddress,
     projects,
-    loadProjectsFromSupabase
+    loadProjectsFromApi: loadProjectsFromSupabase // Aliasé pour maintenir la compatibilité
   } = useClientInfo(clientId);
   
   const {
@@ -64,6 +65,6 @@ export const useClientData = (clientId: string) => {
     apiSource,
     loadingCadastral,
     refreshCadastralData,
-    loadProjectsFromSupabase
+    loadProjectsFromSupabase // Conservation du nom pour la compatibilité
   };
 };

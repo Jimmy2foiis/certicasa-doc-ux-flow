@@ -1,4 +1,18 @@
 
-// Re-export all client service functions for easy import
-export * from './clientService';
+/**
+ * Point d'entrée principal pour les services API
+ */
+
+// Re-export des configurations
+export * from './config';
 export * from './types';
+
+// Re-export des services
+export * from './clientService';
+export * from './cadastralService';
+export * from './projectService';
+export * from './calculationService';
+export * from './documentService';
+
+// Ré-export du client HTTP pour les cas particuliers
+export { httpClient } from './httpClient';

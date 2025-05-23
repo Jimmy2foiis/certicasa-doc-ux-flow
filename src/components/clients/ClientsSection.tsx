@@ -7,7 +7,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { getClients, deleteClientRecord, Client } from "@/services/supabaseService";
+import { getClients, deleteClientRecord, Client } from "@/services/api"; // Importation depuis la nouvelle API
 import ClientDetails from "@/components/clients/ClientDetails";
 import ClientCreateDialog from "@/components/clients/ClientCreateDialog";
 import ClientFilters from "@/components/clients/ClientFilters";
