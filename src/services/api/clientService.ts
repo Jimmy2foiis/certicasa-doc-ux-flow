@@ -1,4 +1,3 @@
-
 /**
  * Service pour la gestion des clients via l'API REST
  */
@@ -43,7 +42,12 @@ export const getClients = async (): Promise<Client[]> => {
  */
 export const getClientById = async (clientId: string): Promise<Client | null> => {
   try {
-    const response = await httpClient.get<any>(`/prospects/${clientId}`);
+    // La plupart des frameworks REST (Django REST Framework, FastAPI, etc.)
+    // exposent la vue détail avec un slash final « /prospects/:id/ » alors
+    // que la vue liste se trouve sur « /prospects/ ». Sans ce slash final, le
+    // serveur renvoie souvent un 404. Nous ajoutons donc le slash ici pour
+    // garantir la compatibilité.
+    const response = await httpClient.get<any>(`/prospects/${clientId}/`);
     
     if (!response.success || !response.data) {
       console.error(`Erreur lors de la récupération du client ${clientId}:`, response.message);

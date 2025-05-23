@@ -1,4 +1,3 @@
-
 /**
  * Service pour la gestion des projets
  */
@@ -27,7 +26,7 @@ export const getProjectsForClient = async (clientId: string): Promise<Project[]>
   try {
     // Note: cet endpoint n'existe peut-être pas encore dans l'API externe
     // À adapter selon les spécifications réelles
-    const response = await httpClient.get<Project[]>(`/prospects/${clientId}/projects`);
+    const response = await httpClient.get<Project[]>(`/prospects/${clientId}/projects/`);
     
     if (!response.success || !response.data) {
       console.error(`Erreur lors de la récupération des projets pour le client ${clientId}:`, response.message);
