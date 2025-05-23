@@ -1,9 +1,10 @@
 
 import { Client } from './types';
+import { API_BASE_URL } from './config';
 
-const API_BASE_URL = 'https://certicasa.mitain.com/api';
-
-// Fonctions pour gérer les clients
+/**
+ * Retrieves all clients from the API
+ */
 export const getClients = async (): Promise<Client[]> => {
   try {
     const response = await fetch(`${API_BASE_URL}/prospects/`);
@@ -36,6 +37,9 @@ export const getClients = async (): Promise<Client[]> => {
   }
 };
 
+/**
+ * Retrieves a specific client by ID
+ */
 export const getClientById = async (clientId: string): Promise<Client | null> => {
   try {
     const response = await fetch(`${API_BASE_URL}/prospects/${clientId}`);
@@ -67,6 +71,9 @@ export const getClientById = async (clientId: string): Promise<Client | null> =>
   }
 };
 
+/**
+ * Creates a new client record
+ */
 export const createClientRecord = async (clientData: Client): Promise<Client | null> => {
   try {
     const response = await fetch(`${API_BASE_URL}/prospects/`, {
@@ -112,6 +119,9 @@ export const createClientRecord = async (clientData: Client): Promise<Client | n
   }
 };
 
+/**
+ * Updates an existing client record
+ */
 export const updateClientRecord = async (clientId: string, clientData: Partial<Client>): Promise<Client | null> => {
   try {
     const response = await fetch(`${API_BASE_URL}/prospects/${clientId}`, {
@@ -149,6 +159,9 @@ export const updateClientRecord = async (clientId: string, clientData: Partial<C
   }
 };
 
+/**
+ * Deletes a client record
+ */
 export const deleteClientRecord = async (clientId: string): Promise<boolean> => {
   try {
     const response = await fetch(`${API_BASE_URL}/prospects/${clientId}`, {
