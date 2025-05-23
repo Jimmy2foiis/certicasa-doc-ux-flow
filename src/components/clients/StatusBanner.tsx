@@ -3,7 +3,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { FileText, Edit, User, CheckSquare, Building, Folder } from "lucide-react";
+import { FileText, Edit, Folder } from "lucide-react";
 import { getStatusColor } from "./table/utils/statusUtils";
 import { Client } from "@/services/api/types";
 
@@ -73,16 +73,10 @@ const StatusBanner = ({
             <span className="text-sm font-medium ml-1">{client.installationDate || "-"}</span>
           </div>
           
-          {/* Équipe projet */}
-          <div className="flex items-center">
-            <User className="h-3.5 w-3.5 text-gray-500 mr-1" />
-            <span className="text-sm">{client.teleprospector || "-"}</span>
-            <span className="mx-1 text-gray-300">/</span>
-            <CheckSquare className="h-3.5 w-3.5 text-gray-500 mr-1" />
-            <span className="text-sm">{client.confirmer || "-"}</span>
-            <span className="mx-1 text-gray-300">/</span>
-            <Building className="h-3.5 w-3.5 text-gray-500 mr-1" />
-            <span className="text-sm">{client.installationTeam || "-"}</span>
+          {/* Date de dépôt */}
+          <div>
+            <span className="text-xs text-gray-500">Date dépôt:</span>
+            <span className="text-sm font-medium ml-1">{client.depositDate || "-"}</span>
           </div>
           
           {/* Documents générés */}

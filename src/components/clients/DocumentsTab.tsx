@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,17 +30,17 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
 
   // Handle document actions
   const handleDeleteDocument = (documentId: string) => {
-    handleDocumentAction(documentId, 'delete');
+    handleDocumentAction('delete', documentId);
   };
 
   // Handle downloading a document
   const handleDownloadDocument = (document: any) => {
-    handleDocumentAction(document.id, 'download');
+    handleDocumentAction('download', document.id);
   };
 
   // Handle sending a document
   const handleSendDocument = (documentId: string) => {
-    handleDocumentAction(documentId, 'send');
+    handleDocumentAction('send', documentId);
   };
 
   // Handle uploading a document
@@ -66,7 +67,7 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
       clientId
     };
     
-    // Fix: Pass only 2 arguments as expected by the hook
+    // Fix: handleDocumentAction expects action and data
     handleDocumentAction('upload', uploadData);
     
     // Close the dialog and reset fields

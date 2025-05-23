@@ -2,7 +2,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Folder, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -47,7 +47,7 @@ const FileTrackingSection = ({
   };
 
   const isLotNumber = lotNumber !== "-" && lotNumber.trim() !== "";
-  const hasMissingDocuments = documentStats && documentStats.generated < documentStats.total;
+  const hasMissingDocuments = documentStats && documentStats.missing > 0;
 
   return (
     <div className="space-y-3">
@@ -77,7 +77,7 @@ const FileTrackingSection = ({
               <ExternalLink className="ml-1 h-3 w-3" />
             </Link>
           ) : (
-            <span className="font-medium">{lotNumber}</span>
+            <span className="font-medium">{lotNumber || "-"}</span>
           )}
         </div>
         
@@ -95,7 +95,7 @@ const FileTrackingSection = ({
           </span>
         </div>
         
-        {/* Missing Documents Button */}
+        {/* Missing Documents Button - Only show if there are missing documents */}
         {hasMissingDocuments && (
           <Button
             variant="outline"
@@ -103,7 +103,6 @@ const FileTrackingSection = ({
             onClick={onViewMissingDocs}
             className="w-full mt-2"
           >
-            <Folder className="mr-2 h-4 w-4" />
             Voir les documents manquants
           </Button>
         )}
