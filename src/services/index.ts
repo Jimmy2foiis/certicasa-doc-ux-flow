@@ -1,4 +1,3 @@
-
 /**
  * Point d'entrée principal pour tous les services
  */
@@ -12,7 +11,7 @@ export * from './catastroService';
 export * from './climateZoneService';
 export * from './documentService';
 export * from './proxyService';
-export * from './supabaseService';  // Re-exports des services par compatibilité
+export * from './supabaseService'; // Re-exports des services par compatibilité
 
 // Utils et types
-export * from './cadastral/catastroTypes';
+// export * from './cadastral/catastroTypes';

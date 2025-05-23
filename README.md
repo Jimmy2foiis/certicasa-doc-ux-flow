@@ -1,73 +1,130 @@
-# Welcome to your Lovable project
+# CertiCasa Doc – UX Flow
 
-## Project info
+> Refacto complet du dépôt pour une base moderne, typée et sans dettes techniques.
 
-**URL**: https://lovable.dev/projects/6c298125-6e87-4412-9edb-f612758c6ca2
+## Sommaire
 
-## How can I edit this code?
+1. 🚀 Mise en route
+2. ⚙️ Variables d'environnement
+3. 📦 Scripts NPM
+4. 🧰 Stack & dépendances clés
+5. 🗂️ Organisation du code
+6. ✅ Checklist QA
+7. 🤝 Contribuer (convention de commit)
 
-There are several ways of editing your application.
+---
 
-**Use Lovable**
+### 1. 🚀 Mise en route
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/6c298125-6e87-4412-9edb-f612758c6ca2) and start prompting.
+```bash
+# 1. Cloner le repo
+$ git clone <votre-url>
+$ cd certicasa-doc-ux-flow
 
-Changes made via Lovable will be committed automatically to this repo.
+# 2. Installer les dépendances
+$ npm install
 
-**Use your preferred IDE**
+# 3. Démarrer le mode dev (Vite + HMR)
+$ npm run dev
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+# 4. Lancer le build de production
+$ npm run build
 ```
 
-**Edit a file directly in GitHub**
+Pré-requis : Node.js ≥ 18, npm ≥ 9.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+---
 
-**Use GitHub Codespaces**
+### 2. ⚙️ Variables d'environnement (`.env`)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+| Nom                 | Description                  | Exemple                            |
+| ------------------- | ---------------------------- | ---------------------------------- |
+| `VITE_API_BASE_URL` | URL de l'API REST principale | `https://certicasa.mitain.com/api` |
+| `VITE_MAPS_API_KEY` | Clé Google Maps JS           | `AIza...`                          |
 
-## What technologies are used for this project?
+Créez un fichier `.env.local` (non versionné) :
 
-This project is built with:
+```ini
+VITE_API_BASE_URL=https://certicasa.mitain.com/api
+VITE_MAPS_API_KEY=<your-google-maps-key>
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+---
 
-## How can I deploy this project?
+### 3. 📦 Scripts NPM
 
-Simply open [Lovable](https://lovable.dev/projects/6c298125-6e87-4412-9edb-f612758c6ca2) and click on Share -> Publish.
+| Commande           | Description                          |
+| ------------------ | ------------------------------------ |
+| `npm run dev`      | Démarre Vite en mode développement   |
+| `npm run build`    | Génère le build de prod dans `dist/` |
+| `npm run preview`  | Prévisualise le build localement     |
+| `npm run lint`     | Analyse ESLint                       |
+| `npm run lint:fix` | ESLint + auto-fix                    |
+| `npm run format`   | Prettier (formatage)                 |
+| `npm test`         | Tests unitaires (Vitest)             |
 
-## Can I connect a custom domain to my Lovable project?
+---
 
-Yes, you can!
+### 4. 🧰 Stack & dépendances clés
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- Vite 5 + React 18 + TypeScript 5
+- Tailwind CSS 3 / shadcn-ui
+- TanStack Query 5 (fetch/cache)
+- Zod (validation) & React-Hook-Form
+- ESLint + Prettier (strict) – `strictNullChecks` activé
+- Vitest (unit) & Playwright (E2E) – à compléter
+- Husky + Commitlint + lint-staged (hooks Git)
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+---
+
+### 5. 🗂️ Organisation du code (par feature)
+
+```
+src/
+  features/
+    clients/
+    projects/
+    documents/
+    calculations/
+  hooks/
+  ui/ (shadcn components)
+  lib/ & utils/
+  services/
+```
+
+Les dossiers `features/*` contiennent composants + hooks + services spécifiques.
+
+---
+
+### 6. ✅ Checklist QA (à cocher dans la PR)
+
+- [ ] `npm run build` sans warning ✅
+- [ ] Lint/format passent (`npm run lint`)
+- [ ] Tests unitaires verts (`npm test`)
+- [ ] Responsiveness check (≥ 375 px)
+- [ ] Dark / Light mode OK
+- [ ] Pas de `console.log` ou `TODO` restants
+- [ ] Temps de bundle principal < 500 kB gzip
+
+---
+
+### 7. 🤝 Contribuer
+
+Le projet suit la convention de commit [Conventional Commits](https://www.conventionalcommits.org). Un hook Husky + Commitlint bloque les messages invalides.
+
+Exemples :
+
+```
+feat(client): ajout de la recherche par adresse
+fix(calculation): corrige le calcul du U-value
+chore: bump deps
+```
+
+Avant chaque commit :
+
+1. Vos fichiers modifiés sont formatés/lintés (hook `pre-commit`).
+2. Le message est validé (hook `commit-msg`).
+
+---
+
+© CertiCasa – 2024

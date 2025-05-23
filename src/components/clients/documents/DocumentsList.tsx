@@ -1,9 +1,9 @@
-import React from "react";
-import type { AdministrativeDocument, DocumentStatus } from "@/types/documents";
-import { DocumentStatusBadge } from "@/components/documents/DocumentStatusBadge";
-import DocumentActionButtons from "@/components/documents/DocumentActionButtons";
-import { FileText, Eye, FileDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import type { AdministrativeDocument, DocumentStatus } from '@/types/documents';
+import { DocumentStatusBadge } from '@/features/documents/DocumentStatusBadge';
+import DocumentActionButtons from '@/features/documents/DocumentActionButtons';
+import { FileText, Eye, FileDown } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface DocumentsListProps {
   documents: AdministrativeDocument[];
@@ -11,11 +11,7 @@ interface DocumentsListProps {
   onAction: (documentId: string, action: string) => void;
 }
 
-export const DocumentsList: React.FC<DocumentsListProps> = ({
-  documents,
-  isLoading,
-  onAction
-}) => {
+export const DocumentsList: React.FC<DocumentsListProps> = ({ documents, isLoading, onAction }) => {
   if (isLoading) {
     return <DocumentsLoadingState />;
   }
@@ -27,7 +23,10 @@ export const DocumentsList: React.FC<DocumentsListProps> = ({
   return (
     <div className="space-y-3">
       {documents.map((doc) => (
-        <div key={doc.id} className="flex items-center justify-between p-3 border rounded-md hover:bg-muted/50 transition-colors">
+        <div
+          key={doc.id}
+          className="flex items-center justify-between p-3 border rounded-md hover:bg-muted/50 transition-colors"
+        >
           <div className="flex items-center space-x-3">
             <div className="bg-muted p-2 rounded-md">
               <FileText className="h-6 w-6 text-primary" />
@@ -41,24 +40,24 @@ export const DocumentsList: React.FC<DocumentsListProps> = ({
           </div>
           <div className="flex items-center space-x-3">
             <DocumentStatusBadge status={doc.status as DocumentStatus} />
-            
+
             {/* Boutons d'action principaux (Voir/Télécharger) */}
             <div className="flex space-x-2">
-              {(doc.status === "generated" || doc.status === "linked") && (
+              {(doc.status === 'generated' || doc.status === 'linked') && (
                 <>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => onAction(doc.id, "view")}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onAction(doc.id, 'view')}
                     className="flex items-center"
                   >
                     <Eye className="h-4 w-4 mr-1.5" />
                     <span>Voir</span>
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => onAction(doc.id, "download")}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onAction(doc.id, 'download')}
                     className="flex items-center"
                   >
                     <FileDown className="h-4 w-4 mr-1.5" />
@@ -66,10 +65,10 @@ export const DocumentsList: React.FC<DocumentsListProps> = ({
                   </Button>
                 </>
               )}
-              
+
               {/* Autres boutons d'action spécifiques */}
-              <DocumentActionButtons 
-                documentType={doc.type} 
+              <DocumentActionButtons
+                documentType={doc.type}
                 status={doc.status as DocumentStatus}
                 onAction={(action) => onAction(doc.id, action)}
                 showViewDownload={false}
@@ -84,18 +83,20 @@ export const DocumentsList: React.FC<DocumentsListProps> = ({
 
 const DocumentsLoadingState = () => (
   <div className="space-y-3">
-    {Array(5).fill(0).map((_, i) => (
-      <div key={i} className="flex items-center justify-between p-3 border rounded-md">
-        <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 rounded-md bg-muted animate-pulse" />
-          <div>
-            <div className="h-5 w-40 bg-muted animate-pulse rounded" />
-            <div className="h-4 w-20 mt-2 bg-muted animate-pulse rounded" />
+    {Array(5)
+      .fill(0)
+      .map((_, i) => (
+        <div key={i} className="flex items-center justify-between p-3 border rounded-md">
+          <div className="flex items-center space-x-3">
+            <div className="h-10 w-10 rounded-md bg-muted animate-pulse" />
+            <div>
+              <div className="h-5 w-40 bg-muted animate-pulse rounded" />
+              <div className="h-4 w-20 mt-2 bg-muted animate-pulse rounded" />
+            </div>
           </div>
+          <div className="h-8 w-24 bg-muted animate-pulse rounded" />
         </div>
-        <div className="h-8 w-24 bg-muted animate-pulse rounded" />
-      </div>
-    ))}
+      ))}
   </div>
 );
 

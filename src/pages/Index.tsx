@@ -1,48 +1,47 @@
-
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Dashboard from "@/components/dashboard/Dashboard";
-import ClientsSection from "@/components/clients/ClientsSection";
-import ProjectCalculation from "@/components/calculations/ProjectCalculation";
-import DocumentGeneration from "@/components/documents/DocumentGeneration";
-import WorkflowManagement from "@/components/workflow/WorkflowManagement";
-import Billing from "@/components/billing/Billing";
-import Header from "@/components/layout/Header";
-import Sidebar from "@/components/layout/Sidebar";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import Dashboard from '@/components/dashboard/Dashboard';
+import ClientsSection from '@/components/clients/ClientsSection';
+import ProjectCalculation from '@/components/calculations/ProjectCalculation';
+import DocumentGeneration from '@/features/documents/DocumentGeneration';
+import WorkflowManagement from '@/components/workflow/WorkflowManagement';
+import Billing from '@/components/billing/Billing';
+import Header from '@/components/layout/Header';
+import Sidebar from '@/components/layout/Sidebar';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 const Index = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   // Synchroniser l'onglet actif avec la route actuelle
   useEffect(() => {
-    if (location.pathname === "/") {
-      setActiveTab("dashboard");
+    if (location.pathname === '/') {
+      setActiveTab('dashboard');
     }
   }, [location.pathname]);
 
   // Gérer le changement d'onglet et mettre à jour l'URL
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    
+
     // Rediriger vers la page correspondante pour les onglets qui ont leurs propres pages
     switch (value) {
-      case "clients":
-        navigate("/clients");
+      case 'clients':
+        navigate('/clients');
         break;
-      case "calculations":
-        navigate("/calculations");
+      case 'calculations':
+        navigate('/calculations');
         break;
-      case "documents":
-        navigate("/documents");
+      case 'documents':
+        navigate('/documents');
         break;
-      case "workflow":
-        navigate("/workflow");
+      case 'workflow':
+        navigate('/workflow');
         break;
-      case "billing":
-        navigate("/billing");
+      case 'billing':
+        navigate('/billing');
         break;
       default:
         // Rester sur la page d'accueil pour le tableau de bord
@@ -52,7 +51,7 @@ const Index = () => {
 
   // Fonction pour naviguer vers la liste complète des projets
   const handleViewAllProjects = () => {
-    navigate("/projects");
+    navigate('/projects');
   };
 
   // Fonction pour naviguer vers le détail d'un projet

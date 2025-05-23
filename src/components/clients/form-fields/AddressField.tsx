@@ -1,26 +1,25 @@
-
-import { FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Control } from "react-hook-form";
-import { ClientFormValues } from "../schemas/clientSchema";
-import AddressSearch from "@/components/clients/AddressSearch";
-import { GeoCoordinates } from "@/services/geoCoordinatesService";
-import { useCoordinates } from "@/hooks/useCoordinates";
-import { useState } from "react";
+import { FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Control } from 'react-hook-form';
+import { ClientFormValues } from '../schemas/clientSchema';
+import AddressSearch from '@/components/clients/AddressSearch';
+import { GeoCoordinates } from '@/services/geoCoordinatesService';
+import { useCoordinates } from '@/hooks/useCoordinates';
+import { useState } from 'react';
 
 interface AddressFieldProps {
   control: Control<ClientFormValues>;
   onAddressSelected?: (address: string) => void;
-  onCoordinatesSelected?: (coordinates: {lat: number, lng: number}) => void;
+  onCoordinatesSelected?: (coordinates: { lat: number; lng: number }) => void;
 }
 
-export const AddressField = ({ 
+export const AddressField = ({
   control,
   onAddressSelected,
-  onCoordinatesSelected
+  onCoordinatesSelected,
 }: AddressFieldProps) => {
   const { setClientCoordinates } = useCoordinates();
   const [isProcessing, setIsProcessing] = useState(false);
-  
+
   return (
     <FormField
       control={control}
@@ -29,7 +28,7 @@ export const AddressField = ({
         <FormItem>
           <FormLabel>Adresse</FormLabel>
           <AddressSearch
-            initialAddress={field.value || ""}
+            initialAddress={field.value || ''}
             onAddressChange={(address) => {
               if (!isProcessing) {
                 field.onChange(address);
@@ -42,7 +41,7 @@ export const AddressField = ({
                 onCoordinatesSelected(coords);
               }
               if (onAddressSelected) {
-                onAddressSelected(field.value);
+                onAddressSelected(field.value ?? '');
               }
               setIsProcessing(false);
             }}

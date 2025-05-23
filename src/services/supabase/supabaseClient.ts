@@ -10,7 +10,10 @@
    résolue avec { data:null, error:{ message:'SUPABASE_REMOVED' } }. */
 
 // Objet résultat pour les appels finaux
-const stubResponse = Promise.resolve({ data: null, error: { message: 'SUPABASE_REMOVED' } });
+const stubResponse: Promise<any> = Promise.resolve({
+  data: null as any,
+  error: { message: 'SUPABASE_REMOVED' },
+});
 
 // Fabrique un maillon chaînable
 function createChain(): any {
@@ -18,14 +21,25 @@ function createChain(): any {
 
   // Méthodes courantes
   const chainMethods = [
-    'select','insert','update','delete','upsert','order','eq','neq','limit','range',
+    'select',
+    'insert',
+    'update',
+    'delete',
+    'upsert',
+    'order',
+    'eq',
+    'neq',
+    'limit',
+    'range',
   ];
-  chainMethods.forEach(m => { fn[m] = (..._a:any[]) => createChain(); });
+  chainMethods.forEach((m) => {
+    fn[m] = (..._a: any[]) => createChain();
+  });
 
   // Méthodes terminant la requête
   fn.single = () => stubResponse;
   fn.maybeSingle = () => stubResponse;
-  fn.then = (...args:any[]) => stubResponse.then(...args);
+  fn.then = (...args: any[]) => stubResponse.then(...args);
 
   return fn;
 }

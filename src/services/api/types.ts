@@ -1,4 +1,3 @@
-
 /**
  * Types communs pour l'API
  */
@@ -6,13 +5,13 @@
 // Type générique pour les réponses de l'API
 export interface ApiResponse<T = any> {
   success: boolean;
-  data: T;
+  data: T | null;
   message?: string;
 }
 
 // Type pour les prospects/clients
 export interface Client {
-  id: string;
+  id?: string;
   name: string;
   email?: string;
   phone?: string;
@@ -79,4 +78,5 @@ export interface Document {
   status?: string;
   file_path?: string;
   created_at?: string;
+  content?: string;
 }

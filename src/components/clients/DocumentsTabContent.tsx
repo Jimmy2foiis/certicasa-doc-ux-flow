@@ -1,15 +1,19 @@
-import { useState, useEffect } from "react";
-import { useAdministrativeDocuments } from "@/hooks/useAdministrativeDocuments";
-import type { AdministrativeDocument, DocumentStatus } from "@/types/documents";
-import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
-import { DocumentPreview } from "@/components/documents/DocumentPreview";
-import { documentService, getDocumentContent, exportAllDocuments } from "@/services/documentService";
-import { DocumentsHeader } from "./documents/DocumentsHeader";
-import DocumentsAccordion from "@/components/documents/DocumentsAccordion";
-import { DocumentsFooter } from "./documents/DocumentsFooter";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useAdministrativeDocuments } from '@/hooks/useAdministrativeDocuments';
+import type { AdministrativeDocument, DocumentStatus } from '@/types/documents';
+import { Card, CardContent, CardHeader, CardFooter } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { DocumentPreview } from '@/features/documents/DocumentPreview';
+import {
+  documentService,
+  getDocumentContent,
+  exportAllDocuments,
+} from '@/services/documentService';
+import { DocumentsHeader } from './documents/DocumentsHeader';
+import DocumentsAccordion from '@/features/documents/DocumentsAccordion';
+import { DocumentsFooter } from './documents/DocumentsFooter';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 interface DocumentsTabContentProps {
   clientId?: string;
@@ -17,7 +21,11 @@ interface DocumentsTabContentProps {
   projectType?: string;
 }
 
-export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES010" }: DocumentsTabContentProps) => {
+export const DocumentsTabContent = ({
+  clientId,
+  clientName,
+  projectType = 'RES010',
+}: DocumentsTabContentProps) => {
   const {
     adminDocuments,
     filteredDocuments,
@@ -26,7 +34,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
     handleDocumentAction: baseHandleDocumentAction,
     handleExportAll: baseHandleExportAll,
     isLoading,
-    updateProjectType
+    updateProjectType,
   } = useAdministrativeDocuments(clientId, clientName);
 
   const [allDocuments, setAllDocuments] = useState<AdministrativeDocument[]>([]);
@@ -40,26 +48,26 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
   useEffect(() => {
     if (clientId && adminDocuments) {
       // Transform AdminDocuments to ensure they have all required properties
-      const transformedDocs = adminDocuments.map(doc => ({
+      const transformedDocs = adminDocuments.map((doc) => ({
         ...doc,
-        description: (doc as any).description || "",
+        description: (doc as any).description || '',
         order: (doc as any).order || 0,
         id: doc.id,
         name: doc.name,
         type: doc.type,
         status: doc.status as DocumentStatus,
       }));
-      
+
       // Create a combined list
       const combinedDocs: AdministrativeDocument[] = [
         ...transformedDocs,
-        ...clientDocuments.map(doc => ({
+        ...clientDocuments.map((doc) => ({
           ...doc,
-          description: (doc as any).description || "",
+          description: (doc as any).description || '',
           order: (doc as any).order || 0,
-        }))
+        })),
       ];
-      
+
       setAllDocuments(combinedDocs);
     }
   }, [clientId, adminDocuments, clientDocuments]);
@@ -80,146 +88,146 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
   const handleDocumentAction = async (documentId: string, action: string) => {
     try {
       setError(null);
-      
+
       switch (action) {
-        case "view":
+        case 'view':
           // Find document to preview
-          const docToPreview = filteredDocuments.find(doc => doc.id === documentId);
+          const docToPreview = filteredDocuments.find((doc) => doc.id === documentId);
           if (docToPreview) {
             // Convert to AdministrativeDocument type with required properties
             setPreviewDocument({
               ...docToPreview,
-              description: (docToPreview as any).description || "",
+              description: (docToPreview as any).description || '',
               order: (docToPreview as any).order || 0,
-              status: docToPreview.status as DocumentStatus
+              status: docToPreview.status as DocumentStatus,
             });
             setIsPreviewOpen(true);
           } else {
-            setError("Document introuvable");
+            setError('Document introuvable');
             toast({
-              title: "Erreur",
-              description: "Document introuvable",
-              variant: "destructive",
+              title: 'Erreur',
+              description: 'Document introuvable',
+              variant: 'destructive',
             });
           }
           break;
-          
-        case "download":
-          const docToDownload = filteredDocuments.find(doc => doc.id === documentId);
+
+        case 'download':
+          const docToDownload = filteredDocuments.find((doc) => doc.id === documentId);
           if (!docToDownload) {
-            setError("Document introuvable");
+            setError('Document introuvable');
             toast({
-              title: "Erreur",
-              description: "Document introuvable",
-              variant: "destructive",
+              title: 'Erreur',
+              description: 'Document introuvable',
+              variant: 'destructive',
             });
             return;
           }
-          
+
           // If we have the content directly, use it
           if (docToDownload.content) {
             // Valider le contenu avant téléchargement
             const validationResult = documentService.validateDocumentContent(
-              docToDownload.content, 
-              docToDownload.type
+              docToDownload.content,
+              docToDownload.type,
             );
-            
+
             if (!validationResult.success) {
               setError(`Contenu de document invalide: ${validationResult.error}`);
               toast({
-                title: "Erreur",
+                title: 'Erreur',
                 description: validationResult.error,
-                variant: "destructive",
+                variant: 'destructive',
               });
               return;
             }
-            
+
             const downloadResult = await documentService.downloadDocument(
-              docToDownload.content, 
-              docToDownload.name, 
-              docToDownload.type
+              docToDownload.content,
+              docToDownload.name,
+              docToDownload.type,
             );
-            
+
             if (downloadResult.success) {
               toast({
-                title: "Téléchargement réussi",
+                title: 'Téléchargement réussi',
                 description: `Le document ${docToDownload.name} a été téléchargé avec succès`,
               });
             } else {
               setError(`Erreur de téléchargement: ${downloadResult.error}`);
               toast({
-                title: "Erreur de téléchargement",
-                description: downloadResult.error || "Impossible de télécharger le document",
-                variant: "destructive",
+                title: 'Erreur de téléchargement',
+                description: downloadResult.error || 'Impossible de télécharger le document',
+                variant: 'destructive',
               });
             }
           } else {
             // Otherwise, fetch document content
             toast({
-              title: "Téléchargement en cours",
-              description: "Récupération du document...",
+              title: 'Téléchargement en cours',
+              description: 'Récupération du document...',
             });
-            
+
             const documentData = await getDocumentContent(documentId);
-            
+
             if (documentData && documentData.success && documentData.data?.content) {
               // Valider le contenu avant téléchargement
               const validationResult = documentService.validateDocumentContent(
-                documentData.data.content, 
-                documentData.data.type
+                documentData.data.content,
+                documentData.data.type,
               );
-              
+
               if (!validationResult.success) {
                 setError(`Contenu de document invalide: ${validationResult.error}`);
                 toast({
-                  title: "Erreur",
+                  title: 'Erreur',
                   description: validationResult.error,
-                  variant: "destructive",
+                  variant: 'destructive',
                 });
                 return;
               }
-              
+
               const downloadResult = await documentService.downloadDocument(
                 documentData.data.content,
                 documentData.data.name,
-                documentData.data.type
+                documentData.data.type,
               );
-              
+
               if (downloadResult.success) {
                 toast({
-                  title: "Téléchargement réussi",
+                  title: 'Téléchargement réussi',
                   description: `Le document ${documentData.data.name} a été téléchargé avec succès`,
                 });
               } else {
                 setError(`Erreur de téléchargement: ${downloadResult.error}`);
                 toast({
-                  title: "Erreur de téléchargement",
-                  description: downloadResult.error || "Impossible de télécharger le document",
-                  variant: "destructive",
+                  title: 'Erreur de téléchargement',
+                  description: downloadResult.error || 'Impossible de télécharger le document',
+                  variant: 'destructive',
                 });
               }
             } else {
-              setError("Contenu du document non disponible ou invalide");
+              setError('Contenu du document non disponible ou invalide');
               toast({
-                title: "Erreur",
-                description: documentData.error || "Contenu du document non disponible",
-                variant: "destructive",
+                title: 'Erreur',
+                description: documentData.error || 'Contenu du document non disponible',
+                variant: 'destructive',
               });
             }
           }
           break;
-          
+
         default:
           // For all other actions, use the existing handler
           baseHandleDocumentAction(documentId, action);
       }
     } catch (error) {
       console.error("Erreur lors de l'action sur le document:", error);
-      setError(error instanceof Error ? error.message : "Erreur inattendue");
+      setError(error instanceof Error ? error.message : 'Erreur inattendue');
       toast({
-        title: "Erreur",
-        description: "Une erreur est survenue lors du traitement de votre demande",
-        variant: "destructive",
+        title: 'Erreur',
+        description: 'Une erreur est survenue lors du traitement de votre demande',
+        variant: 'destructive',
       });
     }
   };
@@ -228,44 +236,44 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
   const handleExportAll = async () => {
     try {
       setError(null);
-      
+
       if (!filteredDocuments || filteredDocuments.length === 0) {
-        setError("Aucun document à exporter");
+        setError('Aucun document à exporter');
         toast({
-          title: "Information",
-          description: "Aucun document à exporter.",
-          variant: "default",
+          title: 'Information',
+          description: 'Aucun document à exporter.',
+          variant: 'default',
         });
         return;
       }
-      
+
       toast({
-        title: "Export groupé",
+        title: 'Export groupé',
         description: "Préparation de l'export des documents...",
       });
-      
+
       const exportResult = await exportAllDocuments(filteredDocuments);
-      
+
       if (exportResult.success) {
         toast({
-          title: "Export réussi",
-          description: "Tous les documents ont été exportés avec succès",
+          title: 'Export réussi',
+          description: 'Tous les documents ont été exportés avec succès',
         });
       } else {
         setError(`Erreur d'exportation: ${exportResult.error}`);
         toast({
           title: "Erreur d'exportation",
           description: exportResult.error || "Impossible d'exporter tous les documents",
-          variant: "destructive",
+          variant: 'destructive',
         });
       }
     } catch (error) {
       console.error("Erreur lors de l'exportation des documents:", error);
-      setError(error instanceof Error ? error.message : "Erreur inattendue");
+      setError(error instanceof Error ? error.message : 'Erreur inattendue');
       toast({
-        title: "Erreur",
+        title: 'Erreur',
         description: "Une erreur est survenue lors de l'exportation",
-        variant: "destructive",
+        variant: 'destructive',
       });
     }
   };
@@ -279,16 +287,16 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
   return (
     <Card>
       <CardHeader className="pb-3">
-        <DocumentsHeader 
+        <DocumentsHeader
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
-          onClearSearch={() => setSearchQuery("")}
+          onClearSearch={() => setSearchQuery('')}
           onExportAll={handleExportAll}
           isLoading={isLoading}
           documentCount={filteredDocuments.length}
         />
       </CardHeader>
-      
+
       <CardContent>
         {error && (
           <Alert variant="destructive" className="mb-4">
@@ -297,16 +305,16 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        
-        <DocumentsList 
+
+        <DocumentsList
           documents={filteredDocuments}
           isLoading={isLoading}
           onAction={handleDocumentAction}
         />
       </CardContent>
-      
+
       <CardFooter className="pt-2">
-        <DocumentsFooter 
+        <DocumentsFooter
           onExportAll={handleExportAll}
           documentCount={filteredDocuments.length}
           isLoading={isLoading}
@@ -318,7 +326,7 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
         isOpen={isPreviewOpen}
         onClose={handleClosePreview}
         document={previewDocument}
-        onDownload={(documentId) => handleDocumentAction(documentId, "download")}
+        onDownload={(documentId) => handleDocumentAction(documentId, 'download')}
       />
     </Card>
   );
@@ -327,26 +335,32 @@ export const DocumentsTabContent = ({ clientId, clientName, projectType = "RES01
 // Loading state component
 const DocumentsLoadingState = () => (
   <div className="space-y-3">
-    {Array(5).fill(0).map((_, i) => (
-      <div key={i} className="flex items-center justify-between p-3 border rounded-md">
-        <div className="flex items-center space-x-3">
-          <div className="h-10 w-10 rounded-md bg-muted animate-pulse" />
-          <div>
-            <div className="h-5 w-40 bg-muted animate-pulse rounded" />
-            <div className="h-4 w-20 mt-2 bg-muted animate-pulse rounded" />
+    {Array(5)
+      .fill(0)
+      .map((_, i) => (
+        <div key={i} className="flex items-center justify-between p-3 border rounded-md">
+          <div className="flex items-center space-x-3">
+            <div className="h-10 w-10 rounded-md bg-muted animate-pulse" />
+            <div>
+              <div className="h-5 w-40 bg-muted animate-pulse rounded" />
+              <div className="h-4 w-20 mt-2 bg-muted animate-pulse rounded" />
+            </div>
           </div>
+          <div className="h-8 w-24 bg-muted animate-pulse rounded" />
         </div>
-        <div className="h-8 w-24 bg-muted animate-pulse rounded" />
-      </div>
-    ))}
+      ))}
   </div>
 );
 
 // Component to display the list of documents
-const DocumentsList = ({ documents, isLoading, onAction }: { 
-  documents: AdministrativeDocument[], 
-  isLoading: boolean,
-  onAction: (documentId: string, action: string) => void
+const DocumentsList = ({
+  documents,
+  isLoading,
+  onAction,
+}: {
+  documents: AdministrativeDocument[];
+  isLoading: boolean;
+  onAction: (documentId: string, action: string) => void;
 }) => {
   if (isLoading) {
     return <DocumentsLoadingState />;
@@ -360,10 +374,5 @@ const DocumentsList = ({ documents, isLoading, onAction }: {
     );
   }
 
-  return (
-    <DocumentsAccordion 
-      documents={documents}
-      onDocumentAction={onAction}
-    />
-  );
+  return <DocumentsAccordion documents={documents} onDocumentAction={onAction} />;
 };
