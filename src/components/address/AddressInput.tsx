@@ -1,4 +1,3 @@
-
 import { Input } from "@/components/ui/input";
 import { MapPin, Loader2 } from "lucide-react";
 import { forwardRef } from "react";
@@ -20,7 +19,6 @@ export const AddressInput = forwardRef<HTMLInputElement, AddressInputProps>(
           ref={ref}
           placeholder="Saisissez une adresse espagnole..."
           className={`pl-10 pr-10 ${className || ""}`}
-          disabled={isLoading}
           autoComplete="address-line1"
           {...props}
         />

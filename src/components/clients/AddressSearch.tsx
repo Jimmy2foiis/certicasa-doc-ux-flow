@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { AddressInput } from "@/components/address/AddressInput";
 import { AddressError } from "@/components/ui/address-error";
@@ -95,7 +94,7 @@ const AddressSearch = ({
         onChange={handleInputChange}
         onFocus={handleFocus}
         onBlur={handleBlur}
-        isLoading={isLoadingGoogleMaps || isProcessing}
+        isLoading={isLoadingGoogleMaps}
         onClick={() => {
           console.log("Champ d'adresse cliqué");
           if (inputRef.current) {
@@ -108,7 +107,7 @@ const AddressSearch = ({
           }
         }}
         placeholder="Saisissez une adresse espagnole..."
-        disabled={isProcessing}
+        disabled={isLoadingGoogleMaps}
       />
       
       {errorToShow && <AddressError error={errorToShow} />}
