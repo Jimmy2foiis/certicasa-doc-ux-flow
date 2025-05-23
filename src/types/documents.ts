@@ -1,3 +1,4 @@
+
 // Définitions de types centralisées pour les documents
 
 // Type pour status de document (enum string)
@@ -113,6 +114,7 @@ export interface AdministrativeDocument {
   type: string;
   status: DocumentStatus;
   description: string;
+  reference: string; // Ajout de la propriété reference manquante
   order: number;
   content?: string | null;
   file_path?: string | null;

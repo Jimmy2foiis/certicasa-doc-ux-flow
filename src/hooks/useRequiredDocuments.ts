@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from 'react';
-import { AdministrativeDocument } from '@/types/documents';
+import { AdministrativeDocument, DocumentStatus } from '@/types/documents';
 import { getDocumentsForClient } from '@/services/api/documentService';
+import { Document } from '@/services/api/types';
 
 // Structure fixe des 8 documents obligatoires dans l'ordre exact
 const REQUIRED_DOCUMENT_TEMPLATES = [
@@ -71,6 +72,25 @@ const REQUIRED_DOCUMENT_TEMPLATES = [
   },
 ];
 
+// Convertir un Document de l'API vers AdministrativeDocument
+const convertToAdministrativeDocument = (doc: Document): AdministrativeDocument => {
+  return {
+    id: doc.id || '',
+    name: doc.name,
+    type: doc.type || '',
+    status: (doc.status as DocumentStatus) || 'missing',
+    description: '',  // Ajout d'une description par défaut
+    reference: '',    // Ajout d'une référence par défaut
+    order: 0,         // Ajout d'un ordre par défaut
+    content: doc.content,
+    file_path: doc.file_path,
+    client_id: doc.client_id,
+    project_id: doc.project_id,
+    created_at: doc.created_at,
+    category: 'required',
+  };
+};
+
 export const useRequiredDocuments = (clientId?: string) => {
   const [requiredDocuments, setRequiredDocuments] = useState<AdministrativeDocument[]>([]);
   const [existingDocuments, setExistingDocuments] = useState<AdministrativeDocument[]>([]);
@@ -81,11 +101,11 @@ export const useRequiredDocuments = (clientId?: string) => {
       setIsLoading(true);
       
       // Création des documents requis basée sur le template
-      const requiredDocs = REQUIRED_DOCUMENT_TEMPLATES.map(template => ({
+      const requiredDocs: AdministrativeDocument[] = REQUIRED_DOCUMENT_TEMPLATES.map(template => ({
         id: template.id,
         name: template.name,
         type: template.type,
-        status: 'missing' as const,
+        status: 'missing' as DocumentStatus,
         description: template.description,
         reference: template.reference,
         order: template.order,
@@ -96,7 +116,13 @@ export const useRequiredDocuments = (clientId?: string) => {
       // Si nous avons un ID client, cherchons ses documents existants
       if (clientId) {
         try {
-          const clientDocuments = await getDocumentsForClient(clientId);
+          const clientDocumentsFromApi = await getDocumentsForClient(clientId);
+          
+          // Convertir les documents API en AdministrativeDocument
+          const clientDocuments = clientDocumentsFromApi.map(doc => 
+            convertToAdministrativeDocument(doc)
+          );
+          
           setExistingDocuments(clientDocuments);
           
           // Mettre à jour le statut des documents requis si des documents existants correspondent
