@@ -27,6 +27,11 @@ interface FinancesFiltersProps {
   onExportSelected: () => void;
 }
 
+interface MonthOption {
+  value: string;
+  label: string;
+}
+
 const FinancesFilters: React.FC<FinancesFiltersProps> = ({
   selectedMonth,
   selectedStatuses,
@@ -35,8 +40,8 @@ const FinancesFilters: React.FC<FinancesFiltersProps> = ({
   onExportSelected,
 }) => {
   // Générer les 24 derniers mois pour le filtre
-  const generateMonthOptions = () => {
-    const options = [];
+  const generateMonthOptions = (): MonthOption[] => {
+    const options: MonthOption[] = [];
     const currentDate = new Date();
     
     for (let i = 0; i < 24; i++) {
