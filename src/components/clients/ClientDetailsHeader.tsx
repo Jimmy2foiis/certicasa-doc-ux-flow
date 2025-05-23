@@ -16,6 +16,8 @@ interface ClientDetailsHeaderProps {
     error: number;
   };
   onViewMissingDocs?: () => void;
+  onDocumentGenerated?: (documentId: string) => void;
+  onClientUpdated?: () => void;
 }
 
 const ClientDetailsHeader = ({ 
@@ -24,18 +26,26 @@ const ClientDetailsHeader = ({
   clientName, 
   onBack,
   documentStats,
-  onViewMissingDocs = () => {}
+  onViewMissingDocs = () => {},
+  onDocumentGenerated,
+  onClientUpdated
 }: ClientDetailsHeaderProps) => {
   // Handler pour générer un document
   const handleGenerateDocument = () => {
     console.log("Generate document for client:", clientId);
     // Logique pour générer un document
+    if (onDocumentGenerated) {
+      onDocumentGenerated(`doc-${Date.now()}`); // Pass a dummy document ID for now
+    }
   };
 
   // Handler pour éditer les informations client
   const handleEditClient = () => {
     console.log("Edit client:", clientId);
     // Logique pour éditer le client
+    if (onClientUpdated) {
+      onClientUpdated();
+    }
   };
 
   return (
