@@ -16,8 +16,8 @@ interface StatusBannerProps {
     error: number;
   };
   onViewMissingDocs: () => void;
-  onGenerateDocument?: () => void;
-  onEditClient?: () => void;
+  onGenerateDocument?: (e: React.MouseEvent) => void;
+  onEditClient?: (e: React.MouseEvent) => void;
 }
 
 const StatusBanner = ({
@@ -98,7 +98,11 @@ const StatusBanner = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={onViewMissingDocs}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onViewMissingDocs();
+              }}
               className="text-xs"
             >
               <Folder className="mr-1 h-3.5 w-3.5" />
@@ -112,7 +116,11 @@ const StatusBanner = ({
           <Button
             variant="outline"
             size="sm"
-            onClick={onGenerateDocument}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onGenerateDocument(e);
+            }}
           >
             <FileText className="mr-1 h-4 w-4" />
             Générer un document

@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from "lucide-react";
 import { useClientData } from "@/hooks/useClientData";
 import { useRequiredDocuments } from "@/hooks/useRequiredDocuments";
+import { useToast } from "@/components/ui/use-toast";
 
 import ClientDetailsHeader from "./ClientDetailsHeader";
 import ClientInfoSidebar from "./sidebar/ClientInfoSidebar";
@@ -20,9 +21,10 @@ interface ClientDetailsProps {
 }
 
 const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("calculations");
-  const { client, savedCalculations } = useClientData(clientId);
-  const { documentStats } = useRequiredDocuments(clientId);
+  const { client, savedCalculations, refreshCadastralData } = useClientData(clientId);
+  const { documentStats, refreshDocuments } = useRequiredDocuments(clientId);
   
   const handleViewMissingDocs = () => {
     setActiveTab("documents");
@@ -42,14 +44,24 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
   // Handle document generation completion
   const handleDocumentGenerated = (documentId: string) => {
     console.log("Document generated:", documentId);
-    // Vous pourriez vouloir rafraîchir les statistiques des documents ici
+    toast({
+      title: "Document généré",
+      description: `Le document a été généré avec succès (ID: ${documentId})`,
+    });
+    // Rafraîchir les statistiques des documents
+    refreshDocuments?.();
     setActiveTab("documents");
   };
 
   // Handle client information updated
   const handleClientUpdated = () => {
     console.log("Client updated");
-    // Vous pourriez vouloir rafraîchir les informations client ici
+    toast({
+      title: "Client mis à jour",
+      description: "Les informations du client ont été mises à jour avec succès",
+    });
+    // Rafraîchir les données du client (y compris potentiellement les données cadastrales)
+    refreshCadastralData?.();
   };
 
   // Make sure savedCalculations is always defined as an array

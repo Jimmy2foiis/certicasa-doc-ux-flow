@@ -1,8 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Client } from "@/services/api/types";
 import StatusBanner from "./StatusBanner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ClientForm } from "./ClientForm";
 
 interface ClientDetailsHeaderProps {
   client: Client | null;
@@ -27,40 +29,66 @@ const ClientDetailsHeader = ({
   onBack,
   documentStats,
   onViewMissingDocs = () => {},
-  onDocumentGenerated,
-  onClientUpdated
+  onDocumentGenerated = () => {},
+  onClientUpdated = () => {}
 }: ClientDetailsHeaderProps) => {
+  const [showEditDialog, setShowEditDialog] = useState(false);
+
   // Handler pour générer un document
   const handleGenerateDocument = () => {
     console.log("Generate document for client:", clientId);
     // Logique pour générer un document
-    if (onDocumentGenerated) {
-      onDocumentGenerated(`doc-${Date.now()}`); // Pass a dummy document ID for now
-    }
+    onDocumentGenerated(`doc-${Date.now()}`); // Pass a dummy document ID for now
   };
 
   // Handler pour éditer les informations client
-  const handleEditClient = () => {
+  const handleEditClient = (e: React.MouseEvent) => {
+    // Prévenir le comportement par défaut et la propagation
+    e.preventDefault();
+    e.stopPropagation();
+    
     console.log("Edit client:", clientId);
-    // Logique pour éditer le client
-    if (onClientUpdated) {
-      onClientUpdated();
-    }
+    // Ouvrir le dialogue d'édition plutôt que d'utiliser un autre mécanisme qui provoquerait un rechargement
+    setShowEditDialog(true);
+  };
+
+  // Fermer le dialogue d'édition et notifier les changements
+  const handleEditComplete = () => {
+    setShowEditDialog(false);
+    // Notifier que le client a été mis à jour
+    onClientUpdated();
   };
 
   return (
-    <div className="space-y-2">
-      <h1 className="text-2xl font-bold tracking-tight">{clientName}</h1>
-      
-      {/* Intégration du nouveau bandeau de statut */}
-      <StatusBanner 
-        client={client}
-        documentStats={documentStats}
-        onViewMissingDocs={onViewMissingDocs}
-        onGenerateDocument={handleGenerateDocument}
-        onEditClient={handleEditClient}
-      />
-    </div>
+    <>
+      <div className="space-y-2">
+        <h1 className="text-2xl font-bold tracking-tight">{clientName}</h1>
+        
+        {/* Intégration du bandeau de statut */}
+        <StatusBanner 
+          client={client}
+          documentStats={documentStats}
+          onViewMissingDocs={onViewMissingDocs}
+          onGenerateDocument={handleGenerateDocument}
+          onEditClient={handleEditClient}
+        />
+      </div>
+
+      {/* Dialogue d'édition du client */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Modifier les informations client</DialogTitle>
+          </DialogHeader>
+          <ClientForm 
+            clientId={clientId} 
+            initialData={client || undefined}
+            onSuccess={handleEditComplete} 
+            onCancel={() => setShowEditDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 
