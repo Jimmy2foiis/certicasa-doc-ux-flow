@@ -1,7 +1,6 @@
-
 import React from "react";
 import { FileText, Eye, Trash2 } from "lucide-react";
-import { DocumentTemplate } from "@/types/documents";
+import type { DocumentTemplate } from "@/types/documents";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 

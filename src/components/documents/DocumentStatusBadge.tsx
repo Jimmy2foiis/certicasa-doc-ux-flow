@@ -1,6 +1,5 @@
-
 import { Badge } from "@/components/ui/badge";
-import { DocumentStatus } from "@/types/documents";
+import type { DocumentStatus } from "@/types/documents";
 import { CheckCircle, Clock, AlertTriangle, XCircle, Link as LinkIcon, FileText } from "lucide-react";
 
 interface DocumentStatusBadgeProps {

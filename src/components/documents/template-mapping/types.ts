@@ -1,5 +1,4 @@
-
-import { DocumentTemplate, TemplateTag } from "@/types/documents";
+import type { DocumentTemplate, TemplateTag } from "@/types/documents";
 
 export interface TemplateVariableMappingProps {
   template: DocumentTemplate;

@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { TemplateTag } from "@/types/documents";
+import type { TemplateTag } from "@/types/documents";
 import { documentService } from "@/services/documentService";
 import PizZip from "pizzip";
 import Docxtemplater from "docxtemplater";
+import { getClientById } from "@/services/supabaseService";
 
 interface UseDocumentGenerationProps {
   (onDocumentGenerated?: (documentId: string) => void, clientName?: string): {
@@ -196,18 +197,13 @@ export const useDocumentGeneration: UseDocumentGenerationProps = (
       
       if (clientId) {
         try {
-          // Récupérer les données client
-          const { data: client, error: clientError } = await supabase
-            .from('clients')
-            .select('*')
-            .eq('id', clientId)
-            .single();
-            
-          if (clientError || !client) {
-            console.error("Erreur lors de la récupération des données client:", clientError);
+          const client = await getClientById(clientId);
+
+          if (!client) {
+            console.error("Client non trouvé via l'API distante");
             throw new Error("Impossible de récupérer les données client");
           }
-          
+
           clientData.client = client;
           
           // Récupérer les données cadastrales

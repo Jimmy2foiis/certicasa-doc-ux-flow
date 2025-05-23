@@ -1,7 +1,7 @@
-
 import mammoth from 'mammoth';
 import * as pdfjs from 'pdfjs-dist';
-import { TextExtractionResult, VariableExtractionConfig, defaultVariablePatterns } from '@/types/documents';
+import type { TextExtractionResult, VariableExtractionConfig } from '@/types/documents';
+import { defaultVariablePatterns } from '@/types/documents';
 
 // Charger le worker PDF.js nécessaire pour l'extraction de texte des PDF
 const pdfWorkerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;

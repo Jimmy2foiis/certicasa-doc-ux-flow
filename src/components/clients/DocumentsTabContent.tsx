@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAdministrativeDocuments } from "@/hooks/useAdministrativeDocuments";
-import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
+import type { AdministrativeDocument, DocumentStatus } from "@/types/documents";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { DocumentPreview } from "@/components/documents/DocumentPreview";

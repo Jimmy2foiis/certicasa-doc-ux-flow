@@ -1,7 +1,6 @@
-
 import { useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { AdministrativeDocument } from "@/types/documents";
+import type { AdministrativeDocument } from "@/types/documents";
 
 export function useDocumentActions() {
   const { toast } = useToast();

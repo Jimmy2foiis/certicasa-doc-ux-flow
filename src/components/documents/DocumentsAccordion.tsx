@@ -1,5 +1,4 @@
-
-import { AdministrativeDocument } from "@/types/documents";
+import type { AdministrativeDocument } from "@/types/documents";
 import { 
   Accordion, 
   AccordionContent, 

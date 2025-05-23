@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { useClientInfo } from "./useClientInfo";
 import { useClientCadastralData } from "./useClientCadastralData";
@@ -64,6 +63,7 @@ export const useClientData = (clientId: string) => {
     climateZone,
     apiSource,
     loadingCadastral,
-    refreshCadastralData
+    refreshCadastralData,
+    loadProjectsFromSupabase
   };
 };

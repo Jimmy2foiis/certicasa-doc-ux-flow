@@ -1,8 +1,7 @@
-
 import { useFileUpload } from "./useFileUpload";
 import { useTemplateStorage } from "./useTemplateStorage";
 import { useToast } from "@/hooks/use-toast";
-import { UploadedFile } from "@/types/documents";
+import type { UploadedFile } from "@/types/documents";
 import { useState } from "react";
 
 export const useDocumentTemplateUpload = () => {

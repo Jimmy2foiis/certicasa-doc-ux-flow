@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Download, Mail, Save, AlertCircle } from "lucide-react";
@@ -148,23 +147,19 @@ const DocumentActions = ({
       // Récupérer l'email du client si aucun email n'est spécifié
       let emailToSend = recipientEmail;
       
-      if (!emailToSend) {
-        const { data: client, error: clientError } = await supabase
-          .from('clients')
-          .select('email')
-          .eq('id', clientId)
-          .single();
-          
-        if (clientError || !client) {
-          throw new Error("Impossible de récupérer les informations du client");
-        }
-        
-        if (!client.email) {
-          throw new Error("Ce client n'a pas d'adresse email enregistrée");
-        }
-        
-        emailToSend = client.email;
+      const { getClientById } = await import("@/services/supabaseService");
+
+      const client = await getClientById(clientId);
+
+      if (!client) {
+        throw new Error("Impossible de récupérer les informations du client");
       }
+
+      if (!client.email) {
+        throw new Error("Ce client n'a pas d'adresse email enregistrée");
+      }
+
+      emailToSend = client.email;
       
       // Simuler l'envoi d'email (à remplacer par votre logique d'envoi réelle)
       console.log(`Envoi d'email à ${emailToSend} avec le document ${documentId}`);

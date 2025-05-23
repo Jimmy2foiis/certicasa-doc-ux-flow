@@ -1,8 +1,7 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getDocumentsForClient } from "@/services/supabase/documentService";
-import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
+import type { AdministrativeDocument, DocumentStatus } from "@/types/documents";
 import { determineDocumentCategory, generateDemoDocuments } from "./useDemoDocuments";
 import { useDocumentSearch } from "./useDocumentSearch";
 import { useDocumentActions } from "./useDocumentActions";

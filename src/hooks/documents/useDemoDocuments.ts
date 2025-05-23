@@ -1,5 +1,4 @@
-
-import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
+import type { AdministrativeDocument, DocumentStatus } from "@/types/documents";
 
 // Function to determine the category of a document based on its name
 export const determineDocumentCategory = (name: string): string => {

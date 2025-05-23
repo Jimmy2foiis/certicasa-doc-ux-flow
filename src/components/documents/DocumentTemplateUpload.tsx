@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, 
@@ -9,7 +8,7 @@ import TemplateUploadArea from "./TemplateUploadArea";
 import TemplateFileItem from "./TemplateFileItem";
 import { useDocumentTemplateUpload } from "@/hooks/useDocumentTemplateUpload";
 import { supabase } from "@/integrations/supabase/client";
-import { UploadedFile } from "@/types/documents";
+import type { UploadedFile } from "@/types/documents";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
 

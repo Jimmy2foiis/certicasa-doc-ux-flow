@@ -1,8 +1,7 @@
-
 import { FileCheck, FileText, AlertCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { UploadedFile } from "@/types/documents";
+import type { UploadedFile } from "@/types/documents";
 
 interface TemplateFileItemProps {
   file: UploadedFile;

@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { AdministrativeDocument } from "@/types/documents";
+import type { AdministrativeDocument } from "@/types/documents";
 
 export function useDocumentSearch(documents: AdministrativeDocument[]) {
   const [searchQuery, setSearchQuery] = useState("");

@@ -1,4 +1,3 @@
-
 import { User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
@@ -24,3 +23,6 @@ const ClientAvatar = ({ name, status }: ClientAvatarProps) => {
 };
 
 export default ClientAvatar;
+
+// Also export as a named export for flexibility
+export { ClientAvatar };

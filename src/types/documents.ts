@@ -1,4 +1,3 @@
-
 // Définitions de types centralisées pour les documents
 
 // Type pour status de document (enum string)
@@ -37,9 +36,30 @@ export interface DocumentTemplate {
 }
 
 // Type pour les balises de modèle
-export interface TemplateTag { 
+export interface TemplateTag {
+  /**
+   * Identifiant optionnel (pour compatibilité avec d'autres versions du type)
+   */
+  id?: string;
+  /**
+   * Nom optionnel de la variable (pour compatibilité)
+   */
+  name?: string;
+  /**
+   * Valeur optionnelle de la variable (pour compatibilité)
+   */
+  value?: string;
+  /**
+   * Balise brute détectée dans le modèle, par ex. "{{client.name}}"
+   */
   tag: string;
+  /**
+   * Catégorie de la variable (client, project, cadastre, calcul, ...)
+   */
   category: string;
+  /**
+   * Mapping choisi vers une donnée réelle, par ex. "client.name"
+   */
   mappedTo: string;
 }
 

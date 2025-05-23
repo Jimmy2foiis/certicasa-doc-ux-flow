@@ -1,4 +1,3 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { availableVariables } from "./types";
@@ -26,7 +25,7 @@ export const VariableCategoryTabs = ({
           ))}
         </TabsList>
         
-        {Object.entries(availableVariables).map(([category, variables]) => (
+        {(Object.entries(availableVariables) as [string, string[]][]).map(([category, variables]) => (
           <TabsContent key={category} value={category} className="mt-0">
             <div className="border rounded-md p-4 bg-gray-50">
               <div className="flex flex-wrap gap-2">

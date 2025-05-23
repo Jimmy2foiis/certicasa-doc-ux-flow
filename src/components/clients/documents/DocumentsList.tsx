@@ -1,6 +1,5 @@
-
 import React from "react";
-import { AdministrativeDocument, DocumentStatus } from "@/types/documents";
+import type { AdministrativeDocument, DocumentStatus } from "@/types/documents";
 import { DocumentStatusBadge } from "@/components/documents/DocumentStatusBadge";
 import DocumentActionButtons from "@/components/documents/DocumentActionButtons";
 import { FileText, Eye, FileDown } from "lucide-react";

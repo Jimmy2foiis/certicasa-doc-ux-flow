@@ -1,7 +1,6 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { UploadedFile } from "@/types/documents";
+import type { UploadedFile } from "@/types/documents";
 import { DocumentExtractionService } from "@/services/documentExtraction";
 
 export const useFileUpload = () => {

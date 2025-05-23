@@ -1,8 +1,8 @@
-
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TemplateTag, availableVariables } from "@/types/documents";
+import type { TemplateTag } from "@/types/documents";
+import { availableVariables } from "@/types/documents";
 
 interface TagVariableRowProps {
   tag: TemplateTag;
