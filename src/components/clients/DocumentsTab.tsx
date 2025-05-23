@@ -21,7 +21,7 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
   const [documentType, setDocumentType] = useState("facture");
   const { toast } = useToast();
 
-  // Use the client documents hook instead of direct API calls
+  // Use the client documents hook
   const { 
     adminDocuments: documents,
     isLoading: loading,
@@ -59,28 +59,18 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
       description: `Upload de ${uploadFile.name}...`,
     });
 
-    // Simulate document upload - in real implementation, this would call an API
-    setTimeout(() => {
-      // Add the document to the list - this would normally be done by refreshing from API
-      const newDocument = {
-        id: `doc-${Date.now()}`,
-        name: uploadFile.name,
-        type: documentType,
-        status: "available", // Use consistent status
-        created_at: new Date().toISOString(),
-        client_id: clientId,
-      };
-      
-      // Close the dialog and reset fields
-      setShowUploadDialog(false);
-      setUploadFile(null);
-      setDocumentType("facture");
-      
-      toast({
-        title: "Document uploadé",
-        description: `${uploadFile.name} a été uploadé avec succès`,
-      });
-    }, 1500);
+    // Integration with real document upload
+    handleDocumentAction('upload', 'upload', {
+      file: uploadFile,
+      type: documentType,
+      name: uploadFile.name,
+      clientId
+    });
+    
+    // Close the dialog and reset fields
+    setShowUploadDialog(false);
+    setUploadFile(null);
+    setDocumentType("facture");
   };
 
   // Obtain the color for status badges

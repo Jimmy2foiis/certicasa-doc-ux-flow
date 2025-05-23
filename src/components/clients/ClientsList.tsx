@@ -4,7 +4,7 @@ import ClientsTable from '@/components/clients/ClientsTable';
 import ClientsFloatingBar from '@/components/clients/ClientsFloatingBar';
 import { Client } from '@/services/api/types';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import ClientForm from '@/components/clients/ClientForm';
+import { ClientForm } from '@/components/clients/ClientForm';
 import ClientsHeader from './ClientsHeader';
 
 interface ClientsListProps {
