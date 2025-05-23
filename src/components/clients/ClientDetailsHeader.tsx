@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { ArrowLeft, Edit, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ClientForm } from "./ClientForm";
+import ClientForm from "./ClientForm";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import ClientDocumentGenerator from "@/components/documents/ClientDocumentGenerator";

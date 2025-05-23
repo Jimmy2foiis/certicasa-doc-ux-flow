@@ -6,6 +6,9 @@ export interface TemplateTag {
   id: string;
   name: string;
   value: string;
+  tag?: string;
+  category?: string;
+  mappedTo?: string;
 }
 
 export const useDocumentGeneration = (onDocumentGenerated?: (documentId: string) => void, clientName?: string) => {
