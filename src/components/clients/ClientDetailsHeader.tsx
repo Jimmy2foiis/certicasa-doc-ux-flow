@@ -2,7 +2,7 @@
 import { ArrowLeft, Mail, Phone, MapPin, MoreVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ClientAvatar } from "./ClientAvatar";
+import ClientAvatar from "./ClientAvatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
