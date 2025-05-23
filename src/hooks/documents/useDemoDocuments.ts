@@ -1,3 +1,4 @@
+
 import type { AdministrativeDocument, DocumentStatus } from "@/types/documents";
 
 // Function to determine the category of a document based on its name
@@ -34,6 +35,7 @@ export const generateDemoDocuments = (clientName?: string, projectType: string =
       status: "signed" as DocumentStatus,
       created_at: new Date().toISOString(),
       description: "Contrat client standard",
+      reference: "CONT-2023-001",
       order: 1
     },
     {
@@ -44,6 +46,7 @@ export const generateDemoDocuments = (clientName?: string, projectType: string =
       status: "available" as DocumentStatus,
       created_at: new Date().toISOString(),
       description: "Plans techniques",
+      reference: "PLAN-2023-002",
       order: 2
     },
     {
@@ -54,6 +57,7 @@ export const generateDemoDocuments = (clientName?: string, projectType: string =
       status: "sent" as DocumentStatus,
       created_at: new Date().toISOString(),
       description: "Facture initiale",
+      reference: "FACT-2023-003",
       order: 3
     },
     {
@@ -64,6 +68,7 @@ export const generateDemoDocuments = (clientName?: string, projectType: string =
       status: "draft" as DocumentStatus,
       created_at: new Date().toISOString(),
       description: "Rapport d'analyse énergétique",
+      reference: "RAP-2023-004",
       order: 4
     },
     {
@@ -74,6 +79,7 @@ export const generateDemoDocuments = (clientName?: string, projectType: string =
       status: "available" as DocumentStatus,
       created_at: new Date().toISOString(),
       description: "Présentation de la solution",
+      reference: "PRES-2023-005",
       order: 5
     }
   ];

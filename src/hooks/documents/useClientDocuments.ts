@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getDocumentsForClient } from "@/services/supabase/documentService";
@@ -22,7 +23,7 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
           const documents = await getDocumentsForClient(clientId);
           
           // Transform documents into AdminDocument format
-          const formattedDocs = documents.map(doc => ({
+          const formattedDocs: AdministrativeDocument[] = documents.map(doc => ({
             id: doc.id,
             name: doc.name,
             type: doc.type || "pdf",
@@ -33,6 +34,7 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
             content: doc.content,
             file_path: doc.file_path,
             description: "",  // Default empty description
+            reference: doc.type ? `REF-${doc.type.toUpperCase()}-${doc.id.substring(0, 5)}` : "", // Generate a reference if not available
             order: 0,         // Default order
             // Add status label based on document type and status
             statusLabel: getStatusLabelForDocument(doc.type || "pdf", doc.status || "available")
