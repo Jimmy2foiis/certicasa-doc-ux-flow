@@ -39,6 +39,11 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
     console.log("Creating new calculation");
   };
 
+  // Make sure savedCalculations is always defined as an array
+  const calculationsData = savedCalculations || [];
+  
+  console.log("ClientDetails - savedCalculations:", savedCalculations); // Debug log
+
   return (
     <div className="space-y-4">
       <Button
@@ -90,7 +95,7 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
                 clientId={clientId} 
                 clientName={client?.name}
                 clientAddress={client?.address}
-                savedCalculations={savedCalculations || []}
+                savedCalculations={calculationsData}
                 onOpenCalculation={handleOpenCalculation}
                 onCreateNewCalculation={handleCreateNewCalculation}
               />

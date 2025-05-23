@@ -32,12 +32,15 @@ interface CalculationsTabProps {
 
 const CalculationsTab = ({ 
   clientId, 
-  clientName,
-  clientAddress,
-  savedCalculations, 
+  clientName = "Client",
+  clientAddress = "",
+  savedCalculations = [], // Provide default empty array to prevent undefined
   onOpenCalculation, 
   onCreateNewCalculation 
 }: CalculationsTabProps) => {
+  // Make sure savedCalculations is always an array
+  const calculations = Array.isArray(savedCalculations) ? savedCalculations : [];
+
   return (
     <Card>
       <CardHeader>
@@ -49,7 +52,7 @@ const CalculationsTab = ({
       <CardContent>
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {savedCalculations.map((calculation) => (
+            {calculations.map((calculation) => (
               <Card key={calculation.id} className="overflow-hidden">
                 <CardHeader className="bg-slate-50 pb-3">
                   <div className="flex items-center justify-between">
