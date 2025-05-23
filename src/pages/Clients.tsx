@@ -3,16 +3,20 @@ import { useState } from "react";
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import ClientsTable from "@/components/clients/ClientsTable";
-import ClientsFilters from "@/components/clients/ClientsFilters";
-import ClientsActions from "@/components/clients/ClientsActions";
-import ClientsFloatingBar from "@/components/clients/ClientsFloatingBar";
 import ClientDetails from "@/components/clients/ClientDetails";
 import { useClients } from "@/hooks/useClients";
 import { useToast } from "@/components/ui/use-toast";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Search, UserPlus, Download, Package } from "lucide-react";
+import ClientForm from "@/components/clients/ClientForm";
+import ClientsFloatingBar from "@/components/clients/ClientsFloatingBar";
 
 const Clients = () => {
   const [selectedClients, setSelectedClients] = useState<string[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const { toast } = useToast();
   const { 
     clients,
@@ -51,12 +55,24 @@ const Clients = () => {
     setSelectedClientId(null);
   };
 
+  const handleCreateClient = async (data: any) => {
+    // Simulation de création client
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    toast({
+      title: "Client créé",
+      description: "Le nouveau client a été ajouté avec succès",
+    });
+    
+    setShowCreateDialog(false);
+    refreshClients();
+  };
+
   const handleCreateBatch = () => {
     toast({
       title: "Création de lot",
       description: `Lot créé avec ${selectedClients.length} client(s)`,
     });
-    // Ici, vous pourriez rediriger vers la page de création de lot
     console.log("Création d'un lot avec les clients:", selectedClients);
   };
 
@@ -124,23 +140,29 @@ const Clients = () => {
       <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <Header />
-        <main className="flex-1 overflow-y-auto p-4">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-2xl font-semibold">Gestion des Clients</h1>
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-semibold">Clients</h1>
+            <div className="flex gap-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Input
+                  placeholder="Rechercher un client..."
+                  className="pl-9 w-64 bg-white"
+                  value={filters.search}
+                  onChange={(e) => setFilters({...filters, search: e.target.value})}
+                />
+              </div>
+              <Button 
+                onClick={() => setShowCreateDialog(true)} 
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Nouveau client
+              </Button>
+            </div>
           </div>
-          
-          <ClientsFilters 
-            filters={filters} 
-            setFilters={setFilters} 
-          />
-          
-          <ClientsActions 
-            onClientCreated={refreshClients}
-            selectedCount={selectedClients.length}
-            onCreateBatch={handleCreateBatch}
-            onExportSelection={handleDownloadZip}
-          />
-          
+
           <ClientsTable 
             clients={filteredClients}
             loading={loading}
@@ -149,9 +171,7 @@ const Clients = () => {
             onSelectAll={handleSelectAll}
             onDeleteClient={handleDeleteClient}
             onClientSelect={handleClientSelect}
-            onOpenCreateDialog={() => {
-              // Ouvrir la modal de création via référence (à implémenter si nécessaire)
-            }}
+            onOpenCreateDialog={() => setShowCreateDialog(true)}
           />
           
           {selectedClients.length > 0 && (
@@ -166,6 +186,17 @@ const Clients = () => {
           )}
         </main>
       </div>
+
+      {/* Dialog pour créer un client */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <ClientForm 
+            onSubmit={handleCreateClient}
+            onCancel={() => setShowCreateDialog(false)}
+            isSubmitting={false}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
