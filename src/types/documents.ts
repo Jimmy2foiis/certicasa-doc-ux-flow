@@ -1,3 +1,4 @@
+
 // Import the TemplateTag from useDocumentGeneration
 import { TemplateTag as DocumentGenerationTemplateTag } from "@/hooks/useDocumentGeneration";
 
@@ -16,4 +17,78 @@ export interface DocumentTemplate {
   createdAt: string;
   updatedAt: string;
   tags?: TemplateTag[];
+  // Add additional properties that are used in the codebase
+  dateUploaded?: string;
+  lastModified?: string;
+  userId?: string;
+  size?: number;
 }
+
+export type DocumentStatus = 
+  | "generated" 
+  | "ready" 
+  | "pending" 
+  | "missing" 
+  | "action-required" 
+  | "error"
+  | "linked";
+
+// Type for administrative documents
+export interface AdministrativeDocument {
+  id: string;
+  name: string;
+  type: string; // Unique identifier for the type (e.g., "ficha", "anexo", etc.)
+  description: string;
+  status: DocumentStatus;
+  statusLabel?: string;
+  order: number;
+  content?: string;
+}
+
+// Add additional types used by components
+export interface UploadedFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  lastModified: number;
+  status: 'uploading' | 'complete' | 'error';
+  progress: number;
+  content: string | null;
+  extractedText: string;
+  variables: string[];
+}
+
+export interface TagMapping {
+  [key: string]: string;
+}
+
+export interface TagCategoryProps {
+  category: string;
+  clientData?: any;
+  onSelectVariable: (variable: string) => void;
+}
+
+export const availableVariables = {
+  client: ["nom", "prénom", "adresse", "téléphone", "email"],
+  project: ["nom", "description", "date_début", "date_fin"],
+  calcul: ["surface", "prix_unitaire", "prix_total"],
+  cadastre: ["référence", "parcelle", "commune"]
+};
+
+export interface TextExtractionResult {
+  text: string;
+  variables: string[];
+  error?: string;
+}
+
+export interface VariableExtractionConfig {
+  pattern: RegExp;
+  name?: string;
+  description?: string;
+}
+
+export const defaultVariablePatterns: VariableExtractionConfig[] = [
+  { pattern: /\{\{([^}]+)\}\}/g, name: "Mustache" },
+  { pattern: /\$([\w\.]+)\$/g, name: "Dollar" },
+];
