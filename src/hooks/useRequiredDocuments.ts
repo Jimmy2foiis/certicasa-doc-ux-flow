@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { AdministrativeDocument, DocumentStatus } from '@/types/documents';
 import { getDocumentsForClient } from '@/services/supabase/documentService';
-import { Document } from '@/services/api/types';
+import { Document } from '@/services/supabase/documentService';
 
 // Structure fixe des 8 documents obligatoires dans l'ordre exact
 const REQUIRED_DOCUMENT_TEMPLATES = [
@@ -72,7 +72,7 @@ const REQUIRED_DOCUMENT_TEMPLATES = [
   },
 ];
 
-// Convertir un Document de l'API vers AdministrativeDocument
+// Convertir un Document de Supabase vers AdministrativeDocument
 const convertToAdministrativeDocument = (doc: Document): AdministrativeDocument => {
   return {
     id: doc.id || '',
