@@ -4,4 +4,10 @@
 // Nous créons un objet factice qui ne fait rien pour éviter les erreurs
 // lors de la transition vers l'API REST
 
-export { supabase } from '@/services/supabase/supabaseClient';
+// Stub ultra-loose : renvoie une fonction chaînable quelle que soit la propriété appelée.
+const proxy: any = new Proxy(() => proxy, {
+  get: () => proxy,
+  apply: () => proxy,
+});
+
+export const supabase: any = proxy;

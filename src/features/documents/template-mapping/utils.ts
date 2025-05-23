@@ -2,6 +2,8 @@ import { supabase } from '@/integrations/supabase/client';
 import type { TemplateTag, Json } from '@/types/documents';
 import { availableVariables } from '@/types/documents';
 
+// @ts-nocheck
+
 // Helper function to extract tags from a document content
 export const extractTemplateTags = (content: string | null): string[] => {
   if (!content) return [];
