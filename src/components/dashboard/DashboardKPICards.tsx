@@ -44,22 +44,24 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
 
     return (
       <Card className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
-        <CardContent className="p-6">
+        <CardContent className="p-3 sm:p-4 lg:p-6">
           <div className="flex justify-between items-start">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">{title}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{title}</p>
               <div className="flex items-baseline mt-1">
-                <h3 className="text-2xl font-bold">{formattedValue}</h3>
-                {unit && <span className="ml-1 text-muted-foreground">{unit}</span>}
+                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">{formattedValue}</h3>
+                {unit && <span className="ml-1 text-xs sm:text-sm text-muted-foreground">{unit}</span>}
               </div>
             </div>
-            <div className="p-2 bg-gray-100 rounded-md">
-              {icon}
+            <div className="p-1.5 sm:p-2 bg-gray-100 rounded-md flex-shrink-0 ml-2">
+              {React.cloneElement(icon as React.ReactElement, { 
+                className: "h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" 
+              })}
             </div>
           </div>
           
-          <div className="mt-4 flex items-center text-sm">
-            <div className={`flex items-center px-1.5 py-0.5 rounded ${
+          <div className="mt-3 sm:mt-4 flex items-center text-xs sm:text-sm">
+            <div className={`flex items-center px-1 sm:px-1.5 py-0.5 rounded ${
               isPositive ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"
             }`}>
               {isPositive ? (
@@ -67,9 +69,10 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
               ) : (
                 <TrendingDown className="h-3 w-3 mr-1" />
               )}
-              <span>{Math.abs(change)}%</span>
+              <span className="text-xs">{Math.abs(change)}%</span>
             </div>
-            <span className="text-muted-foreground ml-1.5">vs mois précédent</span>
+            <span className="text-muted-foreground ml-1.5 text-xs hidden sm:inline">vs mois précédent</span>
+            <span className="text-muted-foreground ml-1.5 text-xs sm:hidden">vs M-1</span>
           </div>
         </CardContent>
       </Card>
@@ -77,12 +80,12 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
       <KPICard
         title="🧍 Clients actifs"
         value={kpiData.activeClients.value}
         unit="clients"
-        icon={<Users className="h-6 w-6" />}
+        icon={<Users />}
         change={kpiData.activeClients.change}
         trend={kpiData.activeClients.trend}
       />
@@ -91,7 +94,7 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
         title="📏 Surface isolée totale"
         value={kpiData.totalSurface.value}
         unit="m²"
-        icon={<Home className="h-6 w-6" />}
+        icon={<Home />}
         change={kpiData.totalSurface.change}
         trend={kpiData.totalSurface.trend}
       />
@@ -100,7 +103,7 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
         title="⚡ CAE global"
         value={kpiData.totalCAE.value}
         unit="kWh/an"
-        icon={<Zap className="h-6 w-6" />}
+        icon={<Zap />}
         change={kpiData.totalCAE.change}
         trend={kpiData.totalCAE.trend}
         formatter={(value) => `${(value / 1000000).toFixed(2)} M`}
@@ -110,7 +113,7 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
         title="💶 Économie moyenne"
         value={kpiData.averagePrice.value}
         unit="€/m²"
-        icon={<Calculator className="h-6 w-6" />}
+        icon={<Calculator />}
         change={kpiData.averagePrice.change}
         trend={kpiData.averagePrice.trend}
       />

@@ -45,26 +45,27 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="bg-white border-b border-gray-200 px-3 sm:px-6 py-3 sm:py-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-semibold text-gray-900">
+        <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
+          <h1 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
             {workspace.name}
           </h1>
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs hidden xs:inline-flex">
             {workspace.type}
           </Badge>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4">
           {/* Workspace switcher */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                Changer d'espace
+              <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">
+                <span className="hidden sm:inline">Changer d'espace</span>
+                <span className="sm:hidden">Espace</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-48 sm:w-auto">
               <DropdownMenuLabel>Espaces de travail</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {workspaces.map((ws) => (
@@ -73,7 +74,10 @@ const Header = () => {
                   onClick={() => setWorkspace(ws.id === "admin" ? "administrative" : "commercial")}
                   className={workspace.id === ws.id ? "bg-accent" : ""}
                 >
-                  {ws.name}
+                  <div className="flex flex-col">
+                    <span className="font-medium">{ws.name}</span>
+                    <span className="text-xs text-muted-foreground">{ws.type}</span>
+                  </div>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
@@ -83,21 +87,21 @@ const Header = () => {
           {workspace.id === "admin" && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="relative">
-                  <BellIcon className="h-5 w-5" />
+                <Button variant="ghost" size="sm" className="relative h-8 w-8 sm:h-9 sm:w-9">
+                  <BellIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                   {notifications.length > 0 && (
-                    <Badge className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
+                    <Badge className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 rounded-full p-0 flex items-center justify-center text-xs">
                       {notifications.length}
                     </Badge>
                   )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80">
+              <DropdownMenuContent align="end" className="w-72 sm:w-80">
                 <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {notifications.map((notification) => (
-                  <DropdownMenuItem key={notification.id} className="flex flex-col items-start space-y-1">
-                    <div className="font-medium">{notification.message}</div>
+                  <DropdownMenuItem key={notification.id} className="flex flex-col items-start space-y-1 p-3">
+                    <div className="font-medium text-sm">{notification.message}</div>
                     <div className="text-xs text-muted-foreground">{notification.time}</div>
                   </DropdownMenuItem>
                 ))}
@@ -106,8 +110,8 @@ const Header = () => {
           )}
 
           {/* User avatar */}
-          <Avatar>
-            <AvatarFallback>U</AvatarFallback>
+          <Avatar className="h-8 w-8 sm:h-9 sm:w-9">
+            <AvatarFallback className="text-xs sm:text-sm">U</AvatarFallback>
           </Avatar>
         </div>
       </div>
