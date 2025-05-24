@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Home, Zap, Calculator, TrendingUp, TrendingDown } from "lucide-react";
+import { Users, Home, Zap, Thermometer, TrendingUp, TrendingDown } from "lucide-react";
 
 interface DashboardKPICardsProps {
   selectedPeriod: string;
@@ -19,7 +19,7 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
     activeClients: { value: 245, change: 12, trend: "up" as const },
     totalSurface: { value: 18500, change: 8, trend: "up" as const },
     totalCAE: { value: 1240000, change: 23, trend: "up" as const },
-    averagePrice: { value: 42, change: -3, trend: "down" as const },
+    averageU: { value: 0.85, change: -15, trend: "down" as const },
   };
 
   const KPICard = ({ 
@@ -55,9 +55,9 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
                 {unit && <span className="ml-2 text-sm text-gray-500">{unit}</span>}
               </div>
             </div>
-            <div className={`p-2 ${color === "green" ? "bg-green-100" : color === "blue" ? "bg-blue-100" : color === "orange" ? "bg-orange-100" : "bg-gray-100"} rounded-lg flex-shrink-0 ml-3`}>
+            <div className={`p-2 ${color === "green" ? "bg-green-100" : color === "blue" ? "bg-blue-100" : color === "orange" ? "bg-orange-100" : color === "purple" ? "bg-purple-100" : "bg-gray-100"} rounded-lg flex-shrink-0 ml-3`}>
               {React.cloneElement(icon as React.ReactElement, { 
-                className: `h-6 w-6 ${color === "green" ? "text-green-600" : color === "blue" ? "text-blue-600" : color === "orange" ? "text-orange-600" : "text-gray-600"}` 
+                className: `h-6 w-6 ${color === "green" ? "text-green-600" : color === "blue" ? "text-blue-600" : color === "orange" ? "text-orange-600" : color === "purple" ? "text-purple-600" : "text-gray-600"}` 
               })}
             </div>
           </div>
@@ -114,13 +114,14 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
       />
       
       <KPICard
-        title="💶 Économie moyenne"
-        value={kpiData.averagePrice.value}
-        unit="€/m²"
-        icon={<Calculator />}
-        change={kpiData.averagePrice.change}
-        trend={kpiData.averagePrice.trend}
-        color="green"
+        title="🌡️ U moyen"
+        value={kpiData.averageU.value}
+        unit="W/m²K"
+        icon={<Thermometer />}
+        change={kpiData.averageU.change}
+        trend={kpiData.averageU.trend}
+        color="purple"
+        formatter={(value) => value.toFixed(2)}
       />
     </div>
   );
