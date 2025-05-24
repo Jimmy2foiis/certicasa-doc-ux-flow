@@ -20,7 +20,6 @@ import Help from "./pages/Help";
 import ProjectsList from "./pages/ProjectsList";
 import ProjectDetails from "./pages/ProjectDetails";
 import Finances from "./pages/Finances";
-import MainDashboard from "./pages/MainDashboard"; // Nouvelle page
 
 const queryClient = new QueryClient();
 
@@ -33,7 +32,6 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/dashboard" element={<MainDashboard />} /> {/* Nouvelle route */}
             <Route path="/lots" element={<Lots />} />
             <Route path="/products" element={<Products />} />
             <Route path="/calculations" element={<Calculations />} />

@@ -7,7 +7,6 @@ const SidebarNavigation = () => {
   const location = useLocation();
 
   const isActiveLink = (url: string) => {
-    if (url === "/dashboard" && location.pathname === "/") return true;
     return location.pathname === url;
   };
 

@@ -19,7 +19,7 @@ export interface NavLink {
 export const navigationLinks: NavLink[] = [
   {
     title: "Tableau de bord",
-    url: "/dashboard",
+    url: "/",
     icon: Home,
   },
   {
