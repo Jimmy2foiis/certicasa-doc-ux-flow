@@ -17,6 +17,11 @@ interface DashboardFiltersProps {
   onExportExcel: () => void;
 }
 
+interface PeriodOption {
+  value: string;
+  label: string;
+}
+
 const DashboardFilters: React.FC<DashboardFiltersProps> = ({
   selectedPeriod,
   selectedFicheType,
@@ -28,8 +33,8 @@ const DashboardFilters: React.FC<DashboardFiltersProps> = ({
   onExportPDF,
   onExportExcel,
 }) => {
-  const generatePeriodOptions = () => {
-    const options = [];
+  const generatePeriodOptions = (): PeriodOption[] => {
+    const options: PeriodOption[] = [];
     const currentDate = new Date();
     
     for (let i = 0; i < 12; i++) {
