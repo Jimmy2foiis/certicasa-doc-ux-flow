@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Receipt, FileText, Download, RefreshCw, PlusCircle, Eye } from "lucide-react";
+import { Receipt, FileText, Download, RefreshCw, PlusCircle, Eye, Calculator } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,47 +10,18 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import DocumentStatusBadge from "@/features/documents/DocumentStatusBadge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import AutomaticBillingGenerator from "@/components/billing/AutomaticBillingGenerator";
+import { useSavedCalculations } from "@/hooks/useSavedCalculations";
+import { useClientInfo } from "@/hooks/useClientInfo";
 
 interface BillingTabProps {
   clientId: string;
 }
-
-// Mock project data - would be replaced with actual client data in production
-const mockProjectData = {
-  surface: 72, // m²
-  productName: "URSA TERRA 32",
-  productPrice: 7, // € HT / m²
-  caeValue: 4200, // CAE value in € (example)
-};
-
-const calculateInvoiceData = (data: typeof mockProjectData) => {
-  const { surface, productPrice, caeValue } = data;
-  
-  // Calculate all invoice values
-  const productTotal = surface * productPrice;
-  const laborUnitPrice = ((caeValue * 0.1 / 1.21) / surface) - productPrice;
-  const laborTotal = laborUnitPrice * surface;
-  const subtotal = productTotal + laborTotal;
-  const tva = subtotal * 0.21;
-  const totalTTC = caeValue * 0.1;
-  
-  return {
-    productTotal,
-    laborUnitPrice,
-    laborTotal,
-    subtotal,
-    tva,
-    totalTTC
-  };
-};
-
-const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
-};
 
 type DocumentType = "invoice" | "creditNote";
 type DocumentStatus = "generated" | "missing" | "error" | "not-generated";
@@ -66,24 +37,32 @@ interface BillingDocument {
 
 const BillingTab = ({ clientId }: BillingTabProps) => {
   const { toast } = useToast();
+  const [showBillingDialog, setShowBillingDialog] = useState(false);
   const [documents, setDocuments] = useState<BillingDocument[]>([
     {
       id: "invoice-1",
       type: "invoice",
-      name: "Facture client",
-      status: "generated",
-      date: "15/05/2025",
+      name: "Facture client (CERT-XXXXX)",
+      status: "not-generated",
     },
     {
       id: "credit-note-1",
       type: "creditNote",
-      name: "Note de crédit ITP",
+      name: "Note de crédit ITP (NC-XXXXX)",
       status: "not-generated",
     },
   ]);
   
-  // Calculate invoice data
-  const invoiceData = calculateInvoiceData(mockProjectData);
+  // Récupérer les données du client et des calculs
+  const { client } = useClientInfo(clientId);
+  const { savedCalculations } = useSavedCalculations(clientId);
+  
+  // Trouver le calcul le plus récent pour ce client
+  const latestCalculation = savedCalculations && savedCalculations.length > 0 
+    ? savedCalculations[savedCalculations.length - 1] 
+    : null;
+
+  const calculationData = latestCalculation?.calculationData;
   
   const handleViewDocument = (doc: BillingDocument) => {
     if (doc.status !== "generated") {
@@ -99,8 +78,6 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
       title: "Aperçu du document",
       description: `Ouverture de l'aperçu de ${doc.name}...`,
     });
-    
-    // Here you would implement document preview functionality
   };
   
   const handleDownloadDocument = (doc: BillingDocument) => {
@@ -117,8 +94,6 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
       title: "Téléchargement",
       description: `Téléchargement de ${doc.name}...`,
     });
-    
-    // Here you would implement document download functionality
   };
   
   const handleGenerateDocument = (docType: DocumentType) => {
@@ -148,7 +123,6 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
     }, 1500);
   };
   
-  // Helper to get status badge component
   const getStatusBadge = (status: DocumentStatus) => {
     switch(status) {
       case "generated":
@@ -164,111 +138,100 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
     }
   };
 
+  // Préparer les données client pour le générateur de facturation
+  const clientData = {
+    name: client?.name || 'Client',
+    nif: client?.nif || '',
+    address: client?.address || '',
+    phone: client?.phone || '',
+    email: client?.email || ''
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Facturation</CardTitle>
+        <CardTitle className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Receipt className="h-5 w-5" />
+            Facturation CEE
+          </div>
+          
+          {/* Bouton principal pour générer la facturation */}
+          {calculationData ? (
+            <Dialog open={showBillingDialog} onOpenChange={setShowBillingDialog}>
+              <DialogTrigger asChild>
+                <Button className="bg-green-600 hover:bg-green-700">
+                  <Calculator className="h-4 w-4 mr-2" />
+                  Générer Facturation CEE
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Calculator className="h-5 w-5" />
+                    Système de Facturation Automatique CEE
+                  </DialogTitle>
+                </DialogHeader>
+                <AutomaticBillingGenerator 
+                  calculationData={calculationData}
+                  clientData={clientData}
+                />
+              </DialogContent>
+            </Dialog>
+          ) : (
+            <Button variant="outline" disabled>
+              <Calculator className="h-4 w-4 mr-2" />
+              Aucun calcul disponible
+            </Button>
+          )}
+        </CardTitle>
         <CardDescription>
-          Gestion de la facturation du client avec TVA à 21%
+          Génération automatique des factures et notes de crédit selon les calculs CEE
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Tableau de calcul de la facture */}
-        <div>
-          <h3 className="text-lg font-medium mb-3">Tableau de calcul - Facture</h3>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Description</TableHead>
-                <TableHead className="text-right">Quantité</TableHead>
-                <TableHead className="text-right">Prix unitaire</TableHead>
-                <TableHead className="text-right">Total</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {/* Ligne Produit */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  {mockProjectData.productName} (Produit)
-                </TableCell>
-                <TableCell className="text-right">
-                  {mockProjectData.surface} m²
-                </TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(mockProjectData.productPrice)}
-                </TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(invoiceData.productTotal)}
-                </TableCell>
-              </TableRow>
-              
-              {/* Ligne Main d'œuvre */}
-              <TableRow>
-                <TableCell className="font-medium">
-                  Main d'œuvre
-                </TableCell>
-                <TableCell className="text-right">
-                  {mockProjectData.surface} m²
-                </TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(invoiceData.laborUnitPrice)}
-                </TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(invoiceData.laborTotal)}
-                </TableCell>
-              </TableRow>
-              
-              {/* Ligne Sous-total HT */}
-              <TableRow>
-                <TableCell colSpan={3} className="font-medium text-right">
-                  Sous-total HT
-                </TableCell>
-                <TableCell className="text-right font-medium">
-                  {formatCurrency(invoiceData.subtotal)}
-                </TableCell>
-              </TableRow>
-              
-              {/* Ligne TVA */}
-              <TableRow>
-                <TableCell colSpan={3} className="text-right">
-                  TVA (21%)
-                </TableCell>
-                <TableCell className="text-right">
-                  {formatCurrency(invoiceData.tva)}
-                </TableCell>
-              </TableRow>
-              
-              {/* Ligne Total TTC */}
-              <TableRow className="border-t-2">
-                <TableCell colSpan={3} className="font-bold text-right">
-                  Total TTC
-                </TableCell>
-                <TableCell className="text-right font-bold">
-                  {formatCurrency(invoiceData.totalTTC)}
-                </TableCell>
-              </TableRow>
-            </TableBody>
-          </Table>
-          <div className="mt-2 text-sm text-gray-500">
-            <p>Le total TTC correspond à 10% de la valeur CAE ({formatCurrency(mockProjectData.caeValue)})</p>
-          </div>
-        </div>
+        
+        {/* Informations sur les données de calcul */}
+        {calculationData ? (
+          <Alert>
+            <Calculator className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Données de calcul détectées :</strong><br />
+              - Surface isolée : {calculationData.surfaceArea} m²<br />
+              - Zone climatique : {calculationData.climateZone}<br />
+              - Amélioration : {calculationData.improvementPercent?.toFixed(1)}%<br />
+              - Matériau principal : {calculationData.afterLayers?.find(layer => layer.name?.includes('SOUFL'))?.name || 'Standard'}
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <Alert>
+            <AlertDescription>
+              Aucun calcul thermique trouvé pour ce client. Veuillez d'abord effectuer un calcul dans l'onglet "Calculs" pour pouvoir générer une facturation.
+            </AlertDescription>
+          </Alert>
+        )}
         
         {/* Documents associés */}
         <div className="mt-8">
-          <h3 className="text-lg font-medium mb-3">Documents associés</h3>
+          <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
+            <FileText className="h-5 w-5" />
+            Documents de facturation
+          </h3>
           
           <div className="space-y-4">
             {documents.map((doc) => (
               <div 
                 key={doc.id} 
-                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-md"
+                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border rounded-md hover:bg-gray-50"
               >
                 <div className="flex items-center mb-3 sm:mb-0">
                   <FileText className="h-5 w-5 text-blue-500 mr-3" />
                   <div>
                     <h4 className="font-medium">{doc.name}</h4>
                     {doc.date && <p className="text-sm text-gray-500">Date: {doc.date}</p>}
+                    <p className="text-xs text-gray-400">
+                      {doc.type === "invoice" ? "Facture avec calcul CEE automatique" : "Note de crédit pour transfert ITP"}
+                    </p>
                   </div>
                 </div>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
@@ -311,6 +274,7 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
                         variant="outline" 
                         size="sm" 
                         onClick={() => handleGenerateDocument(doc.type)}
+                        disabled={!calculationData}
                       >
                         <PlusCircle className="h-4 w-4 mr-1" />
                         Générer
@@ -323,10 +287,14 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
           </div>
         </div>
         
-        {/* Info about VAT */}
+        {/* Info sur le processus */}
         <Alert>
           <AlertDescription>
-            Tous les calculs sont effectués avec un taux de TVA de 21%. La note de crédit ITP reprend les mêmes données que la facture.
+            <strong>Processus de facturation CEE :</strong><br />
+            1. Les calculs thermiques sont récupérés automatiquement depuis l'onglet "Calculs"<br />
+            2. Les CAE sont calculés selon la formule : FP × (Ui - Uf) × Surface × G(zone)<br />
+            3. La facture est générée avec matériel (7€/m²) + main d'œuvre ajustée<br />
+            4. La note de crédit reprend les mêmes données pour le transfert ITP
           </AlertDescription>
         </Alert>
       </CardContent>

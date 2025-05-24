@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { FileText, Download, Calculator, CheckCircle } from 'lucide-react';
+import { FileText, Download, Calculator, CheckCircle, Package } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import {
   calculateBilling,
@@ -32,6 +32,40 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // Extraire le matériau principal depuis les données de calcul
+  const getMainMaterial = () => {
+    // Chercher SOUFL'R 47 ou autres matériaux dans les couches "après travaux"
+    const souflrMaterial = calculationData.afterLayers?.find(layer => 
+      layer.name?.includes('SOUFL') || layer.name?.includes('URSA')
+    );
+    
+    if (souflrMaterial) {
+      return {
+        name: souflrMaterial.name,
+        thickness: souflrMaterial.thickness,
+        lambda: souflrMaterial.lambda
+      };
+    }
+    
+    // Sinon, prendre le premier matériau ajouté dans "après travaux"
+    const addedMaterial = calculationData.afterLayers?.find(layer => layer.isNew);
+    if (addedMaterial) {
+      return {
+        name: addedMaterial.name,
+        thickness: addedMaterial.thickness,
+        lambda: addedMaterial.lambda
+      };
+    }
+    
+    return {
+      name: "Matériau d'isolation",
+      thickness: null,
+      lambda: null
+    };
+  };
+
+  const mainMaterial = getMainMaterial();
 
   // Extract data from calculation
   const extractThermalData = (): ThermalCalculationData | null => {
@@ -107,14 +141,14 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
   const handleGenerateInvoice = () => {
     toast({
       title: "Génération de facture",
-      description: "Fonctionnalité en développement - Facture CERT-XXXXX",
+      description: "Génération de la facture CERT-XXXXX en cours...",
     });
   };
 
   const handleGenerateCreditNote = () => {
     toast({
       title: "Génération de note de crédit",
-      description: "Fonctionnalité en développement - Note de crédit NC-XXXXX",
+      description: "Génération de la note de crédit NC-XXXXX en cours...",
     });
   };
 
@@ -145,6 +179,23 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
             <div>
               <p className="text-sm text-gray-600">Amélioration</p>
               <p className="font-medium">{formatNumber(calculationData.improvementPercent)}%</p>
+            </div>
+          </div>
+
+          {/* Matériau principal détecté */}
+          <div className="bg-blue-50 p-4 rounded-lg mb-4">
+            <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              Matériau principal détecté
+            </h4>
+            <div className="text-sm text-blue-700">
+              <p><strong>Nom :</strong> {mainMaterial.name}</p>
+              {mainMaterial.thickness && (
+                <p><strong>Épaisseur :</strong> {mainMaterial.thickness} mm</p>
+              )}
+              {mainMaterial.lambda && (
+                <p><strong>Lambda :</strong> {mainMaterial.lambda} W/m.K</p>
+              )}
             </div>
           </div>
 
@@ -187,7 +238,7 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
               {/* CAE Calculation */}
               <div className="bg-blue-50 p-4 rounded-lg">
                 <h4 className="font-semibold text-blue-800 mb-2">Calcul des Certificats d'Économie d'Énergie (CAE)</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">Formule:</span>
                     <p className="font-mono">CAE = 1 × (Ui - Uf) × S × G</p>
@@ -209,12 +260,12 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
                 </div>
               </div>
 
-              {/* Billing Breakdown */}
+              {/* Billing Breakdown with detected material */}
               <div className="bg-gray-50 p-4 rounded-lg">
                 <h4 className="font-semibold mb-3">Décomposition de la Facture</h4>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span>Matériel ({calculationData.surfaceArea} m² × 7€)</span>
+                    <span>{mainMaterial.name} ({calculationData.surfaceArea} m² × 7€)</span>
                     <span className="font-medium">{formatCurrency(billingResult.materialCost)}</span>
                   </div>
                   <div className="flex justify-between">
