@@ -1,18 +1,10 @@
 
-import { useState, useEffect } from "react";
+import { useLayerManagement, Layer } from "./useLayerManagement";
+import { useProjectSettings } from "./useProjectSettings";
+import { useThermalResistanceSettings } from "./useThermalResistanceSettings";
+import { useThermalCalculations } from "./useThermalCalculations";
 import { Material } from "@/data/materials";
-import {
-  calculateBCoefficient,
-  calculateThermalResistance,
-  calculateUpValue,
-  calculateUfValue,
-  calculateRatioFromAreas,
-  VentilationType,
-} from "@/utils/calculationUtils";
-
-export interface Layer extends Material {
-  isNew?: boolean;
-}
+import { VentilationType } from "@/utils/calculationUtils";
 
 export interface CalculationStateProps {
   savedData?: any;
@@ -46,152 +38,88 @@ export interface CalculationData {
   meetsRequirements: boolean;
 }
 
-const initialLayers: Layer[] = [
-  { id: "1", name: "Enduit de plâtre", thickness: 15, lambda: 0.3, r: 0.05 },
-  { id: "2", name: "Brique céramique", thickness: 115, lambda: 0.85, r: 0.14 },
-  { id: "3", name: "Lame d'air", thickness: 50, lambda: "-", r: 0.18 },
-  { id: "4", name: "Brique céramique", thickness: 115, lambda: 0.85, r: 0.14 },
-  { id: "5", name: "Enduit de plâtre", thickness: 15, lambda: 0.3, r: 0.05 },
-];
-
-// Définition du matériau SOUFL'R 47
-const souflr47Material: Layer = {
-  id: "souflr47",
-  name: "SOUFL'R 47",
-  thickness: 259, // 259 mm = 0.259 m
-  lambda: 0.047,
-  r: 5.51, // 0.259 / 0.047 ≈ 5.51
-  isNew: true,
-};
+export { Layer };
 
 export const useCalculationState = ({ savedData, clientClimateZone }: CalculationStateProps) => {
-  const [beforeLayers, setBeforeLayers] = useState<Layer[]>(initialLayers);
-  const [afterLayers, setAfterLayers] = useState<Layer[]>([...initialLayers]);
-
-  const [projectType, setProjectType] = useState("RES010");
-  const [surfaceArea, setSurfaceArea] = useState("127");
-  const [roofArea, setRoofArea] = useState("150");
-
-  const [ventilationBefore, setVentilationBefore] = useState<VentilationType>("caso1");
-  const [ventilationAfter, setVentilationAfter] = useState<VentilationType>("caso1");
-
-  const [ratioBefore, setRatioBefore] = useState(0.85);
-  const [ratioAfter, setRatioAfter] = useState(0.85);
-
-  const [rsiBefore, setRsiBefore] = useState("0.10");
-  const [rseBefore, setRseBefore] = useState("0.10");
-
-  const [rsiAfter, setRsiAfter] = useState("0.10");
-  const [rseAfter, setRseAfter] = useState("0.10");
-
-  // Charger les données sauvegardées si disponibles
-  useEffect(() => {
-    if (savedData) {
-      // Restaurer toutes les valeurs à partir des données sauvegardées
-      if (savedData.beforeLayers) setBeforeLayers(savedData.beforeLayers);
-      if (savedData.afterLayers) setAfterLayers(savedData.afterLayers);
-      if (savedData.projectType) setProjectType(savedData.projectType);
-      if (savedData.surfaceArea) setSurfaceArea(savedData.surfaceArea);
-      if (savedData.roofArea) setRoofArea(savedData.roofArea);
-      if (savedData.ventilationBefore) setVentilationBefore(savedData.ventilationBefore);
-      if (savedData.ventilationAfter) setVentilationAfter(savedData.ventilationAfter);
-      if (savedData.ratioBefore) setRatioBefore(savedData.ratioBefore);
-      if (savedData.ratioAfter) setRatioAfter(savedData.ratioAfter);
-      if (savedData.rsiBefore) setRsiBefore(savedData.rsiBefore);
-      if (savedData.rseBefore) setRseBefore(savedData.rseBefore);
-      if (savedData.rsiAfter) setRsiAfter(savedData.rsiAfter);
-      if (savedData.rseAfter) setRseAfter(savedData.rseAfter);
-    } else {
-      // Synchronisation des couches "avant travaux" vers "après travaux" - uniquement au chargement initial
-      setAfterLayers([...beforeLayers]);
-    }
-  }, [savedData]);
-
-  // Calculate ratios automatically when surface areas change
-  useEffect(() => {
-    const comblesArea = parseFloat(surfaceArea);
-    const toitureArea = parseFloat(roofArea);
-
-    if (!isNaN(comblesArea) && !isNaN(toitureArea) && toitureArea > 0) {
-      const calculatedRatio = calculateRatioFromAreas(comblesArea, toitureArea);
-      setRatioBefore(calculatedRatio);
-      setRatioAfter(calculatedRatio);
-    }
-  }, [surfaceArea, roofArea]);
-
-  // Calcul du coefficient B avant
-  const bCoefficientBefore = calculateBCoefficient({
-    ratio: ratioBefore,
-    ventilationType: ventilationBefore,
-    isAfterWork: false,
+  // Layer management
+  const {
+    beforeLayers,
+    setBeforeLayers,
+    afterLayers,
+    setAfterLayers,
+    addLayer,
+    addSouflr47,
+    copyBeforeToAfter: copyLayersBeforeToAfter,
+    updateLayer,
+  } = useLayerManagement({
+    savedBeforeLayers: savedData?.beforeLayers,
+    savedAfterLayers: savedData?.afterLayers,
   });
 
-  // Calcul du coefficient B après
-  const bCoefficientAfter = calculateBCoefficient({
-    ratio: ratioAfter,
-    ventilationType: ventilationAfter,
-    isAfterWork: true,
+  // Project settings
+  const {
+    projectType,
+    setProjectType,
+    surfaceArea,
+    setSurfaceArea,
+    roofArea,
+    setRoofArea,
+    ventilationBefore,
+    setVentilationBefore,
+    ventilationAfter,
+    setVentilationAfter,
+  } = useProjectSettings({ savedData });
+
+  // Thermal resistance settings
+  const {
+    ratioBefore,
+    setRatioBefore,
+    ratioAfter,
+    setRatioAfter,
+    rsiBefore,
+    setRsiBefore,
+    rseBefore,
+    setRseBefore,
+    rsiAfter,
+    setRsiAfter,
+    rseAfter,
+    setRseAfter,
+    copyBeforeToAfter: copyThermalBeforeToAfter,
+  } = useThermalResistanceSettings({
+    savedData,
+    surfaceArea,
+    roofArea,
   });
 
-  const rsiRseBeforeValue = parseFloat(rsiBefore) + parseFloat(rseBefore);
-  const rsiRseBeforeFallback = isNaN(rsiRseBeforeValue) ? 0.17 : rsiRseBeforeValue;
+  // Thermal calculations
+  const {
+    bCoefficientBefore,
+    bCoefficientAfter,
+    totalRBefore,
+    upValueBefore,
+    uValueBefore,
+    totalRAfter,
+    upValueAfter,
+    uValueAfter,
+    improvementPercent,
+    meetsRequirements,
+  } = useThermalCalculations({
+    beforeLayers,
+    afterLayers,
+    ventilationBefore,
+    ventilationAfter,
+    ratioBefore,
+    ratioAfter,
+    rsiBefore,
+    rseBefore,
+    rsiAfter,
+    rseAfter,
+  });
 
-  const rsiRseAfterValue = parseFloat(rsiAfter) + parseFloat(rseAfter);
-  const rsiRseAfterFallback = isNaN(rsiRseAfterValue) ? 0.17 : rsiRseAfterValue;
-
-  // Calcul de la résistance thermique totale avant
-  const totalRBefore = calculateThermalResistance(beforeLayers, rsiRseBeforeFallback);
-  const upValueBefore = calculateUpValue(totalRBefore);
-  const uValueBefore = calculateUfValue(upValueBefore, bCoefficientBefore);
-
-  // Calcul de la résistance thermique totale après
-  const totalRAfter = calculateThermalResistance(afterLayers, rsiRseAfterFallback);
-  const upValueAfter = calculateUpValue(totalRAfter);
-  const uValueAfter = calculateUfValue(upValueAfter, bCoefficientAfter);
-
-  // Calcul du pourcentage d'amélioration
-  const improvementPercent = ((uValueBefore - uValueAfter) / uValueBefore) * 100;
-
-  // Déterminer si les exigences sont satisfaites
-  const meetsRequirements = improvementPercent >= 30;
-
-  const addLayer = (layerSet: "before" | "after", material: Material) => {
-    const newLayer = {
-      ...material,
-      id: Date.now().toString(),
-      isNew: true,
-    };
-
-    if (layerSet === "before") {
-      setBeforeLayers([...beforeLayers, newLayer]);
-    } else {
-      setAfterLayers([...afterLayers, newLayer]);
-    }
-  };
-
-  // Fonction spécifique pour ajouter le matériau SOUFL'R 47
-  const addSouflr47 = () => {
-    const newSouflr = {
-      ...souflr47Material,
-      id: Date.now().toString(),
-    };
-    setAfterLayers([...afterLayers, newSouflr]);
-  };
-
-  // Fonction pour copier les valeurs de "Avant Travaux" vers "Après Travaux"
+  // Combined copy function
   const copyBeforeToAfter = () => {
-    setAfterLayers([...beforeLayers]);
-    setRatioAfter(ratioBefore);
-    setRsiAfter(rsiBefore);
-    setRseAfter(rseBefore);
-  };
-
-  const updateLayer = (layerSet: "before" | "after", updatedLayer: Layer) => {
-    if (layerSet === "before") {
-      setBeforeLayers(beforeLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
-    } else {
-      setAfterLayers(afterLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
-    }
+    copyLayersBeforeToAfter();
+    copyThermalBeforeToAfter();
   };
 
   // Calculer tous les paramètres requis pour l'export Excel
