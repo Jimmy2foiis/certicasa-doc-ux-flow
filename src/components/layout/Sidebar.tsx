@@ -1,38 +1,12 @@
-import {
-  Home,
-  LayoutDashboard,
-  ListChecks,
-  LucideIcon,
-  Settings,
-  Users,
-  FileText,
-  ScrollText,
-  Coins,
-  HelpCircle,
-  Building2,
-  KanbanSquare,
-  Menu,
-  Calculator,
-} from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+
+import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useWorkspace } from "@/context/WorkspaceContext";
-
-interface NavLink {
-  title: string;
-  url: string;
-  icon: LucideIcon;
-}
+import SidebarContent from "./SidebarContent";
 
 interface SidebarProps {
   showTrigger?: boolean;
@@ -40,117 +14,6 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ showTrigger = true, className = "" }: SidebarProps) => {
-  const { workspace } = useWorkspace();
-  const location = useLocation();
-
-  const navigationLinks = [
-    {
-      title: "Tableau de bord",
-      url: "/dashboard",
-      icon: Home,
-    },
-    {
-      title: "Clients",
-      url: "/clients",
-      icon: Users,
-    },
-    {
-      title: "Finances",
-      url: "/finances",
-      icon: Coins,
-    },
-    {
-      title: "Calculettes",
-      url: "/calculations",
-      icon: Calculator,
-    },
-    {
-      title: "Templates",
-      url: "/documents",
-      icon: FileText,
-    },
-    {
-      title: "Paramètres",
-      url: "/settings",
-      icon: Settings,
-    },
-    {
-      title: "Aide",
-      url: "/help",
-      icon: HelpCircle,
-    },
-  ];
-
-  const isActiveLink = (url: string) => {
-    if (url === "/dashboard" && location.pathname === "/") return true;
-    return location.pathname === url;
-  };
-
-  const SidebarContent = () => (
-    <div className="flex flex-col h-full bg-white">
-      <div className="flex flex-col gap-4 flex-1">
-        <div className="px-4 pt-6 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">C</span>
-            </div>
-            <div>
-              <h2 className="font-semibold text-lg text-gray-900">
-                CertiCasa <span className="font-normal">Doc</span>
-              </h2>
-              <p className="text-sm text-gray-600 mt-0.5">
-                Gérez vos prospects, projets et documents.
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <Separator className="mx-4" />
-        
-        <div className="flex flex-col gap-1 px-3 flex-1">
-          {navigationLinks.map((link) => {
-            const isActive = isActiveLink(link.url);
-            return (
-              <Button
-                key={link.title}
-                variant="ghost"
-                asChild
-                className={`justify-start font-medium h-12 px-4 text-sm w-full transition-colors ${
-                  isActive 
-                    ? "bg-green-50 text-green-700 hover:bg-green-100" 
-                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
-                }`}
-              >
-                <Link to={link.url} className="w-full">
-                  <link.icon className={`h-5 w-5 mr-3 flex-shrink-0 ${
-                    isActive ? "text-green-600" : "text-gray-500"
-                  }`} />
-                  <span className="truncate">{link.title}</span>
-                </Link>
-              </Button>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3 pb-6 px-4 mt-auto">
-        <Separator />
-        <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={workspace.logo} />
-            <AvatarFallback className="text-sm bg-green-100 text-green-700">
-              {workspace.name.substring(0, 2)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col text-sm min-w-0 flex-1">
-            <span className="font-medium truncate text-gray-900">{workspace.name}</span>
-            <span className="text-gray-600 truncate">{workspace.type}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <>
       {/* Desktop Sidebar */}
