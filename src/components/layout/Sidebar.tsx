@@ -1,4 +1,3 @@
-
 import {
   Home,
   LayoutDashboard,
@@ -13,6 +12,7 @@ import {
   Building2,
   KanbanSquare,
   Menu,
+  Calculator,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -50,34 +50,9 @@ const Sidebar = ({ showTrigger = true, className = "" }: SidebarProps) => {
       icon: Home,
     },
     {
-      title: "Lots",
-      url: "/lots",
-      icon: LayoutDashboard,
-    },
-    {
-      title: "Prospects",
+      title: "Clients",
       url: "/clients",
       icon: Users,
-    },
-    {
-      title: "Projets",
-      url: "/projects",
-      icon: Building2,
-    },
-    {
-      title: "Calculs",
-      url: "/calculations",
-      icon: ListChecks,
-    },
-    {
-      title: "Documents",
-      url: "/documents",
-      icon: FileText,
-    },
-    {
-      title: "Workflow",
-      url: "/workflow",
-      icon: KanbanSquare,
     },
     {
       title: "Finances",
@@ -85,14 +60,24 @@ const Sidebar = ({ showTrigger = true, className = "" }: SidebarProps) => {
       icon: Coins,
     },
     {
-      title: "Aide",
-      url: "/help",
-      icon: HelpCircle,
+      title: "Calculettes",
+      url: "/calculations",
+      icon: Calculator,
+    },
+    {
+      title: "Templates",
+      url: "/documents",
+      icon: FileText,
     },
     {
       title: "Paramètres",
       url: "/settings",
       icon: Settings,
+    },
+    {
+      title: "Aide",
+      url: "/help",
+      icon: HelpCircle,
     },
   ];
 
