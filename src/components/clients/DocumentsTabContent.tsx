@@ -10,7 +10,7 @@ import {
   exportAllDocuments,
 } from '@/services/documentService';
 import { DocumentsHeader } from './documents/DocumentsHeader';
-import DocumentsAccordion from '@/features/documents/DocumentsAccordion';
+import DocumentsTableWithDragDrop from '@/features/documents/DocumentsTableWithDragDrop';
 import { DocumentsFooter } from './documents/DocumentsFooter';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
@@ -90,6 +90,39 @@ export const DocumentsTabContent = ({
       setError(null);
 
       switch (action) {
+        case 'generate':
+          toast({
+            title: 'Génération en cours',
+            description: 'Le document est en cours de génération...',
+          });
+          
+          // Simulate generation delay
+          setTimeout(() => {
+            toast({
+              title: '✅ Document généré',
+              description: 'Le document a été généré avec succès',
+            });
+          }, 2000);
+          
+          baseHandleDocumentAction(documentId, action);
+          break;
+
+        case 'regenerate':
+          toast({
+            title: 'Régénération en cours',
+            description: 'Le document est en cours de régénération...',
+          });
+          
+          setTimeout(() => {
+            toast({
+              title: '✅ Document régénéré',
+              description: 'Le document a été régénéré avec succès',
+            });
+          }, 2000);
+          
+          baseHandleDocumentAction(documentId, action);
+          break;
+
         case 'view':
           // Find document to preview
           const docToPreview = filteredDocuments.find((doc) => doc.id === documentId);
@@ -232,6 +265,38 @@ export const DocumentsTabContent = ({
     }
   };
 
+  // Handle document reordering
+  const handleReorderDocuments = (reorderedDocs: AdministrativeDocument[]) => {
+    setAllDocuments(reorderedDocs);
+    // Here you could save the new order to your backend if needed
+    console.log('Documents reordered:', reorderedDocs.map(doc => ({ id: doc.id, name: doc.name })));
+  };
+
+  // Handle generating all pending documents
+  const handleGenerateAll = () => {
+    const pendingDocs = filteredDocuments.filter(doc => 
+      ['missing', 'pending', 'ready'].includes(doc.status)
+    );
+    
+    if (pendingDocs.length === 0) {
+      toast({
+        title: 'Information',
+        description: 'Aucun document en attente de génération.',
+      });
+      return;
+    }
+
+    toast({
+      title: 'Génération groupée',
+      description: `Génération de ${pendingDocs.length} document(s) en cours...`,
+    });
+
+    // Generate each pending document
+    pendingDocs.forEach(doc => {
+      handleDocumentAction(doc.id, 'generate');
+    });
+  };
+
   // Handle exporting all documents
   const handleExportAll = async () => {
     try {
@@ -310,6 +375,8 @@ export const DocumentsTabContent = ({
           documents={filteredDocuments}
           isLoading={isLoading}
           onAction={handleDocumentAction}
+          onReorder={handleReorderDocuments}
+          onGenerateAll={handleGenerateAll}
         />
       </CardContent>
 
@@ -352,15 +419,19 @@ const DocumentsLoadingState = () => (
   </div>
 );
 
-// Component to display the list of documents
+// Updated DocumentsList component
 const DocumentsList = ({
   documents,
   isLoading,
   onAction,
+  onReorder,
+  onGenerateAll,
 }: {
   documents: AdministrativeDocument[];
   isLoading: boolean;
   onAction: (documentId: string, action: string) => void;
+  onReorder: (reorderedDocs: AdministrativeDocument[]) => void;
+  onGenerateAll: () => void;
 }) => {
   if (isLoading) {
     return <DocumentsLoadingState />;
@@ -374,5 +445,11 @@ const DocumentsList = ({
     );
   }
 
-  return <DocumentsAccordion documents={documents} onDocumentAction={onAction} />;
+  return (
+    <DocumentsTableWithDragDrop
+      documents={documents}
+      onDocumentAction={onAction}
+      onReorderDocuments={onReorder}
+    />
+  );
 };
