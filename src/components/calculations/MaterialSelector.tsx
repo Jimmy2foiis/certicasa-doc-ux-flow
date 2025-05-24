@@ -36,7 +36,7 @@ const MaterialSelector = ({ onSelectMaterial }: MaterialSelectorProps) => {
     return {
       id: material.id,
       name: isProduct ? `${material.name} (${material.manufacturer})` : material.name,
-      thickness: isProduct ? material.availableThicknesses[0] || 100 : 100,
+      thickness: isProduct ? material.thicknessOptions[0]?.thickness || 100 : 100,
       lambda: material.lambda,
       r: 0 // Sera calculé automatiquement
     };
@@ -94,14 +94,14 @@ const MaterialSelector = ({ onSelectMaterial }: MaterialSelectorProps) => {
                                       {product.manufacturer} • λ = {product.lambda} W/m·K
                                     </span>
                                     <div className="flex gap-1 mt-1">
-                                      {product.availableThicknesses.slice(0, 3).map(thickness => (
-                                        <Badge key={thickness} variant="outline" className="text-xs py-0">
-                                          {thickness}mm
+                                      {product.thicknessOptions.slice(0, 3).map(option => (
+                                        <Badge key={option.thickness} variant="outline" className="text-xs py-0">
+                                          {option.thickness}mm
                                         </Badge>
                                       ))}
-                                      {product.availableThicknesses.length > 3 && (
+                                      {product.thicknessOptions.length > 3 && (
                                         <Badge variant="outline" className="text-xs py-0">
-                                          +{product.availableThicknesses.length - 3}
+                                          +{product.thicknessOptions.length - 3}
                                         </Badge>
                                       )}
                                     </div>

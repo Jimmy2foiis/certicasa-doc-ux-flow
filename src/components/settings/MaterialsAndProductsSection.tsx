@@ -204,14 +204,14 @@ const MaterialsAndProductsSection = () => {
                     <TableCell>{product.lambda}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {product.availableThicknesses.slice(0, 3).map(thickness => (
-                          <Badge key={thickness} variant="outline" className="text-xs">
-                            {thickness}mm
+                        {product.thicknessOptions.slice(0, 3).map(option => (
+                          <Badge key={option.thickness} variant="outline" className="text-xs">
+                            {option.thickness}mm
                           </Badge>
                         ))}
-                        {product.availableThicknesses.length > 3 && (
+                        {product.thicknessOptions.length > 3 && (
                           <Badge variant="outline" className="text-xs">
-                            +{product.availableThicknesses.length - 3}
+                            +{product.thicknessOptions.length - 3}
                           </Badge>
                         )}
                       </div>
