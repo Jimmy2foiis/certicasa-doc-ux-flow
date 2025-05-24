@@ -1,21 +1,12 @@
+
 import React, { useState, useCallback } from 'react';
-import { AdministrativeDocument, DocumentStatus } from '@/types/documents';
+import { AdministrativeDocument } from '@/types/documents';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  GripVertical, 
-  RotateCcw, 
-  Settings, 
-  RefreshCw, 
-  Eye, 
-  Download, 
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  XCircle,
-  FileX,
-  CheckCircle2
-} from 'lucide-react';
+import { GripVertical, RotateCcw } from 'lucide-react';
+import { getOperationalStatus } from './DocumentStatusUtils';
+import { DocumentActionButtons } from './DocumentActionButtons';
+import { DocumentsProgressBar } from './DocumentsProgressBar';
 
 interface DocumentsWithDragDropProps {
   documents: AdministrativeDocument[];
@@ -23,156 +14,33 @@ interface DocumentsWithDragDropProps {
   onAction: (documentId: string, action: string) => void;
 }
 
-// Enhanced status with operational context
-const getOperationalStatus = (status: string) => {
-  switch (status) {
-    case 'missing':
-    case 'pending':
-      return {
-        label: 'À générer',
-        color: 'bg-gray-100 text-gray-800 border-gray-200',
-        icon: Clock,
-        description: 'Par défaut, jamais généré'
-      };
-    case 'generated':
-    case 'available':
-    case 'linked':
-      return {
-        label: 'Généré',
-        color: 'bg-green-100 text-green-800 border-green-200',
-        icon: CheckCircle,
-        description: 'Fichier généré avec succès'
-      };
-    case 'action-required':
-      return {
-        label: 'À vérifier',
-        color: 'bg-orange-100 text-orange-800 border-orange-200',
-        icon: AlertTriangle,
-        description: 'Document à relire ou valider'
-      };
-    case 'error':
-      return {
-        label: 'Erreur',
-        color: 'bg-red-100 text-red-800 border-red-200',
-        icon: XCircle,
-        description: 'Génération échouée'
-      };
-    case 'ready':
-      return {
-        label: 'Manquant',
-        color: 'bg-gray-100 text-gray-800 border-gray-200',
-        icon: FileX,
-        description: 'Élément source non fourni'
-      };
-    case 'signed':
-      return {
-        label: 'Validé',
-        color: 'bg-emerald-100 text-emerald-800 border-emerald-200',
-        icon: CheckCircle2,
-        description: 'Vérifié par un opérateur admin'
-      };
-    default:
-      return {
-        label: 'À générer',
-        color: 'bg-gray-100 text-gray-800 border-gray-200',
-        icon: Clock,
-        description: 'Par défaut, jamais généré'
-      };
-  }
-};
-
-// Get action button based on document status
-const getActionButton = (document: AdministrativeDocument, onAction: (action: string) => void) => {
-  const status = document.status;
-  
-  switch (status) {
-    case 'missing':
-    case 'pending':
-    case 'ready':
-      return (
-        <Button
-          onClick={() => onAction('generate')}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
-          size="sm"
-        >
-          <Settings className="h-4 w-4" />
-          Générer
-        </Button>
-      );
-      
-    case 'error':
-      return (
-        <Button
-          onClick={() => onAction('regenerate')}
-          className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
-          size="sm"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Régénérer
-        </Button>
-      );
-      
-    case 'generated':
-    case 'available':
-    case 'linked':
-    case 'signed':
-      return (
-        <div className="flex gap-2">
-          <Button
-            onClick={() => onAction('view')}
-            className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-md flex items-center gap-1.5"
-            size="sm"
-          >
-            <Eye className="h-4 w-4" />
-            Voir
-          </Button>
-          <Button
-            onClick={() => onAction('download')}
-            variant="outline"
-            className="px-3 py-2 rounded-md flex items-center gap-1.5"
-            size="sm"
-          >
-            <Download className="h-4 w-4" />
-            Télécharger
-          </Button>
+const DocumentsLoadingState = () => (
+  <div className="space-y-4">
+    {Array(8).fill(0).map((_, i) => (
+      <div key={i} className="animate-pulse grid grid-cols-12 items-center p-3 border rounded-md">
+        <div className="col-span-1">
+          <div className="w-4 h-4 bg-gray-200 rounded"></div>
         </div>
-      );
-      
-    case 'action-required':
-      return (
-        <div className="flex gap-2">
-          <Button
-            onClick={() => onAction('view')}
-            className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-md flex items-center gap-1.5"
-            size="sm"
-          >
-            <Eye className="h-4 w-4" />
-            Voir
-          </Button>
-          <Button
-            onClick={() => onAction('regenerate')}
-            className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-md flex items-center gap-1.5"
-            size="sm"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Régénérer
-          </Button>
+        <div className="col-span-1">
+          <div className="w-6 h-6 bg-gray-200 rounded-full"></div>
         </div>
-      );
-      
-    default:
-      return (
-        <Button
-          onClick={() => onAction('generate')}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
-          size="sm"
-        >
-          <Settings className="h-4 w-4" />
-          Générer
-        </Button>
-      );
-  }
-};
+        <div className="col-span-3">
+          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+          <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+        </div>
+        <div className="col-span-3">
+          <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+        </div>
+        <div className="col-span-2">
+          <div className="w-20 h-6 bg-gray-200 rounded"></div>
+        </div>
+        <div className="col-span-2 flex justify-end">
+          <div className="w-20 h-8 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 export const DocumentsWithDragDrop: React.FC<DocumentsWithDragDropProps> = ({
   documents,
@@ -244,17 +112,6 @@ export const DocumentsWithDragDrop: React.FC<DocumentsWithDragDropProps> = ({
     setIsCustomOrder(false);
   }, [documents]);
 
-  // Calculate progress
-  const totalDocs = orderedDocuments.length;
-  const generatedDocs = orderedDocuments.filter(doc => 
-    ['generated', 'available', 'linked', 'signed'].includes(doc.status)
-  ).length;
-  const errorDocs = orderedDocuments.filter(doc => doc.status === 'error').length;
-  const toVerifyDocs = orderedDocuments.filter(doc => doc.status === 'action-required').length;
-  const pendingDocs = orderedDocuments.filter(doc => 
-    ['missing', 'pending', 'ready'].includes(doc.status)
-  ).length;
-
   const handleGenerateAll = () => {
     orderedDocuments
       .filter(doc => ['missing', 'pending', 'ready'].includes(doc.status))
@@ -268,38 +125,7 @@ export const DocumentsWithDragDrop: React.FC<DocumentsWithDragDropProps> = ({
   return (
     <div className="space-y-4">
       {/* Progress Bar */}
-      <div className="bg-white p-4 rounded-lg border">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-medium text-gray-900">Progression documentaire</h3>
-          {pendingDocs > 1 && (
-            <Button
-              onClick={handleGenerateAll}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
-              size="sm"
-            >
-              <Settings className="h-4 w-4" />
-              Générer tous les documents
-            </Button>
-          )}
-        </div>
-        <div className="flex items-center gap-6 text-sm">
-          <span className="text-green-600">
-            {generatedDocs} / {totalDocs} documents générés
-          </span>
-          {errorDocs > 0 && (
-            <span className="text-red-600">{errorDocs} erreur{errorDocs > 1 ? 's' : ''}</span>
-          )}
-          {toVerifyDocs > 0 && (
-            <span className="text-orange-600">{toVerifyDocs} à vérifier</span>
-          )}
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-          <div 
-            className="bg-green-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${(generatedDocs / totalDocs) * 100}%` }}
-          />
-        </div>
-      </div>
+      <DocumentsProgressBar documents={orderedDocuments} onGenerateAll={handleGenerateAll} />
 
       {/* Custom Order Indicator */}
       {isCustomOrder && (
@@ -394,7 +220,10 @@ export const DocumentsWithDragDrop: React.FC<DocumentsWithDragDropProps> = ({
               
               {/* Actions pour le document */}
               <div className="col-span-2 flex justify-end">
-                {getActionButton(doc, (action) => onAction(doc.id, action))}
+                <DocumentActionButtons 
+                  document={doc} 
+                  onAction={(action) => onAction(doc.id, action)} 
+                />
               </div>
             </div>
           );
@@ -403,31 +232,3 @@ export const DocumentsWithDragDrop: React.FC<DocumentsWithDragDropProps> = ({
     </div>
   );
 };
-
-const DocumentsLoadingState = () => (
-  <div className="space-y-4">
-    {Array(8).fill(0).map((_, i) => (
-      <div key={i} className="animate-pulse grid grid-cols-12 items-center p-3 border rounded-md">
-        <div className="col-span-1">
-          <div className="w-4 h-4 bg-gray-200 rounded"></div>
-        </div>
-        <div className="col-span-1">
-          <div className="w-6 h-6 bg-gray-200 rounded-full"></div>
-        </div>
-        <div className="col-span-3">
-          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-          <div className="h-3 bg-gray-100 rounded w-1/2"></div>
-        </div>
-        <div className="col-span-3">
-          <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-        </div>
-        <div className="col-span-2">
-          <div className="w-20 h-6 bg-gray-200 rounded"></div>
-        </div>
-        <div className="col-span-2 flex justify-end">
-          <div className="w-20 h-8 bg-gray-200 rounded"></div>
-        </div>
-      </div>
-    ))}
-  </div>
-);

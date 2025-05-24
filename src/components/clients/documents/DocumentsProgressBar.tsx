@@ -1,29 +1,25 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 import { Settings } from 'lucide-react';
-import { AdministrativeDocument } from '@/types/documents';
+import type { AdministrativeDocument } from '@/types/documents';
 
 interface DocumentsProgressBarProps {
   documents: AdministrativeDocument[];
   onGenerateAll: () => void;
 }
 
-export const DocumentsProgressBar: React.FC<DocumentsProgressBarProps> = ({
-  documents,
-  onGenerateAll
-}) => {
+export const DocumentsProgressBar: React.FC<DocumentsProgressBarProps> = ({ documents, onGenerateAll }) => {
+  // Calculate progress
   const totalDocs = documents.length;
   const generatedDocs = documents.filter(doc => 
-    ['generated', 'linked', 'signed'].includes(doc.status)
+    ['generated', 'available', 'linked', 'signed'].includes(doc.status)
   ).length;
   const errorDocs = documents.filter(doc => doc.status === 'error').length;
   const toVerifyDocs = documents.filter(doc => doc.status === 'action-required').length;
   const pendingDocs = documents.filter(doc => 
     ['missing', 'pending', 'ready'].includes(doc.status)
   ).length;
-
-  if (totalDocs === 0) return null;
 
   return (
     <div className="bg-white p-4 rounded-lg border">
@@ -40,7 +36,6 @@ export const DocumentsProgressBar: React.FC<DocumentsProgressBarProps> = ({
           </Button>
         )}
       </div>
-      
       <div className="flex items-center gap-6 text-sm">
         <span className="text-green-600">
           {generatedDocs} / {totalDocs} documents générés
@@ -52,7 +47,6 @@ export const DocumentsProgressBar: React.FC<DocumentsProgressBarProps> = ({
           <span className="text-orange-600">{toVerifyDocs} à vérifier</span>
         )}
       </div>
-      
       <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
         <div 
           className="bg-green-500 h-2 rounded-full transition-all duration-300"
