@@ -18,6 +18,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import AutomaticBillingGenerator from "@/components/billing/AutomaticBillingGenerator";
 import { useSavedCalculations } from "@/hooks/useSavedCalculations";
 import { useClientInfo } from "@/hooks/useClientInfo";
+import InvoicePreviewModal from "@/components/finances/modals/InvoicePreviewModal";
 
 interface BillingTabProps {
   clientId: string;
@@ -33,23 +34,36 @@ interface BillingDocument {
   status: DocumentStatus;
   date?: string;
   downloadUrl?: string;
+  amount?: number;
+  ficheNumber?: string;
+  surface?: number;
+  caeKwh?: number;
 }
 
 const BillingTab = ({ clientId }: BillingTabProps) => {
   const { toast } = useToast();
   const [showBillingDialog, setShowBillingDialog] = useState(false);
+  const [previewDocument, setPreviewDocument] = useState<BillingDocument | null>(null);
   const [documents, setDocuments] = useState<BillingDocument[]>([
     {
       id: "invoice-1",
       type: "invoice",
       name: "Facture client (CERT-XXXXX)",
       status: "not-generated",
+      ficheNumber: "CERT-2024-001",
+      amount: 1250,
+      surface: 120,
+      caeKwh: 15500,
     },
     {
       id: "credit-note-1",
       type: "creditNote",
       name: "Note de crédit ITP (NC-XXXXX)",
       status: "not-generated",
+      ficheNumber: "NC-2024-001",
+      amount: 1250,
+      surface: 120,
+      caeKwh: 15500,
     },
   ]);
   
@@ -74,6 +88,20 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
       return;
     }
     
+    // Créer un objet compatible avec InvoicePreviewModal
+    const invoiceData = {
+      id: doc.id,
+      clientName: client?.name || 'Client',
+      ficheType: doc.type === "invoice" ? "RES010" : "NC-ITP",
+      ficheNumber: doc.ficheNumber || doc.name,
+      surface: doc.surface || 120,
+      caeKwh: doc.caeKwh || 15500,
+      amount: doc.amount || 1250,
+      generationDate: doc.date || new Date().toISOString(),
+      status: doc.status,
+    };
+    
+    setPreviewDocument(doc);
     toast({
       title: "Aperçu du document",
       description: `Ouverture de l'aperçu de ${doc.name}...`,
@@ -90,13 +118,40 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
       return;
     }
     
+    // Simuler le téléchargement
     toast({
       title: "Téléchargement",
       description: `Téléchargement de ${doc.name}...`,
     });
+    
+    // Créer un lien de téléchargement factice
+    setTimeout(() => {
+      const element = document.createElement('a');
+      const fileContent = `Document: ${doc.name}\nClient: ${client?.name}\nDate: ${doc.date}`;
+      const file = new Blob([fileContent], { type: 'text/plain' });
+      element.href = URL.createObjectURL(file);
+      element.download = `${doc.ficheNumber || doc.name}.pdf`;
+      document.body.appendChild(element);
+      element.click();
+      document.body.removeChild(element);
+      
+      toast({
+        title: "Téléchargement terminé",
+        description: `${doc.name} a été téléchargé avec succès.`,
+      });
+    }, 1000);
   };
   
   const handleGenerateDocument = (docType: DocumentType) => {
+    if (!calculationData) {
+      toast({
+        title: "Erreur",
+        description: "Aucun calcul disponible pour générer le document.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     toast({
       title: "Génération en cours",
       description: docType === "invoice" 
@@ -104,12 +159,18 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
         : "Génération de la note de crédit ITP en cours...",
     });
     
-    // Simulate document generation
+    // Simulate document generation with calculation data
     setTimeout(() => {
       setDocuments(prev => 
         prev.map(doc => 
           doc.type === docType 
-            ? { ...doc, status: "generated", date: new Date().toLocaleDateString('fr-FR') } 
+            ? { 
+                ...doc, 
+                status: "generated", 
+                date: new Date().toLocaleDateString('fr-FR'),
+                surface: parseFloat(calculationData.surfaceArea) || 120,
+                amount: parseFloat(calculationData.surfaceArea) * 10.5 || 1250, // Prix estimé
+              } 
             : doc
         )
       );
@@ -229,6 +290,11 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
                   <div>
                     <h4 className="font-medium">{doc.name}</h4>
                     {doc.date && <p className="text-sm text-gray-500">Date: {doc.date}</p>}
+                    {doc.status === "generated" && (
+                      <p className="text-sm text-green-600">
+                        Surface: {doc.surface}m² • Montant: {doc.amount}€ • CAE: {doc.caeKwh?.toLocaleString()} kWh/an
+                      </p>
+                    )}
                     <p className="text-xs text-gray-400">
                       {doc.type === "invoice" ? "Facture avec calcul CEE automatique" : "Note de crédit pour transfert ITP"}
                     </p>
@@ -298,6 +364,25 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
           </AlertDescription>
         </Alert>
       </CardContent>
+
+      {/* Modal de prévisualisation */}
+      {previewDocument && (
+        <InvoicePreviewModal
+          invoice={{
+            id: previewDocument.id,
+            clientName: client?.name || 'Client',
+            ficheType: previewDocument.type === "invoice" ? "RES010" : "NC-ITP",
+            ficheNumber: previewDocument.ficheNumber || previewDocument.name,
+            surface: previewDocument.surface || 120,
+            caeKwh: previewDocument.caeKwh || 15500,
+            amount: previewDocument.amount || 1250,
+            generationDate: previewDocument.date || new Date().toISOString(),
+            status: previewDocument.status,
+          }}
+          isOpen={!!previewDocument}
+          onClose={() => setPreviewDocument(null)}
+        />
+      )}
     </Card>
   );
 };
