@@ -1,23 +1,9 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import DocumentStatusBadge from "@/features/documents/DocumentStatusBadge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, Download, FileText, FileUp } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Eye, Download, FileText } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
-
-// Types pour les données des factures délégataires
-interface DelegateInvoice {
-  id: string;
-  lotNumber: string;
-  delegateName: string;
-  clientCount: number;
-  totalAmount: number;
-  depositDate: string;
-  status: string;
-}
 
 interface DelegateInvoicesTabProps {
   selectedMonth: string;
@@ -30,102 +16,64 @@ const DelegateInvoicesTab: React.FC<DelegateInvoicesTabProps> = ({
   selectedStatuses,
   searchTerm,
 }) => {
-  const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
-  const { toast } = useToast();
-
   // Données mockées pour l'exemple
-  const mockInvoices: DelegateInvoice[] = [
+  const mockDelegateInvoices = [
     {
-      id: "delegate-1",
+      id: "1",
       lotNumber: "LOT-42",
-      delegateName: "SOLATEC",
+      delegate: "SOLATEC",
       clientCount: 7,
+      totalCaeKwh: 16450,
       totalAmount: 4354,
       depositDate: "2025-04-18",
       status: "generated",
     },
     {
-      id: "delegate-2",
+      id: "2",
       lotNumber: "LOT-43",
-      delegateName: "ISOCONFORT",
-      clientCount: 12,
-      totalAmount: 7890,
-      depositDate: "2025-04-25",
+      delegate: "ISOCONFORT",
+      clientCount: 5,
+      totalCaeKwh: 11280,
+      totalAmount: 3125,
+      depositDate: "2025-04-15",
       status: "not-generated",
     },
     {
-      id: "delegate-3",
+      id: "3",
       lotNumber: "LOT-44",
-      delegateName: "SOLATEC",
-      clientCount: 5,
-      totalAmount: 3450,
-      depositDate: "2025-05-10",
-      status: "generated",
-    },
-    {
-      id: "delegate-4",
-      lotNumber: "LOT-45",
-      delegateName: "THERMIBLOC",
-      clientCount: 9,
-      totalAmount: 5670,
-      depositDate: "2025-05-15",
+      delegate: "THERMIBLOC",
+      clientCount: 3,
+      totalCaeKwh: 7890,
+      totalAmount: 1875,
+      depositDate: "2025-04-20",
       status: "generated",
     },
   ];
 
-  // Filtrage des factures selon les critères
-  const filteredInvoices = mockInvoices.filter((invoice) => {
-    const matchesMonth = invoice.depositDate.startsWith(selectedMonth);
-    const matchesStatus =
-      selectedStatuses.length === 0 || selectedStatuses.includes(invoice.status);
-    const matchesSearch =
-      searchTerm === "" ||
-      invoice.delegateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      invoice.lotNumber.toLowerCase().includes(searchTerm.toLowerCase());
-
-    return matchesMonth && matchesStatus && matchesSearch;
-  });
-
-  // Gestion de la sélection
-  const handleSelectAll = (checked: boolean) => {
-    setSelectedInvoices(checked ? filteredInvoices.map((i) => i.id) : []);
-  };
-
-  const handleSelectInvoice = (invoiceId: string, checked: boolean) => {
-    if (checked) {
-      setSelectedInvoices([...selectedInvoices, invoiceId]);
-    } else {
-      setSelectedInvoices(selectedInvoices.filter((id) => id !== invoiceId));
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case "generated":
+        return "Générée";
+      case "not-generated":
+        return "Non générée";
+      case "error":
+        return "Erreur";
+      default:
+        return status;
     }
   };
 
-  // Actions sur les documents
-  const handleViewInvoice = (invoice: DelegateInvoice) => {
-    toast({
-      title: "Visualisation",
-      description: `Ouverture de la facture ${invoice.lotNumber} pour ${invoice.delegateName}...`,
-    });
-  };
-
-  const handleDownloadInvoice = (invoice: DelegateInvoice) => {
-    toast({
-      title: "Téléchargement",
-      description: `Téléchargement de la facture ${invoice.lotNumber} pour ${invoice.delegateName}...`,
-    });
-  };
-
-  const handleGenerateInvoice = (invoice: DelegateInvoice) => {
-    toast({
-      title: "Génération",
-      description: `Génération de la facture pour le lot ${invoice.lotNumber}...`,
-    });
-  };
-
-  const handleExportLotDetails = (invoice: DelegateInvoice) => {
-    toast({
-      title: "Export Excel",
-      description: `Export des détails du lot ${invoice.lotNumber} (${invoice.clientCount} clients)...`,
-    });
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "generated":
+        return "text-green-600 bg-green-50";
+      case "not-generated":
+        return "text-orange-600 bg-orange-50";
+      case "error":
+        return "text-red-600 bg-red-50";
+      default:
+        return "text-gray-600 bg-gray-50";
+    }
   };
 
   return (
@@ -133,127 +81,49 @@ const DelegateInvoicesTab: React.FC<DelegateInvoicesTabProps> = ({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-10">
-              <Checkbox
-                checked={
-                  filteredInvoices.length > 0 &&
-                  selectedInvoices.length === filteredInvoices.length
-                }
-                onCheckedChange={handleSelectAll}
-              />
-            </TableHead>
             <TableHead>Numéro de lot</TableHead>
             <TableHead>Délégataire</TableHead>
             <TableHead className="text-center">Nombre de clients</TableHead>
+            <TableHead className="text-right">CAE Total kWh/an</TableHead>
             <TableHead className="text-right">Montant total</TableHead>
             <TableHead>Date de dépôt</TableHead>
             <TableHead>Statut facture</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+            <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredInvoices.length > 0 ? (
-            filteredInvoices.map((invoice) => (
-              <TableRow key={invoice.id}>
-                <TableCell>
-                  <Checkbox
-                    checked={selectedInvoices.includes(invoice.id)}
-                    onCheckedChange={(checked) =>
-                      handleSelectInvoice(invoice.id, checked as boolean)
-                    }
-                  />
-                </TableCell>
-                <TableCell className="font-medium">{invoice.lotNumber}</TableCell>
-                <TableCell>{invoice.delegateName}</TableCell>
-                <TableCell className="text-center">{invoice.clientCount}</TableCell>
-                <TableCell className="text-right">{formatCurrency(invoice.totalAmount)}</TableCell>
-                <TableCell>
-                  {new Date(invoice.depositDate).toLocaleDateString("fr-FR")}
-                </TableCell>
-                <TableCell>
-                  <DocumentStatusBadge
-                    status={invoice.status as any}
-                    customLabel={
-                      invoice.status === "generated"
-                        ? "Générée"
-                        : "Non générée"
-                    }
-                  />
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end space-x-2">
-                    {invoice.status === "generated" ? (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleViewInvoice(invoice)}
-                          title="Voir"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDownloadInvoice(invoice)}
-                          title="Télécharger"
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleExportLotDetails(invoice)}
-                          title="Exporter détails lot"
-                        >
-                          <FileText className="h-4 w-4" />
-                        </Button>
-                      </>
-                    ) : (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleGenerateInvoice(invoice)}
-                        title="Générer facture"
-                      >
-                        <FileUp className="h-4 w-4 mr-1" />
-                        Générer
-                      </Button>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={8} className="text-center py-8">
-                <p className="text-gray-500">Aucune facture délégataire trouvée pour cette période</p>
+          {mockDelegateInvoices.map((invoice) => (
+            <TableRow key={invoice.id}>
+              <TableCell className="font-medium">{invoice.lotNumber}</TableCell>
+              <TableCell>{invoice.delegate}</TableCell>
+              <TableCell className="text-center">{invoice.clientCount}</TableCell>
+              <TableCell className="text-right font-medium">{invoice.totalCaeKwh.toLocaleString()} kWh/an</TableCell>
+              <TableCell className="text-right">{formatCurrency(invoice.totalAmount)}</TableCell>
+              <TableCell>{new Date(invoice.depositDate).toLocaleDateString("fr-FR")}</TableCell>
+              <TableCell>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}>
+                  {getStatusLabel(invoice.status)}
+                </span>
+              </TableCell>
+              <TableCell className="text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <Button variant="ghost" size="sm">
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    <Download className="h-4 w-4" />
+                  </Button>
+                  {invoice.status === "not-generated" && (
+                    <Button variant="ghost" size="sm">
+                      <FileText className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </TableCell>
             </TableRow>
-          )}
+          ))}
         </TableBody>
       </Table>
-
-      {filteredInvoices.length > 0 && (
-        <div className="flex justify-between items-center pt-4">
-          <div className="text-sm text-gray-500">
-            {selectedInvoices.length} sur {filteredInvoices.length} factures délégataires sélectionnées
-          </div>
-          <Button
-            variant="outline"
-            disabled={selectedInvoices.length === 0}
-            onClick={() => {
-              toast({
-                title: "Export groupé",
-                description: `Téléchargement de ${selectedInvoices.length} factures...`,
-              });
-            }}
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Télécharger la sélection
-          </Button>
-        </div>
-      )}
     </div>
   );
 };
