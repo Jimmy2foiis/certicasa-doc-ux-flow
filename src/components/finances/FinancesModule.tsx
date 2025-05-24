@@ -5,12 +5,11 @@ import { Card } from "@/components/ui/card";
 import ClientInvoicesTab from "./tabs/ClientInvoicesTab";
 import DelegateInvoicesTab from "./tabs/DelegateInvoicesTab";
 import CreditNotesTab from "./tabs/CreditNotesTab";
-import FinancesDashboard from "./FinancesDashboard";
 import FinancesFilters from "./FinancesFilters";
 import { useToast } from "@/hooks/use-toast";
 
 const FinancesModule = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("client-invoices");
   
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
@@ -39,18 +38,13 @@ const FinancesModule = () => {
     <div className="space-y-6">
       <Card>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-4 mb-4">
-            <TabsTrigger value="dashboard">Tableau de bord</TabsTrigger>
+          <TabsList className="grid grid-cols-3 mb-4">
             <TabsTrigger value="client-invoices">Factures Clients</TabsTrigger>
             <TabsTrigger value="delegate-invoices">
               Factures Délégataires
             </TabsTrigger>
             <TabsTrigger value="credit-notes">Notes de Crédit</TabsTrigger>
           </TabsList>
-
-          <TabsContent value="dashboard">
-            <FinancesDashboard />
-          </TabsContent>
 
           <TabsContent value="client-invoices">
             <FinancesFilters
