@@ -12,13 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 const FinancesModule = () => {
   const [activeTab, setActiveTab] = useState("client-invoices");
   
-  // Initialiser avec le mois courant
-  const getCurrentMonth = () => {
-    const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  };
-  
-  const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentMonth());
+  const [selectedMonth, setSelectedMonth] = useState<string>("all");
   const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();

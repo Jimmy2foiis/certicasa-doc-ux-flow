@@ -109,7 +109,7 @@ const FinancesFilters: React.FC<FinancesFiltersProps> = ({
                 <SelectValue placeholder="Sélectionner période" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Toutes les périodes</SelectItem>
+                <SelectItem value="all">Toutes les périodes</SelectItem>
                 {monthOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}

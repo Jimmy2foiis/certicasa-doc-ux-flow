@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -88,7 +87,7 @@ const ClientInvoicesTab: React.FC<ClientInvoicesTabProps> = ({
     return mockInvoices.filter((invoice) => {
       // Filtre par mois
       const invoiceMonth = invoice.generationDate.slice(0, 7);
-      if (selectedMonth && invoiceMonth !== selectedMonth) return false;
+      if (selectedMonth && selectedMonth !== "all" && invoiceMonth !== selectedMonth) return false;
 
       // Filtre par statut
       if (selectedStatuses.length > 0 && !selectedStatuses.includes(invoice.status)) return false;
