@@ -8,7 +8,6 @@ import DocumentUploadDialog from './documents/DocumentUploadDialog';
 import { DocumentsWithDragDrop } from './documents/DocumentsWithDragDrop';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { AdministrativeDocument, DocumentStatus } from '@/types/documents';
-import { DocumentPreviewZone } from './documents/DocumentPreviewZone';
 
 interface DocumentsTabProps {
   clientId: string;
@@ -186,9 +185,6 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
             onAction={handleDocAction}
           />
         </CardContent>
-
-        {/* Document Preview Zone */}
-        <DocumentPreviewZone onDownload={(documentId) => handleDocAction(documentId, 'download')} />
 
         {/* Dialog for document upload */}
         <DocumentUploadDialog 
