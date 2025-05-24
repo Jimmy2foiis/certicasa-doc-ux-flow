@@ -19,7 +19,7 @@ interface MaterialDialogProps {
 const MaterialDialog = ({ isOpen, onClose, onSave, material }: MaterialDialogProps) => {
   const [formData, setFormData] = useState({
     name: material?.name || '',
-    category: material?.category || 'mineral_wool',
+    category: (material?.category || 'mineral_wool') as Material['category'],
     lambda: material?.lambda?.toString() || '',
     description: material?.description || '',
     isActive: material?.isActive ?? true
@@ -35,7 +35,7 @@ const MaterialDialog = ({ isOpen, onClose, onSave, material }: MaterialDialogPro
 
     onSave({
       name: formData.name,
-      category: formData.category as Material['category'],
+      category: formData.category,
       lambda,
       description: formData.description,
       isActive: formData.isActive
@@ -73,7 +73,7 @@ const MaterialDialog = ({ isOpen, onClose, onSave, material }: MaterialDialogPro
 
           <div className="space-y-2">
             <Label htmlFor="category">Catégorie</Label>
-            <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+            <Select value={formData.category} onValueChange={(value: Material['category']) => setFormData({ ...formData, category: value })}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
