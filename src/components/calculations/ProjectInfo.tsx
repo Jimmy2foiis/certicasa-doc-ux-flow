@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +15,7 @@ interface ProjectInfoProps {
   setRoofArea: (value: string) => void;
   improvementPercent: number;
   meetsRequirements: boolean;
+  onSave?: () => void;
 }
 
 const ProjectInfo = ({
@@ -27,7 +27,14 @@ const ProjectInfo = ({
   setRoofArea,
   improvementPercent,
   meetsRequirements,
+  onSave,
 }: ProjectInfoProps) => {
+  const handleSave = () => {
+    if (onSave) {
+      onSave();
+    }
+  };
+
   return (
     <Card className="lg:col-span-3">
       <CardHeader>
@@ -89,7 +96,7 @@ const ProjectInfo = ({
           </div>
         </div>
         
-        <Button className="w-full mt-4 bg-blue-600 hover:bg-blue-700">
+        <Button onClick={handleSave} className="w-full mt-4 bg-blue-600 hover:bg-blue-700">
           <Save className="h-4 w-4 mr-2" />
           Enregistrer
         </Button>

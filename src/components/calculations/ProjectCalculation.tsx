@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { useCadastralData } from "@/hooks/useCadastralData";
@@ -105,6 +104,12 @@ const ProjectCalculation = ({
     email: clientData?.email || ''
   };
 
+  const handleSave = () => {
+    if (onSave) {
+      onSave(calculationData);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -118,6 +123,7 @@ const ProjectCalculation = ({
           setRoofArea={setRoofArea}
           improvementPercent={improvementPercent}
           meetsRequirements={meetsRequirements}
+          onSave={handleSave}
         />
 
         {/* Thermal Calculations */}
