@@ -1,12 +1,13 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { AdministrativeDocument } from '@/types/documents';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { GripVertical, RotateCcw } from 'lucide-react';
+import { ChevronDown, ChevronRight } from 'lucide-react';
 import { getOperationalStatus } from './DocumentStatusUtils';
 import { DocumentActionButtons } from './DocumentActionButtons';
 import { DocumentsProgressBar } from './DocumentsProgressBar';
+import { DocumentAccordionContent } from './DocumentAccordionContent';
 
 interface DocumentsWithDragDropProps {
   documents: AdministrativeDocument[];
@@ -17,24 +18,14 @@ interface DocumentsWithDragDropProps {
 const DocumentsLoadingState = () => (
   <div className="space-y-4">
     {Array(8).fill(0).map((_, i) => (
-      <div key={i} className="animate-pulse grid grid-cols-12 items-center p-3 border rounded-md">
-        <div className="col-span-1">
-          <div className="w-4 h-4 bg-gray-200 rounded"></div>
-        </div>
-        <div className="col-span-1">
+      <div key={i} className="animate-pulse border rounded-md p-4">
+        <div className="flex items-center gap-3">
           <div className="w-6 h-6 bg-gray-200 rounded-full"></div>
-        </div>
-        <div className="col-span-3">
-          <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-          <div className="h-3 bg-gray-100 rounded w-1/2"></div>
-        </div>
-        <div className="col-span-3">
-          <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-        </div>
-        <div className="col-span-2">
+          <div className="flex-1">
+            <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
+            <div className="h-3 bg-gray-100 rounded w-1/2"></div>
+          </div>
           <div className="w-20 h-6 bg-gray-200 rounded"></div>
-        </div>
-        <div className="col-span-2 flex justify-end">
           <div className="w-20 h-8 bg-gray-200 rounded"></div>
         </div>
       </div>
@@ -47,70 +38,20 @@ export const DocumentsWithDragDrop: React.FC<DocumentsWithDragDropProps> = ({
   isLoading,
   onAction,
 }) => {
-  const [orderedDocuments, setOrderedDocuments] = useState(documents);
-  const [isCustomOrder, setIsCustomOrder] = useState(false);
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
-  const [draggedForPreview, setDraggedForPreview] = useState<string | null>(null);
+  const [expandedDocuments, setExpandedDocuments] = useState<Set<string>>(new Set());
 
-  // Update when documents prop changes
-  React.useEffect(() => {
-    if (!isCustomOrder) {
-      setOrderedDocuments(documents.sort((a, b) => (a.order || 0) - (b.order || 0)));
-    }
-  }, [documents, isCustomOrder]);
+  // Sort documents by order (fixed 1-8)
+  const orderedDocuments = documents.sort((a, b) => (a.order || 0) - (b.order || 0));
 
-  const handleDragStart = useCallback((e: React.DragEvent, index: number, isForPreview = false) => {
-    const document = orderedDocuments[index];
-    
-    if (isForPreview) {
-      // Drag for preview - only allow if document is generated
-      if (['generated', 'available', 'linked', 'signed'].includes(document.status)) {
-        setDraggedForPreview(document.id);
-        e.dataTransfer.setData('application/json', JSON.stringify(document));
-        e.dataTransfer.effectAllowed = 'copy';
-      } else {
-        e.preventDefault();
-        return;
-      }
+  const toggleDocument = (documentId: string) => {
+    const newExpanded = new Set(expandedDocuments);
+    if (newExpanded.has(documentId)) {
+      newExpanded.delete(documentId);
     } else {
-      // Drag for reordering
-      setDraggedIndex(index);
-      e.dataTransfer.effectAllowed = 'move';
+      newExpanded.add(documentId);
     }
-  }, [orderedDocuments]);
-
-  const handleDragEnd = useCallback(() => {
-    setDraggedIndex(null);
-    setDraggedForPreview(null);
-  }, []);
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  }, []);
-
-  const handleDrop = useCallback((e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault();
-    
-    if (draggedIndex === null || draggedIndex === dropIndex) {
-      setDraggedIndex(null);
-      return;
-    }
-
-    const newDocuments = [...orderedDocuments];
-    const [draggedItem] = newDocuments.splice(draggedIndex, 1);
-    newDocuments.splice(dropIndex, 0, draggedItem);
-    
-    setOrderedDocuments(newDocuments);
-    setIsCustomOrder(true);
-    setDraggedIndex(null);
-  }, [draggedIndex, orderedDocuments]);
-
-  const resetOrder = useCallback(() => {
-    const defaultOrder = [...documents].sort((a, b) => (a.order || 0) - (b.order || 0));
-    setOrderedDocuments(defaultOrder);
-    setIsCustomOrder(false);
-  }, [documents]);
+    setExpandedDocuments(newExpanded);
+  };
 
   const handleGenerateAll = () => {
     orderedDocuments
@@ -127,104 +68,74 @@ export const DocumentsWithDragDrop: React.FC<DocumentsWithDragDropProps> = ({
       {/* Progress Bar */}
       <DocumentsProgressBar documents={orderedDocuments} onGenerateAll={handleGenerateAll} />
 
-      {/* Custom Order Indicator */}
-      {isCustomOrder && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-blue-700">
-            <GripVertical className="h-4 w-4" />
-            <span className="text-sm font-medium">🔀 Ordre personnalisé actif</span>
-          </div>
-          <Button
-            onClick={resetOrder}
-            variant="outline"
-            size="sm"
-            className="text-blue-600 border-blue-300 hover:bg-blue-50"
-          >
-            <RotateCcw className="h-4 w-4 mr-2" />
-            ↩️ Réinitialiser l'ordre par défaut
-          </Button>
-        </div>
-      )}
-
-      {/* Documents Grid */}
+      {/* Documents Accordion List */}
       <div className="space-y-3">
-        {/* En-tête des colonnes */}
-        <div className="grid grid-cols-12 text-sm font-medium text-gray-500 border-b pb-2">
-          <div className="col-span-1"></div>
-          <div className="col-span-1">N°</div>
-          <div className="col-span-3">Nom du document</div>
-          <div className="col-span-3">Nom fichier attendu</div>
-          <div className="col-span-2">Statut</div>
-          <div className="col-span-2 text-right">Actions</div>
-        </div>
-        
-        {/* Liste des documents */}
-        {orderedDocuments.map((doc, index) => {
+        {orderedDocuments.map((doc) => {
           const operationalStatus = getOperationalStatus(doc.status);
           const StatusIcon = operationalStatus.icon;
-          const canPreview = ['generated', 'available', 'linked', 'signed'].includes(doc.status);
+          const isExpanded = expandedDocuments.has(doc.id);
           
           return (
             <div
               key={doc.id}
-              className={`
-                grid grid-cols-12 items-center p-3 border rounded-md hover:bg-gray-50 transition-colors 
-                ${canPreview ? 'cursor-grab active:cursor-grabbing' : 'cursor-move'}
-              `}
-              draggable
-              onDragStart={(e) => handleDragStart(e, index)}
-              onDragEnd={handleDragEnd}
-              onDragOver={handleDragOver}
-              onDrop={(e) => handleDrop(e, index)}
+              className="border rounded-lg overflow-hidden bg-white hover:shadow-sm transition-shadow"
             >
-              {/* Grip handle */}
-              <div className="col-span-1 text-center">
-                <GripVertical className="h-4 w-4 text-gray-400 cursor-grab active:cursor-grabbing" />
-              </div>
-              
-              {/* Numéro d'ordre */}
-              <div className="col-span-1 font-medium text-gray-600">
-                {doc.order || index + 1}
-              </div>
-              
-              {/* Nom du document */}
-              <div 
-                className={`col-span-3 ${canPreview ? 'cursor-grab' : ''}`}
-                draggable={canPreview}
-                onDragStart={canPreview ? (e) => handleDragStart(e, index, true) : undefined}
-                onDragEnd={handleDragEnd}
-              >
-                <div className="font-medium flex items-center gap-2">
-                  {doc.name}
-                  {canPreview && (
-                    <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
-                      📄 Glissez pour prévisualiser
-                    </span>
-                  )}
+              {/* Document Header - Always visible */}
+              <div className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1">
+                    {/* Accordion Toggle Button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 hover:bg-gray-100"
+                      onClick={() => toggleDocument(doc.id)}
+                    >
+                      {isExpanded ? (
+                        <ChevronDown className="h-4 w-4" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4" />
+                      )}
+                    </Button>
+                    
+                    {/* Document Order Number */}
+                    <div className="bg-gray-100 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium text-gray-600">
+                      {doc.order || 1}
+                    </div>
+                    
+                    {/* Document Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-medium text-gray-900 truncate">{doc.name}</h3>
+                        <Badge className={`flex items-center gap-1.5 font-normal px-2 py-1 ${operationalStatus.color}`}>
+                          <StatusIcon className="h-3 w-3" />
+                          <span>{operationalStatus.label}</span>
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-gray-500 truncate">{doc.description}</p>
+                      <p className="text-xs text-gray-400 mt-1">{doc.reference}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-2">
+                    <DocumentActionButtons 
+                      document={doc} 
+                      onAction={(action) => onAction(doc.id, action)} 
+                    />
+                  </div>
                 </div>
-                <div className="text-xs text-gray-500">{doc.description}</div>
               </div>
               
-              {/* Nom fichier attendu */}
-              <div className="col-span-3 text-sm text-gray-600">
-                {doc.reference}
-              </div>
-              
-              {/* Statut du document */}
-              <div className="col-span-2">
-                <Badge className={`flex items-center gap-1.5 font-normal px-2 py-1 ${operationalStatus.color}`}>
-                  <StatusIcon className="h-3 w-3" />
-                  <span>{operationalStatus.label}</span>
-                </Badge>
-              </div>
-              
-              {/* Actions pour le document */}
-              <div className="col-span-2 flex justify-end">
-                <DocumentActionButtons 
-                  document={doc} 
-                  onAction={(action) => onAction(doc.id, action)} 
-                />
-              </div>
+              {/* Accordion Content - Document Preview */}
+              {isExpanded && (
+                <div className="border-t bg-gray-50">
+                  <DocumentAccordionContent 
+                    document={doc}
+                    onAction={(action) => onAction(doc.id, action)}
+                  />
+                </div>
+              )}
             </div>
           );
         })}
