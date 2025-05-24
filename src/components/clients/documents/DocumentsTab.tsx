@@ -1,11 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Upload, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useClientDocuments } from "@/hooks/documents/useClientDocuments";
-import DocumentUploadDialog from './documents/DocumentUploadDialog';
-import { DocumentsWithDragDrop } from './documents/DocumentsWithDragDrop';
+import DocumentUploadDialog from './DocumentUploadDialog';
+import { DocumentsWithDragDrop } from './DocumentsWithDragDrop';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { AdministrativeDocument, DocumentStatus } from '@/types/documents';
 
