@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Material, Product } from '@/types/materials';
+import { Material, Product, ThicknessOption } from '@/types/materials';
 
 const DEFAULT_MATERIALS: Material[] = [
   {
@@ -72,7 +72,20 @@ const DEFAULT_PRODUCTS: Product[] = [
     manufacturer: 'URSA',
     baseMaterialId: 'glass_wool',
     lambda: 0.047,
-    availableThicknesses: [100, 120, 140, 160, 180, 200, 240, 260, 280, 300],
+    defaultThickness: 200,
+    defaultR: 4.26,
+    thicknessOptions: [
+      { thickness: 100, r: 2.13 },
+      { thickness: 120, r: 2.55 },
+      { thickness: 140, r: 2.98 },
+      { thickness: 160, r: 3.40 },
+      { thickness: 180, r: 3.83 },
+      { thickness: 200, r: 4.26 },
+      { thickness: 240, r: 5.11 },
+      { thickness: 260, r: 5.53 },
+      { thickness: 280, r: 5.96 },
+      { thickness: 300, r: 6.38 }
+    ],
     pricePerM2: 12.50,
     isActive: true,
     createdAt: new Date(),
@@ -84,7 +97,18 @@ const DEFAULT_PRODUCTS: Product[] = [
     manufacturer: 'URSA',
     baseMaterialId: 'glass_wool',
     lambda: 0.045,
-    availableThicknesses: [200, 240, 280, 300, 320, 350, 380, 400],
+    defaultThickness: 300,
+    defaultR: 6.67,
+    thicknessOptions: [
+      { thickness: 200, r: 4.44 },
+      { thickness: 240, r: 5.33 },
+      { thickness: 280, r: 6.22 },
+      { thickness: 300, r: 6.67 },
+      { thickness: 320, r: 7.11 },
+      { thickness: 350, r: 7.78 },
+      { thickness: 380, r: 8.44 },
+      { thickness: 400, r: 8.89 }
+    ],
     pricePerM2: 8.20,
     isActive: true,
     createdAt: new Date(),
@@ -96,7 +120,18 @@ const DEFAULT_PRODUCTS: Product[] = [
     manufacturer: 'URSA',
     baseMaterialId: 'glass_wool',
     lambda: 0.047,
-    availableThicknesses: [200, 240, 280, 300, 320, 350, 380, 400],
+    defaultThickness: 300,
+    defaultR: 6.38,
+    thicknessOptions: [
+      { thickness: 200, r: 4.26 },
+      { thickness: 240, r: 5.11 },
+      { thickness: 280, r: 5.96 },
+      { thickness: 300, r: 6.38 },
+      { thickness: 320, r: 6.81 },
+      { thickness: 350, r: 7.45 },
+      { thickness: 380, r: 8.09 },
+      { thickness: 400, r: 8.51 }
+    ],
     pricePerM2: 7.80,
     isActive: true,
     createdAt: new Date(),
