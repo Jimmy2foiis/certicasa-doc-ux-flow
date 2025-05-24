@@ -12,7 +12,6 @@ const FinancesPage = () => {
         <Header />
         <main className="flex-1 overflow-y-auto">
           <div className="p-4 lg:p-6">
-            <h1 className="text-xl lg:text-2xl font-bold mb-4 lg:mb-6 text-gray-900">Finances</h1>
             <FinancesModule />
           </div>
         </main>
