@@ -1,4 +1,3 @@
-
 import { useLayerManagement, Layer } from "./useLayerManagement";
 import { useProjectSettings } from "./useProjectSettings";
 import { useThermalResistanceSettings } from "./useThermalResistanceSettings";
@@ -38,7 +37,7 @@ export interface CalculationData {
   meetsRequirements: boolean;
 }
 
-export { Layer };
+export type { Layer };
 
 export const useCalculationState = ({ savedData, clientClimateZone }: CalculationStateProps) => {
   // Layer management
