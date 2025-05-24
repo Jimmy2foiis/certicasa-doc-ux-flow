@@ -105,29 +105,30 @@ export const DocumentsWithDragDrop: React.FC<DocumentsWithDragDropProps> = ({
                     
                     {/* Document Info */}
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-medium text-gray-900 truncate">{doc.name}</h3>
-                        <Badge className={`flex items-center gap-1.5 font-normal px-2 py-1 ${operationalStatus.color}`}>
-                          <StatusIcon className="h-3 w-3" />
-                          <span>{operationalStatus.label}</span>
-                        </Badge>
-                      </div>
+                      <h3 className="font-medium text-gray-900 truncate">{doc.name}</h3>
                       <p className="text-sm text-gray-500 truncate">{doc.description}</p>
                       <p className="text-xs text-gray-400 mt-1">{doc.reference}</p>
                     </div>
+
+                    {/* Status Badge - repositioned here */}
+                    <Badge className={`flex items-center gap-1.5 font-normal px-2 py-1 ${operationalStatus.color}`}>
+                      <StatusIcon className="h-3 w-3" />
+                      <span>{operationalStatus.label}</span>
+                    </Badge>
                   </div>
                   
-                  {/* Action Buttons */}
-                  <div className="flex items-center gap-2">
+                  {/* Primary Action Button */}
+                  <div className="flex items-center gap-2 ml-3">
                     <DocumentActionButtons 
                       document={doc} 
-                      onAction={(action) => onAction(doc.id, action)} 
+                      onAction={(action) => onAction(doc.id, action)}
+                      compact={true}
                     />
                   </div>
                 </div>
               </div>
               
-              {/* Accordion Content - Document Preview */}
+              {/* Accordion Content - Document Actions */}
               {isExpanded && (
                 <div className="border-t bg-gray-50">
                   <DocumentAccordionContent 

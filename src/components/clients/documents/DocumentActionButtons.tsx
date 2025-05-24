@@ -1,107 +1,122 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { 
-  Settings, 
-  RefreshCw, 
-  Eye, 
-  Download
-} from 'lucide-react';
-import type { AdministrativeDocument } from '@/types/documents';
+import { Settings, Eye, Download, RefreshCw, CheckCircle2 } from 'lucide-react';
+import { AdministrativeDocument } from '@/types/documents';
 
 interface DocumentActionButtonsProps {
   document: AdministrativeDocument;
   onAction: (action: string) => void;
+  compact?: boolean;
 }
 
-export const DocumentActionButtons: React.FC<DocumentActionButtonsProps> = ({ document, onAction }) => {
-  const status = document.status;
-  
-  switch (status) {
-    case 'missing':
-    case 'pending':
-    case 'ready':
+export const DocumentActionButtons: React.FC<DocumentActionButtonsProps> = ({
+  document,
+  onAction,
+  compact = false
+}) => {
+  const isGenerated = ['generated', 'available', 'linked', 'signed'].includes(document.status);
+  const canGenerate = ['missing', 'pending', 'ready'].includes(document.status);
+  const isError = document.status === 'error';
+
+  // En mode compact, on affiche seulement l'action principale
+  if (compact) {
+    if (canGenerate) {
       return (
         <Button
           onClick={() => onAction('generate')}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
+          className="bg-green-500 hover:bg-green-600 text-white"
           size="sm"
         >
-          <Settings className="h-4 w-4" />
+          <Settings className="h-4 w-4 mr-1" />
           Générer
         </Button>
       );
-      
-    case 'error':
+    }
+
+    if (isError) {
       return (
         <Button
           onClick={() => onAction('regenerate')}
-          className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
+          className="bg-orange-500 hover:bg-orange-600 text-white"
           size="sm"
         >
-          <RefreshCw className="h-4 w-4" />
+          <RefreshCw className="h-4 w-4 mr-1" />
           Régénérer
         </Button>
       );
-      
-    case 'generated':
-    case 'available':
-    case 'linked':
-    case 'signed':
+    }
+
+    if (isGenerated) {
       return (
-        <div className="flex gap-2">
+        <Button
+          onClick={() => onAction('view')}
+          className="bg-blue-500 hover:bg-blue-600 text-white"
+          size="sm"
+        >
+          <Eye className="h-4 w-4 mr-1" />
+          Voir
+        </Button>
+      );
+    }
+  }
+
+  // Mode complet (dans l'accordéon)
+  return (
+    <div className="flex flex-wrap gap-2">
+      {canGenerate && (
+        <Button
+          onClick={() => onAction('generate')}
+          className="bg-green-500 hover:bg-green-600 text-white"
+          size="sm"
+        >
+          <Settings className="h-4 w-4 mr-1" />
+          Générer
+        </Button>
+      )}
+
+      {isGenerated && (
+        <>
           <Button
             onClick={() => onAction('view')}
-            className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-md flex items-center gap-1.5"
+            className="bg-blue-500 hover:bg-blue-600 text-white"
             size="sm"
           >
-            <Eye className="h-4 w-4" />
+            <Eye className="h-4 w-4 mr-1" />
             Voir
           </Button>
           <Button
             onClick={() => onAction('download')}
             variant="outline"
-            className="px-3 py-2 rounded-md flex items-center gap-1.5"
             size="sm"
           >
-            <Download className="h-4 w-4" />
+            <Download className="h-4 w-4 mr-1" />
             Télécharger
           </Button>
-        </div>
-      );
-      
-    case 'action-required':
-      return (
-        <div className="flex gap-2">
-          <Button
-            onClick={() => onAction('view')}
-            className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-md flex items-center gap-1.5"
-            size="sm"
-          >
-            <Eye className="h-4 w-4" />
-            Voir
-          </Button>
-          <Button
-            onClick={() => onAction('regenerate')}
-            className="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-md flex items-center gap-1.5"
-            size="sm"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Régénérer
-          </Button>
-        </div>
-      );
-      
-    default:
-      return (
+        </>
+      )}
+
+      {isGenerated && document.status !== 'signed' && (
         <Button
-          onClick={() => onAction('generate')}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
+          onClick={() => onAction('sign-certicasa')}
+          className="bg-emerald-500 hover:bg-emerald-600 text-white"
           size="sm"
         >
-          <Settings className="h-4 w-4" />
-          Générer
+          <CheckCircle2 className="h-4 w-4 mr-1" />
+          Signer Certicasa
         </Button>
-      );
-  }
+      )}
+
+      {(isGenerated || isError) && (
+        <Button
+          onClick={() => onAction('regenerate')}
+          variant="outline"
+          size="sm"
+        >
+          <RefreshCw className="h-4 w-4 mr-1" />
+          Régénérer
+        </Button>
+      )}
+    </div>
+  );
 };
