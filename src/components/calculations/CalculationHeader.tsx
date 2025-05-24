@@ -1,6 +1,6 @@
 
 import { CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import CalculationActions from "./CalculationActions";
+import CalculationActionsWithBilling from "./CalculationActionsWithBilling";
 import { CalculationData } from "@/hooks/useCalculationState";
 
 interface CalculationHeaderProps {
@@ -9,6 +9,13 @@ interface CalculationHeaderProps {
   clientName?: string;
   clientAddress?: string;
   projectName?: string;
+  clientData?: {
+    name: string;
+    nif?: string;
+    address?: string;
+    phone?: string;
+    email?: string;
+  };
 }
 
 const CalculationHeader = ({ 
@@ -16,7 +23,8 @@ const CalculationHeader = ({
   onSave,
   clientName,
   clientAddress,
-  projectName
+  projectName,
+  clientData
 }: CalculationHeaderProps) => {
   return (
     <CardHeader className="pb-2 flex flex-row items-center justify-between">
@@ -26,12 +34,13 @@ const CalculationHeader = ({
           Saisissez les matériaux et épaisseurs pour calculer la résistance thermique
         </CardDescription>
       </div>
-      <CalculationActions 
+      <CalculationActionsWithBilling 
         calculationData={calculationData}
         onSave={onSave}
         clientName={clientName}
         clientAddress={clientAddress}
         projectName={projectName}
+        clientData={clientData}
       />
     </CardHeader>
   );

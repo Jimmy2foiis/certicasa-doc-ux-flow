@@ -16,6 +16,14 @@ interface ProjectCalculationProps {
   clientName?: string;
   clientAddress?: string;
   projectName?: string;
+  clientData?: {
+    id?: string;
+    name: string;
+    nif?: string;
+    address?: string;
+    phone?: string;
+    email?: string;
+  };
 }
 
 const ProjectCalculation = ({ 
@@ -26,7 +34,8 @@ const ProjectCalculation = ({
   clientClimateZone,
   clientName,
   clientAddress,
-  projectName
+  projectName,
+  clientData
 }: ProjectCalculationProps) => {
   // Get climate zone from cadastral data (for demo purposes)
   const { climateZone: fetchedClimateZone } = useCadastralData(clientId ? `Client ID ${clientId}` : "123 Demo Street");
@@ -87,6 +96,15 @@ const ProjectCalculation = ({
     setAfterLayers(afterLayers.filter(l => l.id !== id));
   };
 
+  // Prepare client data with fallbacks
+  const preparedClientData = {
+    name: clientData?.name || clientName || 'Client',
+    nif: clientData?.nif || '',
+    address: clientData?.address || clientAddress || '',
+    phone: clientData?.phone || '',
+    email: clientData?.email || ''
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -110,6 +128,7 @@ const ProjectCalculation = ({
             clientName={clientName}
             clientAddress={clientAddress}
             projectName={projectName}
+            clientData={preparedClientData}
           />
           <CalculationContent 
             calculationData={calculationData}
