@@ -6,8 +6,7 @@ import { Upload, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useClientDocuments } from "@/hooks/documents/useClientDocuments";
 import DocumentUploadDialog from './documents/DocumentUploadDialog';
-import DocumentLoadingState from './documents/DocumentLoadingState';
-import { RequiredDocumentsList } from './documents/RequiredDocumentsList';
+import { DocumentsWithDragDrop } from './documents/DocumentsWithDragDrop';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { AdministrativeDocument, DocumentStatus } from '@/types/documents';
 
@@ -163,8 +162,11 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
             Gestion des 8 documents obligatoires du dossier
           </CardDescription>
         </div>
-        <Button onClick={() => setShowUploadDialog(true)}>
-          <Upload className="h-4 w-4 mr-2" />
+        <Button 
+          onClick={() => setShowUploadDialog(true)}
+          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
+        >
+          <Upload className="h-4 w-4" />
           Ajouter un document
         </Button>
       </CardHeader>
@@ -177,15 +179,11 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
           </AlertDescription>
         </Alert>
 
-        {loading ? (
-          <DocumentLoadingState />
-        ) : (
-          <RequiredDocumentsList 
-            documents={requiredDocuments}
-            isLoading={loading}
-            onAction={handleDocAction}
-          />
-        )}
+        <DocumentsWithDragDrop 
+          documents={requiredDocuments}
+          isLoading={loading}
+          onAction={handleDocAction}
+        />
       </CardContent>
 
       {/* Dialog for document upload */}
