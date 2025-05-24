@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Users, Home, Zap, Calculator, TrendingUp, TrendingDown } from "lucide-react";
 import { formatCurrency } from "@/utils/formatters";
 
@@ -30,7 +30,8 @@ const FinancesKPICards: React.FC<FinancesKPICardsProps> = ({
     icon, 
     change, 
     trend, 
-    formatter 
+    formatter,
+    color = "blue"
   }: {
     title: string;
     value: number;
@@ -39,38 +40,41 @@ const FinancesKPICards: React.FC<FinancesKPICardsProps> = ({
     change: number;
     trend: "up" | "down";
     formatter?: (value: number) => string;
+    color?: string;
   }) => {
     const formattedValue = formatter ? formatter(value) : value.toLocaleString();
     const isPositive = trend === "up";
 
     return (
-      <Card className="overflow-hidden">
-        <CardContent className="p-6">
+      <Card className="overflow-hidden cursor-pointer hover:shadow-md transition-all duration-200 border border-gray-200">
+        <CardContent className="p-4 lg:p-6">
           <div className="flex justify-between items-start">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">{title}</p>
-              <div className="flex items-baseline mt-1">
-                <h3 className="text-2xl font-bold">{formattedValue}</h3>
-                {unit && <span className="ml-1 text-muted-foreground">{unit}</span>}
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-gray-600 truncate mb-2">{title}</p>
+              <div className="flex items-baseline">
+                <h3 className="text-xl lg:text-2xl font-bold text-gray-900 truncate">{formattedValue}</h3>
+                {unit && <span className="ml-1 lg:ml-2 text-xs lg:text-sm text-gray-500">{unit}</span>}
               </div>
             </div>
-            <div className="p-2 bg-gray-100 rounded-md">
-              {icon}
+            <div className={`p-2 ${color === "green" ? "bg-green-100" : color === "blue" ? "bg-blue-100" : color === "orange" ? "bg-orange-100" : "bg-gray-100"} rounded-lg flex-shrink-0 ml-3`}>
+              {React.cloneElement(icon as React.ReactElement, { 
+                className: `h-5 w-5 lg:h-6 lg:w-6 ${color === "green" ? "text-green-600" : color === "blue" ? "text-blue-600" : color === "orange" ? "text-orange-600" : "text-gray-600"}` 
+              })}
             </div>
           </div>
           
-          <div className="mt-4 flex items-center text-sm">
-            <div className={`flex items-center px-1.5 py-0.5 rounded ${
+          <div className="mt-3 lg:mt-4 flex items-center text-sm">
+            <div className={`flex items-center px-2 py-1 rounded-full ${
               isPositive ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"
             }`}>
               {isPositive ? (
-                <TrendingUp className="h-3 w-3 mr-1" />
+                <TrendingUp className="h-3 w-3 lg:h-4 lg:w-4 mr-1" />
               ) : (
-                <TrendingDown className="h-3 w-3 mr-1" />
+                <TrendingDown className="h-3 w-3 lg:h-4 lg:w-4 mr-1" />
               )}
-              <span>{Math.abs(change)}%</span>
+              <span className="text-xs font-medium">{Math.abs(change)}%</span>
             </div>
-            <span className="text-muted-foreground ml-1.5">vs mois précédent</span>
+            <span className="text-gray-500 ml-2 text-xs">vs mois précédent</span>
           </div>
         </CardContent>
       </Card>
@@ -78,42 +82,46 @@ const FinancesKPICards: React.FC<FinancesKPICardsProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-6">
       <KPICard
-        title="Clients actifs"
+        title="🧍 Clients actifs"
         value={kpiData.activeClients.value}
         unit="clients"
-        icon={<Users className="h-6 w-6" />}
+        icon={<Users />}
         change={kpiData.activeClients.change}
         trend={kpiData.activeClients.trend}
+        color="blue"
       />
       
       <KPICard
-        title="Surface totale isolée"
+        title="📏 Surface isolée totale"
         value={kpiData.totalSurface.value}
         unit="m²"
-        icon={<Home className="h-6 w-6" />}
+        icon={<Home />}
         change={kpiData.totalSurface.change}
         trend={kpiData.totalSurface.trend}
+        color="green"
       />
       
       <KPICard
-        title="CAE total"
+        title="⚡ CAE global"
         value={kpiData.totalCAE.value}
         unit="kWh/an"
-        icon={<Zap className="h-6 w-6" />}
+        icon={<Zap />}
         change={kpiData.totalCAE.change}
         trend={kpiData.totalCAE.trend}
+        color="orange"
         formatter={(value) => `${(value / 1000000).toFixed(2)} M`}
       />
       
       <KPICard
-        title="Moyenne"
+        title="💶 Économie moyenne"
         value={kpiData.averagePrice.value}
         unit="€/m²"
-        icon={<Calculator className="h-6 w-6" />}
+        icon={<Calculator />}
         change={kpiData.averagePrice.change}
         trend={kpiData.averagePrice.trend}
+        color="green"
       />
     </div>
   );
