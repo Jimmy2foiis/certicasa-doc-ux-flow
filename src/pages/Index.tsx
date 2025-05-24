@@ -46,16 +46,6 @@ const Index = () => {
     }
   };
 
-  // Fonction pour naviguer vers la liste complète des projets
-  const handleViewAllProjects = () => {
-    navigate('/projects');
-  };
-
-  // Fonction pour naviguer vers le détail d'un projet
-  const handleViewProject = (projectId: string) => {
-    navigate(`/projects/${projectId}`);
-  };
-
   return (
     <div className="flex h-screen bg-gray-50">
       <Sidebar />

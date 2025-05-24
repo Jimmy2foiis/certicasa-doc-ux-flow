@@ -1,178 +1,83 @@
 
-import { 
-  Card, 
-  CardContent, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { 
-  Home, 
-  User, 
-  Sparkles, 
-  Eye,
-  ArrowUpRight
-} from "lucide-react";
-import { Progress } from "@/components/ui/progress";
-import StatCard from "@/components/dashboard/StatCard";
-import FinancesSummary from "@/components/dashboard/FinancesSummary";
-import { recentProjects } from "@/data/mock";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import DashboardFilters from "./DashboardFilters";
+import DashboardKPICards from "./DashboardKPICards";
+import DashboardCharts from "./DashboardCharts";
+import DashboardTeamTable from "./DashboardTeamTable";
+import DashboardTechnicalIndicators from "./DashboardTechnicalIndicators";
+import DashboardExportActions from "./DashboardExportActions";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
-  
-  const handleViewAllProjects = () => {
-    navigate("/projects");
+  const [selectedPeriod, setSelectedPeriod] = useState("2025-05");
+  const [selectedFicheType, setSelectedFicheType] = useState("all");
+  const [selectedTeam, setSelectedTeam] = useState("all");
+
+  const handleRefresh = () => {
+    console.log("Actualisation des données du tableau de bord");
   };
-  
-  const handleViewProject = (projectId: string) => {
-    navigate(`/projects/${projectId}`);
+
+  const handleExportPDF = () => {
+    console.log("Export PDF du tableau de bord");
+  };
+
+  const handleExportExcel = () => {
+    console.log("Export Excel du tableau de bord");
   };
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard 
-          title="Projets" 
-          value="428" 
-          icon={<Home className="h-6 w-6" />}
-          details={[
-            { label: "En cours", value: "187" },
-            { label: "Terminés", value: "241" },
-          ]}
-          trend={12}
-          className="border-l-4 border-blue-500"
-        />
-        
-        <StatCard 
-          title="Clients" 
-          value="312" 
-          icon={<User className="h-6 w-6" />}
-          details={[
-            { label: "Actifs", value: "245" },
-            { label: "Inactifs", value: "67" },
-          ]}
-          trend={8}
-          className="border-l-4 border-emerald-500"
-        />
-        
-        <StatCard 
-          title="Économies Thermiques" 
-          value="1.24 M" 
-          unit="kWh"
-          icon={<Sparkles className="h-6 w-6" />}
-          details={[
-            { label: "Économies (€)", value: "€198,400" },
-            { label: "Moyenne", value: "€42/m²" },
-          ]}
-          trend={23}
-          className="border-l-4 border-amber-500"
+    <div className="space-y-4 lg:space-y-6 pb-6">
+      {/* Zone de filtrage globale - Sticky en haut */}
+      <DashboardFilters
+        selectedPeriod={selectedPeriod}
+        selectedFicheType={selectedFicheType}
+        selectedTeam={selectedTeam}
+        onPeriodChange={setSelectedPeriod}
+        onFicheTypeChange={setSelectedFicheType}
+        onTeamChange={setSelectedTeam}
+        onRefresh={handleRefresh}
+        onExportPDF={handleExportPDF}
+        onExportExcel={handleExportExcel}
+      />
+
+      {/* KPI Cards - Vue synthétique */}
+      <div className="px-1 lg:px-0">
+        <DashboardKPICards 
+          selectedPeriod={selectedPeriod}
+          selectedFicheType={selectedFicheType}
+          selectedTeam={selectedTeam}
         />
       </div>
 
-      {/* Section Performance Financière */}
-      <FinancesSummary />
+      {/* Graphiques / Courbes */}
+      <div className="px-1 lg:px-0">
+        <DashboardCharts 
+          selectedPeriod={selectedPeriod}
+          selectedFicheType={selectedFicheType}
+          selectedTeam={selectedTeam}
+        />
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg font-medium flex items-center justify-between">
-              <span>Projets Récents</span>
-              <Button variant="outline" size="sm" className="text-xs" onClick={handleViewAllProjects}>
-                Voir tout
-                <ArrowUpRight className="ml-1 h-3 w-3" />
-              </Button>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nom du projet</TableHead>
-                  <TableHead>Client</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Statut</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentProjects.map((project) => (
-                  <TableRow key={project.id}>
-                    <TableCell className="font-medium">{project.name}</TableCell>
-                    <TableCell>{project.client}</TableCell>
-                    <TableCell>{project.date}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          project.status === "Terminé" ? "success" :
-                          project.status === "En cours" ? "default" :
-                          "outline"
-                        }
-                      >
-                        {project.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => handleViewProject(project.id)}>
-                        <Eye className="h-4 w-4 mr-1" />
-                        Voir
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+      {/* Tableau Équipes / Projets */}
+      <div className="px-1 lg:px-0">
+        <DashboardTeamTable 
+          selectedPeriod={selectedPeriod}
+          selectedFicheType={selectedFicheType}
+          selectedTeam={selectedTeam}
+        />
+      </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-medium">Résumé des performances</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Documents générés</span>
-                <span className="font-medium">67%</span>
-              </div>
-              <Progress value={67} className="h-2" />
-            </div>
+      {/* Indicateurs techniques CAE */}
+      <div className="px-1 lg:px-0">
+        <DashboardTechnicalIndicators 
+          selectedPeriod={selectedPeriod}
+          selectedFicheType={selectedFicheType}
+          selectedTeam={selectedTeam}
+        />
+      </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Calculs terminés</span>
-                <span className="font-medium">89%</span>
-              </div>
-              <Progress value={89} className="h-2" />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Signatures collectées</span>
-                <span className="font-medium">72%</span>
-              </div>
-              <Progress value={72} className="h-2" />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Projets facturés</span>
-                <span className="font-medium">54%</span>
-              </div>
-              <Progress value={54} className="h-2" />
-            </div>
-          </CardContent>
-        </Card>
+      {/* Zone d'action & export global */}
+      <div className="px-1 lg:px-0">
+        <DashboardExportActions />
       </div>
     </div>
   );
