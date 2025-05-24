@@ -14,7 +14,7 @@ const Workflow = () => {
   const { toast } = useToast();
 
   const toggleWorkspace = () => {
-    const newWorkspace = workspace === "administrative" ? "commercial" : "administrative";
+    const newWorkspace = workspace.id === "admin" ? "commercial" : "administrative";
     setWorkspace(newWorkspace);
     toast({
       title: `Espace ${newWorkspace === "administrative" ? "Administratif" : "Commercial"} activé`,
@@ -24,7 +24,7 @@ const Workflow = () => {
 
   return (
     <div className="flex h-screen bg-gray-50">
-      {workspace === "administrative" ? (
+      {workspace.id === "admin" ? (
         <>
           <Sidebar />
           <div className="flex-1 flex flex-col overflow-hidden">
