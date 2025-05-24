@@ -33,29 +33,27 @@ export const DocumentAccordionContent: React.FC<DocumentAccordionContentProps> =
           Régénérer le document
         </Button>
 
-        {/* Télécharger - si généré */}
-        {isGenerated && (
-          <Button
-            onClick={() => onAction('download')}
-            variant="outline"
-            size="sm"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Télécharger
-          </Button>
-        )}
+        {/* Télécharger - toujours visible pour démonstration */}
+        <Button
+          onClick={() => onAction('download')}
+          className="bg-gray-500 hover:bg-gray-600 text-white"
+          size="sm"
+          disabled={!isGenerated}
+        >
+          <Download className="h-4 w-4 mr-2" />
+          Télécharger
+        </Button>
 
-        {/* Voir - si généré */}
-        {isGenerated && (
-          <Button
-            onClick={() => setShowPreview(true)}
-            className="bg-blue-500 hover:bg-blue-600 text-white"
-            size="sm"
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            Visualiser
-          </Button>
-        )}
+        {/* Visualiser - toujours visible */}
+        <Button
+          onClick={() => setShowPreview(true)}
+          className="bg-blue-500 hover:bg-blue-600 text-white"
+          size="sm"
+          disabled={!isGenerated}
+        >
+          <Eye className="h-4 w-4 mr-2" />
+          Visualiser
+        </Button>
 
         {/* Signer par Certicasa - si généré mais pas encore signé */}
         {isGenerated && !isSigned && (
@@ -103,18 +101,20 @@ export const DocumentAccordionContent: React.FC<DocumentAccordionContentProps> =
         </div>
       </div>
 
-      {/* Document Preview */}
-      {['generated', 'available', 'linked', 'signed'].includes(document.status) && (
-        <div className="bg-white p-3 rounded-md border">
-          <h4 className="text-sm font-medium text-gray-700 mb-2">Aperçu du document</h4>
-          <div className="h-96 border rounded-md bg-gray-50 flex items-center justify-center">
-            <div className="text-center text-gray-500">
-              <Eye className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+      {/* Document Preview Zone - Always visible for better UX */}
+      <div className="bg-white p-3 rounded-md border">
+        <h4 className="text-sm font-medium text-gray-700 mb-2">Aperçu du document</h4>
+        <div className="h-64 border rounded-md bg-gray-50 flex items-center justify-center">
+          <div className="text-center text-gray-500">
+            <Eye className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+            {['generated', 'available', 'linked', 'signed'].includes(document.status) ? (
               <p className="text-sm">Cliquez sur "Visualiser" pour voir le document</p>
-            </div>
+            ) : (
+              <p className="text-sm">Document non encore généré - Aperçu non disponible</p>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       {/* Action Buttons */}
       <div>
