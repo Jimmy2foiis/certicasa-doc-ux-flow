@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback } from 'react';
 import { AdministrativeDocument, DocumentStatus } from '@/types/documents';
 import { Button } from "@/components/ui/button";
@@ -183,6 +182,7 @@ export const DocumentsWithDragDrop: React.FC<DocumentsWithDragDropProps> = ({
   const [orderedDocuments, setOrderedDocuments] = useState(documents);
   const [isCustomOrder, setIsCustomOrder] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [draggedForPreview, setDraggedForPreview] = useState<string | null>(null);
 
   // Update when documents prop changes
   React.useEffect(() => {
@@ -191,9 +191,29 @@ export const DocumentsWithDragDrop: React.FC<DocumentsWithDragDropProps> = ({
     }
   }, [documents, isCustomOrder]);
 
-  const handleDragStart = useCallback((e: React.DragEvent, index: number) => {
-    setDraggedIndex(index);
-    e.dataTransfer.effectAllowed = 'move';
+  const handleDragStart = useCallback((e: React.DragEvent, index: number, isForPreview = false) => {
+    const document = orderedDocuments[index];
+    
+    if (isForPreview) {
+      // Drag for preview - only allow if document is generated
+      if (['generated', 'available', 'linked', 'signed'].includes(document.status)) {
+        setDraggedForPreview(document.id);
+        e.dataTransfer.setData('application/json', JSON.stringify(document));
+        e.dataTransfer.effectAllowed = 'copy';
+      } else {
+        e.preventDefault();
+        return;
+      }
+    } else {
+      // Drag for reordering
+      setDraggedIndex(index);
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  }, [orderedDocuments]);
+
+  const handleDragEnd = useCallback(() => {
+    setDraggedIndex(null);
+    setDraggedForPreview(null);
   }, []);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
@@ -316,13 +336,18 @@ export const DocumentsWithDragDrop: React.FC<DocumentsWithDragDropProps> = ({
         {orderedDocuments.map((doc, index) => {
           const operationalStatus = getOperationalStatus(doc.status);
           const StatusIcon = operationalStatus.icon;
+          const canPreview = ['generated', 'available', 'linked', 'signed'].includes(doc.status);
           
           return (
             <div
               key={doc.id}
-              className="grid grid-cols-12 items-center p-3 border rounded-md hover:bg-gray-50 transition-colors cursor-move"
+              className={`
+                grid grid-cols-12 items-center p-3 border rounded-md hover:bg-gray-50 transition-colors 
+                ${canPreview ? 'cursor-grab active:cursor-grabbing' : 'cursor-move'}
+              `}
               draggable
               onDragStart={(e) => handleDragStart(e, index)}
+              onDragEnd={handleDragEnd}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, index)}
             >
@@ -337,8 +362,20 @@ export const DocumentsWithDragDrop: React.FC<DocumentsWithDragDropProps> = ({
               </div>
               
               {/* Nom du document */}
-              <div className="col-span-3">
-                <div className="font-medium">{doc.name}</div>
+              <div 
+                className={`col-span-3 ${canPreview ? 'cursor-grab' : ''}`}
+                draggable={canPreview}
+                onDragStart={canPreview ? (e) => handleDragStart(e, index, true) : undefined}
+                onDragEnd={handleDragEnd}
+              >
+                <div className="font-medium flex items-center gap-2">
+                  {doc.name}
+                  {canPreview && (
+                    <span className="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded">
+                      📄 Glissez pour prévisualiser
+                    </span>
+                  )}
+                </div>
                 <div className="text-xs text-gray-500">{doc.description}</div>
               </div>
               

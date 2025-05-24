@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import DocumentUploadDialog from './documents/DocumentUploadDialog';
 import { DocumentsWithDragDrop } from './documents/DocumentsWithDragDrop';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { AdministrativeDocument, DocumentStatus } from '@/types/documents';
+import { DocumentPreviewZone } from './documents/DocumentPreviewZone';
 
 interface DocumentsTabProps {
   clientId: string;
@@ -154,46 +154,51 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Documents</CardTitle>
-          <CardDescription>
-            Gestion des 8 documents obligatoires du dossier
-          </CardDescription>
-        </div>
-        <Button 
-          onClick={() => setShowUploadDialog(true)}
-          className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
-        >
-          <Upload className="h-4 w-4" />
-          Ajouter un document
-        </Button>
-      </CardHeader>
-      <CardContent>
-        <Alert className="mb-4">
-          <Info className="h-4 w-4" />
-          <AlertTitle>Documents réglementaires</AlertTitle>
-          <AlertDescription>
-            8 documents sont obligatoires pour la validation du dossier CEE. Assurez-vous que tous les documents sont correctement fournis.
-          </AlertDescription>
-        </Alert>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Documents</CardTitle>
+            <CardDescription>
+              Gestion des 8 documents obligatoires du dossier
+            </CardDescription>
+          </div>
+          <Button 
+            onClick={() => setShowUploadDialog(true)}
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center gap-2"
+          >
+            <Upload className="h-4 w-4" />
+            Ajouter un document
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <Alert className="mb-4">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Documents réglementaires</AlertTitle>
+            <AlertDescription>
+              8 documents sont obligatoires pour la validation du dossier CEE. Assurez-vous que tous les documents sont correctement fournis.
+            </AlertDescription>
+          </Alert>
 
-        <DocumentsWithDragDrop 
-          documents={requiredDocuments}
-          isLoading={loading}
-          onAction={handleDocAction}
+          <DocumentsWithDragDrop 
+            documents={requiredDocuments}
+            isLoading={loading}
+            onAction={handleDocAction}
+          />
+        </CardContent>
+
+        {/* Document Preview Zone */}
+        <DocumentPreviewZone onDownload={(documentId) => handleDocAction(documentId, 'download')} />
+
+        {/* Dialog for document upload */}
+        <DocumentUploadDialog 
+          open={showUploadDialog} 
+          onOpenChange={setShowUploadDialog}
+          onUploadDocument={handleUploadDocument}
+          clientId={clientId}
         />
-      </CardContent>
-
-      {/* Dialog for document upload */}
-      <DocumentUploadDialog 
-        open={showUploadDialog} 
-        onOpenChange={setShowUploadDialog}
-        onUploadDocument={handleUploadDocument}
-        clientId={clientId}
-      />
-    </Card>
+      </Card>
+    </div>
   );
 };
 
