@@ -1,5 +1,4 @@
 
-
 import {
   Home,
   LayoutDashboard,
@@ -15,7 +14,7 @@ import {
   KanbanSquare,
   Menu,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -42,6 +41,7 @@ interface SidebarProps {
 
 const Sidebar = ({ showTrigger = true, className = "" }: SidebarProps) => {
   const { workspace } = useWorkspace();
+  const location = useLocation();
 
   const navigationLinks = [
     {
@@ -96,47 +96,70 @@ const Sidebar = ({ showTrigger = true, className = "" }: SidebarProps) => {
     },
   ];
 
+  const isActiveLink = (url: string) => {
+    if (url === "/dashboard" && location.pathname === "/") return true;
+    return location.pathname === url;
+  };
+
   const SidebarContent = () => (
-    <div className="flex flex-col gap-4 h-full">
-      <div className="flex flex-col gap-4">
-        <div className="px-4 lg:px-6 pt-4 lg:pt-6">
-          <h2 className="font-semibold text-base lg:text-lg">
-            CertiCasa <span className="font-normal">Doc</span>
-          </h2>
-          <p className="text-xs lg:text-sm text-muted-foreground mt-1">
-            Gérez vos prospects, projets et documents.
-          </p>
+    <div className="flex flex-col h-full bg-white">
+      <div className="flex flex-col gap-4 flex-1">
+        <div className="px-4 pt-6 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">C</span>
+            </div>
+            <div>
+              <h2 className="font-semibold text-lg text-gray-900">
+                CertiCasa <span className="font-normal">Doc</span>
+              </h2>
+              <p className="text-sm text-gray-600 mt-0.5">
+                Gérez vos prospects, projets et documents.
+              </p>
+            </div>
+          </div>
         </div>
-        <Separator />
-        <div className="flex flex-col gap-1 px-2 lg:px-3">
-          {navigationLinks.map((link) => (
-            <Button
-              key={link.title}
-              variant="ghost"
-              asChild
-              className="justify-start font-normal h-10 px-3 text-sm w-full"
-            >
-              <Link to={link.url} className="w-full">
-                <link.icon className="h-4 w-4 mr-3 flex-shrink-0" />
-                <span className="truncate">{link.title}</span>
-              </Link>
-            </Button>
-          ))}
+        
+        <Separator className="mx-4" />
+        
+        <div className="flex flex-col gap-1 px-3 flex-1">
+          {navigationLinks.map((link) => {
+            const isActive = isActiveLink(link.url);
+            return (
+              <Button
+                key={link.title}
+                variant="ghost"
+                asChild
+                className={`justify-start font-medium h-12 px-4 text-sm w-full transition-colors ${
+                  isActive 
+                    ? "bg-green-50 text-green-700 hover:bg-green-100" 
+                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                }`}
+              >
+                <Link to={link.url} className="w-full">
+                  <link.icon className={`h-5 w-5 mr-3 flex-shrink-0 ${
+                    isActive ? "text-green-600" : "text-gray-500"
+                  }`} />
+                  <span className="truncate">{link.title}</span>
+                </Link>
+              </Button>
+            );
+          })}
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 pb-4 lg:pb-6 px-4 lg:px-6 mt-auto">
+      <div className="flex flex-col gap-3 pb-6 px-4 mt-auto">
         <Separator />
         <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8 lg:h-10 lg:w-10">
+          <Avatar className="h-10 w-10">
             <AvatarImage src={workspace.logo} />
-            <AvatarFallback className="text-xs lg:text-sm">
+            <AvatarFallback className="text-sm bg-green-100 text-green-700">
               {workspace.name.substring(0, 2)}
             </AvatarFallback>
           </Avatar>
-          <div className="flex flex-col text-xs lg:text-sm min-w-0 flex-1">
-            <span className="font-medium truncate">{workspace.name}</span>
-            <span className="text-muted-foreground truncate">{workspace.type}</span>
+          <div className="flex flex-col text-sm min-w-0 flex-1">
+            <span className="font-medium truncate text-gray-900">{workspace.name}</span>
+            <span className="text-gray-600 truncate">{workspace.type}</span>
           </div>
         </div>
       </div>
@@ -145,26 +168,26 @@ const Sidebar = ({ showTrigger = true, className = "" }: SidebarProps) => {
 
   return (
     <>
-      {/* Desktop Sidebar - hidden on mobile and small tablets */}
-      <div className={`hidden lg:flex w-56 xl:w-64 bg-white border-r border-gray-200 flex-shrink-0 ${className}`}>
+      {/* Desktop Sidebar */}
+      <div className={`hidden lg:flex w-64 bg-white border-r border-gray-200 flex-shrink-0 ${className}`}>
         <SidebarContent />
       </div>
 
-      {/* Mobile Sidebar - visible on mobile and tablets */}
+      {/* Mobile Sidebar */}
       {showTrigger && (
         <Sheet>
           <SheetTrigger asChild>
             <Button 
               variant="ghost" 
               size="icon" 
-              className="lg:hidden fixed top-3 left-3 z-50 bg-white shadow-lg border h-10 w-10"
+              className="lg:hidden fixed top-4 left-4 z-50 bg-white shadow-lg border h-10 w-10 hover:bg-gray-50"
             >
-              <Menu className="h-5 w-5" />
+              <Menu className="h-5 w-5 text-gray-700" />
             </Button>
           </SheetTrigger>
           <SheetContent
             side="left"
-            className="w-72 sm:w-80 p-0 border-r"
+            className="w-80 p-0 border-r bg-white"
           >
             <SidebarContent />
           </SheetContent>
@@ -175,4 +198,3 @@ const Sidebar = ({ showTrigger = true, className = "" }: SidebarProps) => {
 };
 
 export default Sidebar;
-

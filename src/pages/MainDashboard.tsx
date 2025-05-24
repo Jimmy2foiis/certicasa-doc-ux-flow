@@ -38,7 +38,7 @@ const MainDashboard = () => {
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
         <Header />
         <main className="flex-1 overflow-y-auto">
-          <div className="space-y-4 sm:space-y-6 p-3 sm:p-6">
+          <div className="space-y-6 p-4 lg:p-6">
             {/* Zone de filtrage sticky */}
             <DashboardFilters
               selectedPeriod={selectedPeriod}
@@ -87,23 +87,23 @@ const MainDashboard = () => {
             </div>
 
             {/* Zone d'actions globales */}
-            <Card>
-              <CardHeader className="pb-3 sm:pb-4">
-                <CardTitle className="text-base sm:text-lg font-medium">Actions globales</CardTitle>
+            <Card className="border border-gray-200 shadow-sm">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-lg font-medium text-gray-900">Actions globales</CardTitle>
               </CardHeader>
               <CardContent className="pt-0">
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-                  <Button onClick={handleExportPDF} className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-sm">
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <Button onClick={handleExportPDF} className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-sm text-white">
                     <FileText className="h-4 w-4 mr-2" />
                     <span className="hidden sm:inline">Générer rapport mensuel PDF</span>
                     <span className="sm:hidden">Rapport PDF</span>
                   </Button>
-                  <Button variant="outline" onClick={handleExportExcel} className="w-full sm:w-auto text-sm">
+                  <Button variant="outline" onClick={handleExportExcel} className="w-full sm:w-auto text-sm border-gray-300 hover:bg-gray-50">
                     <Download className="h-4 w-4 mr-2" />
                     <span className="hidden sm:inline">Export Excel global</span>
                     <span className="sm:hidden">Export Excel</span>
                   </Button>
-                  <Button variant="outline" onClick={handleShare} className="w-full sm:w-auto text-sm">
+                  <Button variant="outline" onClick={handleShare} className="w-full sm:w-auto text-sm border-gray-300 hover:bg-gray-50">
                     <Share className="h-4 w-4 mr-2" />
                     Partager
                   </Button>

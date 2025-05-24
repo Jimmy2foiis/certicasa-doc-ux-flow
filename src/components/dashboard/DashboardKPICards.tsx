@@ -29,7 +29,8 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
     icon, 
     change, 
     trend, 
-    formatter 
+    formatter,
+    color = "blue"
   }: {
     title: string;
     value: number;
@@ -38,41 +39,41 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
     change: number;
     trend: "up" | "down";
     formatter?: (value: number) => string;
+    color?: string;
   }) => {
     const formattedValue = formatter ? formatter(value) : value.toLocaleString();
     const isPositive = trend === "up";
 
     return (
-      <Card className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow">
-        <CardContent className="p-3 sm:p-4 lg:p-6">
+      <Card className="overflow-hidden cursor-pointer hover:shadow-md transition-all duration-200 border border-gray-200">
+        <CardContent className="p-4 lg:p-6">
           <div className="flex justify-between items-start">
             <div className="min-w-0 flex-1">
-              <p className="text-xs sm:text-sm font-medium text-muted-foreground truncate">{title}</p>
-              <div className="flex items-baseline mt-1">
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold truncate">{formattedValue}</h3>
-                {unit && <span className="ml-1 text-xs sm:text-sm text-muted-foreground">{unit}</span>}
+              <p className="text-sm font-medium text-gray-600 truncate mb-2">{title}</p>
+              <div className="flex items-baseline">
+                <h3 className="text-2xl lg:text-3xl font-bold text-gray-900 truncate">{formattedValue}</h3>
+                {unit && <span className="ml-2 text-sm text-gray-500">{unit}</span>}
               </div>
             </div>
-            <div className="p-1.5 sm:p-2 bg-gray-100 rounded-md flex-shrink-0 ml-2">
+            <div className={`p-2 ${color === "green" ? "bg-green-100" : color === "blue" ? "bg-blue-100" : color === "orange" ? "bg-orange-100" : "bg-gray-100"} rounded-lg flex-shrink-0 ml-3`}>
               {React.cloneElement(icon as React.ReactElement, { 
-                className: "h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" 
+                className: `h-6 w-6 ${color === "green" ? "text-green-600" : color === "blue" ? "text-blue-600" : color === "orange" ? "text-orange-600" : "text-gray-600"}` 
               })}
             </div>
           </div>
           
-          <div className="mt-3 sm:mt-4 flex items-center text-xs sm:text-sm">
-            <div className={`flex items-center px-1 sm:px-1.5 py-0.5 rounded ${
+          <div className="mt-4 flex items-center text-sm">
+            <div className={`flex items-center px-2 py-1 rounded-full ${
               isPositive ? "text-green-700 bg-green-50" : "text-red-700 bg-red-50"
             }`}>
               {isPositive ? (
-                <TrendingUp className="h-3 w-3 mr-1" />
+                <TrendingUp className="h-4 w-4 mr-1" />
               ) : (
-                <TrendingDown className="h-3 w-3 mr-1" />
+                <TrendingDown className="h-4 w-4 mr-1" />
               )}
-              <span className="text-xs">{Math.abs(change)}%</span>
+              <span className="text-xs font-medium">{Math.abs(change)}%</span>
             </div>
-            <span className="text-muted-foreground ml-1.5 text-xs hidden sm:inline">vs mois précédent</span>
-            <span className="text-muted-foreground ml-1.5 text-xs sm:hidden">vs M-1</span>
+            <span className="text-gray-500 ml-2 text-xs">vs mois précédent</span>
           </div>
         </CardContent>
       </Card>
@@ -80,7 +81,7 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
       <KPICard
         title="🧍 Clients actifs"
         value={kpiData.activeClients.value}
@@ -88,6 +89,7 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
         icon={<Users />}
         change={kpiData.activeClients.change}
         trend={kpiData.activeClients.trend}
+        color="blue"
       />
       
       <KPICard
@@ -97,6 +99,7 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
         icon={<Home />}
         change={kpiData.totalSurface.change}
         trend={kpiData.totalSurface.trend}
+        color="green"
       />
       
       <KPICard
@@ -106,6 +109,7 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
         icon={<Zap />}
         change={kpiData.totalCAE.change}
         trend={kpiData.totalCAE.trend}
+        color="orange"
         formatter={(value) => `${(value / 1000000).toFixed(2)} M`}
       />
       
@@ -116,6 +120,7 @@ const DashboardKPICards: React.FC<DashboardKPICardsProps> = ({
         icon={<Calculator />}
         change={kpiData.averagePrice.change}
         trend={kpiData.averagePrice.trend}
+        color="green"
       />
     </div>
   );
