@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import StatCard from "@/components/dashboard/StatCard";
+import FinancesSummary from "@/components/dashboard/FinancesSummary";
 import { recentProjects } from "@/data/mock";
 import { useNavigate } from "react-router-dom";
 
@@ -78,6 +79,9 @@ const Dashboard = () => {
           className="border-l-4 border-amber-500"
         />
       </div>
+
+      {/* Section Performance Financière */}
+      <FinancesSummary />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2">
