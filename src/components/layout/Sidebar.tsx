@@ -1,60 +1,146 @@
-
-import { cn } from "@/lib/utils";
-import { 
-  LayoutDashboard, 
-  Users, 
-  Receipt, 
-  Calculator, 
-  FileText, 
-  Settings, 
+import {
+  Home,
+  LayoutDashboard,
+  ListChecks,
+  LucideIcon,
+  Settings,
+  Users,
+  FileText,
+  ScrollText,
+  Coins,
   HelpCircle,
-  LineChart,
+  Building2,
+  KanbanSquare,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useWorkspace } from "@/context/WorkspaceContext";
 
-const navItems = [
-  { icon: LayoutDashboard, label: "Tableau de bord", value: "/" },
-  { icon: Users, label: "Clients", value: "/clients" },
-  { icon: Receipt, label: "Finances", value: "/finances" }, // Mis à jour vers la nouvelle route
-  { icon: Calculator, label: "Calculettes", value: "/calculations" },
-  { icon: FileText, label: "Templates", value: "/documents" },
-  { icon: Settings, label: "Paramètres", value: "/settings" },
-  { icon: HelpCircle, label: "Aides", value: "/help" },
-];
+interface NavLink {
+  title: string;
+  url: string;
+  icon: LucideIcon;
+}
 
 const Sidebar = () => {
+  const { workspace } = useWorkspace();
+
+  const navigationLinks = [
+    {
+      title: "Tableau de bord",
+      url: "/dashboard",
+      icon: Home,
+    },
+    {
+      title: "Lots",
+      url: "/lots",
+      icon: LayoutDashboard,
+    },
+    {
+      title: "Prospects",
+      url: "/clients",
+      icon: Users,
+    },
+    {
+      title: "Projets",
+      url: "/projects",
+      icon: Building2,
+    },
+    {
+      title: "Calculs",
+      url: "/calculations",
+      icon: ListChecks,
+    },
+    {
+      title: "Documents",
+      url: "/documents",
+      icon: FileText,
+    },
+    {
+      title: "Workflow",
+      url: "/workflow",
+      icon: KanbanSquare,
+    },
+    {
+      title: "Finances",
+      url: "/finances",
+      icon: Coins,
+    },
+    {
+      title: "Aide",
+      url: "/help",
+      icon: HelpCircle,
+    },
+    {
+      title: "Paramètres",
+      url: "/settings",
+      icon: Settings,
+    },
+  ];
+
   return (
-    <aside className="bg-white border-r border-gray-200 w-16 md:w-64 flex flex-col">
-      <div className="p-4 border-b border-gray-200">
-        <div className="h-8 w-8 md:h-10 md:w-10 bg-emerald-500 text-white rounded flex items-center justify-center font-bold text-xl">
-          C
-        </div>
-      </div>
-      <nav className="flex-1 overflow-y-auto py-4">
-        <ul className="space-y-1 px-2">
-          {navItems.map((item) => (
-            <li key={item.value}>
-              <NavLink
-                to={item.value}
-                className={({ isActive }) =>
-                  cn(
-                    "flex items-center px-3 py-2 rounded-md text-sm font-medium",
-                    "transition-colors duration-200",
-                    isActive
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "text-gray-700 hover:bg-gray-100"
-                  )
-                }
-                end={item.value === "/"} // Pour éviter que le lien racine soit toujours actif
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="ghost" size="icon" className="md:hidden">
+          <LayoutDashboard className="h-6 w-6" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent
+        side="left"
+        className="w-64 flex flex-col justify-between p-0"
+      >
+        <div className="flex flex-col gap-4">
+          <SheetHeader className="px-6 pt-6">
+            <SheetTitle className="font-semibold">
+              CertiCasa <span className="font-normal">Doc</span>
+            </SheetTitle>
+            <SheetDescription>
+              Gérez vos prospects, projets et documents.
+            </SheetDescription>
+          </SheetHeader>
+          <Separator />
+          <div className="flex flex-col gap-2 px-3">
+            {navigationLinks.map((link) => (
+              <Button
+                key={link.title}
+                variant="ghost"
+                asChild
+                className="justify-start font-normal"
               >
-                <item.icon className="h-5 w-5 mr-2 md:mr-3 flex-shrink-0" />
-                <span className="hidden md:inline">{item.label}</span>
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </aside>
+                <Link to={link.url} className="w-full">
+                  <link.icon className="h-4 w-4 mr-2" />
+                  {link.title}
+                </Link>
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2 pb-6 px-6">
+          <Separator />
+          <div className="flex items-center gap-2">
+            <Avatar>
+              <AvatarImage src={workspace?.logo} />
+              <AvatarFallback>{workspace?.name.substring(0, 2)}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col text-sm">
+              <span className="font-medium">{workspace?.name}</span>
+              <span className="text-muted-foreground">{workspace?.type}</span>
+            </div>
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 };
 
