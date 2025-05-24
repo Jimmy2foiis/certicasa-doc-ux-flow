@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import MaterialsAndProductsSection from "@/components/settings/MaterialsAndProductsSection";
 
 const SettingsContent = () => {
   return (
@@ -20,6 +20,7 @@ const SettingsContent = () => {
       <Tabs defaultValue="general" className="space-y-4">
         <TabsList>
           <TabsTrigger value="general">Général</TabsTrigger>
+          <TabsTrigger value="materials">Matériaux & Produits</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="workflow">Workflow</TabsTrigger>
           <TabsTrigger value="advanced">Avancé</TabsTrigger>
@@ -66,6 +67,10 @@ const SettingsContent = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="materials">
+          <MaterialsAndProductsSection />
         </TabsContent>
 
         <TabsContent value="notifications">

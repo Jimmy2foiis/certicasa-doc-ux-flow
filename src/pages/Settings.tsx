@@ -1,4 +1,3 @@
-
 import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import {
@@ -13,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import MaterialsAndProductsSection from "@/components/settings/MaterialsAndProductsSection";
 
 const Settings = () => {
   return (
@@ -28,6 +28,7 @@ const Settings = () => {
               <TabsList className="mb-6 bg-white p-1 shadow-sm rounded-md">
                 <TabsTrigger value="profile">Profil</TabsTrigger>
                 <TabsTrigger value="company">Entreprise</TabsTrigger>
+                <TabsTrigger value="materials">Matériaux & Produits</TabsTrigger>
                 <TabsTrigger value="notifications">Notifications</TabsTrigger>
                 <TabsTrigger value="security">Sécurité</TabsTrigger>
               </TabsList>
@@ -106,6 +107,10 @@ const Settings = () => {
                     </div>
                   </CardContent>
                 </Card>
+              </TabsContent>
+              
+              <TabsContent value="materials">
+                <MaterialsAndProductsSection />
               </TabsContent>
               
               <TabsContent value="notifications">
