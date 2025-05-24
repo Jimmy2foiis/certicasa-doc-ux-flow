@@ -1,4 +1,5 @@
 
+
 import {
   Home,
   LayoutDashboard,
@@ -98,42 +99,44 @@ const Sidebar = ({ showTrigger = true, className = "" }: SidebarProps) => {
   const SidebarContent = () => (
     <div className="flex flex-col gap-4 h-full">
       <div className="flex flex-col gap-4">
-        <div className="px-6 pt-6">
-          <h2 className="font-semibold text-lg">
+        <div className="px-4 lg:px-6 pt-4 lg:pt-6">
+          <h2 className="font-semibold text-base lg:text-lg">
             CertiCasa <span className="font-normal">Doc</span>
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs lg:text-sm text-muted-foreground mt-1">
             Gérez vos prospects, projets et documents.
           </p>
         </div>
         <Separator />
-        <div className="flex flex-col gap-2 px-3">
+        <div className="flex flex-col gap-1 px-2 lg:px-3">
           {navigationLinks.map((link) => (
             <Button
               key={link.title}
               variant="ghost"
               asChild
-              className="justify-start font-normal"
+              className="justify-start font-normal h-10 px-3 text-sm w-full"
             >
               <Link to={link.url} className="w-full">
-                <link.icon className="h-4 w-4 mr-2" />
-                {link.title}
+                <link.icon className="h-4 w-4 mr-3 flex-shrink-0" />
+                <span className="truncate">{link.title}</span>
               </Link>
             </Button>
           ))}
         </div>
       </div>
 
-      <div className="flex flex-col gap-2 pb-6 px-6 mt-auto">
+      <div className="flex flex-col gap-2 pb-4 lg:pb-6 px-4 lg:px-6 mt-auto">
         <Separator />
-        <div className="flex items-center gap-2">
-          <Avatar>
+        <div className="flex items-center gap-3">
+          <Avatar className="h-8 w-8 lg:h-10 lg:w-10">
             <AvatarImage src={workspace.logo} />
-            <AvatarFallback>{workspace.name.substring(0, 2)}</AvatarFallback>
+            <AvatarFallback className="text-xs lg:text-sm">
+              {workspace.name.substring(0, 2)}
+            </AvatarFallback>
           </Avatar>
-          <div className="flex flex-col text-sm">
-            <span className="font-medium">{workspace.name}</span>
-            <span className="text-muted-foreground">{workspace.type}</span>
+          <div className="flex flex-col text-xs lg:text-sm min-w-0 flex-1">
+            <span className="font-medium truncate">{workspace.name}</span>
+            <span className="text-muted-foreground truncate">{workspace.type}</span>
           </div>
         </div>
       </div>
@@ -142,26 +145,26 @@ const Sidebar = ({ showTrigger = true, className = "" }: SidebarProps) => {
 
   return (
     <>
-      {/* Desktop Sidebar */}
-      <div className={`hidden md:flex w-64 bg-white border-r border-gray-200 ${className}`}>
+      {/* Desktop Sidebar - hidden on mobile and small tablets */}
+      <div className={`hidden lg:flex w-56 xl:w-64 bg-white border-r border-gray-200 flex-shrink-0 ${className}`}>
         <SidebarContent />
       </div>
 
-      {/* Mobile Sidebar */}
+      {/* Mobile Sidebar - visible on mobile and tablets */}
       {showTrigger && (
         <Sheet>
           <SheetTrigger asChild>
             <Button 
               variant="ghost" 
               size="icon" 
-              className="md:hidden fixed top-4 left-4 z-50 bg-white shadow-md"
+              className="lg:hidden fixed top-3 left-3 z-50 bg-white shadow-lg border h-10 w-10"
             >
-              <Menu className="h-6 w-6" />
+              <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
           <SheetContent
             side="left"
-            className="w-64 flex flex-col justify-between p-0"
+            className="w-72 sm:w-80 p-0 border-r"
           >
             <SidebarContent />
           </SheetContent>
@@ -172,3 +175,4 @@ const Sidebar = ({ showTrigger = true, className = "" }: SidebarProps) => {
 };
 
 export default Sidebar;
+
