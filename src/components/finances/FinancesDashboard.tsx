@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,13 +9,18 @@ import FinancesCharts from "./dashboard/FinancesCharts";
 import FinancesTeamTable from "./dashboard/FinancesTeamTable";
 import FinancesTechnicalIndicators from "./dashboard/FinancesTechnicalIndicators";
 
+interface PeriodOption {
+  value: string;
+  label: string;
+}
+
 const FinancesDashboard = () => {
   const [selectedPeriod, setSelectedPeriod] = useState("2025-05");
   const [selectedFicheType, setSelectedFicheType] = useState("all");
   const [selectedTeam, setSelectedTeam] = useState("all");
 
-  const generatePeriodOptions = () => {
-    const options = [];
+  const generatePeriodOptions = (): PeriodOption[] => {
+    const options: PeriodOption[] = [];
     const currentDate = new Date();
     
     for (let i = 0; i < 12; i++) {
@@ -102,11 +106,10 @@ const FinancesDashboard = () => {
                     <SelectValue placeholder="Équipe" />
                   </SelectTrigger>
                   <SelectContent>
-                    {teams.map((team) => (
-                      <SelectItem key={team.value} value={team.value}>
-                        {team.label}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="all">Toutes les équipes</SelectItem>
+                    <SelectItem value="artisol">ARTISOL</SelectItem>
+                    <SelectItem value="renovation-plus">Rénovation Plus</SelectItem>
+                    <SelectItem value="eco-habitat">Éco Habitat</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

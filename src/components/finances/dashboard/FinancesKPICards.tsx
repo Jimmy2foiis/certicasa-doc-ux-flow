@@ -17,10 +17,10 @@ const FinancesKPICards: React.FC<FinancesKPICardsProps> = ({
 }) => {
   // Données mockées pour l'exemple
   const kpiData = {
-    activeClients: { value: 245, change: 12, trend: "up" },
-    totalSurface: { value: 18500, change: 8, trend: "up" },
-    totalCAE: { value: 1240000, change: 23, trend: "up" },
-    averagePrice: { value: 42, change: -3, trend: "down" },
+    activeClients: { value: 245, change: 12, trend: "up" as const },
+    totalSurface: { value: 18500, change: 8, trend: "up" as const },
+    totalCAE: { value: 1240000, change: 23, trend: "up" as const },
+    averagePrice: { value: 42, change: -3, trend: "down" as const },
   };
 
   const KPICard = ({ 
