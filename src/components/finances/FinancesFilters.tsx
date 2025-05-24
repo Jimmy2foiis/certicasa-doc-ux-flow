@@ -90,6 +90,11 @@ const FinancesFilters: React.FC<FinancesFiltersProps> = ({
     onFilterChange(selectedMonth, newStatuses, searchTerm);
   };
 
+  const getStatusCountText = () => {
+    if (selectedStatuses.length === 0) return "Tous";
+    return selectedStatuses.length.toString();
+  };
+
   return (
     <Card>
       <CardContent className="flex flex-wrap items-center gap-4 p-4">
@@ -104,6 +109,7 @@ const FinancesFilters: React.FC<FinancesFiltersProps> = ({
                 <SelectValue placeholder="Sélectionner période" />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="">Toutes les périodes</SelectItem>
                 {monthOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
@@ -118,10 +124,10 @@ const FinancesFilters: React.FC<FinancesFiltersProps> = ({
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="outline">
-                  Statuts ({selectedStatuses.length || "Tous"})
+                  Statuts ({getStatusCountText()})
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-56">
+              <PopoverContent className="w-56 bg-white">
                 <div className="space-y-2">
                   {statuses.map((status) => (
                     <div
@@ -157,7 +163,7 @@ const FinancesFilters: React.FC<FinancesFiltersProps> = ({
 
         {/* Actions */}
         <div>
-          <Button onClick={onExportSelected}>
+          <Button onClick={onExportSelected} className="bg-green-600 hover:bg-green-700">
             <Download className="h-4 w-4 mr-2" />
             Exporter sélection
           </Button>
