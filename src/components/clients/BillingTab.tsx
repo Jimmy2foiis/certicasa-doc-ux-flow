@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Receipt, FileText, Download, RefreshCw, PlusCircle, Eye, Calculator } from "lucide-react";
+import { Receipt, FileText, Download, RefreshCw, PlusCircle, Eye, Calculator, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -60,18 +60,31 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
     }
   ]);
 
-  // Use the updated hooks with correct property names
+  // Récupération des données client et calculs
   const { client } = useClientInfo(clientId);
   const { savedCalculations, loading } = useSavedCalculations(clientId);
 
-  // Find the most recent calculation for this client
+  // Trouver le calcul le plus récent pour ce client
   const latestCalculation = savedCalculations && savedCalculations.length > 0 
     ? savedCalculations[savedCalculations.length - 1] 
     : null;
   const calculationData = latestCalculation?.calculationData;
 
-  console.log('BillingTab - Calculs trouvés:', savedCalculations?.length || 0);
-  console.log('BillingTab - Dernier calcul:', latestCalculation);
+  // Vérifier si les données de calcul sont suffisantes pour la facturation
+  const hasValidCalculationData = calculationData && 
+    calculationData.surfaceArea && 
+    parseFloat(calculationData.surfaceArea) > 0 &&
+    calculationData.uValueBefore > 0 &&
+    calculationData.uValueAfter > 0 &&
+    calculationData.improvementPercent > 0;
+
+  console.log('🔍 BillingTab - Données de calcul:', {
+    calculationsCount: savedCalculations?.length || 0,
+    latestCalculation: latestCalculation,
+    hasValidData: hasValidCalculationData,
+    surfaceArea: calculationData?.surfaceArea,
+    improvement: calculationData?.improvementPercent
+  });
 
   const handleViewDocument = (doc: BillingDocument) => {
     if (doc.status !== "generated") {
@@ -133,10 +146,10 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
   };
 
   const handleGenerateDocument = (docType: DocumentType) => {
-    if (!calculationData) {
+    if (!hasValidCalculationData) {
       toast({
         title: "Erreur",
-        description: "Aucun calcul disponible pour générer le document.",
+        description: "Données de calcul insuffisantes pour générer le document. Veuillez effectuer un calcul thermique complet.",
         variant: "destructive"
       });
       return;
@@ -144,7 +157,7 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
     
     toast({
       title: "Génération en cours",
-      description: docType === "invoice" ? "Génération de la facture en cours..." : "Génération de la note de crédit ITP en cours..."
+      description: docType === "invoice" ? "Génération de la facture CEE en cours..." : "Génération de la note de crédit ITP en cours..."
     });
 
     setTimeout(() => {
@@ -158,7 +171,7 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
       
       toast({
         title: "Génération réussie",
-        description: docType === "invoice" ? "La facture a été générée avec succès." : "La note de crédit ITP a été générée avec succès."
+        description: docType === "invoice" ? "La facture CEE a été générée avec succès." : "La note de crédit ITP a été générée avec succès."
       });
     }, 1500);
   };
@@ -183,7 +196,8 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
     nif: client?.nif || '',
     address: client?.address || '',
     phone: client?.phone || '',
-    email: client?.email || ''
+    email: client?.email || '',
+    climateZone: client?.climateZone || calculationData?.climateZone || 'C3'
   };
 
   return (
@@ -192,23 +206,23 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Receipt className="h-5 w-5" />
-            Facturation CEE
+            Facturation CEE - Liaison Module Calculs
             {loading && <Badge variant="outline">Chargement...</Badge>}
           </div>
           
-          {calculationData ? (
+          {hasValidCalculationData ? (
             <Dialog open={showBillingDialog} onOpenChange={setShowBillingDialog}>
               <DialogTrigger asChild>
                 <Button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center gap-2">
                   <Calculator className="h-4 w-4 mr-2" />
-                  Générer Facturation CEE
+                  Générer Facturation CEE Automatique
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <Calculator className="h-5 w-5" />
-                    Système de Facturation Automatique CEE
+                    Système de Facturation Automatique CEE - Liaison Calculs
                   </DialogTitle>
                 </DialogHeader>
                 <AutomaticBillingGenerator 
@@ -218,52 +232,84 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
               </DialogContent>
             </Dialog>
           ) : (
-            <Button variant="outline" disabled>
-              <Calculator className="h-4 w-4 mr-2" />
-              {loading ? "Chargement..." : "Aucun calcul disponible"}
+            <Button variant="outline" disabled className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-orange-500" />
+              {loading ? "Chargement..." : "Calculs requis"}
             </Button>
           )}
         </CardTitle>
         <CardDescription>
-          Génération automatique des factures et notes de crédit selon les calculs CEE
-          {savedCalculations && savedCalculations.length > 0 && (
-            <span className="text-green-600 font-medium">
-              {" "} • {savedCalculations.length} calcul(s) disponible(s)
-            </span>
-          )}
+          <div className="space-y-1">
+            <p>Génération automatique des factures et notes de crédit basée sur les calculs thermiques CEE</p>
+            {savedCalculations && savedCalculations.length > 0 ? (
+              <p className="text-green-600 font-medium">
+                ✅ {savedCalculations.length} calcul(s) disponible(s) - Liaison active avec le module de calculs
+              </p>
+            ) : (
+              <p className="text-orange-600 font-medium">
+                ⚠️ Aucun calcul détecté - Veuillez effectuer un calcul dans l'onglet "Calculs"
+              </p>
+            )}
+          </div>
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         
-        {/* Calculation data information */}
-        {calculationData ? (
-          <Alert>
-            <Calculator className="h-4 w-4" />
+        {/* Informations sur la liaison avec les calculs */}
+        {hasValidCalculationData ? (
+          <Alert className="border-green-200 bg-green-50">
+            <Calculator className="h-4 w-4 text-green-600" />
             <AlertDescription>
-              <strong>Données de calcul détectées :</strong><br />
-              - Surface isolée : {calculationData.surfaceArea} m²<br />
-              - Zone climatique : {calculationData.climateZone}<br />
-              - Amélioration : {calculationData.improvementPercent?.toFixed(1)}%<br />
-              - Matériau principal : {calculationData.afterLayers?.find(layer => layer.name?.includes('SOUFL'))?.name || 'Standard'}<br />
-              - Date sauvegarde : {latestCalculation?.date}
+              <div className="text-green-800">
+                <strong>✅ Liaison active avec le module de calculs :</strong>
+                <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                  <div>• Surface isolée : <strong>{calculationData.surfaceArea} m²</strong></div>
+                  <div>• Zone climatique : <strong>{calculationData.climateZone}</strong></div>
+                  <div>• Amélioration : <strong>{calculationData.improvementPercent?.toFixed(1)}%</strong></div>
+                  <div>• U avant : <strong>{calculationData.uValueBefore?.toFixed(3)} W/m².K</strong></div>
+                  <div>• U après : <strong>{calculationData.uValueAfter?.toFixed(3)} W/m².K</strong></div>
+                  <div>• Matériau : <strong>{calculationData.afterLayers?.find(layer => layer.name?.includes('SOUFL'))?.name || 'Standard'}</strong></div>
+                </div>
+                <div className="mt-2 text-xs text-green-600">
+                  📅 Dernière sauvegarde : {latestCalculation?.date} | 🔄 Mise à jour automatique des calculs CEE
+                </div>
+              </div>
             </AlertDescription>
           </Alert>
         ) : (
-          <Alert>
+          <Alert className="border-orange-200 bg-orange-50">
+            <AlertTriangle className="h-4 w-4 text-orange-600" />
             <AlertDescription>
-              {loading 
-                ? "Recherche des calculs thermiques en cours..."
-                : "Aucun calcul thermique trouvé pour ce client. Veuillez d'abord effectuer un calcul dans l'onglet \"Calculs\" pour pouvoir générer une facturation."
-              }
+              <div className="text-orange-800">
+                <strong>⚠️ Liaison avec le module de calculs requise :</strong>
+                <div className="mt-2">
+                  {loading 
+                    ? "🔍 Recherche des calculs thermiques en cours..."
+                    : savedCalculations?.length === 0
+                    ? "❌ Aucun calcul thermique trouvé pour ce client."
+                    : "❌ Données de calcul incomplètes ou invalides."
+                  }
+                </div>
+                <div className="mt-2 text-sm">
+                  💡 <strong>Pour activer la facturation CEE :</strong>
+                  <ol className="list-decimal list-inside mt-1 ml-4 space-y-1">
+                    <li>Allez dans l'onglet "Calculs"</li>
+                    <li>Effectuez un calcul thermique complet</li>
+                    <li>Sauvegardez le calcul</li>
+                    <li>Revenez ici pour générer la facturation automatiquement</li>
+                  </ol>
+                </div>
+              </div>
             </AlertDescription>
           </Alert>
         )}
         
-        {/* Associated documents */}
+        {/* Documents de facturation */}
         <div className="mt-8">
           <h3 className="text-lg font-medium mb-3 flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            Documents de facturation
+            Documents de facturation CEE
+            {hasValidCalculationData && <Badge variant="outline" className="bg-green-50 text-green-700">Prêt</Badge>}
           </h3>
           
           <div className="space-y-4">
@@ -280,7 +326,10 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
                       </p>
                     )}
                     <p className="text-xs text-gray-400">
-                      {doc.type === "invoice" ? "Facture avec calcul CEE automatique" : "Note de crédit pour transfert ITP"}
+                      {doc.type === "invoice" 
+                        ? "🔗 Facture CEE avec liaison automatique aux calculs thermiques" 
+                        : "🔗 Note de crédit CEE pour transfert ITP avec données calculées"
+                      }
                     </p>
                   </div>
                 </div>
@@ -310,7 +359,8 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
                         variant="outline" 
                         size="sm" 
                         onClick={() => handleGenerateDocument(doc.type)} 
-                        disabled={!calculationData}
+                        disabled={!hasValidCalculationData}
+                        className={!hasValidCalculationData ? "opacity-50 cursor-not-allowed" : ""}
                       >
                         <PlusCircle className="h-4 w-4 mr-1" />
                         Générer
@@ -323,19 +373,20 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
           </div>
         </div>
         
-        {/* Process information */}
+        {/* Informations sur le processus CEE avec liaison */}
         <Alert>
           <AlertDescription>
-            <strong>Processus de facturation CEE :</strong><br />
-            1. Les calculs thermiques sont récupérés automatiquement depuis l'onglet "Calculs"<br />
-            2. Les CAE sont calculés selon la formule : FP × (Ui - Uf) × Surface × G(zone)<br />
-            3. La facture est générée avec matériel (7€/m²) + main d'œuvre ajustée<br />
-            4. La note de crédit reprend les mêmes données pour le transfert ITP
+            <strong>🔗 Processus de facturation CEE avec liaison automatique :</strong><br />
+            1. <strong>Récupération automatique :</strong> Les calculs thermiques sont récupérés depuis l'onglet "Calculs"<br />
+            2. <strong>Calcul CEE :</strong> CAE = FP × (Ui - Uf) × Surface × G(zone climatique)<br />
+            3. <strong>Génération facture :</strong> Matériel détecté + main d'œuvre calculée automatiquement<br />
+            4. <strong>Note de crédit :</strong> Données identiques pour le transfert ITP<br />
+            5. <strong>Mise à jour temps réel :</strong> Toute modification des calculs met à jour la facturation
           </AlertDescription>
         </Alert>
       </CardContent>
 
-      {/* Preview modal */}
+      {/* Modal d'aperçu */}
       {previewDocument && (
         <InvoicePreviewModal 
           invoice={{
