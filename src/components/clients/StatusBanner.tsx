@@ -100,7 +100,7 @@ const StatusBanner = ({ client }: StatusBannerProps) => {
         </div>
       </div>
 
-      {/* Bloc existant */}
+      {/* Barre avec badges - RESTAURÉE */}
       <div className="flex items-center gap-3">
         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
           Actif
