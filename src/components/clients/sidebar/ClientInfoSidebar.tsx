@@ -5,9 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, ChevronRight } from "lucide-react";
-import ClientPersonalSection from "./ClientPersonalSection";
-import ProjectTeamSection from "./ProjectTeamSection";
+import { ChevronDown, ChevronRight, User, Settings } from "lucide-react";
 import { Client } from "@/services/api/types";
 
 interface ClientInfoSidebarProps {
@@ -47,9 +45,7 @@ const ClientInfoSidebar = ({
   const [floorType, setFloorType] = useState(currentFloorType || client?.floorType || "Bois");
   const [climateZone, setClimateZone] = useState(currentClimateZone || client?.climateZone || "C3");
   
-  // États pour les sections collapsibles
-  const [technicalExpanded, setTechnicalExpanded] = useState(true);
-  const [teamExpanded, setTeamExpanded] = useState(false);
+  const [technicalExpanded, setTechnicalExpanded] = useState(false);
 
   const handleSurfaceAreaChange = (value: string) => {
     setSurfaceArea(value);
@@ -82,69 +78,69 @@ const ClientInfoSidebar = ({
   if (!client) return null;
 
   const floorTypeOptions = [
-    { value: "Béton", label: "🪨 Béton (Hormigón)" },
-    { value: "Bois", label: "🪵 Bois (Madera)" },
-    { value: "Céramique", label: "🧱 Céramique (Cerámico/Bovedilla)" }
+    { value: "Béton", label: "🪨 Béton" },
+    { value: "Bois", label: "🪵 Bois" },
+    { value: "Céramique", label: "🧱 Céramique" }
   ];
 
   const climateZoneOptions = [
-    { value: "A3", label: "A3" },
-    { value: "A4", label: "A4" },
-    { value: "B3", label: "B3" },
-    { value: "B4", label: "B4" },
-    { value: "C1", label: "C1" },
-    { value: "C2", label: "C2" },
-    { value: "C3", label: "C3" },
-    { value: "C4", label: "C4" },
-    { value: "D1", label: "D1" },
-    { value: "D2", label: "D2" },
-    { value: "D3", label: "D3" },
-    { value: "E1", label: "E1" }
+    { value: "A3", label: "A3" }, { value: "A4", label: "A4" },
+    { value: "B3", label: "B3" }, { value: "B4", label: "B4" },
+    { value: "C1", label: "C1" }, { value: "C2", label: "C2" },
+    { value: "C3", label: "C3" }, { value: "C4", label: "C4" },
+    { value: "D1", label: "D1" }, { value: "D2", label: "D2" },
+    { value: "D3", label: "D3" }, { value: "E1", label: "E1" }
   ];
 
   return (
     <Card className="w-full shadow-sm">
-      <CardContent className="p-4">
-        {/* Informations du client - Toujours visible */}
-        <div className="mb-4">
-          <ClientPersonalSection client={client} />
+      <CardContent className="p-3">
+        {/* Section Client - Ultra compacte */}
+        <div className="mb-3">
+          <div className="flex items-center gap-2 mb-2">
+            <User className="h-3 w-3 text-gray-500" />
+            <span className="text-xs font-medium text-gray-700">Client</span>
+          </div>
+          <div className="space-y-1">
+            <div className="text-sm font-medium truncate">{client.name}</div>
+            <div className="text-xs text-gray-500 truncate">{client.address}</div>
+            <div className="text-xs text-gray-500">{client.phone} • {client.email}</div>
+          </div>
         </div>
-        
-        {/* Version compacte des informations techniques */}
+
+        {/* Section Technique - Compacte avec toggle */}
         <div className="mb-3">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setTechnicalExpanded(!technicalExpanded)}
-            className="w-full justify-between p-2 h-auto font-semibold text-sm"
+            className="w-full justify-between p-1 h-6 text-xs"
           >
-            <span>Informations techniques</span>
-            {technicalExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            <div className="flex items-center gap-2">
+              <Settings className="h-3 w-3 text-gray-500" />
+              <span>Technique</span>
+            </div>
+            {technicalExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
           </Button>
           
-          {/* Résumé compact visible en permanence */}
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Badge variant="outline" className="text-xs">
-              {client.isolationType || "Combles"}
-            </Badge>
-            <Badge variant="outline" className="text-xs">
+          {/* Résumé ultra compact */}
+          <div className="mt-1 flex flex-wrap gap-1">
+            <Badge variant="outline" className="text-xs px-1 py-0 h-5">
               {floorType}
             </Badge>
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs px-1 py-0 h-5">
               {climateZone}
             </Badge>
-            <Badge variant="secondary" className="text-xs">
-              {surfaceArea}m² / {roofArea}m²
+            <Badge variant="secondary" className="text-xs px-1 py-0 h-5">
+              {surfaceArea}m²
             </Badge>
           </div>
           
           {technicalExpanded && (
-            <div className="mt-3 space-y-3">
-              {/* Type de plancher */}
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <span className="text-xs text-gray-500">Type de plancher</span>
+            <div className="mt-2 space-y-2">
+              <div className="grid grid-cols-2 gap-1 text-xs">
                 <Select value={floorType} onValueChange={handleFloorTypeChange}>
-                  <SelectTrigger className="h-8 text-xs">
+                  <SelectTrigger className="h-6 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -155,13 +151,9 @@ const ClientInfoSidebar = ({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              
-              {/* Zone climatique */}
-              <div className="grid grid-cols-2 gap-2 items-center">
-                <span className="text-xs text-gray-500">Zone climatique</span>
+                
                 <Select value={climateZone} onValueChange={handleClimateZoneChange}>
-                  <SelectTrigger className="h-8 text-xs">
+                  <SelectTrigger className="h-6 text-xs">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -174,57 +166,35 @@ const ClientInfoSidebar = ({
                 </Select>
               </div>
               
-              {/* Superficies */}
-              <div className="grid grid-cols-2 gap-2">
-                <div className="space-y-1">
-                  <span className="text-xs text-gray-500">Combles (m²)</span>
-                  <Input
-                    type="number"
-                    value={surfaceArea}
-                    onChange={(e) => handleSurfaceAreaChange(e.target.value)}
-                    className="h-8 text-xs"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <span className="text-xs text-gray-500">Toiture (m²)</span>
-                  <Input
-                    type="number"
-                    value={roofArea}
-                    onChange={(e) => handleRoofAreaChange(e.target.value)}
-                    className="h-8 text-xs"
-                  />
-                </div>
+              <div className="grid grid-cols-2 gap-1">
+                <Input
+                  type="number"
+                  value={surfaceArea}
+                  onChange={(e) => handleSurfaceAreaChange(e.target.value)}
+                  placeholder="Combles"
+                  className="h-6 text-xs"
+                />
+                <Input
+                  type="number"
+                  value={roofArea}
+                  onChange={(e) => handleRoofAreaChange(e.target.value)}
+                  placeholder="Toiture"
+                  className="h-6 text-xs"
+                />
               </div>
             </div>
           )}
         </div>
         
-        {/* Version compacte de l'équipe projet */}
+        {/* Équipe - Ultra compacte */}
         <div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setTeamExpanded(!teamExpanded)}
-            className="w-full justify-between p-2 h-auto font-semibold text-sm"
-          >
-            <span>Équipe projet</span>
-            {teamExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </Button>
-          
-          {/* Résumé compact visible en permanence */}
-          <div className="mt-2 text-xs text-gray-600">
+          <div className="flex items-center gap-2 mb-1">
+            <User className="h-3 w-3 text-gray-500" />
+            <span className="text-xs font-medium text-gray-700">Équipe</span>
+          </div>
+          <div className="text-xs text-gray-600">
             <span className="font-medium">Amir</span> • <span className="font-medium">Cynthia</span> • <span className="font-medium">RA BAT 2</span>
           </div>
-          
-          {teamExpanded && (
-            <div className="mt-3">
-              <ProjectTeamSection 
-                teleprospector="Amir"
-                confirmer="Cynthia"
-                installationTeam="RA BAT 2"
-              />
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>
