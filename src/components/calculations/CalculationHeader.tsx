@@ -36,18 +36,21 @@ const CalculationHeader = ({
 
   // Simuler l'indicateur d'auto-sauvegarde basé sur les changements des données
   useEffect(() => {
-    setAutoSaveStatus('saving');
-    const timer = setTimeout(() => {
-      setAutoSaveStatus('saved');
-      setTimeout(() => setAutoSaveStatus('idle'), 2000);
-    }, 500);
+    // Ne montrer le statut de sauvegarde que si les données sont significatives
+    if (calculationData.beforeLayers?.length > 0 || calculationData.afterLayers?.length > 0) {
+      setAutoSaveStatus('saving');
+      const timer = setTimeout(() => {
+        setAutoSaveStatus('saved');
+        setTimeout(() => setAutoSaveStatus('idle'), 2000);
+      }, 1500); // Plus de temps pour la sauvegarde
 
-    return () => clearTimeout(timer);
-  }, [calculationData.beforeLayers, calculationData.afterLayers]);
+      return () => clearTimeout(timer);
+    }
+  }, [calculationData.beforeLayers, calculationData.afterLayers, calculationData.surfaceArea, calculationData.roofArea]);
 
   return (
     <div>
-      {/* 3️⃣ Section Informations Projet - reçoit zoneClimatique */}
+      {/* Section Informations Projet */}
       <ProjectInfoSection 
         surfaceArea={calculationData.surfaceArea}
         roofArea={calculationData.roofArea}
