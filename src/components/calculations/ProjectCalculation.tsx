@@ -50,12 +50,8 @@ const ProjectCalculation = ({
   onFloorTypeChange,
   onClimateZoneChange
 }: ProjectCalculationProps) => {
-  // 1️⃣ État partagé pour la zone climatique
-  const [zoneClimatique, setZoneClimatique] = useState(clientClimateZone || "C3");
-  
   // Get climate zone from cadastral data (for demo purposes)
   const { climateZone: fetchedClimateZone } = useCadastralData(clientId ? `Client ID ${clientId}` : "123 Demo Street");
-  const effectiveClimateZone = zoneClimatique;
   
   const {
     beforeLayers,
@@ -106,18 +102,11 @@ const ProjectCalculation = ({
       ...savedData,
       surfaceArea: surfaceArea,
       roofArea: roofArea,
-      climateZone: effectiveClimateZone
+      climateZone: clientClimateZone || "C3"
     },
-    clientClimateZone: effectiveClimateZone,
+    clientClimateZone: clientClimateZone || "C3",
     floorType: floorType
   });
-
-  // Synchroniser la zone climatique avec les props externes
-  useEffect(() => {
-    if (clientClimateZone && clientClimateZone !== zoneClimatique) {
-      setZoneClimatique(clientClimateZone);
-    }
-  }, [clientClimateZone]);
 
   const handleDeleteBeforeLayer = (id: string) => {
     setBeforeLayers(beforeLayers.filter(l => l.id !== id));
@@ -127,13 +116,14 @@ const ProjectCalculation = ({
     setAfterLayers(afterLayers.filter(l => l.id !== id));
   };
 
-  // 2️⃣ Gestionnaire de changement de zone climatique unifié
+  // 🔧 FIX: Gestionnaire de changement de zone climatique unifié et correct
   const handleClimateZoneChange = (zone: string) => {
     console.log('🔄 Changement de zone climatique dans le calcul:', zone);
-    setZoneClimatique(zone);
+    
+    // Mettre à jour immédiatement la zone climatique dans le state de calcul
     setClimateZone(zone);
     
-    // 🚀 NOUVEAU: Propager le changement vers le parent (ClientTabsContainer)
+    // Propager le changement vers le parent (ClientTabsContainer)
     if (onClimateZoneChange) {
       onClimateZoneChange(zone);
     }
@@ -190,17 +180,17 @@ const ProjectCalculation = ({
         {/* Thermal Calculations - Full width */}
         <Card className="lg:col-span-12">
           <CalculationHeader 
-            calculationData={calculationData} 
+            calculationData={{...calculationData, climateZone: climateZone}} 
             onSave={onSave}
             clientName={clientName}
             clientAddress={clientAddress}
             projectName={projectName}
             clientData={preparedClientData}
             floorType={floorType}
-            climateZone={zoneClimatique}
+            climateZone={climateZone}
           />
           <CalculationContent 
-            calculationData={{...calculationData, climateZone: zoneClimatique}}
+            calculationData={{...calculationData, climateZone: climateZone}}
             onAddLayer={handleAddLayer}
             onUpdateLayer={handleUpdateLayer}
             onDeleteBeforeLayer={handleDeleteBeforeLayer}

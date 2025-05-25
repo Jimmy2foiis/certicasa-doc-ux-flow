@@ -49,9 +49,12 @@ const ThermalEconomySection = ({
   const [delegate, setDelegate] = useState<"Eiffage" | "GreenFlex">("Eiffage");
   const [selectedClimateZone, setSelectedClimateZone] = useState(climateZone);
   
-  // Update selected climate zone when prop changes
+  // 🔧 FIX: Synchroniser la zone climatique avec la prop sans causer de boucle
   useEffect(() => {
-    setSelectedClimateZone(climateZone);
+    if (climateZone !== selectedClimateZone) {
+      console.log('🌍 Synchronisation zone climatique dans ThermalEconomySection:', climateZone);
+      setSelectedClimateZone(climateZone);
+    }
   }, [climateZone]);
 
   // Get coefficient G based on selected climate zone
@@ -77,8 +80,12 @@ const ThermalEconomySection = ({
   const totalPricePerSqm = pricePerSqm + cherryPricePerSqm;
   const totalProjectPrice = projectPrice + cherryProjectPrice;
 
+  // 🔧 FIX: Gestionnaire de changement optimisé
   const handleClimateZoneChange = (zone: string) => {
+    console.log('🌍 Changement zone climatique depuis ThermalEconomySection:', zone);
     setSelectedClimateZone(zone);
+    
+    // Propager le changement immédiatement
     if (onClimateZoneChange) {
       onClimateZoneChange(zone);
     }
