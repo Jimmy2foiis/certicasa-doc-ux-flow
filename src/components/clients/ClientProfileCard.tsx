@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +8,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Mail, Phone, MapPin, ChevronDown, ChevronRight, MoreVertical } from "lucide-react";
 import { Client } from "@/services/api/types";
-
 interface ClientProfileCardProps {
   client: Client | null;
   surfaceArea?: string;
@@ -21,8 +19,7 @@ interface ClientProfileCardProps {
   onFloorTypeChange?: (value: string) => void;
   onClimateZoneChange?: (value: string) => void;
 }
-
-const ClientProfileCard = ({ 
+const ClientProfileCard = ({
   client,
   surfaceArea = "56",
   roofArea = "89",
@@ -38,54 +35,79 @@ const ClientProfileCard = ({
   const [localFloorType, setLocalFloorType] = useState(floorType);
   const [localClimateZone, setLocalClimateZone] = useState(climateZone);
   const [isTeamExpanded, setIsTeamExpanded] = useState(false);
-
   const handleSurfaceAreaChange = (value: string) => {
     setLocalSurfaceArea(value);
     if (onSurfaceAreaChange) {
       onSurfaceAreaChange(value);
     }
   };
-
   const handleRoofAreaChange = (value: string) => {
     setLocalRoofArea(value);
     if (onRoofAreaChange) {
       onRoofAreaChange(value);
     }
   };
-
   const handleFloorTypeChange = (value: string) => {
     setLocalFloorType(value);
     if (onFloorTypeChange) {
       onFloorTypeChange(value);
     }
   };
-
   const handleClimateZoneChange = (value: string) => {
     setLocalClimateZone(value);
     if (onClimateZoneChange) {
       onClimateZoneChange(value);
     }
   };
-
   if (!client) return null;
-
-  const floorTypeOptions = [
-    { value: "Béton", label: "🪨 Béton" },
-    { value: "Bois", label: "🪵 Bois" },
-    { value: "Céramique", label: "🧱 Céramique" }
-  ];
-
-  const climateZoneOptions = [
-    { value: "A3", label: "A3" }, { value: "A4", label: "A4" },
-    { value: "B3", label: "B3" }, { value: "B4", label: "B4" },
-    { value: "C1", label: "C1" }, { value: "C2", label: "C2" },
-    { value: "C3", label: "C3" }, { value: "C4", label: "C4" },
-    { value: "D1", label: "D1" }, { value: "D2", label: "D2" },
-    { value: "D3", label: "D3" }, { value: "E1", label: "E1" }
-  ];
-
-  return (
-    <Card className="w-full max-w-lg mx-auto bg-white border border-gray-200 rounded-xl shadow-sm">
+  const floorTypeOptions = [{
+    value: "Béton",
+    label: "🪨 Béton"
+  }, {
+    value: "Bois",
+    label: "🪵 Bois"
+  }, {
+    value: "Céramique",
+    label: "🧱 Céramique"
+  }];
+  const climateZoneOptions = [{
+    value: "A3",
+    label: "A3"
+  }, {
+    value: "A4",
+    label: "A4"
+  }, {
+    value: "B3",
+    label: "B3"
+  }, {
+    value: "B4",
+    label: "B4"
+  }, {
+    value: "C1",
+    label: "C1"
+  }, {
+    value: "C2",
+    label: "C2"
+  }, {
+    value: "C3",
+    label: "C3"
+  }, {
+    value: "C4",
+    label: "C4"
+  }, {
+    value: "D1",
+    label: "D1"
+  }, {
+    value: "D2",
+    label: "D2"
+  }, {
+    value: "D3",
+    label: "D3"
+  }, {
+    value: "E1",
+    label: "E1"
+  }];
+  return <Card className="w-full max-w-lg mx-auto bg-white border border-gray-200 rounded-xl shadow-sm">
       <CardContent className="p-6 space-y-6">
         {/* Header */}
         <div className="text-center space-y-4">
@@ -97,7 +119,7 @@ const ClientProfileCard = ({
 
           {/* Badges */}
           <div className="flex flex-wrap justify-center gap-2">
-            <Badge className="bg-black text-white hover:bg-gray-800">
+            <Badge className="bg-green-600 hover:bg-green-700">
               RES020
             </Badge>
           </div>
@@ -153,11 +175,9 @@ const ClientProfileCard = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {floorTypeOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                  {floorTypeOptions.map(option => <SelectItem key={option.value} value={option.value}>
                       {option.label}
-                    </SelectItem>
-                  ))}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -169,11 +189,9 @@ const ClientProfileCard = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {climateZoneOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                  {climateZoneOptions.map(option => <SelectItem key={option.value} value={option.value}>
                       {option.label}
-                    </SelectItem>
-                  ))}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -181,21 +199,11 @@ const ClientProfileCard = ({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Surface combles (m²)</label>
-                <Input
-                  type="number"
-                  value={localSurfaceArea}
-                  onChange={(e) => handleSurfaceAreaChange(e.target.value)}
-                  className="w-full"
-                />
+                <Input type="number" value={localSurfaceArea} onChange={e => handleSurfaceAreaChange(e.target.value)} className="w-full" />
               </div>
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Surface toiture (m²)</label>
-                <Input
-                  type="number"
-                  value={localRoofArea}
-                  onChange={(e) => handleRoofAreaChange(e.target.value)}
-                  className="w-full"
-                />
+                <Input type="number" value={localRoofArea} onChange={e => handleRoofAreaChange(e.target.value)} className="w-full" />
               </div>
             </div>
           </div>
@@ -205,11 +213,7 @@ const ClientProfileCard = ({
         <Collapsible open={isTeamExpanded} onOpenChange={setIsTeamExpanded}>
           <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
             <h3 className="font-semibold text-gray-900">Équipe assignée</h3>
-            {isTeamExpanded ? (
-              <ChevronDown className="h-4 w-4 text-gray-500" />
-            ) : (
-              <ChevronRight className="h-4 w-4 text-gray-500" />
-            )}
+            {isTeamExpanded ? <ChevronDown className="h-4 w-4 text-gray-500" /> : <ChevronRight className="h-4 w-4 text-gray-500" />}
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-2">
             <div className="bg-white p-4 rounded-lg border space-y-2 text-sm">
@@ -238,8 +242,6 @@ const ClientProfileCard = ({
           </DropdownMenu>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ClientProfileCard;
