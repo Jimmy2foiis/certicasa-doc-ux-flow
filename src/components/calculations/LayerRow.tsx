@@ -56,7 +56,7 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
       };
       onUpdate(updatedLayer);
     }
-  }, [name, thickness, lambda, rValue]);
+  }, [name, thickness, lambda, rValue, onUpdate, layer]);
 
   // Met à jour l'épaisseur en mm quand l'utilisateur modifie l'épaisseur en mètres
   const handleThicknessInMetersChange = (value: string) => {
