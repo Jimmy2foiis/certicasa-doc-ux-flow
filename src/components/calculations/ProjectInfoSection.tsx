@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,16 @@ const ProjectInfoSection = ({
   const [localRoofArea, setLocalRoofArea] = useState(roofArea);
   const [localFloorType, setLocalFloorType] = useState(floorType);
   const [localClimateZone, setLocalClimateZone] = useState(climateZone);
+  
+  // États locaux pour les nouveaux champs
+  const [email, setEmail] = useState("contact@example.com");
+  const [phone, setPhone] = useState("+34 XXX XXX XXX");
+  const [address, setAddress] = useState("Rue Serrano 120");
+  const [postalCode, setPostalCode] = useState("28006");
+  const [city, setCity] = useState("Madrid");
+  const [province, setProvince] = useState("Madrid");
+  const [community, setCommunity] = useState("Communauté de Madrid");
+  
   const handleSurfaceAreaChange = (value: string) => {
     setLocalSurfaceArea(value);
     if (onSurfaceAreaChange) {
@@ -102,6 +113,90 @@ const ProjectInfoSection = ({
   }];
   return <Card className="mb-4">
       <CardContent className="pt-6">
+        {/* Section Contact */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-4">Contact</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm text-gray-500 mb-2">Email</label>
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full"
+                placeholder="email@example.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-500 mb-2">Téléphone</label>
+              <Input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full"
+                placeholder="+34 XXX XXX XXX"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Section Adresse complète */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-4">Adresse complète</h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm text-gray-500 mb-2">Rue</label>
+              <Input
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full"
+                placeholder="Nom de la rue"
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm text-gray-500 mb-2">Code postal</label>
+                <Input
+                  value={postalCode}
+                  onChange={(e) => setPostalCode(e.target.value)}
+                  className="w-full"
+                  placeholder="Code postal"
+                />
+              </div>
+              <div>
+                <label className="block text-sm text-gray-500 mb-2">Ville</label>
+                <Input
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  className="w-full"
+                  placeholder="Ville"
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label className="block text-sm text-gray-500 mb-2">Province</label>
+              <Input
+                value={province}
+                onChange={(e) => setProvince(e.target.value)}
+                className="w-full"
+                placeholder="Province"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm text-gray-500 mb-2">Communauté autonome</label>
+              <Input
+                value={community}
+                onChange={(e) => setCommunity(e.target.value)}
+                className="w-full"
+                placeholder="Communauté autonome"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Section Données Techniques avec titre H3 */}
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-4">Données Techniques</h3>
