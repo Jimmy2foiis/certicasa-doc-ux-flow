@@ -1,8 +1,8 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Save } from "lucide-react";
 
@@ -43,18 +43,9 @@ const ProjectInfo = ({
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="projectType">Type de projet</Label>
-          <Select 
-            value={projectType}
-            onValueChange={setProjectType}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Sélectionner type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="RES010">RES010 - Enveloppe thermique</SelectItem>
-              <SelectItem value="RES020">RES020 - Installations thermiques</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="p-3 bg-gray-50 rounded-md border">
+            <span className="text-sm font-medium">RES020 - Installations thermiques</span>
+          </div>
         </div>
         
         <div className="space-y-2">
@@ -92,7 +83,7 @@ const ProjectInfo = ({
           
           <div className="flex justify-between items-center pt-2">
             <span className="text-sm font-medium">Catégorie:</span>
-            <Badge>{projectType}</Badge>
+            <Badge>RES020</Badge>
           </div>
         </div>
         
