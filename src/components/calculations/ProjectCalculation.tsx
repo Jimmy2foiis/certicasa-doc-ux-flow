@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useCadastralData } from "@/hooks/useCadastralData";
@@ -49,9 +50,12 @@ const ProjectCalculation = ({
   onFloorTypeChange,
   onClimateZoneChange
 }: ProjectCalculationProps) => {
+  // 1️⃣ État partagé pour la zone climatique
+  const [zoneClimatique, setZoneClimatique] = useState(clientClimateZone || "C3");
+  
   // Get climate zone from cadastral data (for demo purposes)
   const { climateZone: fetchedClimateZone } = useCadastralData(clientId ? `Client ID ${clientId}` : "123 Demo Street");
-  const effectiveClimateZone = clientClimateZone || fetchedClimateZone || "C3";
+  const effectiveClimateZone = zoneClimatique;
   
   const {
     beforeLayers,
@@ -108,6 +112,13 @@ const ProjectCalculation = ({
     floorType: floorType
   });
 
+  // Synchroniser la zone climatique avec les props externes
+  useEffect(() => {
+    if (clientClimateZone && clientClimateZone !== zoneClimatique) {
+      setZoneClimatique(clientClimateZone);
+    }
+  }, [clientClimateZone]);
+
   const handleDeleteBeforeLayer = (id: string) => {
     setBeforeLayers(beforeLayers.filter(l => l.id !== id));
   };
@@ -116,7 +127,9 @@ const ProjectCalculation = ({
     setAfterLayers(afterLayers.filter(l => l.id !== id));
   };
 
+  // 2️⃣ Gestionnaire de changement de zone climatique unifié
   const handleClimateZoneChange = (zone: string) => {
+    setZoneClimatique(zone);
     setClimateZone(zone);
     if (onClimateZoneChange) {
       onClimateZoneChange(zone);
@@ -180,10 +193,10 @@ const ProjectCalculation = ({
             projectName={projectName}
             clientData={preparedClientData}
             floorType={floorType}
-            climateZone={climateZone}
+            climateZone={zoneClimatique}
           />
           <CalculationContent 
-            calculationData={calculationData}
+            calculationData={{...calculationData, climateZone: zoneClimatique}}
             onAddLayer={handleAddLayer}
             onUpdateLayer={handleUpdateLayer}
             onDeleteBeforeLayer={handleDeleteBeforeLayer}

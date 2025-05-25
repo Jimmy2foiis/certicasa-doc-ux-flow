@@ -33,7 +33,7 @@ const CalculationHeader = ({
 }: CalculationHeaderProps) => {
   return (
     <div>
-      {/* Section Informations Projet - en lecture seule, valeurs venant de la sidebar */}
+      {/* 3️⃣ Section Informations Projet - reçoit zoneClimatique */}
       <ProjectInfoSection 
         surfaceArea={calculationData.surfaceArea}
         roofArea={calculationData.roofArea}
