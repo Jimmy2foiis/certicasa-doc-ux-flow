@@ -1,12 +1,12 @@
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, MapPin, User, CheckSquare, Building, Settings, Hash } from "lucide-react";
+import { Mail, Phone, MapPin, User, CheckSquare, Building, Hash, ChevronRight } from "lucide-react";
 import { Client } from "@/services/api/types";
 
 interface ClientProfileCardProps {
@@ -83,225 +83,130 @@ const ClientProfileCard = ({
   ];
 
   return (
-    <Card className="h-fit bg-white border-gray-200 shadow-sm">
-      <CardHeader className="pb-6 border-b border-gray-100">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-gray-600" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">{client.name}</h3>
-              <p className="text-sm text-gray-500">Client Certicasa</p>
-            </div>
+    <Card className="w-full max-w-sm mx-auto bg-white border-0 shadow-lg">
+      <CardContent className="p-8">
+        {/* Header avec avatar et nom */}
+        <div className="text-center mb-8">
+          <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+            <User className="w-12 h-12 text-gray-400" />
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-lg">
-              <Hash className="w-3 h-3 text-gray-500" />
-              <span className="text-sm font-medium text-gray-700">RES020</span>
-            </div>
-            <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
-              ACTIF
+          
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">{client.name}</h2>
+          <p className="text-gray-500 mb-4">Client Certicasa</p>
+          
+          {/* RES020 Badge */}
+          <div className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-600">
+            <Hash className="w-3 h-3" />
+            <span>RES020</span>
+          </div>
+          
+          {/* Status */}
+          <div className="mt-4">
+            <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100">
+              ACTIVE
             </Badge>
           </div>
         </div>
-      </CardHeader>
-      
-      <CardContent className="p-6 space-y-8">
-        {/* Contact */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Mail className="w-4 h-4 text-gray-500" />
-            <Label className="text-sm font-medium text-gray-900">Contact</Label>
+
+        {/* Contact Info */}
+        <div className="space-y-4 mb-8">
+          <div className="flex items-center gap-3 text-gray-600">
+            <Mail className="w-4 h-4" />
+            <span className="text-sm">{client.email}</span>
           </div>
-          <div className="space-y-3 ml-6">
-            <div className="flex items-center gap-3">
-              <Mail className="w-3 h-3 text-gray-400" />
-              <span className="text-sm text-gray-600">{client.email}</span>
+          <div className="flex items-center gap-3 text-gray-600">
+            <Phone className="w-4 h-4" />
+            <span className="text-sm">{client.phone}</span>
+          </div>
+        </div>
+
+        {/* Address Section */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-gray-900">Département</h3>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+          </div>
+          <p className="text-gray-600 mb-4">León</p>
+          
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-semibold text-gray-900">Bureau</h3>
+            <ChevronRight className="w-4 h-4 text-gray-400" />
+          </div>
+          <p className="text-gray-600 mb-4">Valencia de Don Juan</p>
+        </div>
+
+        {/* Technical Data */}
+        <div className="space-y-6 mb-8">
+          <div>
+            <Label className="text-sm font-medium text-gray-600 mb-2 block">Type de plancher</Label>
+            <Select value={localFloorType} onValueChange={handleFloorTypeChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {floorTypeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="text-sm font-medium text-gray-600 mb-2 block">Zone climatique</Label>
+            <Select value={localClimateZone} onValueChange={handleClimateZoneChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {climateZoneOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label className="text-sm font-medium text-gray-600 mb-2 block">Surface combles (m²)</Label>
+              <Input
+                type="number"
+                value={localSurfaceArea}
+                onChange={(e) => handleSurfaceAreaChange(e.target.value)}
+                className="w-full"
+              />
             </div>
-            <div className="flex items-center gap-3">
-              <Phone className="w-3 h-3 text-gray-400" />
-              <span className="text-sm text-gray-600">{client.phone}</span>
+            <div>
+              <Label className="text-sm font-medium text-gray-600 mb-2 block">Surface toiture (m²)</Label>
+              <Input
+                type="number"
+                value={localRoofArea}
+                onChange={(e) => handleRoofAreaChange(e.target.value)}
+                className="w-full"
+              />
             </div>
           </div>
         </div>
 
-        {/* Adresse */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-gray-500" />
-            <Label className="text-sm font-medium text-gray-900">Adresse</Label>
-          </div>
-          <div className="space-y-4 ml-6">
-            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
-              <div className="flex items-start gap-2">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
-                <div className="flex-1">
-                  <p className="text-xs text-gray-500 mb-1">Rue</p>
-                  <p className="text-sm font-medium text-gray-900">Calle Alonso Castrillo 43</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Code postal</p>
-                    <p className="text-sm font-medium text-gray-900">24200</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Ville</p>
-                    <p className="text-sm font-medium text-gray-900">Valencia de Don Juan</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Province</p>
-                    <p className="text-sm font-medium text-gray-900">León</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Communauté</p>
-                    <p className="text-sm font-medium text-gray-900">Castille-et-León</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-amber-400 rounded-full mt-2"></div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Géolocalisation</p>
-                    <p className="text-sm text-amber-600">À définir</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <div className="w-2 h-2 bg-amber-400 rounded-full mt-2"></div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">UTM 30</p>
-                    <p className="text-sm text-amber-600">À définir</p>
-                  </div>
-                </div>
-              </div>
+        {/* Line Manager */}
+        <div className="mb-8">
+          <h3 className="text-sm font-medium text-gray-600 mb-4">Responsable d'équipe</h3>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-blue-600" />
+            </div>
+            <div>
+              <p className="font-medium text-gray-900">Cynthia Martinez</p>
             </div>
           </div>
         </div>
 
-        {/* Données techniques */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <Settings className="w-4 h-4 text-gray-500" />
-            <Label className="text-sm font-medium text-gray-900">Données Techniques</Label>
-          </div>
-          <div className="space-y-4 ml-6">
-            <div className="grid grid-cols-1 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-gray-600">Type de plancher</Label>
-                <Select value={localFloorType} onValueChange={handleFloorTypeChange}>
-                  <SelectTrigger className="h-10 bg-white border-gray-200 focus:border-gray-300">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {floorTypeOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-medium text-gray-600">Zone climatique</Label>
-                <Select value={localClimateZone} onValueChange={handleClimateZoneChange}>
-                  <SelectTrigger className="h-10 bg-white border-gray-200 focus:border-gray-300">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {climateZoneOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-gray-600">Surface combles (m²)</Label>
-                  <Input
-                    type="number"
-                    value={localSurfaceArea}
-                    onChange={(e) => handleSurfaceAreaChange(e.target.value)}
-                    className="h-10 bg-white border-gray-200 focus:border-gray-300"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-medium text-gray-600">Surface toiture (m²)</Label>
-                  <Input
-                    type="number"
-                    value={localRoofArea}
-                    onChange={(e) => handleRoofAreaChange(e.target.value)}
-                    className="h-10 bg-white border-gray-200 focus:border-gray-300"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Équipe */}
-        <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-gray-500" />
-            <Label className="text-sm font-medium text-gray-900">Équipe assignée</Label>
-          </div>
-          <div className="space-y-3 ml-6">
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <User className="w-4 h-4 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500">Téléprospecteur</p>
-                <p className="text-sm font-medium text-gray-900">Amir</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                <CheckSquare className="w-4 h-4 text-purple-600" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500">Confirmateur</p>
-                <p className="text-sm font-medium text-gray-900">Cynthia</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
-                <Building className="w-4 h-4 text-orange-600" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500">Équipe de pose</p>
-                <p className="text-sm font-medium text-gray-900">RA BAT 2</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Action */}
-        <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white">
-          Modifier les informations
+        {/* Action Button */}
+        <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-lg">
+          Action
         </Button>
       </CardContent>
     </Card>
