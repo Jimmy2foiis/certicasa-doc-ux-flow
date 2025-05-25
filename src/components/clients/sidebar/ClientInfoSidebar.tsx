@@ -29,39 +29,9 @@ const ClientInfoSidebar = ({ client, documentStats, onViewMissingDocs }: ClientI
             <ClientPersonalSection client={client} />
           </div>
           
-          {/* Colonne 2: Informations techniques */}
+          {/* Colonne 2: Vide */}
           <div>
-            <div className="space-y-3">
-              <h3 className="font-semibold text-base border-b pb-1">Informations techniques</h3>
-              
-              <div className="space-y-2.5">
-                {/* Surface isolée */}
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Surface isolée</span>
-                  <span className="font-medium">{client.isolatedArea ? `${client.isolatedArea} m²` : "70 m²"}</span>
-                </div>
-                
-                {/* Type d'isolation */}
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Type d'isolation</span>
-                  <span className="font-medium">{client.isolationType || "Combles"}</span>
-                </div>
-                
-                {/* Type de plancher */}
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Type de plancher</span>
-                  <span className="font-medium">{client.floorType || "Bois"}</span>
-                </div>
-                
-                {/* Zone climatique */}
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Zone climatique</span>
-                  <Badge variant="outline" className="mt-1 w-fit bg-gray-50">
-                    {client.climateZone || "C"}
-                  </Badge>
-                </div>
-              </div>
-            </div>
+            {/* Colonne vidée comme demandé */}
           </div>
           
           {/* Colonne 3: Vide pour l'instant */}
