@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { AddressInput } from "@/components/address/AddressInput";
 import { AddressError } from "@/components/ui/address-error";
@@ -5,12 +6,14 @@ import { ApiStatus } from "@/components/address/ApiStatus";
 import { useGoogleMapsAutocomplete } from "@/hooks/googleMaps/useGoogleMapsAutocomplete";
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
 import { useAddressSelection } from "@/hooks/useAddressSelection";
+import { AddressComponents } from "@/types/googleMaps";
 
 interface AddressSearchProps {
   initialAddress: string;
   onAddressChange: (address: string) => void;
   onCoordinatesChange?: (coordinates: GeoCoordinates) => void;
   onProcessingChange?: (isProcessing: boolean) => void;
+  onAddressComponentsChange?: (components: AddressComponents) => void;
 }
 
 /**
@@ -21,7 +24,8 @@ const AddressSearch = ({
   initialAddress,
   onAddressChange,
   onCoordinatesChange,
-  onProcessingChange
+  onProcessingChange,
+  onAddressComponentsChange
 }: AddressSearchProps) => {
   // Use our custom hook for address selection logic
   const {
@@ -64,6 +68,12 @@ const AddressSearch = ({
         onCoordinatesChange(coords);
         console.log("Coordonnées obtenues de l'autocomplete:", coords);
         updateProcessingState(false);
+      }
+    },
+    onAddressComponentsSelected: (components) => {
+      if (onAddressComponentsChange) {
+        console.log("Composants d'adresse obtenus:", components);
+        onAddressComponentsChange(components);
       }
     }
   });

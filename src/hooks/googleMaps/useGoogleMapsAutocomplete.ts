@@ -12,7 +12,8 @@ export function useGoogleMapsAutocomplete({
   inputRef,
   initialAddress,
   onAddressSelected,
-  onCoordinatesSelected
+  onCoordinatesSelected,
+  onAddressComponentsSelected
 }: GoogleMapsAutocompleteOptions): GoogleMapsAutocompleteResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,6 +67,43 @@ export function useGoogleMapsAutocomplete({
   }, []);
 
   /**
+   * Parse les composants d'adresse Google Maps
+   */
+  const parseAddressComponents = (addressComponents: GoogleMapsTypes.PlaceResult['address_components']) => {
+    if (!addressComponents) return {};
+
+    const components: any = {};
+
+    addressComponents.forEach((component) => {
+      const types = component.types;
+      
+      if (types.includes('postal_code')) {
+        components.postalCode = component.long_name;
+      }
+      if (types.includes('locality')) {
+        components.city = component.long_name;
+      }
+      if (types.includes('administrative_area_level_2')) {
+        components.province = component.long_name;
+      }
+      if (types.includes('administrative_area_level_1')) {
+        components.community = component.long_name;
+      }
+      if (types.includes('country')) {
+        components.country = component.long_name;
+      }
+      if (types.includes('route')) {
+        components.route = component.long_name;
+      }
+      if (types.includes('street_number')) {
+        components.streetNumber = component.long_name;
+      }
+    });
+
+    return components;
+  };
+
+  /**
    * Initialise l'autocomplétion Google Maps
    */
   const initAutocomplete = () => {
@@ -78,10 +116,13 @@ export function useGoogleMapsAutocomplete({
     console.log('Initialisation de l\'autocomplétion Google Maps');
 
     try {
-      // Créer une nouvelle instance d'autocomplétion
+      // Créer une nouvelle instance d'autocomplétion avec les champs requis
       const newAutocomplete = new window.google.maps.places.Autocomplete(
         inputRef.current,
-        DEFAULT_AUTOCOMPLETE_OPTIONS
+        {
+          ...DEFAULT_AUTOCOMPLETE_OPTIONS,
+          fields: ['address_components', 'formatted_address', 'geometry', 'name']
+        }
       );
 
       // Gestionnaire d'événement pour les sélections d'adresse
@@ -107,6 +148,13 @@ export function useGoogleMapsAutocomplete({
           };
           console.log('Coordonnées GPS:', coordinates);
           onCoordinatesSelected(coordinates);
+        }
+
+        // Parser et transmettre les composants d'adresse
+        if (place.address_components && onAddressComponentsSelected) {
+          const parsedComponents = parseAddressComponents(place.address_components);
+          console.log('Composants d\'adresse parsés:', parsedComponents);
+          onAddressComponentsSelected(parsedComponents);
         }
 
         setError(null);

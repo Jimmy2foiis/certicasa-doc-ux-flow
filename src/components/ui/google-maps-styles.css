@@ -1,0 +1,82 @@
+
+/* Styles personnalisés pour Google Maps Autocomplete */
+.pac-container {
+  background-color: white !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid #e5e7eb !important;
+  margin-top: 4px !important;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif !important;
+  z-index: 9999 !important;
+}
+
+.pac-item {
+  padding: 8px 16px !important;
+  border-top: none !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+  color: #374151 !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s ease-in-out !important;
+}
+
+.pac-item:hover {
+  background-color: #f9fafb !important;
+}
+
+.pac-item:first-child {
+  border-top-left-radius: 8px !important;
+  border-top-right-radius: 8px !important;
+}
+
+.pac-item:last-child {
+  border-bottom-left-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+}
+
+.pac-item-selected {
+  background-color: #f3f4f6 !important;
+}
+
+.pac-item-query {
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #111827 !important;
+}
+
+.pac-matched {
+  font-weight: 600 !important;
+  color: #2563eb !important;
+}
+
+.pac-icon {
+  background-image: none !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin-right: 8px !important;
+  margin-top: 2px !important;
+}
+
+.pac-icon:before {
+  content: "📍";
+  font-size: 14px;
+  line-height: 1;
+}
+
+.pac-logo {
+  display: none !important;
+}
+
+/* Style pour rendre le "powered by Google" plus discret */
+.pac-container:after {
+  content: "powered by Google";
+  font-size: 10px !important;
+  color: #9ca3af !important;
+  padding: 4px 16px !important;
+  text-align: right !important;
+  display: block !important;
+  background-color: #f9fafb !important;
+  border-top: 1px solid #e5e7eb !important;
+  border-bottom-left-radius: 8px !important;
+  border-bottom-right-radius: 8px !important;
+}

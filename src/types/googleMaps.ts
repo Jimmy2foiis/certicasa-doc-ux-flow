@@ -45,12 +45,24 @@ export interface GoogleMapsCoordinates {
   lng: number;
 }
 
+// Address components structure
+export interface AddressComponents {
+  postalCode?: string;
+  city?: string;
+  province?: string;
+  community?: string;
+  country?: string;
+  route?: string;
+  streetNumber?: string;
+}
+
 // Options for Google Maps Autocomplete
 export interface GoogleMapsAutocompleteOptions {
   inputRef: React.RefObject<HTMLInputElement>;
   initialAddress: string;
   onAddressSelected: (address: string) => void;
   onCoordinatesSelected?: (coordinates: GoogleMapsCoordinates) => void;
+  onAddressComponentsSelected?: (components: AddressComponents) => void;
 }
 
 // Return type for the useGoogleMapsAutocomplete hook

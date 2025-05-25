@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Mail, Phone, MapPin, User, Eye, CheckSquare, Building } from "lucide-react";
 import AddressSearch from "@/components/clients/AddressSearch";
+import { AddressComponents } from "@/types/googleMaps";
 
 interface StatusBannerProps {
   client?: {
@@ -59,6 +60,16 @@ const StatusBanner = ({
     }));
   };
 
+  const handleAddressComponentsSelected = (components: AddressComponents) => {
+    setAddressData(prev => ({
+      ...prev,
+      postalCode: components.postalCode || prev.postalCode,
+      city: components.city || prev.city,
+      province: components.province || prev.province,
+      community: components.community || prev.community
+    }));
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setAddressData(prev => ({
       ...prev,
@@ -109,6 +120,7 @@ const StatusBanner = ({
                 initialAddress={addressData.street}
                 onAddressChange={(address) => handleInputChange('street', address)}
                 onCoordinatesChange={handleCoordinatesSelected}
+                onAddressComponentsChange={handleAddressComponentsSelected}
               />
             </div>
             <div>
