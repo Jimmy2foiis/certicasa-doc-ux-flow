@@ -7,7 +7,6 @@ import CompanyTab from "@/components/settings/CompanyTab";
 import MaterialsAndProductsSection from "@/components/settings/MaterialsAndProductsSection";
 import NotificationsTab from "@/components/settings/NotificationsTab";
 import SecurityTab from "@/components/settings/SecurityTab";
-import TemplatesTab from "@/components/settings/TemplatesTab";
 
 const Settings = () => {
   return (
@@ -24,7 +23,6 @@ const Settings = () => {
                 <TabsTrigger value="profile">Profil</TabsTrigger>
                 <TabsTrigger value="company">Entreprise</TabsTrigger>
                 <TabsTrigger value="materials">Matériaux & Produits</TabsTrigger>
-                <TabsTrigger value="templates">Templates</TabsTrigger>
                 <TabsTrigger value="notifications">Notifications</TabsTrigger>
                 <TabsTrigger value="security">Sécurité</TabsTrigger>
               </TabsList>
@@ -39,10 +37,6 @@ const Settings = () => {
               
               <TabsContent value="materials">
                 <MaterialsAndProductsSection />
-              </TabsContent>
-              
-              <TabsContent value="templates">
-                <TemplatesTab />
               </TabsContent>
               
               <TabsContent value="notifications">

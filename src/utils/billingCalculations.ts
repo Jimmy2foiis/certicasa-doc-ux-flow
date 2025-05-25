@@ -1,3 +1,4 @@
+
 // Climate coefficients according to ANEXO II (in thousands of hours·K/año) - Certicasa values
 export const CLIMATE_COEFFICIENTS = {
   // Zone A
@@ -74,81 +75,6 @@ export const calculateCAE = (
   
   // CAE = FP × (Ui - Uf) × S × G
   return FP * (ui - uf) * surface * G;
-};
-
-// Calculate template variables for invoice generation
-export const calculateTemplateVariables = (data: ThermalCalculationData, productInfo?: any) => {
-  // Validate climate zone
-  if (!isValidClimateZone(data.climateZone)) {
-    throw new Error(`Zone climatique invalide: ${data.climateZone}. Zones valides: ${getAvailableClimateZones().join(', ')}`);
-  }
-
-  // Calculate CAE
-  const cae = calculateCAE(data.ui, data.uf, data.surface, data.climateZone);
-  
-  // Constants
-  const PRIX_RACHAT = 0.100; // €/kWh
-  const PRIX_MATERIEL_M2 = 7.00; // €/m² (fixed)
-  const TVA_TAUX = 21; // %
-
-  // Calculate monetary value (CAE × prix rachat)
-  const caeValue = cae * PRIX_RACHAT;
-  
-  // Calculate billing breakdown
-  const materialCost = data.surface * PRIX_MATERIEL_M2;
-  const subtotalHT = caeValue / 1.21; // Get HT from TTC
-  const laborCost = subtotalHT - materialCost;
-  const laborCostPerM2 = laborCost / data.surface;
-  const vat = subtotalHT * (TVA_TAUX / 100);
-  const totalTTC = subtotalHT + vat;
-
-  // Generate template variables
-  return {
-    // System variables
-    numero_factura: `FACT-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
-    numero_presupuesto: `PRES-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`,
-    fecha_hoy: new Date().toLocaleDateString('es-ES'),
-    fecha_emision: new Date().toLocaleDateString('es-ES'),
-    
-    // Client variables
-    cliente_nombre: data.clientInfo.fullName,
-    cliente_nif: data.clientInfo.nif,
-    cliente_direccion: data.clientInfo.address,
-    cliente_codigo_postal: data.clientInfo.postalCode,
-    cliente_ciudad: data.clientInfo.city,
-    cliente_telefono: data.clientInfo.phone,
-    cliente_email: data.clientInfo.email,
-    
-    // Project variables
-    zona_climatica: data.climateZone,
-    superficie: data.surface.toFixed(2),
-    cae_kwh: cae.toFixed(2),
-    precio_rachat: PRIX_RACHAT.toFixed(3),
-    referencia_cae: `CAE-${data.climateZone}-${String(Date.now()).slice(-8)}`,
-    
-    // Product variables (use provided or default)
-    producto_nombre: productInfo?.name || "Material aislante",
-    producto_descripcion: productInfo?.description || "Aislamiento térmico",
-    producto_referencia: productInfo?.reference || "REF-001",
-    resistencia_termica: productInfo?.thermalResistance || "R=5.51",
-    
-    // Calculation variables
-    precio_material: PRIX_MATERIEL_M2.toFixed(2),
-    precio_mo: laborCostPerM2.toFixed(2),
-    total_material: materialCost.toFixed(2),
-    total_mo: laborCost.toFixed(2),
-    total_ht: subtotalHT.toFixed(2),
-    tva_taux: TVA_TAUX.toString(),
-    tva_montant: vat.toFixed(2),
-    total_ttc: totalTTC.toFixed(2),
-    economia_anual_euros: caeValue.toFixed(2),
-    
-    // Company variables (default values)
-    empresa_nombre: "CertiCasa",
-    empresa_direccion: "Calle Empresa 123, Madrid",
-    empresa_telefono: "+34 900 123 456",
-    empresa_email: "info@certicasa.com"
-  };
 };
 
 // Calculate complete billing information
