@@ -13,6 +13,11 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
       return response.arrayBuffer();
     };
 
+    // Fonction pour détecter le type d'image
+    const getImageType = (url: string): 'jpg' | 'png' => {
+      return url.toLowerCase().includes('.png') ? 'png' : 'jpg';
+    };
+
     // Télécharger toutes les photos
     const avantPhotosBuffers = await Promise.all(
       reportData.photosAvant.map(photo => imageToBuffer(photo.photo.url))
@@ -68,9 +73,10 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                             new ImageRun({
                               data: avantPhotosBuffers[0],
                               transformation: {
-                                width: 213, // 7.5cm en points
-                                height: 284  // 10cm en points
-                              }
+                                width: 283, // ~7.5cm en pixels (96 DPI)
+                                height: 377  // ~10cm en pixels (96 DPI)
+                              },
+                              type: getImageType(reportData.photosAvant[0].photo.url)
                             })
                           ]
                         })
@@ -84,9 +90,10 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                             new ImageRun({
                               data: avantPhotosBuffers[1],
                               transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                                width: 283,
+                                height: 377
+                              },
+                              type: getImageType(reportData.photosAvant[1].photo.url)
                             })
                           ]
                         })
@@ -105,9 +112,10 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                             new ImageRun({
                               data: avantPhotosBuffers[2],
                               transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                                width: 283,
+                                height: 377
+                              },
+                              type: getImageType(reportData.photosAvant[2].photo.url)
                             })
                           ]
                         })
@@ -121,9 +129,10 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                             new ImageRun({
                               data: avantPhotosBuffers[3],
                               transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                                width: 283,
+                                height: 377
+                              },
+                              type: getImageType(reportData.photosAvant[3].photo.url)
                             })
                           ]
                         })
@@ -159,9 +168,10 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                             new ImageRun({
                               data: apresPhotosBuffers[0],
                               transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                                width: 283,
+                                height: 377
+                              },
+                              type: getImageType(reportData.photosApres[0].photo.url)
                             })
                           ]
                         })
@@ -175,9 +185,10 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                             new ImageRun({
                               data: apresPhotosBuffers[1],
                               transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                                width: 283,
+                                height: 377
+                              },
+                              type: getImageType(reportData.photosApres[1].photo.url)
                             })
                           ]
                         })
@@ -196,9 +207,10 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                             new ImageRun({
                               data: apresPhotosBuffers[2],
                               transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                                width: 283,
+                                height: 377
+                              },
+                              type: getImageType(reportData.photosApres[2].photo.url)
                             })
                           ]
                         })
@@ -212,9 +224,10 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                             new ImageRun({
                               data: apresPhotosBuffers[3],
                               transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                                width: 283,
+                                height: 377
+                              },
+                              type: getImageType(reportData.photosApres[3].photo.url)
                             })
                           ]
                         })
