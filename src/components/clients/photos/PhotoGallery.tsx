@@ -6,7 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Image as ImageIcon } from 'lucide-react';
 import type { SafetyCulturePhoto, SelectedPhoto } from '@/types/safetyCulture';
-import type { SelectionMode } from '../PhotosChantierTab';
+import type { SelectionMode } from '@/hooks/photos/usePhotoSelection';
 
 interface PhotoGalleryProps {
   photos: SafetyCulturePhoto[];

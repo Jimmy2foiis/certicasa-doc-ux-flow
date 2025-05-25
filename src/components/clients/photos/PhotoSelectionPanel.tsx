@@ -7,7 +7,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { X, GripVertical } from 'lucide-react';
 import type { SelectedPhoto } from '@/types/safetyCulture';
-import type { SelectionMode } from '../PhotosChantierTab';
+import type { SelectionMode } from '@/hooks/photos/usePhotoSelection';
 
 interface PhotoSelectionPanelProps {
   selectedPhotos: {

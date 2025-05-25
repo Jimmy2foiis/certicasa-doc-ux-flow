@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import type { SelectionMode } from '../PhotosChantierTab';
+import type { SelectionMode } from '@/hooks/photos/usePhotoSelection';
 
 interface PhotoModeSelectorProps {
   mode: SelectionMode;
