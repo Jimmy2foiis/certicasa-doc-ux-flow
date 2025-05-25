@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProjectCalculation from "../calculations/ProjectCalculation";
@@ -20,6 +21,8 @@ interface ProjectCalculationViewProps {
   }>;
   onBack: () => void;
   onSave: (calculationData: any) => void;
+  surfaceArea?: string;
+  roofArea?: string;
 }
 
 const ProjectCalculationView = ({ 
@@ -28,7 +31,9 @@ const ProjectCalculationView = ({
   currentProjectId, 
   savedCalculations, 
   onBack, 
-  onSave 
+  onSave,
+  surfaceArea = "70",
+  roofArea = "85"
 }: ProjectCalculationViewProps) => {
   // Find the calculation data if we're editing an existing calculation
   const currentCalculation = currentProjectId
@@ -59,6 +64,8 @@ const ProjectCalculationView = ({
         clientName={client.name}
         clientAddress={client.address}
         projectName={currentCalculation?.projectName}
+        surfaceArea={surfaceArea}
+        roofArea={roofArea}
       />
     </div>
   );
