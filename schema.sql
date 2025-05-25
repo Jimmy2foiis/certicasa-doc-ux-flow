@@ -58,16 +58,18 @@ CREATE TABLE IF NOT EXISTS calculations (
   meets_requirements BOOLEAN DEFAULT false
 );
 
--- Create documents table
+-- Create documents table with content and updated_at columns
 CREATE TABLE IF NOT EXISTS documents (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   project_id UUID REFERENCES projects(id),
   client_id UUID REFERENCES clients(id),
   name TEXT NOT NULL,
   type TEXT,
-  status TEXT DEFAULT 'Actif',
+  status TEXT DEFAULT 'generated',
+  content TEXT,
   file_path TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
 -- Enable Row Level Security (RLS) on all tables

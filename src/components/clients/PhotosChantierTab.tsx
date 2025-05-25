@@ -180,6 +180,7 @@ const PhotosChantierTab = ({
 
     try {
       setGenerating(true);
+      console.log('=== DÉBUT GÉNÉRATION DOCUMENT PHOTOS ===');
       
       const selectedAudit = audits.find(audit => audit.id === selectedAuditId);
       
@@ -197,6 +198,7 @@ const PhotosChantierTab = ({
 
       // Générer le document Word
       const wordBlob = await generatePhotosWordDocument(reportData);
+      console.log('✅ Document Word généré, taille:', wordBlob.size);
       
       // Conversion robuste blob → base64
       const blobToBase64 = (blob: Blob): Promise<string> => {
@@ -204,20 +206,22 @@ const PhotosChantierTab = ({
           const reader = new FileReader();
           reader.onload = () => {
             const result = reader.result as string;
-            // Retirer le préfixe "data:application/..."
             const base64 = result.split(',')[1];
+            console.log('✅ Conversion base64 réussie, taille:', base64.length);
             resolve(base64);
           };
-          reader.onerror = reject;
+          reader.onerror = (error) => {
+            console.error('❌ Erreur conversion base64:', error);
+            reject(error);
+          };
           reader.readAsDataURL(blob);
         });
       };
       
       const base64data = await blobToBase64(wordBlob);
       
-      console.log('Document généré, taille:', wordBlob.size);
-      
       // Créer l'enregistrement du document dans Supabase
+      console.log('Sauvegarde dans Supabase...');
       const documentRecord = await createDocument({
         name: 'Informe fotográfico',
         type: 'fotos',
@@ -227,19 +231,21 @@ const PhotosChantierTab = ({
       });
 
       if (documentRecord) {
-        console.log('Document enregistré dans Supabase:', documentRecord);
+        console.log('✅ Document enregistré dans Supabase:', documentRecord.id);
         
         toast({
           title: "✅ Document créé",
           description: "Informe fotográfico a été ajouté au dossier client",
         });
         
+        // Callback pour le parent
         if (onDocumentGenerated) {
           onDocumentGenerated();
         }
         
-        // Délai de 1 seconde avant de déclencher l'événement pour s'assurer que Supabase a fini
+        // Attendre 2 secondes avant de déclencher l'événement pour s'assurer que Supabase a fini
         setTimeout(() => {
+          console.log('🔄 Déclenchement événement document-generated');
           window.dispatchEvent(new CustomEvent('document-generated', { 
             detail: { 
               clientId, 
@@ -248,15 +254,17 @@ const PhotosChantierTab = ({
               documentId: documentRecord.id
             } 
           }));
-        }, 1000);
+        }, 2000);
         
+        // Réinitialiser les sélections
         setSelectedPhotos({ avant: [], apres: [] });
+        console.log('=== FIN GÉNÉRATION DOCUMENT PHOTOS ===');
       } else {
-        throw new Error('Impossible d\'enregistrer le document');
+        throw new Error('❌ Impossible d\'enregistrer le document dans Supabase');
       }
       
     } catch (error) {
-      console.error('Erreur lors de la génération:', error);
+      console.error('❌ Erreur lors de la génération:', error);
       toast({
         title: "Erreur",
         description: error instanceof Error ? error.message : "Impossible de générer le document",

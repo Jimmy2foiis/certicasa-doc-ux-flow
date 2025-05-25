@@ -16,6 +16,8 @@ export interface Document {
 // Fonctions pour gérer les documents
 export const getDocumentsForClient = async (clientId: string): Promise<Document[]> => {
   try {
+    console.log('Récupération des documents pour le client:', clientId);
+    
     const { data, error } = await supabase
       .from('documents')
       .select('*')
@@ -23,10 +25,11 @@ export const getDocumentsForClient = async (clientId: string): Promise<Document[
       .order('created_at', { ascending: false });
     
     if (error) {
-      console.error('Erreur lors de la récupération des documents du client:', error);
+      console.error('Erreur Supabase lors de la récupération des documents:', error);
       return [];
     }
     
+    console.log('Documents récupérés:', data?.length || 0);
     return data || [];
   } catch (error) {
     console.error('Erreur lors de la récupération des documents du client:', error);
@@ -35,53 +38,87 @@ export const getDocumentsForClient = async (clientId: string): Promise<Document[
 };
 
 export const getDocumentsForProject = async (projectId: string): Promise<Document[]> => {
-  const { data, error } = await supabase
-    .from('documents')
-    .select('*')
-    .eq('project_id', projectId)
-    .order('created_at', { ascending: false });
-  
-  if (error) {
+  try {
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Erreur lors de la récupération des documents du projet:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
     console.error('Erreur lors de la récupération des documents du projet:', error);
     return [];
   }
-  
-  return data || [];
 };
 
 export const createDocument = async (documentData: Partial<Document>): Promise<Document | null> => {
   try {
+    console.log('=== DÉBUT CRÉATION DOCUMENT ===');
+    console.log('Données reçues:', {
+      name: documentData.name,
+      type: documentData.type,
+      status: documentData.status,
+      client_id: documentData.client_id,
+      contentLength: documentData.content?.length || 0
+    });
+    
     // Vérifier que le nom du document est défini
     if (!documentData.name) {
-      console.error('Erreur: Le nom du document est obligatoire');
+      console.error('❌ Erreur: Le nom du document est obligatoire');
+      return null;
+    }
+
+    if (!documentData.client_id) {
+      console.error('❌ Erreur: Le client_id est obligatoire');
       return null;
     }
     
-    console.log('Création document avec données:', documentData);
+    const docToInsert = {
+      name: documentData.name,
+      type: documentData.type || 'other',
+      status: documentData.status || 'generated',
+      client_id: documentData.client_id,
+      project_id: documentData.project_id || null,
+      content: documentData.content || null,
+      file_path: documentData.file_path || null,
+    };
+
+    console.log('Insertion dans Supabase avec:', docToInsert);
     
     const { data, error } = await supabase
       .from('documents')
-      .insert({
-        name: documentData.name,
-        type: documentData.type || 'other',
-        status: documentData.status || 'draft',
-        client_id: documentData.client_id || null,
-        project_id: documentData.project_id || null,
-        content: documentData.content || null,
-        file_path: documentData.file_path || null,
-      })
+      .insert(docToInsert)
       .select()
       .single();
     
     if (error) {
-      console.error('Erreur lors de la création du document:', error);
+      console.error('❌ Erreur Supabase lors de la création:', error);
+      console.error('Détails de l\'erreur:', {
+        message: error.message,
+        details: error.details,
+        hint: error.hint,
+        code: error.code
+      });
       return null;
     }
     
-    console.log('Document créé avec succès:', data);
+    console.log('✅ Document créé avec succès:', {
+      id: data.id,
+      name: data.name,
+      type: data.type,
+      status: data.status
+    });
+    console.log('=== FIN CRÉATION DOCUMENT ===');
+    
     return data;
   } catch (error) {
-    console.error('Erreur lors de la création du document:', error);
+    console.error('❌ Exception lors de la création du document:', error);
     return null;
   }
 };
@@ -121,7 +158,7 @@ export const getDocumentById = async (documentId: string): Promise<Document | nu
     .from('documents')
     .select('*')
     .eq('id', documentId)
-    .maybeSingle(); // Utiliser maybeSingle au lieu de single
+    .maybeSingle();
   
   if (error) {
     console.error('Erreur lors de la récupération du document:', error);

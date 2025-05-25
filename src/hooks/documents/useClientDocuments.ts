@@ -17,9 +17,9 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
     
     try {
       if (clientId) {
-        console.log('Loading documents for client:', clientId);
+        console.log('🔄 Loading documents for client:', clientId);
         const documents = await getDocumentsForClient(clientId);
-        console.log('Loaded documents from Supabase:', documents);
+        console.log('📄 Loaded documents from Supabase:', documents.length);
         
         const formattedDocs: AdministrativeDocument[] = documents.map(doc => ({
           id: doc.id,
@@ -36,14 +36,14 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
           statusLabel: getStatusLabelForDocument(doc.type || "pdf", doc.status || "available")
         }));
         
-        console.log('Formatted documents:', formattedDocs);
+        console.log('✅ Formatted documents:', formattedDocs.length);
         setAdminDocuments(formattedDocs);
       } else {
         const demoDocuments = generateDemoDocuments(clientName, projectType);
         setAdminDocuments(demoDocuments);
       }
     } catch (error) {
-      console.error("Erreur lors du chargement des documents:", error);
+      console.error("❌ Erreur lors du chargement des documents:", error);
       toast({
         title: "Erreur",
         description: "Impossible de charger les documents. Veuillez réessayer.",
@@ -63,13 +63,15 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
 
   useEffect(() => {
     const handleDocumentGenerated = (event: CustomEvent) => {
-      console.log('Document généré détecté dans useClientDocuments:', event.detail);
+      console.log('🎉 Document généré détecté dans useClientDocuments:', event.detail);
       
       if (event.detail.clientId === clientId) {
-        console.log('Refreshing documents for client:', clientId);
+        console.log('🔄 Refreshing documents for client:', clientId);
+        // Délai de 2 secondes pour s'assurer que Supabase a terminé
         setTimeout(() => {
+          console.log('🔄 Executing loadDocuments...');
           loadDocuments();
-        }, 1000);
+        }, 2000);
       }
     };
 

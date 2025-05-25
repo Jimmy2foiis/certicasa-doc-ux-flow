@@ -28,7 +28,7 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
 
   // Préparer les documents requis avec leur ordre correct
   useEffect(() => {
-    console.log('Documents from Supabase:', documents);
+    console.log('🔄 Documents from Supabase:', documents.length);
     
     // Définir les 8 documents obligatoires
     const requiredDocsList = [
@@ -98,25 +98,33 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
       },
     ];
 
-    // Mapping amélioré avec correspondance par type ET nom
+    // Mapping amélioré avec correspondance exacte par type et nom
     const mappedDocuments: AdministrativeDocument[] = requiredDocsList.map(reqDoc => {
-      console.log(`Mapping ${reqDoc.name} (${reqDoc.type})...`);
+      console.log(`🔍 Mapping ${reqDoc.name} (${reqDoc.type})...`);
       
       const existingDoc = documents.find(doc => {
+        // Correspondance exacte par type
         const typeMatch = doc.type?.toLowerCase() === reqDoc.type.toLowerCase();
+        
+        // Correspondance par nom (flexible)
         const nameMatch = doc.name?.toLowerCase().includes(reqDoc.name.toLowerCase()) ||
                           reqDoc.name.toLowerCase().includes(doc.name?.toLowerCase() || '');
         
         // Cas spécial pour "fotos" et "Informe fotográfico"
         const fotosMatch = (reqDoc.type === 'fotos' && 
           (doc.name?.toLowerCase().includes('fotográfico') || 
+           doc.name?.toLowerCase().includes('informe') ||
            doc.name?.toLowerCase().includes('fotos') || 
            doc.type?.toLowerCase() === 'fotos'));
            
-        return typeMatch || nameMatch || fotosMatch;
+        const match = typeMatch || nameMatch || fotosMatch;
+        
+        if (match) {
+          console.log(`✅ ${reqDoc.name}: TROUVÉ ->`, doc.name, `(status: ${doc.status})`);
+        }
+        
+        return match;
       });
-
-      console.log(`${reqDoc.name}:`, existingDoc ? 'TROUVÉ' : 'MANQUANT', existingDoc);
 
       if (existingDoc) {
         return {
@@ -129,6 +137,7 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
           file_path: existingDoc.file_path
         };
       } else {
+        console.log(`❌ ${reqDoc.name}: MANQUANT`);
         return {
           ...reqDoc,
           status: "missing" as DocumentStatus,
@@ -138,7 +147,7 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
       }
     });
 
-    console.log('Final mapped documents:', mappedDocuments);
+    console.log('📋 Final mapped documents:', mappedDocuments.map(d => `${d.name}: ${d.status}`));
     setRequiredDocuments(mappedDocuments);
   }, [documents]);
 
