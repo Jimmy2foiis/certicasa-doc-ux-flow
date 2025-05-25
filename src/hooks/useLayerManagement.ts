@@ -23,27 +23,53 @@ interface UseLayerManagementProps {
 }
 
 export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorType }: UseLayerManagementProps) => {
-  const [beforeLayers, setBeforeLayers] = useState<Layer[]>(initialLayers);
-  const [afterLayers, setAfterLayers] = useState<Layer[]>([...initialLayers]);
+  const [beforeLayers, setBeforeLayers] = useState<Layer[]>([]);
+  const [afterLayers, setAfterLayers] = useState<Layer[]>([]);
   const { products } = useMaterialsAndProducts();
 
+  // Initialiser les couches UNIQUEMENT si aucune donnée sauvegardée n'existe
   useEffect(() => {
-    if (savedBeforeLayers) setBeforeLayers(savedBeforeLayers);
-    if (savedAfterLayers) setAfterLayers(savedAfterLayers);
-    else if (!savedBeforeLayers) setAfterLayers([...beforeLayers]);
-  }, [savedBeforeLayers, savedAfterLayers]);
+    console.log('🔄 Initialisation des couches:', {
+      savedBeforeLayers: savedBeforeLayers?.length || 0,
+      savedAfterLayers: savedAfterLayers?.length || 0,
+      floorType
+    });
 
-  // Logique de pré-remplissage selon le type de plancher
-  useEffect(() => {
-    if (floorType && !savedBeforeLayers && !savedAfterLayers) {
-      const preset = getFloorTypePreset(floorType);
+    // Si nous avons des données sauvegardées, les utiliser en priorité
+    if (savedBeforeLayers && savedBeforeLayers.length > 0) {
+      console.log('✅ Chargement des couches AVANT sauvegardées:', savedBeforeLayers);
+      setBeforeLayers(savedBeforeLayers);
+    } else {
+      // Sinon, utiliser les valeurs par défaut ou le preset
+      const preset = floorType ? getFloorTypePreset(floorType) : null;
       if (preset) {
-        console.log(`Pré-remplissage automatique pour plancher: ${floorType}`);
+        console.log('📋 Application du preset pour plancher:', floorType);
         setBeforeLayers(preset.beforeLayers.map(layer => ({ ...layer, id: `${layer.id}_${Date.now()}` })));
-        setAfterLayers(preset.afterLayers.map(layer => ({ ...layer, id: `${layer.id}_${Date.now()}` })));
+      } else {
+        console.log('📋 Application des couches par défaut AVANT');
+        setBeforeLayers([...initialLayers]);
       }
     }
-  }, [floorType, savedBeforeLayers, savedAfterLayers]);
+
+    if (savedAfterLayers && savedAfterLayers.length > 0) {
+      console.log('✅ Chargement des couches APRÈS sauvegardées:', savedAfterLayers);
+      setAfterLayers(savedAfterLayers);
+    } else {
+      // Sinon, utiliser les valeurs par défaut ou le preset
+      const preset = floorType ? getFloorTypePreset(floorType) : null;
+      if (preset) {
+        console.log('📋 Application du preset pour plancher APRÈS:', floorType);
+        setAfterLayers(preset.afterLayers.map(layer => ({ ...layer, id: `${layer.id}_${Date.now()}` })));
+      } else if (savedBeforeLayers && savedBeforeLayers.length > 0) {
+        // Copier les couches avant si elles existent
+        console.log('📋 Copie des couches AVANT vers APRÈS');
+        setAfterLayers([...savedBeforeLayers]);
+      } else {
+        console.log('📋 Application des couches par défaut APRÈS');
+        setAfterLayers([...initialLayers]);
+      }
+    }
+  }, [savedBeforeLayers, savedAfterLayers, floorType]);
 
   const addLayer = (layerSet: "before" | "after", material: Material) => {
     const newLayer = {
@@ -88,12 +114,18 @@ export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorT
   };
 
   const copyBeforeToAfter = () => {
+    console.log('📋 Copie des couches AVANT vers APRÈS');
     setAfterLayers([...beforeLayers]);
   };
 
-  // 🔧 FIX: Simplifier updateLayer pour éviter les objets imbriqués
   const updateLayer = (layerSet: "before" | "after", updatedLayer: Layer) => {
-    console.log(`✅ Mise à jour couche ${layerSet}:`, updatedLayer);
+    console.log(`✅ Mise à jour couche ${layerSet}:`, {
+      id: updatedLayer.id,
+      name: updatedLayer.name,
+      thickness: updatedLayer.thickness,
+      lambda: updatedLayer.lambda,
+      r: updatedLayer.r
+    });
     
     if (layerSet === "before") {
       setBeforeLayers(prev => 
