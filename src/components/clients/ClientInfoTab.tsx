@@ -40,9 +40,6 @@ const ClientInfoTab = ({
   const [roofArea, setRoofArea] = useState("89");
   const [floorType, setFloorType] = useState("Bois");
   
-  // 🎯 État unifié pour la zone climatique
-  const [currentClimateZone, setCurrentClimateZone] = useState(climateZone || "C3");
-  
   // Gestionnaire de changement d'adresse
   const handleAddressChange = (newAddress: string) => {
     setAddress(newAddress);
@@ -72,12 +69,6 @@ const ClientInfoTab = ({
         duration: 3000,
       });
     }
-  };
-
-  // 🎯 Gestionnaire de changement de zone climatique
-  const handleClimateZoneChange = (newZone: string) => {
-    console.log("🌍 Zone climatique mise à jour dans ClientInfoTab:", newZone);
-    setCurrentClimateZone(newZone);
   };
 
   // Gestionnaire de rafraîchissement des données cadastrales
@@ -126,7 +117,7 @@ const ClientInfoTab = ({
           onCoordinatesChange={handleCoordinatesChange}
           utmCoordinates={utmCoordinates}
           cadastralReference={cadastralReference}
-          climateZone={currentClimateZone}
+          climateZone={climateZone}
           apiSource={apiSource}
           loadingCadastral={loadingCadastral}
           onRefreshCadastralData={handleRefreshCadastralData}
@@ -146,8 +137,6 @@ const ClientInfoTab = ({
           surfaceArea={surfaceArea}
           roofArea={roofArea}
           floorType={floorType}
-          climateZone={currentClimateZone}
-          onClimateZoneChange={handleClimateZoneChange}
         />
       </div>
     </div>

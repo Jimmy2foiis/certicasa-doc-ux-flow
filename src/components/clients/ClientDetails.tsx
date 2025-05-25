@@ -153,8 +153,9 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
         surfaceArea={surfaceArea}
         roofArea={roofArea}
         floorType={floorType}
-        climateZone={climateZone}
-        onClimateZoneChange={handleClimateZoneChange}
+        onSurfaceAreaChange={handleSurfaceAreaChange}
+        onRoofAreaChange={handleRoofAreaChange}
+        onFloorTypeChange={handleFloorTypeChange}
       />
     </div>
   );
