@@ -5,6 +5,7 @@ import { Client } from "@/services/api/types";
 import StatusBanner from "./StatusBanner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ClientForm } from "./ClientForm";
+import { FileText } from "lucide-react";
 
 interface ClientDetailsHeaderProps {
   client: Client | null;
@@ -62,7 +63,17 @@ const ClientDetailsHeader = ({
   return (
     <>
       <div className="space-y-2">
-        <h1 className="text-2xl font-bold tracking-tight">{clientName}</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold tracking-tight">{clientName}</h1>
+          <Button 
+            variant="default" 
+            className="bg-green-600 hover:bg-green-700"
+            onClick={handleGenerateDocument}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Générer un document
+          </Button>
+        </div>
         
         {/* Intégration du bandeau de statut */}
         <StatusBanner 
