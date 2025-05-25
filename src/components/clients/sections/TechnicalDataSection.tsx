@@ -46,11 +46,11 @@ const TechnicalDataSection = ({
     }
   };
 
+  // 🚨 DEBUG: Log avant rendu
+  console.log('🎯 TechnicalDataSection - RENDU avec zone:', climateZone);
+
   return (
     <div className="border-b pb-4">
-      {/* 🚨 DEBUG: Log avant rendu */}
-      {console.log('🎯 TechnicalDataSection - RENDU avec zone:', climateZone)}
-      
       <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
         <Settings className="h-4 w-4" />
         Données techniques

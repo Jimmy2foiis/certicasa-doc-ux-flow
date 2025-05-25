@@ -86,11 +86,11 @@ const ClimateZoneSelector = ({
     onClimateZoneChange(zone);
   };
 
+  // 🚨 DEBUG: Log avant rendu
+  console.log('🎯 ClimateZoneSelector - RENDU FINAL avec zone:', selectedClimateZone);
+
   return (
     <div className="space-y-2">
-      {/* 🚨 DEBUG: Afficher la zone dans le log */}
-      {console.log('🎯 ClimateZoneSelector - RENDU FINAL avec zone:', selectedClimateZone)}
-      
       <Label htmlFor="climate-zone" className="flex items-center gap-2">
         Zone Climatique
         {selectedClimateZone && (

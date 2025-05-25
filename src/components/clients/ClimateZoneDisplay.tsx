@@ -91,11 +91,11 @@ const ClimateZoneDisplay = ({
     }
   };
 
+  // 🚨 DEBUG: Log avant rendu
+  console.log('🎯 ClimateZoneDisplay - RENDU avec zone:', climateZone);
+
   return (
     <div className="space-y-3 p-3 border rounded-lg bg-blue-50 border-blue-200">
-      {/* 🚨 DEBUG: Log avant rendu */}
-      {console.log('🎯 ClimateZoneDisplay - RENDU avec zone:', climateZone)}
-      
       <div className="flex items-center gap-2">
         <Thermometer className="h-4 w-4 text-blue-600" />
         <span className="text-sm font-medium text-blue-800">Zone Climatique CTE</span>
