@@ -27,8 +27,8 @@ const ClientInfoSidebar = ({
   onSurfaceAreaChange,
   onRoofAreaChange 
 }: ClientInfoSidebarProps) => {
-  const [surfaceArea, setSurfaceArea] = useState("70");
-  const [roofArea, setRoofArea] = useState("85");
+  const [surfaceArea, setSurfaceArea] = useState("56");
+  const [roofArea, setRoofArea] = useState("89");
 
   const handleSurfaceAreaChange = (value: string) => {
     setSurfaceArea(value);
@@ -61,6 +61,14 @@ const ClientInfoSidebar = ({
               <h3 className="font-semibold text-base border-b pb-1">Informations techniques</h3>
               
               <div className="space-y-2.5">
+                {/* Zone climatique */}
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Zone climatique</span>
+                  <Badge variant="outline" className="mt-1 w-fit">
+                    {client.climateZone || "C"}
+                  </Badge>
+                </div>
+                
                 {/* Superficie des combles */}
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Superficie des combles (m²)</span>
@@ -93,14 +101,6 @@ const ClientInfoSidebar = ({
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Type de plancher</span>
                   <span className="font-medium">{client.floorType || "Bois"}</span>
-                </div>
-                
-                {/* Zone climatique */}
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Zone climatique</span>
-                  <Badge variant="outline" className="mt-1 w-fit">
-                    {client.climateZone || "C"}
-                  </Badge>
                 </div>
               </div>
             </div>

@@ -36,6 +36,8 @@ const ClientInfoTab = ({
   const { toast } = useToast();
   // Adresse par défaut du client
   const [address, setAddress] = useState(client.address || "Rue Serrano 120, 28006 Madrid");
+  const [surfaceArea, setSurfaceArea] = useState("56");
+  const [roofArea, setRoofArea] = useState("89");
   
   // Gestionnaire de changement d'adresse
   const handleAddressChange = (newAddress: string) => {
@@ -131,6 +133,8 @@ const ClientInfoTab = ({
           onEditCalculation={handleEditCalculation}
           onDeleteCalculation={handleDeleteCalculation}
           onBack={handleBack}
+          surfaceArea={surfaceArea}
+          roofArea={roofArea}
         />
       </div>
     </div>
