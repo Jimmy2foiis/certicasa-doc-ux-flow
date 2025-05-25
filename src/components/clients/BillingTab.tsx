@@ -193,7 +193,7 @@ const BillingTab = ({
           {/* Bouton principal pour générer la facturation */}
           {calculationData ? <Dialog open={showBillingDialog} onOpenChange={setShowBillingDialog}>
               <DialogTrigger asChild>
-                <Button className="bg-green-500 hover:bg-green-400">
+                <Button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center gap-2">
                   <Calculator className="h-4 w-4 mr-2" />
                   Générer Facturation CEE
                 </Button>
