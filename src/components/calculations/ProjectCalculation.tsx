@@ -109,25 +109,6 @@ const ProjectCalculation = ({
     floorType: floorType
   });
 
-  // Synchroniser les changements depuis les props vers les callbacks parents
-  useEffect(() => {
-    if (calcSurfaceArea !== surfaceArea && onSurfaceAreaChange) {
-      onSurfaceAreaChange(calcSurfaceArea);
-    }
-  }, [calcSurfaceArea, surfaceArea, onSurfaceAreaChange]);
-
-  useEffect(() => {
-    if (calcRoofArea !== roofArea && onRoofAreaChange) {
-      onRoofAreaChange(calcRoofArea);
-    }
-  }, [calcRoofArea, roofArea, onRoofAreaChange]);
-
-  useEffect(() => {
-    if (climateZone !== clientClimateZone && onClimateZoneChange) {
-      onClimateZoneChange(climateZone);
-    }
-  }, [climateZone, clientClimateZone, onClimateZoneChange]);
-
   const handleDeleteBeforeLayer = (id: string) => {
     setBeforeLayers(beforeLayers.filter(l => l.id !== id));
   };
@@ -136,7 +117,7 @@ const ProjectCalculation = ({
     setAfterLayers(afterLayers.filter(l => l.id !== id));
   };
 
-  // Gestionnaires pour la synchronisation des surfaces
+  // Gestionnaires pour la synchronisation des surfaces - simplifiés pour éviter les boucles
   const handleSurfaceAreaChangeInternal = (value: string) => {
     setSurfaceArea(value);
     if (onSurfaceAreaChange) {

@@ -57,7 +57,7 @@ const ProjectCalculationView = ({
     
   const calculationData = currentCalculation?.calculationData;
 
-  // Synchroniser les valeurs quand elles changent depuis la sidebar
+  // Synchroniser les valeurs quand elles changent depuis la sidebar (une seule fois)
   useEffect(() => {
     setCurrentSurfaceArea(surfaceArea);
   }, [surfaceArea]);
@@ -97,28 +97,6 @@ const ProjectCalculationView = ({
       onClimateZoneChange(value);
     }
   };
-
-  // Nouveau: Gestionnaires pour recevoir les changements depuis le module de calcul
-  const handleSurfaceAreaFromCalculation = (value: string) => {
-    setCurrentSurfaceArea(value);
-    if (onSurfaceAreaChange) {
-      onSurfaceAreaChange(value);
-    }
-  };
-
-  const handleRoofAreaFromCalculation = (value: string) => {
-    setCurrentRoofArea(value);
-    if (onRoofAreaChange) {
-      onRoofAreaChange(value);
-    }
-  };
-
-  const handleClimateZoneFromCalculation = (value: string) => {
-    setCurrentClimateZone(value);
-    if (onClimateZoneChange) {
-      onClimateZoneChange(value);
-    }
-  };
     
   return (
     <div className="space-y-4">
@@ -145,10 +123,10 @@ const ProjectCalculationView = ({
         surfaceArea={currentSurfaceArea}
         roofArea={currentRoofArea}
         floorType={currentFloorType}
-        onSurfaceAreaChange={handleSurfaceAreaFromCalculation}
-        onRoofAreaChange={handleRoofAreaFromCalculation}
+        onSurfaceAreaChange={handleSurfaceAreaChangeInternal}
+        onRoofAreaChange={handleRoofAreaChangeInternal}
         onFloorTypeChange={handleFloorTypeChangeInternal}
-        onClimateZoneChange={handleClimateZoneFromCalculation}
+        onClimateZoneChange={handleClimateZoneChangeInternal}
       />
     </div>
   );
