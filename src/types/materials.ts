@@ -15,6 +15,18 @@ export interface ThicknessOption {
   r: number; // R calculé pour cette épaisseur
 }
 
+export interface TechnicalCharacteristics {
+  epaisseur: number; // mm
+  resistanceThermique: number; // m²·K/W
+  conductivite: number; // W/m·K
+  densite?: string;
+  reactionFeu?: string;
+  certificat?: string;
+  marquageCE?: string;
+  classeAsentamiento?: string;
+  emissions?: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -29,6 +41,17 @@ export interface Product {
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
+  // Nouveaux champs pour la fiche produit complète
+  nomComplet?: string;
+  type?: string;
+  methodeInstallation?: 'SOUFFLE' | 'RAMPANTS' | 'PANNEAU' | 'ROULEAU';
+  tvaApplicable?: number;
+  tvaOptions?: number[];
+  caracteristiques?: TechnicalCharacteristics;
+  descriptionTechnique?: string;
+  descriptionFacture?: string;
+  avantages?: string[];
+  certifications?: string[];
 }
 
 export interface MaterialCategory {
@@ -42,6 +65,15 @@ export const MATERIAL_CATEGORIES: MaterialCategory[] = [
   { id: 'natural', label: 'Isolants naturels' },
   { id: 'other', label: 'Autres' }
 ];
+
+export const INSTALLATION_METHODS = [
+  { id: 'SOUFFLE', label: 'Soufflé (Soplado)' },
+  { id: 'RAMPANTS', label: 'Rampants' },
+  { id: 'PANNEAU', label: 'Panneau' },
+  { id: 'ROULEAU', label: 'Rouleau' }
+];
+
+export const TVA_OPTIONS = [10, 21];
 
 // Utility function to calculate thermal resistance
 export const calculateThermalResistance = (thickness: number, lambda: number, unit: 'mm' | 'cm' | 'm' = 'mm'): number => {

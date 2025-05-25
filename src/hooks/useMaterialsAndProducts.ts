@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Material, Product, ThicknessOption } from '@/types/materials';
 
@@ -66,6 +65,124 @@ const DEFAULT_MATERIALS: Material[] = [
 ];
 
 const DEFAULT_PRODUCTS: Product[] = [
+  {
+    id: 'URSA_SOUFLR_47',
+    name: 'SOUFL\'R 47',
+    nomComplet: 'URSA SOUFL\'R 47',
+    manufacturer: 'URSA',
+    baseMaterialId: 'glass_wool',
+    lambda: 0.047,
+    defaultThickness: 335,
+    defaultR: 7.00,
+    type: 'Lana mineral a granel para insuflado (soplado)',
+    methodeInstallation: 'SOUFFLE',
+    prixUnitaire: 7,
+    pricePerM2: 7,
+    tvaApplicable: 10,
+    tvaOptions: [10, 21],
+    caracteristiques: {
+      epaisseur: 335,
+      resistanceThermique: 7.00,
+      conductivite: 0.047,
+      densite: '10-15 kg/m³',
+      reactionFeu: 'Euroclase A1 (no inflamable)',
+      certificat: 'ACERMI n° 14/D/058/950',
+      marquageCE: 'UNE EN 14064-1',
+      classeAsentamiento: 'S1',
+      emissions: 'A+ (muy bajas)'
+    },
+    descriptionTechnique: `Aislamiento térmico por soplado de lana mineral de altas prestaciones.
+
+CARACTERÍSTICAS TÉCNICAS:
+• Espesor instalado: 335 mm
+• Resistencia térmica (R): 7,00 m²·K/W
+• Conductividad térmica (λ): 0,047 W/m·K
+• Densidad instalada: 10-15 kg/m³
+• Reacción al fuego: Euroclase A1 (no inflamable)
+
+CERTIFICACIONES:
+• Marcado CE según UNE EN 14064-1
+• Certificación ACERMI n° 14/D/058/950
+• Clase de asentamiento: S1
+• Emisiones interiores: A+ (muy bajas)
+
+VENTAJAS:
+✓ Sin puentes térmicos
+✓ Muy permeable al vapor (MU1)
+✓ Respetuoso con el medio ambiente
+✓ Instalación rápida y limpia`,
+    descriptionFacture: 'Suministro e instalación de aislamiento térmico URSA SOUFL\'R 47 mediante insuflado (soplado) en forjado, cumpliendo normativa técnica vigente.',
+    avantages: [
+      'Sin puentes térmicos',
+      'Muy permeable al vapor (MU1)',
+      'Respetuoso con el medio ambiente',
+      'Instalación rápida y limpia'
+    ],
+    certifications: [
+      'Marcado CE según UNE EN 14064-1',
+      'Certificación ACERMI n° 14/D/058/950',
+      'Clase de asentamiento: S1',
+      'Emisiones interiores: A+ (muy bajas)'
+    ],
+    thicknessOptions: [
+      { thickness: 335, r: 7.00 }
+    ],
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
+  {
+    id: 'URSA_TETRIS_SUPER_12',
+    name: 'TETRIS SUPER 12',
+    nomComplet: 'URSA TETRIS SUPER 12',
+    manufacturer: 'URSA',
+    baseMaterialId: 'glass_wool',
+    lambda: 0.037,
+    defaultThickness: 120,
+    defaultR: 3.24,
+    type: 'Panel rígido de lana mineral para rampants',
+    methodeInstallation: 'RAMPANTS',
+    prixUnitaire: 12,
+    pricePerM2: 12,
+    tvaApplicable: 10,
+    tvaOptions: [10, 21],
+    caracteristiques: {
+      epaisseur: 120,
+      resistanceThermique: 3.24,
+      conductivite: 0.037,
+      densite: '12-15 kg/m³',
+      reactionFeu: 'Euroclase A1',
+      certificat: 'ACERMI n° 14/D/058/951',
+      marquageCE: 'UNE EN 13162',
+      emissions: 'A+'
+    },
+    descriptionTechnique: `Panel rígido de lana mineral para aislamiento de rampants.
+
+CARACTERÍSTICAS TÉCNICAS:
+• Espesor: 120 mm
+• Resistencia térmica (R): 3,24 m²·K/W
+• Conductividad térmica (λ): 0,037 W/m·K
+• Densidad: 12-15 kg/m³
+• Reacción al fuego: Euroclase A1
+
+VENTAJAS:
+✓ Fácil instalación en rampants
+✓ Excelente comportamiento mecánico
+✓ Resistente a la humedad
+✓ No se asienta con el tiempo`,
+    descriptionFacture: 'Suministro e instalación de aislamiento térmico URSA TETRIS SUPER 12 en rampants, cumpliendo normativa técnica vigente.',
+    thicknessOptions: [
+      { thickness: 60, r: 1.62 },
+      { thickness: 80, r: 2.16 },
+      { thickness: 100, r: 2.70 },
+      { thickness: 120, r: 3.24 },
+      { thickness: 140, r: 3.78 },
+      { thickness: 160, r: 4.32 }
+    ],
+    isActive: true,
+    createdAt: new Date(),
+    updatedAt: new Date()
+  },
   {
     id: 'ursotop_47',
     name: 'URSOTOP 47 KRAFT',
@@ -234,6 +351,9 @@ export const useMaterialsAndProducts = () => {
   const getActiveMaterials = () => materials.filter(m => m.isActive);
   const getActiveProducts = () => products.filter(p => p.isActive);
 
+  const getProductsByInstallationMethod = (method: string) => 
+    products.filter(p => p.isActive && p.methodeInstallation === method);
+
   return {
     materials,
     products,
@@ -245,6 +365,7 @@ export const useMaterialsAndProducts = () => {
     updateProduct,
     deleteProduct,
     getActiveMaterials,
-    getActiveProducts
+    getActiveProducts,
+    getProductsByInstallationMethod
   };
 };
