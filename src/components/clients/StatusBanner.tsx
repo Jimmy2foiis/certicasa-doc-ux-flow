@@ -1,78 +1,119 @@
+
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Edit, Eye } from "lucide-react";
-import { Client } from "@/services/api/types";
+import { Input } from "@/components/ui/input";
+import { Mail, Phone, MapPin, User } from "lucide-react";
+
 interface StatusBannerProps {
-  client: Client | null;
-  documentStats?: {
-    total: number;
-    generated: number;
-    missing: number;
-    error: number;
+  client?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+    postalCode?: string;
+    city?: string;
+    province?: string;
+    community?: string;
   };
-  onViewMissingDocs?: () => void;
-  onEditClient?: (e: React.MouseEvent) => void;
 }
-const StatusBanner = ({
-  client,
-  documentStats,
-  onViewMissingDocs = () => {},
-  onEditClient = () => {}
-}: StatusBannerProps) => {
-  if (!client) return null;
-  const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'active':
-      case 'actif':
-      case 'en cours':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'pending':
-      case 'en attente':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'inactive':
-      case 'inactif':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-      default:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
-  };
-  const hasMissingDocuments = documentStats && documentStats.missing > 0;
-  return <div className="space-y-3">
-      {/* Statut principal du client */}
-      <div className="flex items-center gap-3">
-        <Badge variant="outline" className={`px-3 py-1 ${getStatusColor(client.status || 'En cours')}`}>
-          {client.status || 'En cours'}
-        </Badge>
-        
-        
-        
-        
-        
-        <span className="text-sm text-gray-600">
-          Numéro lot: {client.lotNumber || '-'}
-        </span>
-        
-        <span className="text-sm text-gray-600">
-          Date dépôt: {client.depositDate || '-'}
-        </span>
-        
-        <span className="text-sm text-gray-600">
-          Documents: {documentStats ? `${documentStats.generated}/${documentStats.total}` : '6/8'}
-        </span>
-        
-        {/* Bouton voir documents manquants */}
-        {hasMissingDocuments && <Button variant="outline" size="sm" onClick={onViewMissingDocs} className="text-gray-700 border-gray-300 hover:bg-gray-100 text-right">
-            <Eye className="h-4 w-4 mr-1" />
-            Voir les documents manquants
-          </Button>}
-        
-        {/* Bouton d'édition */}
-        <Button variant="outline" size="sm" onClick={onEditClient} className="ml-auto">
-          <Edit className="h-4 w-4 mr-1" />
-          Modifier
-        </Button>
+
+const StatusBanner = ({ client }: StatusBannerProps) => {
+  return (
+    <div className="bg-white border rounded-lg p-4 mb-4 space-y-4">
+      {/* Section Contact */}
+      <div className="border-b pb-4">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <User className="h-4 w-4" />
+          Contact
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="flex items-center gap-2">
+            <Mail className="h-4 w-4 text-gray-500 flex-shrink-0" />
+            <Input
+              type="email"
+              value={client?.email || ""}
+              placeholder="email@example.com"
+              className="text-sm h-8"
+              readOnly
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Phone className="h-4 w-4 text-gray-500 flex-shrink-0" />
+            <Input
+              type="tel"
+              value={client?.phone || ""}
+              placeholder="+34 XXX XXX XXX"
+              className="text-sm h-8"
+              readOnly
+            />
+          </div>
+        </div>
       </div>
-    </div>;
+
+      {/* Section Adresse complète */}
+      <div className="border-b pb-4">
+        <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <MapPin className="h-4 w-4" />
+          Adresse complète
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="md:col-span-2 lg:col-span-1">
+            <Input
+              value={client?.address || ""}
+              placeholder="Rue"
+              className="text-sm h-8"
+              readOnly
+            />
+          </div>
+          <div>
+            <Input
+              value={client?.postalCode || ""}
+              placeholder="Code postal"
+              className="text-sm h-8"
+              readOnly
+            />
+          </div>
+          <div>
+            <Input
+              value={client?.city || ""}
+              placeholder="Ville"
+              className="text-sm h-8"
+              readOnly
+            />
+          </div>
+          <div>
+            <Input
+              value={client?.province || ""}
+              placeholder="Province"
+              className="text-sm h-8"
+              readOnly
+            />
+          </div>
+          <div className="md:col-span-2">
+            <Input
+              value={client?.community || ""}
+              placeholder="Communauté autonome"
+              className="text-sm h-8"
+              readOnly
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Bloc existant */}
+      <div className="flex items-center gap-3">
+        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+          Actif
+        </Badge>
+        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+          RES020
+        </Badge>
+        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+          Équipe RA BAT 2
+        </Badge>
+      </div>
+    </div>
+  );
 };
+
 export default StatusBanner;
