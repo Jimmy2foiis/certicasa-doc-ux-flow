@@ -18,6 +18,8 @@ interface ClientTabsContainerProps {
   onBack: () => void;
   surfaceArea: string;
   roofArea: string;
+  onSurfaceAreaChange?: (value: string) => void;
+  onRoofAreaChange?: (value: string) => void;
 }
 
 export const ClientTabsContainer = ({ 
@@ -29,7 +31,9 @@ export const ClientTabsContainer = ({
   onDeleteCalculation,
   onBack,
   surfaceArea,
-  roofArea
+  roofArea,
+  onSurfaceAreaChange,
+  onRoofAreaChange
 }: ClientTabsContainerProps) => {
   const [currentTab, setCurrentTab] = useState("calculations");
 
@@ -93,6 +97,8 @@ export const ClientTabsContainer = ({
               }}
               surfaceArea={surfaceArea}
               roofArea={roofArea}
+              onSurfaceAreaChange={onSurfaceAreaChange}
+              onRoofAreaChange={onRoofAreaChange}
             />
           </TabsContent>
 

@@ -123,6 +123,8 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
         onBack={onBack}
         surfaceArea={surfaceArea}
         roofArea={roofArea}
+        onSurfaceAreaChange={handleSurfaceAreaChange}
+        onRoofAreaChange={handleRoofAreaChange}
       />
     </div>
   );

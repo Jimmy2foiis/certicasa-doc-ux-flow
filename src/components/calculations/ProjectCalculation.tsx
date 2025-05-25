@@ -25,6 +25,8 @@ interface ProjectCalculationProps {
   };
   surfaceArea?: string;
   roofArea?: string;
+  onSurfaceAreaChange?: (value: string) => void;
+  onRoofAreaChange?: (value: string) => void;
 }
 
 const ProjectCalculation = ({ 
@@ -38,7 +40,9 @@ const ProjectCalculation = ({
   projectName,
   clientData,
   surfaceArea = "70",
-  roofArea = "85"
+  roofArea = "85",
+  onSurfaceAreaChange,
+  onRoofAreaChange
 }: ProjectCalculationProps) => {
   // Get climate zone from cadastral data (for demo purposes)
   const { climateZone: fetchedClimateZone } = useCadastralData(clientId ? `Client ID ${clientId}` : "123 Demo Street");
@@ -103,6 +107,21 @@ const ProjectCalculation = ({
     setAfterLayers(afterLayers.filter(l => l.id !== id));
   };
 
+  // Gestionnaires pour la synchronisation des surfaces
+  const handleSurfaceAreaChangeInternal = (value: string) => {
+    setSurfaceArea(value);
+    if (onSurfaceAreaChange) {
+      onSurfaceAreaChange(value);
+    }
+  };
+
+  const handleRoofAreaChangeInternal = (value: string) => {
+    setRoofArea(value);
+    if (onRoofAreaChange) {
+      onRoofAreaChange(value);
+    }
+  };
+
   // Prepare client data with fallbacks
   const preparedClientData = {
     name: clientData?.name || clientName || 'Client',
@@ -130,6 +149,8 @@ const ProjectCalculation = ({
             clientAddress={clientAddress}
             projectName={projectName}
             clientData={preparedClientData}
+            onSurfaceAreaChange={handleSurfaceAreaChangeInternal}
+            onRoofAreaChange={handleRoofAreaChangeInternal}
           />
           <CalculationContent 
             calculationData={calculationData}
