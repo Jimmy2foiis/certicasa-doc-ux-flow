@@ -99,7 +99,7 @@ const AddressFormSection = ({ client }: AddressFormSectionProps) => {
     if (components.climateZone) {
       setAddressData(prev => ({
         ...prev,
-        climateZone: components.climateZone
+        climateZone: components.climateZone || ""
       }));
       
       setClimateData({
