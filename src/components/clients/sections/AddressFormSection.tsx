@@ -1,9 +1,9 @@
 
+
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { MapPin } from "lucide-react";
 import AddressSearch from "@/components/clients/AddressSearch";
-import CadastralInfo from "@/components/clients/CadastralInfo";
 import { AddressComponents } from "@/types/googleMaps";
 import { useClientCadastralData } from "@/hooks/useClientCadastralData";
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
@@ -178,21 +178,9 @@ const AddressFormSection = ({ client }: AddressFormSectionProps) => {
         </div>
         <div></div>
       </div>
-
-      {/* Affichage des informations cadastrales détaillées */}
-      {(gpsCoordinates || loadingCadastral || cadastralReference) && (
-        <CadastralInfo
-          utmCoordinates={utmCoordinates}
-          cadastralReference={cadastralReference}
-          climateZone={climateZone}
-          loadingCadastral={loadingCadastral}
-          apiSource={apiSource}
-          gpsCoordinates={gpsCoordinates}
-          onRefresh={refreshCadastralData}
-        />
-      )}
     </div>
   );
 };
 
 export default AddressFormSection;
+
