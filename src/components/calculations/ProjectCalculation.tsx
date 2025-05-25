@@ -1,7 +1,7 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { useCadastralData } from "@/hooks/useCadastralData";
-import ProjectInfo from "./ProjectInfo";
 import CalculationHeader from "./CalculationHeader";
 import CalculationContent from "./CalculationContent";
 import { useCalculationState } from "@/hooks/useCalculationState";
@@ -23,6 +23,8 @@ interface ProjectCalculationProps {
     phone?: string;
     email?: string;
   };
+  surfaceArea?: string;
+  roofArea?: string;
 }
 
 const ProjectCalculation = ({ 
@@ -34,7 +36,9 @@ const ProjectCalculation = ({
   clientName,
   clientAddress,
   projectName,
-  clientData
+  clientData,
+  surfaceArea = "70",
+  roofArea = "85"
 }: ProjectCalculationProps) => {
   // Get climate zone from cadastral data (for demo purposes)
   const { climateZone: fetchedClimateZone } = useCadastralData(clientId ? `Client ID ${clientId}` : "123 Demo Street");
@@ -47,9 +51,9 @@ const ProjectCalculation = ({
     setAfterLayers,
     projectType,
     setProjectType,
-    surfaceArea,
+    surfaceArea: calcSurfaceArea,
     setSurfaceArea,
-    roofArea,
+    roofArea: calcRoofArea,
     setRoofArea,
     ventilationBefore,
     setVentilationBefore,
@@ -83,7 +87,11 @@ const ProjectCalculation = ({
     updateLayer,
     calculationData
   } = useCalculationState({
-    savedData,
+    savedData: {
+      ...savedData,
+      surfaceArea: surfaceArea,
+      roofArea: roofArea
+    },
     clientClimateZone: effectiveClimateZone
   });
 
@@ -113,21 +121,8 @@ const ProjectCalculation = ({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Project Information */}
-        <ProjectInfo 
-          projectType={projectType}
-          setProjectType={setProjectType}
-          surfaceArea={surfaceArea}
-          setSurfaceArea={setSurfaceArea}
-          roofArea={roofArea}
-          setRoofArea={setRoofArea}
-          improvementPercent={improvementPercent}
-          meetsRequirements={meetsRequirements}
-          onSave={handleSave}
-        />
-
-        {/* Thermal Calculations */}
-        <Card className="lg:col-span-9">
+        {/* Thermal Calculations - Full width */}
+        <Card className="lg:col-span-12">
           <CalculationHeader 
             calculationData={calculationData} 
             onSave={onSave}

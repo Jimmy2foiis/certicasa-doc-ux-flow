@@ -1,7 +1,8 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import ClientPersonalSection from "./ClientPersonalSection";
 import ProjectTeamSection from "./ProjectTeamSection";
 import { Client } from "@/services/api/types";
@@ -15,9 +16,34 @@ interface ClientInfoSidebarProps {
     error: number;
   };
   onViewMissingDocs?: () => void;
+  onSurfaceAreaChange?: (value: string) => void;
+  onRoofAreaChange?: (value: string) => void;
 }
 
-const ClientInfoSidebar = ({ client, documentStats, onViewMissingDocs }: ClientInfoSidebarProps) => {
+const ClientInfoSidebar = ({ 
+  client, 
+  documentStats, 
+  onViewMissingDocs,
+  onSurfaceAreaChange,
+  onRoofAreaChange 
+}: ClientInfoSidebarProps) => {
+  const [surfaceArea, setSurfaceArea] = useState("70");
+  const [roofArea, setRoofArea] = useState("85");
+
+  const handleSurfaceAreaChange = (value: string) => {
+    setSurfaceArea(value);
+    if (onSurfaceAreaChange) {
+      onSurfaceAreaChange(value);
+    }
+  };
+
+  const handleRoofAreaChange = (value: string) => {
+    setRoofArea(value);
+    if (onRoofAreaChange) {
+      onRoofAreaChange(value);
+    }
+  };
+
   if (!client) return null;
 
   return (
@@ -38,13 +64,23 @@ const ClientInfoSidebar = ({ client, documentStats, onViewMissingDocs }: ClientI
                 {/* Superficie des combles */}
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Superficie des combles (m²)</span>
-                  <span className="font-medium">70</span>
+                  <Input
+                    type="number"
+                    value={surfaceArea}
+                    onChange={(e) => handleSurfaceAreaChange(e.target.value)}
+                    className="mt-1"
+                  />
                 </div>
                 
                 {/* Superficie de la toiture */}
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Superficie de la toiture (m²)</span>
-                  <span className="font-medium">85</span>
+                  <Input
+                    type="number"
+                    value={roofArea}
+                    onChange={(e) => handleRoofAreaChange(e.target.value)}
+                    className="mt-1"
+                  />
                 </div>
                 
                 {/* Type d'isolation */}
