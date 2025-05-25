@@ -14,10 +14,18 @@ interface StatusBannerProps {
     city?: string;
     province?: string;
     community?: string;
+  } | null;
+  documentStats?: {
+    total: number;
+    generated: number;
+    missing: number;
+    error: number;
   };
+  onViewMissingDocs?: () => void;
+  onEditClient?: (e: React.MouseEvent) => void;
 }
 
-const StatusBanner = ({ client }: StatusBannerProps) => {
+const StatusBanner = ({ client, documentStats, onViewMissingDocs, onEditClient }: StatusBannerProps) => {
   return (
     <div className="bg-white border rounded-lg p-4 mb-4 space-y-4">
       {/* Section Contact */}
