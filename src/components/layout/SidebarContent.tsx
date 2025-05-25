@@ -1,4 +1,5 @@
 
+
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useWorkspace } from "@/context/WorkspaceContext";
@@ -12,8 +13,12 @@ const SidebarContent = () => {
       <div className="flex flex-col gap-4 flex-1">
         <div className="px-4 pt-6 pb-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">C</span>
+            <div className="w-12 h-12 flex items-center justify-center">
+              <img 
+                src="/lovable-uploads/c74bbb7a-efc5-4bed-a654-08e9efa54e8c.png" 
+                alt="CertiCasa Logo" 
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <h2 className="font-semibold text-lg text-gray-900">
@@ -51,3 +56,4 @@ const SidebarContent = () => {
 };
 
 export default SidebarContent;
+
