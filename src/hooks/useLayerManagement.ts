@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Material } from "@/data/materials";
+import { getFloorTypePreset } from "@/utils/floorTypePresets";
 
 export interface Layer extends Material {
   isNew?: boolean;
@@ -26,9 +27,10 @@ const souflr47Material: Layer = {
 interface UseLayerManagementProps {
   savedBeforeLayers?: Layer[];
   savedAfterLayers?: Layer[];
+  floorType?: string;
 }
 
-export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers }: UseLayerManagementProps) => {
+export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorType }: UseLayerManagementProps) => {
   const [beforeLayers, setBeforeLayers] = useState<Layer[]>(initialLayers);
   const [afterLayers, setAfterLayers] = useState<Layer[]>([...initialLayers]);
 
@@ -37,6 +39,18 @@ export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers }: UseL
     if (savedAfterLayers) setAfterLayers(savedAfterLayers);
     else if (!savedBeforeLayers) setAfterLayers([...beforeLayers]);
   }, [savedBeforeLayers, savedAfterLayers]);
+
+  // Logique de pré-remplissage selon le type de plancher
+  useEffect(() => {
+    if (floorType && !savedBeforeLayers && !savedAfterLayers) {
+      const preset = getFloorTypePreset(floorType);
+      if (preset) {
+        console.log(`Pré-remplissage automatique pour plancher: ${floorType}`);
+        setBeforeLayers(preset.beforeLayers.map(layer => ({ ...layer, id: `${layer.id}_${Date.now()}` })));
+        setAfterLayers(preset.afterLayers.map(layer => ({ ...layer, id: `${layer.id}_${Date.now()}` })));
+      }
+    }
+  }, [floorType, savedBeforeLayers, savedAfterLayers]);
 
   const addLayer = (layerSet: "before" | "after", material: Material) => {
     const newLayer = {

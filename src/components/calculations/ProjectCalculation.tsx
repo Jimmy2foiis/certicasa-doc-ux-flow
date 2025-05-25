@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { useCadastralData } from "@/hooks/useCadastralData";
@@ -100,7 +99,8 @@ const ProjectCalculation = ({
       surfaceArea: surfaceArea,
       roofArea: roofArea
     },
-    clientClimateZone: effectiveClimateZone
+    clientClimateZone: effectiveClimateZone,
+    floorType: floorType
   });
 
   const handleDeleteBeforeLayer = (id: string) => {

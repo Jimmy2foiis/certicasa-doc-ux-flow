@@ -8,6 +8,7 @@ import { VentilationType } from "@/utils/calculationUtils";
 export interface CalculationStateProps {
   savedData?: any;
   clientClimateZone?: string;
+  floorType?: string;
 }
 
 export interface CalculationData {
@@ -39,7 +40,7 @@ export interface CalculationData {
 
 export type { Layer };
 
-export const useCalculationState = ({ savedData, clientClimateZone }: CalculationStateProps) => {
+export const useCalculationState = ({ savedData, clientClimateZone, floorType }: CalculationStateProps) => {
   // Layer management
   const {
     beforeLayers,
@@ -53,6 +54,7 @@ export const useCalculationState = ({ savedData, clientClimateZone }: Calculatio
   } = useLayerManagement({
     savedBeforeLayers: savedData?.beforeLayers,
     savedAfterLayers: savedData?.afterLayers,
+    floorType: floorType
   });
 
   // Project settings
