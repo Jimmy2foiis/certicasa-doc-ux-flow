@@ -91,7 +91,9 @@ const ProjectCalculationView = ({
     }
   };
 
+  // 🎯 Gestionnaire de changement de zone climatique avec propagation
   const handleClimateZoneChangeInternal = (value: string) => {
+    console.log("🔥 Zone climatique mise à jour dans ProjectCalculationView:", value);
     setCurrentClimateZone(value);
     if (onClimateZoneChange) {
       onClimateZoneChange(value);

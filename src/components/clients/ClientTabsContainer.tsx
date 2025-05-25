@@ -1,135 +1,186 @@
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { DocumentsTabContent } from "./DocumentsTabContent";
-import SignaturesTabContent from "./SignaturesTabContent";
-import { Card } from "@/components/ui/card";
-import BillingTab from "./BillingTab";
-import DocumentsTab from "./documents/DocumentsTab";
-import ProjectCalculation from "../calculations/ProjectCalculation";
+import { ArrowLeft } from "lucide-react";
+import ClientInfoSidebar from "./sidebar/ClientInfoSidebar";
+import CalculationsTabContent from "./CalculationsTabContent";
+import ProjectsTabContent from "./ProjectsTabContent";
+import DocumentsTabContent from "./DocumentsTabContent";
 import PhotosChantierTab from "./PhotosChantierTab";
+import BillingTab from "./BillingTab";
+import StatisticsTab from "./StatisticsTab";
+import SignaturesTabContent from "./SignaturesTabContent";
+import ProjectCalculationView from "./ProjectCalculationView";
 
 interface ClientTabsContainerProps {
   client: any;
   clientId: string;
-  savedCalculations: any[];
+  savedCalculations: Array<{
+    id: string;
+    projectId: string;
+    projectName: string;
+    clientId: string;
+    type: string;
+    surface: number;
+    date: string;
+    improvement: number;
+    calculationData: any;
+  }>;
   onNewCalculation: () => void;
   onEditCalculation: (projectId: string) => void;
   onDeleteCalculation: (projectId: string) => void;
   onBack: () => void;
-  surfaceArea: string;
-  roofArea: string;
-  floorType: string;
-  onSurfaceAreaChange?: (value: string) => void;
-  onRoofAreaChange?: (value: string) => void;
-  onFloorTypeChange?: (value: string) => void;
+  surfaceArea?: string;
+  roofArea?: string;
+  floorType?: string;
+  climateZone?: string;
+  onClimateZoneChange?: (value: string) => void;
 }
 
 export const ClientTabsContainer = ({ 
-  client,
-  clientId,
-  savedCalculations,
-  onNewCalculation,
-  onEditCalculation,
-  onDeleteCalculation,
+  client, 
+  clientId, 
+  savedCalculations, 
+  onNewCalculation, 
+  onEditCalculation, 
+  onDeleteCalculation, 
   onBack,
-  surfaceArea,
-  roofArea,
-  floorType,
-  onSurfaceAreaChange,
-  onRoofAreaChange,
-  onFloorTypeChange
+  surfaceArea = "70",
+  roofArea = "85",
+  floorType = "Bois",
+  climateZone = "C3",
+  onClimateZoneChange
 }: ClientTabsContainerProps) => {
-  const [currentTab, setCurrentTab] = useState("calculations");
+  // États pour la vue de calcul
+  const [showCalculation, setShowCalculation] = useState(false);
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
+  
+  // États pour les valeurs modifiables dans la sidebar
+  const [currentSurfaceArea, setCurrentSurfaceArea] = useState(surfaceArea);
+  const [currentRoofArea, setCurrentRoofArea] = useState(roofArea);
+  const [currentFloorType, setCurrentFloorType] = useState(floorType);
+  const [currentClimateZone, setCurrentClimateZone] = useState(climateZone);
 
-  const handleSave = (calculationData: any) => {
-    console.log('Calcul sauvegardé:', calculationData);
-    // Logic to save calculation
+  const handleShowCalculation = (projectId?: string) => {
+    setCurrentProjectId(projectId || null);
+    setShowCalculation(true);
   };
 
+  const handleBackFromCalculation = () => {
+    setShowCalculation(false);
+    setCurrentProjectId(null);
+  };
+
+  const handleSaveCalculation = (calculationData: any) => {
+    console.log("Saving calculation:", calculationData);
+    // Ici vous pouvez implémenter la logique de sauvegarde
+  };
+
+  // 🎯 Gestionnaire de changement de zone climatique
+  const handleClimateZoneChangeInternal = (value: string) => {
+    console.log("🔄 Zone climatique mise à jour dans ClientTabsContainer:", value);
+    setCurrentClimateZone(value);
+    if (onClimateZoneChange) {
+      onClimateZoneChange(value);
+    }
+  };
+
+  // Si on affiche le calcul, montrer la vue de calcul
+  if (showCalculation) {
+    return (
+      <ProjectCalculationView
+        client={client}
+        clientId={clientId}
+        currentProjectId={currentProjectId}
+        savedCalculations={savedCalculations}
+        onBack={handleBackFromCalculation}
+        onSave={handleSaveCalculation}
+        surfaceArea={currentSurfaceArea}
+        roofArea={currentRoofArea}
+        floorType={currentFloorType}
+        onSurfaceAreaChange={setCurrentSurfaceArea}
+        onRoofAreaChange={setCurrentRoofArea}
+        onFloorTypeChange={setCurrentFloorType}
+        onClimateZoneChange={handleClimateZoneChangeInternal}
+      />
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Onglets */}
-      <Card>
-        <Tabs defaultValue="calculations" onValueChange={setCurrentTab}>
-          <TabsList className="grid w-full grid-cols-5 bg-muted/20">
-            <TabsTrigger 
-              value="calculations" 
-              className={`${currentTab === "calculations" ? "bg-primary text-primary-foreground" : ""} transition-all`}
-            >
-              Calculs
-            </TabsTrigger>
-            <TabsTrigger 
-              value="documents" 
-              className={`${currentTab === "documents" ? "bg-primary text-primary-foreground" : ""} transition-all`}
-            >
-              Documents
-            </TabsTrigger>
-            <TabsTrigger 
-              value="billing" 
-              className={`${currentTab === "billing" ? "bg-primary text-primary-foreground" : ""} transition-all`}
-            >
-              Facturation
-            </TabsTrigger>
-            <TabsTrigger 
-              value="photos" 
-              className={`${currentTab === "photos" ? "bg-primary text-primary-foreground" : ""} transition-all`}
-            >
-              Photos Chantier
-            </TabsTrigger>
-            <TabsTrigger 
-              value="signatures" 
-              className={`${currentTab === "signatures" ? "bg-primary text-primary-foreground" : ""} transition-all`}
-            >
-              Signatures
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="calculations" className="p-4">
-            <ProjectCalculation 
-              clientId={clientId}
-              onSave={handleSave}
-              clientClimateZone={client?.climateZone || "C3"}
-              clientName={client?.name}
-              clientAddress={client?.address}
-              projectName={`Calcul thermique pour ${client?.name}`}
-              clientData={{
-                name: client?.name || '',
-                address: client?.address || '',
-                nif: client?.nif || '',
-                phone: client?.phone || '',
-                email: client?.email || ''
-              }}
-              surfaceArea={surfaceArea}
-              roofArea={roofArea}
-              floorType={floorType}
-              onSurfaceAreaChange={onSurfaceAreaChange}
-              onRoofAreaChange={onRoofAreaChange}
-              onFloorTypeChange={onFloorTypeChange}
-            />
-          </TabsContent>
-
-          <TabsContent value="documents" className="p-4">
-            <DocumentsTab clientId={clientId} />
-          </TabsContent>
-
-          <TabsContent value="billing" className="p-4">
-            <BillingTab clientId={clientId} />
-          </TabsContent>
-
-          <TabsContent value="photos" className="p-4">
-            <PhotosChantierTab 
-              clientId={clientId}
-              clientName={client?.name}
-              safetyCultureAuditId={client?.safetyCultureAuditId}
-            />
-          </TabsContent>
-
-          <TabsContent value="signatures" className="p-4">
-            <SignaturesTabContent clientId={clientId} />
-          </TabsContent>
-        </Tabs>
-      </Card>
-    </div>
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-xl">Informations du client</CardTitle>
+          <Button onClick={onBack} variant="outline" size="sm">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Retour à la liste
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {/* Sidebar d'informations du client */}
+        <ClientInfoSidebar 
+          client={client}
+          onSurfaceAreaChange={setCurrentSurfaceArea}
+          onRoofAreaChange={setCurrentRoofArea}
+          onFloorTypeChange={setCurrentFloorType}
+          onClimateZoneChange={handleClimateZoneChangeInternal}
+          currentSurfaceArea={currentSurfaceArea}
+          currentRoofArea={currentRoofArea}
+          currentFloorType={currentFloorType}
+          currentClimateZone={currentClimateZone}
+        />
+        
+        {/* Onglets du client */}
+        <div className="mt-6">
+          <Tabs defaultValue="calculations" className="w-full">
+            <TabsList className="grid w-full grid-cols-7">
+              <TabsTrigger value="calculations">Calculs</TabsTrigger>
+              <TabsTrigger value="projects">Projets</TabsTrigger>
+              <TabsTrigger value="documents">Documents</TabsTrigger>
+              <TabsTrigger value="photos">Photos Chantier</TabsTrigger>
+              <TabsTrigger value="billing">Facturation</TabsTrigger>
+              <TabsTrigger value="statistics">Statistiques</TabsTrigger>
+              <TabsTrigger value="signatures">Signatures</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="calculations" className="mt-4">
+              <CalculationsTabContent 
+                savedCalculations={savedCalculations}
+                onNewCalculation={() => handleShowCalculation()}
+                onEditCalculation={handleShowCalculation}
+                onDeleteCalculation={onDeleteCalculation}
+              />
+            </TabsContent>
+            
+            <TabsContent value="projects" className="mt-4">
+              <ProjectsTabContent clientId={clientId} />
+            </TabsContent>
+            
+            <TabsContent value="documents" className="mt-4">
+              <DocumentsTabContent clientId={clientId} />
+            </TabsContent>
+            
+            <TabsContent value="photos" className="mt-4">
+              <PhotosChantierTab clientId={clientId} />
+            </TabsContent>
+            
+            <TabsContent value="billing" className="mt-4">
+              <BillingTab clientId={clientId} />
+            </TabsContent>
+            
+            <TabsContent value="statistics" className="mt-4">
+              <StatisticsTab clientId={clientId} />
+            </TabsContent>
+            
+            <TabsContent value="signatures" className="mt-4">
+              <SignaturesTabContent clientId={clientId} />
+            </TabsContent>
+          </Tabs>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
