@@ -1,13 +1,12 @@
 
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ProjectsTabContent from "./ProjectsTabContent";
-import CalculationsTabContent from "./CalculationsTabContent";
 import { DocumentsTabContent } from "./DocumentsTabContent";
 import SignaturesTabContent from "./SignaturesTabContent";
 import { Card } from "@/components/ui/card";
 import BillingTab from "./BillingTab";
 import DocumentsTab from "./documents/DocumentsTab";
+import ProjectCalculation from "../calculations/ProjectCalculation";
 
 interface ClientTabsContainerProps {
   client: any;
@@ -29,6 +28,11 @@ export const ClientTabsContainer = ({
   onBack
 }: ClientTabsContainerProps) => {
   const [currentTab, setCurrentTab] = useState("calculations");
+
+  const handleSave = (calculationData: any) => {
+    console.log('Calcul sauvegardé:', calculationData);
+    // Logic to save calculation
+  };
 
   return (
     <Card>
@@ -67,12 +71,20 @@ export const ClientTabsContainer = ({
         </TabsList>
 
         <TabsContent value="calculations" className="p-4">
-          <CalculationsTabContent 
-            onOpenCalculation={onEditCalculation} 
-            clientId={clientId} 
-            savedCalculations={savedCalculations}
-            onNewCalculation={onNewCalculation}
-            onDeleteCalculation={onDeleteCalculation}
+          <ProjectCalculation 
+            clientId={clientId}
+            onSave={handleSave}
+            clientClimateZone={client?.climateZone || "C3"}
+            clientName={client?.name}
+            clientAddress={client?.address}
+            projectName={`Calcul thermique pour ${client?.name}`}
+            clientData={{
+              name: client?.name || '',
+              address: client?.address || '',
+              nif: client?.nif || '',
+              phone: client?.phone || '',
+              email: client?.email || ''
+            }}
           />
         </TabsContent>
 
