@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectsTabContent from "./ProjectsTabContent";
@@ -7,7 +6,7 @@ import { DocumentsTabContent } from "./DocumentsTabContent";
 import SignaturesTabContent from "./SignaturesTabContent";
 import { Card } from "@/components/ui/card";
 import BillingTab from "./BillingTab";
-import { DocumentsTab } from "./documents/DocumentsTab";
+import DocumentsTab from "./documents/DocumentsTab";
 
 interface ClientTabsContainerProps {
   client: any;
