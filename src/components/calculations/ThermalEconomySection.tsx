@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Cherry } from "lucide-react";
+import { Cherry, CheckCircle2 } from "lucide-react";
 
 // Climate zone coefficients mapping
 export const climateZoneCoefficients: Record<string, number> = {
@@ -37,6 +38,7 @@ interface ThermalEconomySectionProps {
   climateMethod?: string;
   climateReferenceCity?: string;
   climateDistance?: number;
+  climateDescription?: string;
   onClimateZoneChange?: (zone: string) => void;
 }
 
@@ -50,6 +52,7 @@ const ThermalEconomySection = ({
   climateMethod,
   climateReferenceCity,
   climateDistance,
+  climateDescription,
   onClimateZoneChange
 }: ThermalEconomySectionProps) => {
   const [cherryEnabled, setCherryEnabled] = useState(false);
@@ -98,13 +101,36 @@ const ThermalEconomySection = ({
     }
   };
 
-  // Afficher l'indicateur de confiance s'il y en a un
+  // Afficher l'indicateur de confiance comme dans l'image
   const renderConfidenceIndicator = () => {
     if (climateConfidence && climateMethod) {
       return (
-        <span className="text-xs text-blue-600 ml-2">
-          (Déterminé: {climateConfidence}%)
-        </span>
+        <div className="flex items-center gap-2 text-green-600">
+          <CheckCircle2 className="h-4 w-4" />
+          <span className="text-sm font-medium">{climateConfidence}%</span>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Afficher la description et les informations automatiques
+  const renderClimateInfo = () => {
+    if (climateDescription || climateReferenceCity) {
+      return (
+        <div className="space-y-2 text-sm text-gray-600">
+          {climateDescription && (
+            <p>{climateDescription}</p>
+          )}
+          {climateMethod && climateReferenceCity && (
+            <div className="text-xs text-blue-600 bg-blue-100 p-2 rounded">
+              <span className="font-medium">Déterminé automatiquement</span>
+              <br />
+              Ville référence: {climateReferenceCity}
+              {climateDistance && ` (${climateDistance}km)`}
+            </div>
+          )}
+        </div>
       );
     }
     return null;
@@ -120,31 +146,34 @@ const ThermalEconomySection = ({
           {/* Climate Zone Selector */}
           <div className="space-y-2">
             <Label htmlFor="climate-zone">Zone Climatique</Label>
-            <div className="flex items-center space-x-2">
-              <Select
-                value={selectedClimateZone}
-                onValueChange={handleClimateZoneChange}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Sélectionner une zone" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="A3">A3 (Coeff: 25)</SelectItem>
-                  <SelectItem value="A4">A4 (Coeff: 26)</SelectItem>
-                  <SelectItem value="B3">B3 (Coeff: 32)</SelectItem>
-                  <SelectItem value="B4">B4 (Coeff: 33)</SelectItem>
-                  <SelectItem value="C1">C1 (Coeff: 44)</SelectItem>
-                  <SelectItem value="C2">C2 (Coeff: 45)</SelectItem>
-                  <SelectItem value="C3">C3 (Coeff: 46)</SelectItem>
-                  <SelectItem value="C4">C4 (Coeff: 46)</SelectItem>
-                  <SelectItem value="D1">D1 (Coeff: 60)</SelectItem>
-                  <SelectItem value="D2">D2 (Coeff: 60)</SelectItem>
-                  <SelectItem value="D3">D3 (Coeff: 61)</SelectItem>
-                  <SelectItem value="E1">E1 (Coeff: 74)</SelectItem>
-                </SelectContent>
-              </Select>
-              <span className="text-sm text-gray-500">(G: {gCoefficient})</span>
-              {renderConfidenceIndicator()}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Select
+                  value={selectedClimateZone}
+                  onValueChange={handleClimateZoneChange}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Sélectionner une zone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="A3">A3 (Coeff: 25)</SelectItem>
+                    <SelectItem value="A4">A4 (Coeff: 26)</SelectItem>
+                    <SelectItem value="B3">B3 (Coeff: 32)</SelectItem>
+                    <SelectItem value="B4">B4 (Coeff: 33)</SelectItem>
+                    <SelectItem value="C1">C1 (Coeff: 44)</SelectItem>
+                    <SelectItem value="C2">C2 (Coeff: 45)</SelectItem>
+                    <SelectItem value="C3">C3 (Coeff: 46)</SelectItem>
+                    <SelectItem value="C4">C4 (Coeff: 46)</SelectItem>
+                    <SelectItem value="D1">D1 (Coeff: 60)</SelectItem>
+                    <SelectItem value="D2">D2 (Coeff: 60)</SelectItem>
+                    <SelectItem value="D3">D3 (Coeff: 61)</SelectItem>
+                    <SelectItem value="E1">E1 (Coeff: 74)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span className="text-sm text-gray-500">(G: {gCoefficient})</span>
+                {renderConfidenceIndicator()}
+              </div>
+              {renderClimateInfo()}
             </div>
           </div>
           

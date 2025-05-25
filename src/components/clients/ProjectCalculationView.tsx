@@ -24,6 +24,12 @@ interface ProjectCalculationViewProps {
   surfaceArea?: string;
   roofArea?: string;
   floorType?: string;
+  climateZone?: string;
+  climateConfidence?: number;
+  climateMethod?: string;
+  climateReferenceCity?: string;
+  climateDistance?: number;
+  climateDescription?: string;
   onSurfaceAreaChange?: (value: string) => void;
   onRoofAreaChange?: (value: string) => void;
   onFloorTypeChange?: (value: string) => void;
@@ -40,6 +46,12 @@ const ProjectCalculationView = ({
   surfaceArea = "70",
   roofArea = "85",
   floorType = "Bois",
+  climateZone,
+  climateConfidence,
+  climateMethod,
+  climateReferenceCity,
+  climateDistance,
+  climateDescription,
   onSurfaceAreaChange,
   onRoofAreaChange,
   onFloorTypeChange,
@@ -48,7 +60,7 @@ const ProjectCalculationView = ({
   const [currentSurfaceArea, setCurrentSurfaceArea] = useState(surfaceArea);
   const [currentRoofArea, setCurrentRoofArea] = useState(roofArea);
   const [currentFloorType, setCurrentFloorType] = useState(floorType);
-  const [currentClimateZone, setCurrentClimateZone] = useState(client?.climateZone || "C3");
+  const [currentClimateZone, setCurrentClimateZone] = useState(climateZone || client?.climateZone || "C3");
 
   // Find the calculation data if we're editing an existing calculation
   const currentCalculation = currentProjectId
@@ -69,6 +81,12 @@ const ProjectCalculationView = ({
   useEffect(() => {
     setCurrentFloorType(floorType);
   }, [floorType]);
+
+  useEffect(() => {
+    if (climateZone) {
+      setCurrentClimateZone(climateZone);
+    }
+  }, [climateZone]);
 
   const handleSurfaceAreaChangeInternal = (value: string) => {
     setCurrentSurfaceArea(value);
@@ -117,6 +135,11 @@ const ProjectCalculationView = ({
         savedData={calculationData}
         onSave={onSave}
         clientClimateZone={currentClimateZone}
+        clientClimateConfidence={climateConfidence}
+        clientClimateMethod={climateMethod}
+        clientClimateReferenceCity={climateReferenceCity}
+        clientClimateDistance={climateDistance}
+        clientClimateDescription={climateDescription}
         clientName={client.name}
         clientAddress={client.address}
         projectName={currentCalculation?.projectName}
