@@ -1,9 +1,11 @@
+
 import { useLayerManagement, Layer } from "./useLayerManagement";
 import { useProjectSettings } from "./useProjectSettings";
 import { useThermalResistanceSettings } from "./useThermalResistanceSettings";
 import { useThermalCalculations } from "./useThermalCalculations";
 import { Material } from "@/data/materials";
 import { VentilationType } from "@/utils/calculationUtils";
+import { useState, useEffect } from "react";
 
 export interface CalculationStateProps {
   savedData?: any;
@@ -41,6 +43,16 @@ export interface CalculationData {
 export type { Layer };
 
 export const useCalculationState = ({ savedData, clientClimateZone, floorType }: CalculationStateProps) => {
+  // Climate zone state
+  const [climateZone, setClimateZone] = useState(clientClimateZone || "C3");
+
+  // Update climate zone when clientClimateZone changes
+  useEffect(() => {
+    if (clientClimateZone) {
+      setClimateZone(clientClimateZone);
+    }
+  }, [clientClimateZone]);
+
   // Layer management
   const {
     beforeLayers,
@@ -145,7 +157,7 @@ export const useCalculationState = ({ savedData, clientClimateZone, floorType }:
     upValueAfter,
     uValueAfter,
     improvementPercent,
-    climateZone: clientClimateZone || "C3",
+    climateZone: climateZone,
     bCoefficientBefore,
     bCoefficientAfter,
     meetsRequirements,
@@ -193,5 +205,7 @@ export const useCalculationState = ({ savedData, clientClimateZone, floorType }:
     copyBeforeToAfter,
     updateLayer,
     calculationData,
+    climateZone,
+    setClimateZone,
   };
 };
