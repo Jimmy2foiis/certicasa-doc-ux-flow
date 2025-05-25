@@ -198,13 +198,26 @@ const PhotosChantierTab = ({
       // Générer le document Word
       const wordBlob = await generatePhotosWordDocument(reportData);
       
-      // Convertir le blob en base64 pour stockage
-      const arrayBuffer = await wordBlob.arrayBuffer();
-      const base64data = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      // Conversion robuste blob → base64
+      const blobToBase64 = (blob: Blob): Promise<string> => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            // Retirer le préfixe "data:application/..."
+            const base64 = result.split(',')[1];
+            resolve(base64);
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      };
+      
+      const base64data = await blobToBase64(wordBlob);
       
       console.log('Document généré, taille:', wordBlob.size);
       
-      // Créer l'enregistrement du document dans Supabase avec le bon type
+      // Créer l'enregistrement du document dans Supabase
       const documentRecord = await createDocument({
         name: 'Informe fotográfico',
         type: 'fotos',
@@ -221,22 +234,22 @@ const PhotosChantierTab = ({
           description: "Informe fotográfico a été ajouté au dossier client",
         });
         
-        // Notifier la génération du document
         if (onDocumentGenerated) {
           onDocumentGenerated();
         }
         
-        // Déclencher un événement personnalisé pour actualiser les documents
-        window.dispatchEvent(new CustomEvent('document-generated', { 
-          detail: { 
-            clientId, 
-            documentType: 'fotos',
-            documentName: 'Informe fotográfico',
-            documentId: documentRecord.id
-          } 
-        }));
+        // Délai de 1 seconde avant de déclencher l'événement pour s'assurer que Supabase a fini
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('document-generated', { 
+            detail: { 
+              clientId, 
+              documentType: 'fotos',
+              documentName: 'Informe fotográfico',
+              documentId: documentRecord.id
+            } 
+          }));
+        }, 1000);
         
-        // Réinitialiser les sélections
         setSelectedPhotos({ avant: [], apres: [] });
       } else {
         throw new Error('Impossible d\'enregistrer le document');

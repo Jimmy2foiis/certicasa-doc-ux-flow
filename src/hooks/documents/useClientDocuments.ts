@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getDocumentsForClient } from "@/services/supabase/documentService";
@@ -13,7 +12,6 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   
-  // Load client documents function
   const loadDocuments = useCallback(async () => {
     setIsLoading(true);
     
@@ -23,28 +21,24 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
         const documents = await getDocumentsForClient(clientId);
         console.log('Loaded documents from Supabase:', documents);
         
-        // Transform documents into AdminDocument format
         const formattedDocs: AdministrativeDocument[] = documents.map(doc => ({
           id: doc.id,
           name: doc.name,
           type: doc.type || "pdf",
           category: determineDocumentCategory(doc.name),
-          // Convert string status to DocumentStatus type
           status: (doc.status || "available") as DocumentStatus,
           created_at: doc.created_at,
           content: doc.content,
           file_path: doc.file_path,
-          description: "",  // Default empty description
-          reference: doc.type ? `REF-${doc.type.toUpperCase()}-${doc.id.substring(0, 5)}` : "", // Generate a reference if not available
-          order: 0,         // Default order
-          // Add status label based on document type and status
+          description: "",
+          reference: doc.type ? `REF-${doc.type.toUpperCase()}-${doc.id.substring(0, 5)}` : "",
+          order: 0,
           statusLabel: getStatusLabelForDocument(doc.type || "pdf", doc.status || "available")
         }));
         
         console.log('Formatted documents:', formattedDocs);
         setAdminDocuments(formattedDocs);
       } else {
-        // If no clientId, load demo documents
         const demoDocuments = generateDemoDocuments(clientName, projectType);
         setAdminDocuments(demoDocuments);
       }
@@ -56,7 +50,6 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
         variant: "destructive",
       });
       
-      // Load demo documents in case of error
       const demoDocuments = generateDemoDocuments(clientName, projectType);
       setAdminDocuments(demoDocuments);
     } finally {
@@ -64,58 +57,45 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
     }
   }, [clientId, clientName, projectType, toast]);
 
-  // Load client documents
   useEffect(() => {
     loadDocuments();
   }, [loadDocuments]);
 
-  // Listen for document generation events
   useEffect(() => {
     const handleDocumentGenerated = (event: CustomEvent) => {
       console.log('Document généré détecté dans useClientDocuments:', event.detail);
       
       if (event.detail.clientId === clientId) {
         console.log('Refreshing documents for client:', clientId);
-        // Refresh documents after a short delay to ensure database is updated
         setTimeout(() => {
           loadDocuments();
-        }, 500);
+        }, 1000);
       }
     };
 
-    // Listen for document generation events
     window.addEventListener('document-generated', handleDocumentGenerated as EventListener);
     
-    // Cleanup
     return () => {
       window.removeEventListener('document-generated', handleDocumentGenerated as EventListener);
     };
   }, [clientId, loadDocuments]);
   
-  // Document search functionality
   const { searchQuery, setSearchQuery, filteredDocuments } = useDocumentSearch(adminDocuments);
-  
-  // Document actions
   const { handleDocumentAction: baseHandleDocumentAction, handleExportAll } = useDocumentActions();
   
-  // Function to refresh documents (this was missing!)
   const refreshDocuments = useCallback(() => {
     console.log('Manual refresh triggered...');
     loadDocuments();
   }, [loadDocuments]);
   
-  // Function to update project type
   const updateProjectType = useCallback((type: string) => {
     setProjectType(type);
   }, []);
   
-  // Function to handle document actions with ID lookup and additional data
   const handleDocumentAction = useCallback((documentId: string, action: string, additionalData?: any) => {
     if (action === 'upload' && additionalData) {
-      // Handle file upload specifically
       const { file, name, type } = additionalData;
       
-      // Create a new document object
       const newDocument: AdministrativeDocument = {
         id: documentId,
         name: name,
@@ -128,11 +108,8 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
         category: determineDocumentCategory(name)
       };
       
-      // Add to local state
       setAdminDocuments(prev => [newDocument, ...prev]);
       
-      // Here you would normally upload the file to your storage service
-      // For now we just show a success message
       toast({
         title: "Document ajouté",
         description: `${name} a été ajouté avec succès.`,
@@ -141,18 +118,15 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
       return;
     }
     
-    // For other actions, find the document and proceed
     const document = adminDocuments.find(doc => doc.id === documentId);
     if (!document) {
       console.error(`Document with id ${documentId} not found`);
       return;
     }
     
-    // Use the base handler for other actions
     return baseHandleDocumentAction(document, action);
   }, [adminDocuments, baseHandleDocumentAction, toast]);
   
-  // Function to handle export all for filtered documents
   const handleExportAllFiltered = useCallback(() => {
     handleExportAll(filteredDocuments);
   }, [filteredDocuments, handleExportAll]);
@@ -166,12 +140,11 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
     updateProjectType,
     handleDocumentAction,
     handleExportAll: handleExportAllFiltered,
-    refreshDocuments, // Now included!
+    refreshDocuments,
     isLoading
   };
 };
 
-// Helper function to determine status label based on document type and status
 function getStatusLabelForDocument(type: string, status: string): string {
   if (status === "generated") {
     return "Document généré";

@@ -1,4 +1,3 @@
-
 import { Document, Packer, Paragraph, ImageRun, Table, TableRow, TableCell, WidthType, HeightRule, AlignmentType, TextRun } from 'docx';
 import type { SelectedPhoto, PhotosReportData } from '@/types/safetyCulture';
 
@@ -9,7 +8,7 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
       apresCount: reportData.photosApres.length
     });
 
-    // Fonction corrigée pour télécharger et convertir une image en Uint8Array
+    // Fonction pour télécharger et convertir une image en Uint8Array (séquentiel)
     const fetchImageAsUint8Array = async (imageUrl: string): Promise<Uint8Array> => {
       try {
         console.log('Chargement image:', imageUrl);
@@ -35,7 +34,7 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
           throw new Error('Image data too small');
         }
         
-        // Convertir en Uint8Array pour compatibilité navigateur
+        // Utiliser Uint8Array directement pour éviter les références circulaires
         const uint8Array = new Uint8Array(arrayBuffer);
         console.log('Image chargée, taille:', uint8Array.length);
         return uint8Array;
@@ -46,36 +45,33 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
       }
     };
 
-    // Fonction avec retry pour plus de robustesse
-    const fetchImageWithRetry = async (url: string, maxRetries = 3): Promise<Uint8Array> => {
-      let lastError: Error | null = null;
-      
-      for (let attempt = 0; attempt < maxRetries; attempt++) {
-        try {
-          return await fetchImageAsUint8Array(url);
-        } catch (error) {
-          lastError = error as Error;
-          if (attempt < maxRetries - 1) {
-            await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
-          }
-        }
+    // Chargement séquentiel des photos AVANT
+    console.log('Fetching AVANT photos sequentially...');
+    const avantPhotosBuffers: Uint8Array[] = [];
+    for (const photo of reportData.photosAvant) {
+      try {
+        const buffer = await fetchImageAsUint8Array(photo.photo.url);
+        avantPhotosBuffers.push(buffer);
+      } catch (error) {
+        console.error('Erreur chargement photo AVANT:', error);
+        throw new Error(`Impossible de charger la photo AVANT: ${photo.photo.url}`);
       }
-      
-      throw lastError;
-    };
-
-    // Télécharger toutes les photos
-    console.log('Fetching AVANT photos...');
-    const avantPhotosBuffers = await Promise.all(
-      reportData.photosAvant.map(photo => fetchImageWithRetry(photo.photo.url))
-    );
+    }
     
-    console.log('Fetching APRÈS photos...');
-    const apresPhotosBuffers = await Promise.all(
-      reportData.photosApres.map(photo => fetchImageWithRetry(photo.photo.url))
-    );
+    // Chargement séquentiel des photos APRÈS
+    console.log('Fetching APRÈS photos sequentially...');
+    const apresPhotosBuffers: Uint8Array[] = [];
+    for (const photo of reportData.photosApres) {
+      try {
+        const buffer = await fetchImageAsUint8Array(photo.photo.url);
+        apresPhotosBuffers.push(buffer);
+      } catch (error) {
+        console.error('Erreur chargement photo APRÈS:', error);
+        throw new Error(`Impossible de charger la photo APRÈS: ${photo.photo.url}`);
+      }
+    }
 
-    // Fonction pour créer une grille 2x2 d'images avec bordures et espacement professionnel
+    // Fonction pour créer une grille 2x2 d'images
     const create2x2GridProfessional = (images: Uint8Array[], title: string) => {
       const rows: TableRow[] = [];
       
@@ -91,30 +87,30 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                   new ImageRun({
                     data: images[imageIndex],
                     transformation: {
-                      width: 240,  // Dimensions optimisées 3:4 ratio portrait
+                      width: 240,
                       height: 320
                     },
                     type: "jpg"
                   })
                 ],
                 alignment: AlignmentType.CENTER,
-                spacing: { before: 100, after: 100 }  // Espacement avant/après chaque image
+                spacing: { before: 100, after: 100 }
               })
             ],
             width: { size: 50, type: WidthType.PERCENTAGE },
             margins: {
-              top: 100,     // Marges internes pour espacement
+              top: 100,
               bottom: 100,
               left: 100,
               right: 100,
             },
-            verticalAlign: "center"  // Centrage vertical dans la cellule
+            verticalAlign: "center"
           }));
         }
         
         rows.push(new TableRow({ 
           children: cells,
-          height: { value: 5000, rule: HeightRule.EXACT }  // Hauteur fixe ~13cm
+          height: { value: 5000, rule: HeightRule.EXACT }
         }));
       }
 
@@ -132,14 +128,14 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
       });
     };
 
-    // Créer le document avec la structure professionnelle
+    // Créer le document
     const doc = new Document({
       sections: [
         {
           properties: {
             page: {
               margin: {
-                top: 720,    // Marges de page optimisées
+                top: 720,
                 right: 720,
                 bottom: 720,
                 left: 720,
@@ -225,10 +221,9 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
     });
 
     console.log('Generating Word document...');
-    // Générer le blob
     const blob = await Packer.toBlob(doc);
     
-    // DÉCLENCHER LE TÉLÉCHARGEMENT AUTOMATIQUEMENT
+    // Déclencher le téléchargement automatiquement
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

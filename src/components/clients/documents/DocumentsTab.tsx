@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -99,18 +98,26 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
       },
     ];
 
-    // Mapper les documents existants aux documents requis
+    // Mapping amélioré avec correspondance par type ET nom
     const mappedDocuments: AdministrativeDocument[] = requiredDocsList.map(reqDoc => {
-      // Chercher si un document correspondant existe déjà (par type OU par nom)
-      const existingDoc = documents.find(doc => 
-        doc.type?.toLowerCase() === reqDoc.type.toLowerCase() ||
-        doc.name?.toLowerCase().includes(reqDoc.name.toLowerCase()) ||
-        (reqDoc.type === 'fotos' && (doc.name?.toLowerCase().includes('fotográfico') || doc.name?.toLowerCase().includes('fotos')))
-      );
+      console.log(`Mapping ${reqDoc.name} (${reqDoc.type})...`);
+      
+      const existingDoc = documents.find(doc => {
+        const typeMatch = doc.type?.toLowerCase() === reqDoc.type.toLowerCase();
+        const nameMatch = doc.name?.toLowerCase().includes(reqDoc.name.toLowerCase()) ||
+                          reqDoc.name.toLowerCase().includes(doc.name?.toLowerCase() || '');
+        
+        // Cas spécial pour "fotos" et "Informe fotográfico"
+        const fotosMatch = (reqDoc.type === 'fotos' && 
+          (doc.name?.toLowerCase().includes('fotográfico') || 
+           doc.name?.toLowerCase().includes('fotos') || 
+           doc.type?.toLowerCase() === 'fotos'));
+           
+        return typeMatch || nameMatch || fotosMatch;
+      });
 
-      console.log(`Mapping ${reqDoc.name} (${reqDoc.type}):`, existingDoc ? 'FOUND' : 'NOT FOUND');
+      console.log(`${reqDoc.name}:`, existingDoc ? 'TROUVÉ' : 'MANQUANT', existingDoc);
 
-      // Si le document existe, utiliser ses informations, sinon marquer comme manquant
       if (existingDoc) {
         return {
           ...reqDoc,
