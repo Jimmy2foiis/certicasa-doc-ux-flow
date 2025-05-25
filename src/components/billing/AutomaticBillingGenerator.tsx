@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -15,6 +14,7 @@ import {
   getAvailableClimateZones
 } from "@/utils/billingCalculations";
 import { CalculationData } from "@/hooks/useCalculationState";
+import { useMaterialsAndProducts } from "@/hooks/useMaterialsAndProducts";
 
 interface AutomaticBillingGeneratorProps {
   calculationData: CalculationData;
@@ -32,6 +32,7 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { products } = useMaterialsAndProducts();
 
   // Extraire le matériau principal depuis les données de calcul
   const getMainMaterial = () => {
@@ -41,10 +42,18 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
     );
     
     if (souflrMaterial) {
+      // Chercher le produit correspondant dans la base de données
+      const productData = products.find(p => 
+        p.name === souflrMaterial.name || 
+        p.nomComplet === souflrMaterial.name ||
+        p.id === 'URSA_SOUFLR_47'
+      );
+
       return {
         name: souflrMaterial.name,
         thickness: souflrMaterial.thickness,
-        lambda: souflrMaterial.lambda
+        lambda: souflrMaterial.lambda,
+        productData: productData // Ajouter les données du produit
       };
     }
     
@@ -54,14 +63,16 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
       return {
         name: addedMaterial.name,
         thickness: addedMaterial.thickness,
-        lambda: addedMaterial.lambda
+        lambda: addedMaterial.lambda,
+        productData: null
       };
     }
     
     return {
       name: "Matériau d'isolation",
       thickness: null,
-      lambda: null
+      lambda: null,
+      productData: null
     };
   };
 
@@ -182,11 +193,11 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
             </div>
           </div>
 
-          {/* Matériau principal détecté */}
+          {/* Matériau principal détecté avec informations du produit */}
           <div className="bg-blue-50 p-4 rounded-lg mb-4">
             <h4 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
               <Package className="h-4 w-4" />
-              Matériau principal détecté
+              Produit principal détecté
             </h4>
             <div className="text-sm text-blue-700">
               <p><strong>Nom :</strong> {mainMaterial.name}</p>
@@ -195,6 +206,16 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
               )}
               {mainMaterial.lambda && (
                 <p><strong>Lambda :</strong> {mainMaterial.lambda} W/m.K</p>
+              )}
+              {mainMaterial.productData && (
+                <>
+                  <p><strong>Fabricant :</strong> {mainMaterial.productData.manufacturer}</p>
+                  <p><strong>Prix unitaire :</strong> {mainMaterial.productData.pricePerM2}€/m²</p>
+                  <p><strong>TVA :</strong> {mainMaterial.productData.tvaApplicable}%</p>
+                  {mainMaterial.productData.methodeInstallation && (
+                    <p><strong>Méthode :</strong> {mainMaterial.productData.methodeInstallation}</p>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -265,7 +286,7 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
                 <h4 className="font-semibold mb-3">Décomposition de la Facture</h4>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span>{mainMaterial.name} ({calculationData.surfaceArea} m² × 7€)</span>
+                    <span>{mainMaterial.name} ({calculationData.surfaceArea} m² × {mainMaterial.productData?.pricePerM2 || 7}€)</span>
                     <span className="font-medium">{formatCurrency(billingResult.materialCost)}</span>
                   </div>
                   <div className="flex justify-between">
@@ -277,7 +298,7 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
                     <span className="font-medium">{formatCurrency(billingResult.subtotalHT)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span>TVA (10%)</span>
+                    <span>TVA ({mainMaterial.productData?.tvaApplicable || 10}%)</span>
                     <span className="font-medium">{formatCurrency(billingResult.vat)}</span>
                   </div>
                   <div className="flex justify-between border-t pt-2 text-lg font-bold">

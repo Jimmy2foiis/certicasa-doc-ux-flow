@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Material } from "@/data/materials";
 import { getFloorTypePreset } from "@/utils/floorTypePresets";
+import { useMaterialsAndProducts } from "./useMaterialsAndProducts";
 
 export interface Layer extends Material {
   isNew?: boolean;
@@ -15,15 +16,6 @@ const initialLayers: Layer[] = [
   { id: "5", name: "Enduit de plâtre", thickness: 15, lambda: 0.3, r: 0.05 },
 ];
 
-const souflr47Material: Layer = {
-  id: "souflr47",
-  name: "SOUFL'R 47",
-  thickness: 259,
-  lambda: 0.047,
-  r: 5.51,
-  isNew: true,
-};
-
 interface UseLayerManagementProps {
   savedBeforeLayers?: Layer[];
   savedAfterLayers?: Layer[];
@@ -33,6 +25,7 @@ interface UseLayerManagementProps {
 export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorType }: UseLayerManagementProps) => {
   const [beforeLayers, setBeforeLayers] = useState<Layer[]>(initialLayers);
   const [afterLayers, setAfterLayers] = useState<Layer[]>([...initialLayers]);
+  const { products } = useMaterialsAndProducts();
 
   useEffect(() => {
     if (savedBeforeLayers) setBeforeLayers(savedBeforeLayers);
@@ -67,11 +60,31 @@ export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorT
   };
 
   const addSouflr47 = () => {
-    const newSouflr = {
-      ...souflr47Material,
-      id: Date.now().toString(),
-    };
-    setAfterLayers([...afterLayers, newSouflr]);
+    // Chercher le produit URSA SOUFL'R 47 dans la base de données
+    const souflr47Product = products.find(p => p.id === 'URSA_SOUFLR_47' && p.isActive);
+    
+    if (souflr47Product) {
+      const newSouflr: Layer = {
+        id: Date.now().toString(),
+        name: souflr47Product.name,
+        thickness: souflr47Product.defaultThickness || 335,
+        lambda: souflr47Product.lambda,
+        r: souflr47Product.defaultR || 7.00,
+        isNew: true,
+      };
+      setAfterLayers([...afterLayers, newSouflr]);
+    } else {
+      // Fallback au matériau par défaut si le produit n'est pas trouvé
+      const fallbackSouflr: Layer = {
+        id: Date.now().toString(),
+        name: "SOUFL'R 47",
+        thickness: 259,
+        lambda: 0.047,
+        r: 5.51,
+        isNew: true,
+      };
+      setAfterLayers([...afterLayers, fallbackSouflr]);
+    }
   };
 
   const copyBeforeToAfter = () => {
