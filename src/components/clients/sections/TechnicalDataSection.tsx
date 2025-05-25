@@ -20,42 +20,18 @@ const TechnicalDataSection = ({
   climateData, 
   onClimateZoneChange 
 }: TechnicalDataSectionProps) => {
-  
-  // 🚨 DEBUG URGENT: Tracer toutes les props reçues
-  console.log('⚙️ TechnicalDataSection - PROPS COMPLÈTES REÇUES:', {
-    climateZone,
-    climateData,
-    onClimateZoneChange: !!onClimateZoneChange
-  });
-  
-  // 🚨 DEBUG: Surveiller les changements
-  useEffect(() => {
-    console.log('🔄 TechnicalDataSection - EFFET déclenché:', {
-      climateZone,
-      climateDataMethod: climateData?.method,
-      climateDataReferenceCity: climateData?.referenceCity,
-      climateDataConfidence: climateData?.confidence
-    });
-  }, [climateZone, climateData]);
 
-  // 🚨 DEBUG: Handler de changement
   const handleZoneChange = (zone: string) => {
-    console.log('🌍 TechnicalDataSection - Changement zone:', zone);
     if (onClimateZoneChange) {
       onClimateZoneChange(zone);
     }
   };
-
-  // 🚨 DEBUG: Log avant rendu
-  console.log('🎯 TechnicalDataSection - RENDU avec zone:', climateZone);
 
   return (
     <div className="border-b pb-4">
       <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
         <Settings className="h-4 w-4" />
         Données techniques
-        {/* 🚨 DEBUG: Afficher la zone dans le titre */}
-        <span className="text-xs text-red-600 font-bold">[DEBUG: {climateZone}]</span>
       </h3>
       
       {/* Zone Climatique CTE */}

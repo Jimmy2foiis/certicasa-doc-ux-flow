@@ -56,51 +56,22 @@ const ClimateZoneDisplay = ({
   onZoneChange,
   editable = true
 }: ClimateZoneDisplayProps) => {
-  
-  // 🚨 DEBUG URGENT: Tracer toutes les props reçues
-  console.log('🌡️ ClimateZoneDisplay - PROPS COMPLÈTES REÇUES:', {
-    climateZone,
-    confidence,
-    method,
-    referenceCity,
-    distance,
-    description,
-    editable
-  });
-
-  // 🚨 DEBUG: Surveiller les changements de zone
-  useEffect(() => {
-    console.log('🔄 ClimateZoneDisplay - climateZone changé:', climateZone);
-    console.log('🔄 ClimateZoneDisplay - TOUTES LES PROPS dans effect:', {
-      climateZone,
-      confidence,
-      method,
-      referenceCity
-    });
-  }, [climateZone, confidence, method, referenceCity]);
 
   const confidenceColor = getConfidenceColor(confidence);
   const confidenceIcon = getConfidenceIcon(confidence);
   const zoneBadgeVariant = getZoneBadgeColor(climateZone);
 
-  // 🚨 DEBUG: Handler de changement
   const handleZoneChange = (zone: string) => {
-    console.log('🌍 ClimateZoneDisplay - Changement zone:', zone);
     if (onZoneChange) {
       onZoneChange(zone);
     }
   };
-
-  // 🚨 DEBUG: Log avant rendu
-  console.log('🎯 ClimateZoneDisplay - RENDU avec zone:', climateZone);
 
   return (
     <div className="space-y-3 p-3 border rounded-lg bg-blue-50 border-blue-200">
       <div className="flex items-center gap-2">
         <Thermometer className="h-4 w-4 text-blue-600" />
         <span className="text-sm font-medium text-blue-800">Zone Climatique CTE</span>
-        {/* 🚨 DEBUG: Afficher la zone dans le titre */}
-        <span className="text-xs text-red-600 font-bold">[DEBUG: {climateZone}]</span>
       </div>
       
       <div className="space-y-3">

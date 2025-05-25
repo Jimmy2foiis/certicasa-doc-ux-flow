@@ -26,48 +26,13 @@ export const useThermalEconomyCalculations = ({
   const [cherryEnabled, setCherryEnabled] = useState(false);
   const [delegate, setDelegate] = useState<"Eiffage" | "GreenFlex">("Eiffage");
   const [selectedClimateZone, setSelectedClimateZone] = useState(climateZone);
-  
-  // 🚨 DEBUG URGENT: Tracer toutes les valeurs d'entrée
-  console.log('🔗 useThermalEconomyCalculations - PROPS D\'ENTRÉE:', {
-    surfaceArea,
-    uValueBefore,
-    uValueAfter,
-    climateZone,
-    selectedClimateZone
-  });
-  
-  // 🚨 DEBUG: Effet d'initialisation
-  useEffect(() => {
-    console.log('🔄 Hook ThermalEconomy - INITIALISATION:', {
-      climateZoneReçue: climateZone,
-      selectedClimateZoneActuel: selectedClimateZone
-    });
-    
-    if (climateZone && !selectedClimateZone) {
-      console.log('🎯 Hook ThermalEconomy - Initialisation zone climatique:', climateZone);
-      setSelectedClimateZone(climateZone);
-    }
-  }, []);
 
-  // 🚨 DEBUG: Synchronisation forcée
+  // Synchronisation avec la zone climatique reçue
   useEffect(() => {
-    console.log('🔄 Hook ThermalEconomy - SYNCHRONISATION:', {
-      climateZoneReçue: climateZone,
-      selectedClimateZoneActuel: selectedClimateZone,
-      sontDifférents: climateZone !== selectedClimateZone
-    });
-    
     if (climateZone && climateZone !== selectedClimateZone) {
-      console.log('🌍 Hook ThermalEconomy - FORCER la synchronisation:', climateZone);
       setSelectedClimateZone(climateZone);
-      
-      // Propager immédiatement le changement
-      if (onClimateZoneChange) {
-        console.log('🔄 Hook ThermalEconomy - Propagation vers parent:', climateZone);
-        onClimateZoneChange(climateZone);
-      }
     }
-  }, [climateZone, selectedClimateZone, onClimateZoneChange]);
+  }, [climateZone]);
 
   // Get coefficient G based on selected climate zone
   const gCoefficient = climateZoneCoefficients[selectedClimateZone] || 46;
@@ -95,25 +60,14 @@ export const useThermalEconomyCalculations = ({
   const totalPricePerSqm = pricePerSqm + cherryPricePerSqm;
   const totalProjectPrice = projectPrice + cherryProjectPrice;
 
-  // 🚨 DEBUG: Gestionnaire de changement optimisé
   const handleClimateZoneChange = (zone: string) => {
-    console.log('🌍 Hook ThermalEconomy - CHANGEMENT MANUEL zone:', zone);
     setSelectedClimateZone(zone);
     
     // Propager le changement vers le parent
     if (onClimateZoneChange) {
-      console.log('🔄 Hook ThermalEconomy - Propagation changement manuel:', zone);
       onClimateZoneChange(zone);
     }
   };
-
-  // 🚨 DEBUG: Afficher les valeurs calculées
-  console.log('✅ Hook ThermalEconomy - VALEURS FINALES:', {
-    selectedClimateZone,
-    gCoefficient,
-    annualSavings: annualSavings.toFixed(2),
-    projectPrice: projectPrice.toFixed(2)
-  });
 
   return {
     cherryEnabled,
