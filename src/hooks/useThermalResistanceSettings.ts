@@ -22,12 +22,11 @@ export const useThermalResistanceSettings = ({
 
   useEffect(() => {
     if (savedData) {
-      if (savedData.ratioBefore) setRatioBefore(savedData.ratioBefore);
-      if (savedData.ratioAfter) setRatioAfter(savedData.ratioAfter);
       if (savedData.rsiBefore) setRsiBefore(savedData.rsiBefore);
       if (savedData.rseBefore) setRseBefore(savedData.rseBefore);
       if (savedData.rsiAfter) setRsiAfter(savedData.rsiAfter);
       if (savedData.rseAfter) setRseAfter(savedData.rseAfter);
+      // Ne pas charger les ratios sauvegardés, toujours recalculer
     }
   }, [savedData]);
 

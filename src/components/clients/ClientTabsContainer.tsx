@@ -16,6 +16,8 @@ interface ClientTabsContainerProps {
   onEditCalculation: (projectId: string) => void;
   onDeleteCalculation: (projectId: string) => void;
   onBack: () => void;
+  surfaceArea: string;
+  roofArea: string;
 }
 
 export const ClientTabsContainer = ({ 
@@ -25,7 +27,9 @@ export const ClientTabsContainer = ({
   onNewCalculation,
   onEditCalculation,
   onDeleteCalculation,
-  onBack
+  onBack,
+  surfaceArea,
+  roofArea
 }: ClientTabsContainerProps) => {
   const [currentTab, setCurrentTab] = useState("calculations");
 
@@ -87,6 +91,8 @@ export const ClientTabsContainer = ({
                 phone: client?.phone || '',
                 email: client?.email || ''
               }}
+              surfaceArea={surfaceArea}
+              roofArea={roofArea}
             />
           </TabsContent>
 

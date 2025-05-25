@@ -121,6 +121,8 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
         onEditCalculation={handleEditCalculation}
         onDeleteCalculation={handleDeleteCalculation}
         onBack={onBack}
+        surfaceArea={surfaceArea}
+        roofArea={roofArea}
       />
     </div>
   );
