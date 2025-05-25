@@ -3,9 +3,9 @@ import { useLayerManagement, Layer } from "./useLayerManagement";
 import { useProjectSettings } from "./useProjectSettings";
 import { useThermalResistanceSettings } from "./useThermalResistanceSettings";
 import { useThermalCalculations } from "./useThermalCalculations";
-import { Material } from "@/data/materials";
+import { useClimateZoneState } from "./useClimateZoneState";
+import { useCalculationData, CalculationData } from "./useCalculationData";
 import { VentilationType } from "@/utils/calculationUtils";
-import { useState, useEffect } from "react";
 
 export interface CalculationStateProps {
   savedData?: any;
@@ -13,45 +13,11 @@ export interface CalculationStateProps {
   floorType?: string;
 }
 
-export interface CalculationData {
-  beforeLayers: Layer[];
-  afterLayers: Layer[];
-  projectType: string;
-  surfaceArea: string;
-  roofArea: string;
-  ventilationBefore: VentilationType;
-  ventilationAfter: VentilationType;
-  ratioBefore: number;
-  ratioAfter: number;
-  rsiBefore: string;
-  rseBefore: string;
-  rsiAfter: string;
-  rseAfter: string;
-  totalRBefore: number;
-  upValueBefore: number;
-  uValueBefore: number;
-  totalRAfter: number;
-  upValueAfter: number;
-  uValueAfter: number;
-  improvementPercent: number;
-  climateZone: string;
-  bCoefficientBefore: number;
-  bCoefficientAfter: number;
-  meetsRequirements: boolean;
-}
-
-export type { Layer };
+export type { CalculationData, Layer };
 
 export const useCalculationState = ({ savedData, clientClimateZone, floorType }: CalculationStateProps) => {
-  // Climate zone state
-  const [climateZone, setClimateZone] = useState(clientClimateZone || "C3");
-
-  // Update climate zone when clientClimateZone changes
-  useEffect(() => {
-    if (clientClimateZone) {
-      setClimateZone(clientClimateZone);
-    }
-  }, [clientClimateZone]);
+  // Climate zone management
+  const { climateZone, setClimateZone } = useClimateZoneState({ clientClimateZone });
 
   // Layer management
   const {
@@ -135,8 +101,8 @@ export const useCalculationState = ({ savedData, clientClimateZone, floorType }:
     copyThermalBeforeToAfter();
   };
 
-  // Calculer tous les paramètres requis pour l'export Excel
-  const calculationData: CalculationData = {
+  // Aggregate calculation data
+  const calculationData = useCalculationData({
     projectType,
     surfaceArea,
     roofArea,
@@ -157,11 +123,11 @@ export const useCalculationState = ({ savedData, clientClimateZone, floorType }:
     upValueAfter,
     uValueAfter,
     improvementPercent,
-    climateZone: climateZone,
+    climateZone,
     bCoefficientBefore,
     bCoefficientAfter,
     meetsRequirements,
-  };
+  });
 
   return {
     beforeLayers,
