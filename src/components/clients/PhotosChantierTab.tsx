@@ -9,7 +9,7 @@ import { PhotoGallery } from './photos/PhotoGallery';
 import { PhotoSelectionPanel } from './photos/PhotoSelectionPanel';
 import { PhotoModeSelector } from './photos/PhotoModeSelector';
 import { SafetyCultureService } from '@/services/safetyCultureService';
-import { generatePhotosWordDocument } from '@/services/photosWordService';
+import { generatePhotosWordDocument } from '@/services/photos/photosWordService';
 import { createDocument } from '@/services/supabase/documentService';
 import type { SafetyCultureAudit, SafetyCulturePhoto, SelectedPhoto } from '@/types/safetyCulture';
 
@@ -243,7 +243,7 @@ const PhotosChantierTab = ({
           onDocumentGenerated();
         }
         
-        // Attendre 2 secondes avant de déclencher l'événement pour s'assurer que Supabase a fini
+        // Attendre 1 seconde avant de déclencher l'événement pour s'assurer que Supabase a fini
         setTimeout(() => {
           console.log('🔄 Déclenchement événement document-generated');
           window.dispatchEvent(new CustomEvent('document-generated', { 
@@ -254,7 +254,7 @@ const PhotosChantierTab = ({
               documentId: documentRecord.id
             } 
           }));
-        }, 2000);
+        }, 1000);
         
         // Réinitialiser les sélections
         setSelectedPhotos({ avant: [], apres: [] });
