@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DocumentsTabContent } from "./DocumentsTabContent";
@@ -49,6 +48,14 @@ export const ClientTabsContainer = ({
   const handleSave = (calculationData: any) => {
     console.log('Calcul sauvegardé:', calculationData);
     // Logic to save calculation
+  };
+
+  // 🚀 NOUVEAU: Gestionnaire pour les changements de zone climatique depuis les calculs
+  const handleClimateZoneChangeFromCalculation = (zone: string) => {
+    console.log('🔄 Zone climatique mise à jour depuis les calculs:', zone);
+    if (onClimateZoneChange) {
+      onClimateZoneChange(zone);
+    }
   };
 
   return (
@@ -110,7 +117,7 @@ export const ClientTabsContainer = ({
               onSurfaceAreaChange={onSurfaceAreaChange}
               onRoofAreaChange={onRoofAreaChange}
               onFloorTypeChange={onFloorTypeChange}
-              onClimateZoneChange={onClimateZoneChange}
+              onClimateZoneChange={handleClimateZoneChangeFromCalculation}
             />
           </TabsContent>
 

@@ -129,8 +129,11 @@ const ProjectCalculation = ({
 
   // 2️⃣ Gestionnaire de changement de zone climatique unifié
   const handleClimateZoneChange = (zone: string) => {
+    console.log('🔄 Changement de zone climatique dans le calcul:', zone);
     setZoneClimatique(zone);
     setClimateZone(zone);
+    
+    // 🚀 NOUVEAU: Propager le changement vers le parent (ClientTabsContainer)
     if (onClimateZoneChange) {
       onClimateZoneChange(zone);
     }
