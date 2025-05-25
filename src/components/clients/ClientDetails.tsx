@@ -208,59 +208,57 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
         onClientUpdated={handleClientUpdated}
       />
 
-      <div className="grid grid-cols-12 gap-6">
-        {/* Client Info Sidebar - Left Column */}
-        <div className="col-span-12 md:col-span-3 lg:col-span-3">
-          <ClientInfoSidebar 
-            client={client} 
-            documentStats={documentStats}
-            onViewMissingDocs={handleViewMissingDocs}
-          />
-        </div>
+      {/* Bloc INFORMATIONS CLIENT déplacé ici - entre le header et les onglets */}
+      <div className="w-full">
+        <ClientInfoSidebar 
+          client={client} 
+          documentStats={documentStats}
+          onViewMissingDocs={handleViewMissingDocs}
+        />
+      </div>
 
-        {/* Tabs Content - Right Column */}
-        <div className="col-span-12 md:col-span-9 lg:col-span-9">
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="space-y-4"
-          >
-            <TabsList className="grid grid-cols-5 w-full">
-              <TabsTrigger value="calculations">Calculs</TabsTrigger>
-              <TabsTrigger value="documents">Documents</TabsTrigger>
-              <TabsTrigger value="billing">Facturation</TabsTrigger>
-              <TabsTrigger value="projects">Photos Chantier</TabsTrigger>
-              <TabsTrigger value="statistics">Historique</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="calculations" className="space-y-4">
-              <CalculationsTab 
-                clientId={clientId} 
-                clientName={client?.name}
-                clientAddress={client?.address}
-                savedCalculations={calculationsData}
-                onOpenCalculation={handleOpenCalculation}
-                onCreateNewCalculation={handleCreateNewCalculation}
-              />
-            </TabsContent>
-            
-            <TabsContent value="documents" className="space-y-4">
-              <DocumentsTab clientId={clientId} />
-            </TabsContent>
-            
-            <TabsContent value="billing" className="space-y-4">
-              <BillingTab clientId={clientId} />
-            </TabsContent>
-            
-            <TabsContent value="projects" className="space-y-4">
-              <ProjectsTab clientId={clientId} />
-            </TabsContent>
-            
-            <TabsContent value="statistics" className="space-y-4">
-              <StatisticsTab clientId={clientId} />
-            </TabsContent>
-          </Tabs>
-        </div>
+      {/* Tabs Content */}
+      <div className="w-full">
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="space-y-4"
+        >
+          <TabsList className="grid grid-cols-5 w-full">
+            <TabsTrigger value="calculations">Calculs</TabsTrigger>
+            <TabsTrigger value="documents">Documents</TabsTrigger>
+            <TabsTrigger value="billing">Facturation</TabsTrigger>
+            <TabsTrigger value="projects">Photos Chantier</TabsTrigger>
+            <TabsTrigger value="statistics">Historique</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="calculations" className="space-y-4">
+            <CalculationsTab 
+              clientId={clientId} 
+              clientName={client?.name}
+              clientAddress={client?.address}
+              savedCalculations={calculationsData}
+              onOpenCalculation={handleOpenCalculation}
+              onCreateNewCalculation={handleCreateNewCalculation}
+            />
+          </TabsContent>
+          
+          <TabsContent value="documents" className="space-y-4">
+            <DocumentsTab clientId={clientId} />
+          </TabsContent>
+          
+          <TabsContent value="billing" className="space-y-4">
+            <BillingTab clientId={clientId} />
+          </TabsContent>
+          
+          <TabsContent value="projects" className="space-y-4">
+            <ProjectsTab clientId={clientId} />
+          </TabsContent>
+          
+          <TabsContent value="statistics" className="space-y-4">
+            <StatisticsTab clientId={clientId} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

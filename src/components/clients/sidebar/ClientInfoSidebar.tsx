@@ -22,29 +22,40 @@ const ClientInfoSidebar = ({ client, documentStats, onViewMissingDocs }: ClientI
   if (!client) return null;
 
   return (
-    <Card className="h-full shadow-sm">
-      <CardContent className="p-4 space-y-5">
-        {/* Client personal information */}
-        <ClientPersonalSection client={client} />
-        <Separator />
-        
-        {/* Project team information */}
-        <ProjectTeamSection 
-          teleprospector={client.teleprospector || "Marc Dupont"}
-          confirmer={client.confirmer || "Sophie Martin"}
-          installationTeam={client.installationTeam || "Équipe A"}
-        />
-        <Separator />
-        
-        {/* Administrative file tracking */}
-        <FileTrackingSection 
-          status={client.status || "En cours"}
-          delegate={client.delegate || "SOLATEC"}
-          lotNumber={client.lotNumber || "-"}
-          depositDate={client.depositDate}
-          documentStats={documentStats}
-          onViewMissingDocs={onViewMissingDocs}
-        />
+    <Card className="w-full shadow-sm">
+      <CardContent className="p-3">
+        <div className="grid grid-cols-4 gap-6">
+          {/* Colonne 1: Informations personnelles */}
+          <div>
+            <ClientPersonalSection client={client} />
+          </div>
+          
+          {/* Colonne 2: Suivi administratif */}
+          <div>
+            <FileTrackingSection 
+              status={client.status || "En cours"}
+              delegate={client.delegate || "SOLATEC"}
+              lotNumber={client.lotNumber || "-"}
+              depositDate={client.depositDate}
+              documentStats={documentStats}
+              onViewMissingDocs={onViewMissingDocs}
+            />
+          </div>
+          
+          {/* Colonne 3: Vide pour l'instant */}
+          <div>
+            {/* Espace réservé pour futur contenu */}
+          </div>
+          
+          {/* Colonne 4: Équipe projet */}
+          <div>
+            <ProjectTeamSection 
+              teleprospector={client.teleprospector || "Marc Dupont"}
+              confirmer={client.confirmer || "Sophie Martin"}
+              installationTeam={client.installationTeam || "Équipe A"}
+            />
+          </div>
+        </div>
       </CardContent>
     </Card>
   );

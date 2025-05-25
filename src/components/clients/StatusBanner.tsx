@@ -2,8 +2,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { FileText, AlertCircle, Edit, Eye } from "lucide-react";
+import { Edit, Eye } from "lucide-react";
 import { Client } from "@/services/api/types";
 
 interface StatusBannerProps {
@@ -100,18 +99,6 @@ const StatusBanner = ({
           Modifier
         </Button>
       </div>
-
-      {/* Alerte pour documents manquants */}
-      {hasMissingDocuments && (
-        <Alert className="border-orange-200 bg-orange-50">
-          <AlertCircle className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="flex items-center justify-between">
-            <span className="text-orange-800">
-              {documentStats.missing} document(s) manquant(s) pour finaliser le dossier
-            </span>
-          </AlertDescription>
-        </Alert>
-      )}
     </div>
   );
 };
