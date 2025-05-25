@@ -48,7 +48,7 @@ export const getCalculationsForProject = async (projectId: string): Promise<Calc
  * Crée un nouveau calcul
  */
 export const createCalculation = async (
-  calculationData: Calculation,
+  calculationData: any,
 ): Promise<Calculation | null> => {
   // Si l'ID du projet commence par "local_" ou "project_", on sauvegarde localement
   if (
@@ -59,25 +59,86 @@ export const createCalculation = async (
     try {
       // Récupérer les calculs existants
       const savedData = localStorage.getItem('saved_calculations');
-      let allCalculations: Calculation[] = [];
+      let allCalculations: any[] = [];
       if (savedData) {
         allCalculations = JSON.parse(savedData);
       }
 
-      // Ajouter le nouveau calcul avec un ID unique
-      const newCalculation = {
-        ...calculationData,
+      // Créer l'objet de calcul complet avec TOUTES les données
+      const completeCalculation = {
         id: calculationData.id || `calc_${Date.now()}`,
+        project_id: calculationData.project_id,
+        project_name: calculationData.project_name || 'Calcul thermique',
+        client_id: calculationData.client_id,
+        client_name: calculationData.client_name || 'Client',
+        client_address: calculationData.client_address || '',
+        type: calculationData.type || 'RES010',
+        surface_area: calculationData.surface_area || 0,
+        roof_area: calculationData.roof_area || 0,
+        improvement_percent: calculationData.improvement_percent || 0,
+        u_value_before: calculationData.u_value_before || 0,
+        u_value_after: calculationData.u_value_after || 0,
+        climate_zone: calculationData.climate_zone || 'C3',
+        // Sauvegarder TOUTES les données du calcul thermique
+        calculation_data: {
+          // Données de base du projet
+          projectType: calculationData.calculation_data?.projectType || calculationData.type,
+          surfaceArea: calculationData.calculation_data?.surfaceArea || calculationData.surface_area?.toString(),
+          roofArea: calculationData.calculation_data?.roofArea || calculationData.roof_area?.toString(),
+          climateZone: calculationData.calculation_data?.climateZone || calculationData.climate_zone,
+          
+          // Couches avant travaux - CRITIQUES pour la sauvegarde
+          beforeLayers: calculationData.calculation_data?.beforeLayers || [],
+          
+          // Couches après travaux - CRITIQUES pour la sauvegarde
+          afterLayers: calculationData.calculation_data?.afterLayers || [],
+          
+          // Valeurs de résistance thermique
+          rsiBefore: calculationData.calculation_data?.rsiBefore || '0.10',
+          rseBefore: calculationData.calculation_data?.rseBefore || '0.10',
+          rsiAfter: calculationData.calculation_data?.rsiAfter || '0.10',
+          rseAfter: calculationData.calculation_data?.rseAfter || '0.10',
+          
+          // Types de ventilation
+          ventilationBefore: calculationData.calculation_data?.ventilationBefore || 'caso1',
+          ventilationAfter: calculationData.calculation_data?.ventilationAfter || 'caso1',
+          
+          // Ratios
+          ratioBefore: calculationData.calculation_data?.ratioBefore || 0.58,
+          ratioAfter: calculationData.calculation_data?.ratioAfter || 0.58,
+          
+          // Résultats calculés
+          totalRBefore: calculationData.calculation_data?.totalRBefore || 0,
+          totalRAfter: calculationData.calculation_data?.totalRAfter || 0,
+          upValueBefore: calculationData.calculation_data?.upValueBefore || 0,
+          upValueAfter: calculationData.calculation_data?.upValueAfter || 0,
+          uValueBefore: calculationData.calculation_data?.uValueBefore || calculationData.u_value_before || 0,
+          uValueAfter: calculationData.calculation_data?.uValueAfter || calculationData.u_value_after || 0,
+          improvementPercent: calculationData.calculation_data?.improvementPercent || calculationData.improvement_percent || 0,
+          
+          // Coefficients B
+          bCoefficientBefore: calculationData.calculation_data?.bCoefficientBefore || 0,
+          bCoefficientAfter: calculationData.calculation_data?.bCoefficientAfter || 0,
+          
+          // État des exigences
+          meetsRequirements: calculationData.calculation_data?.meetsRequirements || false,
+          
+          // Toutes les autres données du calcul
+          ...calculationData.calculation_data
+        },
         created_at: new Date().toISOString(),
+        saved_at: new Date().toISOString()
       };
 
-      allCalculations.push(newCalculation);
+      allCalculations.push(completeCalculation);
       localStorage.setItem('saved_calculations', JSON.stringify(allCalculations));
 
-      console.log('✅ Calcul sauvegardé localement:', newCalculation);
+      console.log('✅ Calcul complet sauvegardé localement:', completeCalculation);
+      console.log('📊 Couches avant sauvegardées:', completeCalculation.calculation_data.beforeLayers?.length || 0);
+      console.log('📊 Couches après sauvegardées:', completeCalculation.calculation_data.afterLayers?.length || 0);
       console.log('📊 Total calculs sauvegardés:', allCalculations.length);
 
-      return newCalculation;
+      return completeCalculation;
     } catch (error) {
       console.error('❌ Erreur lors de la sauvegarde locale du calcul:', error);
       return null;

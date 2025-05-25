@@ -45,7 +45,8 @@ const CalculationActionsWithBilling = ({
       const clientId = `local_${Date.now()}`;
       const projectId = `project_${Date.now()}`;
 
-      const dataToSave = {
+      // Créer l'objet de données COMPLET à sauvegarder
+      const completeDataToSave = {
         id: calculationId,
         project_id: projectId,
         client_id: clientId,
@@ -54,32 +55,50 @@ const CalculationActionsWithBilling = ({
         client_address: clientAddress || '',
         type: calculationData.projectType || 'RES010',
         surface_area: parseFloat(calculationData.surfaceArea) || 0,
+        roof_area: parseFloat(calculationData.roofArea) || 0,
         improvement_percent: calculationData.improvementPercent || 0,
         u_value_before: calculationData.uValueBefore || 0,
         u_value_after: calculationData.uValueAfter || 0,
         climate_zone: calculationData.climateZone || 'C3',
-        calculation_data: calculationData,
+        // TOUTES les données du calcul thermique
+        calculation_data: {
+          ...calculationData,
+          // S'assurer que les couches sont bien incluses
+          beforeLayers: calculationData.beforeLayers || [],
+          afterLayers: calculationData.afterLayers || [],
+          // S'assurer que tous les paramètres critiques sont inclus
+          rsiBefore: calculationData.rsiBefore || '0.10',
+          rseBefore: calculationData.rseBefore || '0.10',
+          rsiAfter: calculationData.rsiAfter || '0.10',
+          rseAfter: calculationData.rseAfter || '0.10',
+          ventilationBefore: calculationData.ventilationBefore || 'caso1',
+          ventilationAfter: calculationData.ventilationAfter || 'caso1',
+          ratioBefore: calculationData.ratioBefore || 0.58,
+          ratioAfter: calculationData.ratioAfter || 0.58
+        },
         created_at: new Date().toISOString(),
         saved_at: new Date().toISOString()
       };
 
-      console.log('💾 Sauvegarde du calcul:', dataToSave);
+      console.log('💾 Données complètes à sauvegarder:', completeDataToSave);
+      console.log('📋 Couches avant:', completeDataToSave.calculation_data.beforeLayers?.length || 0);
+      console.log('📋 Couches après:', completeDataToSave.calculation_data.afterLayers?.length || 0);
 
       // Utiliser le service de calculs pour sauvegarder
-      const savedCalculation = await createCalculation(dataToSave);
+      const savedCalculation = await createCalculation(completeDataToSave);
 
       if (savedCalculation) {
         // Callback personnalisé si fourni
         if (onSave) {
-          onSave(dataToSave);
+          onSave(completeDataToSave);
         }
 
         // Émettre l'événement de sauvegarde pour notifier les autres composants
-        emitCalculationSaved(dataToSave);
+        emitCalculationSaved(completeDataToSave);
 
         toast({
           title: "✅ Calcul sauvegardé avec succès",
-          description: `Surface: ${calculationData.surfaceArea}m² • Amélioration: ${calculationData.improvementPercent?.toFixed(1)}% • Zone: ${calculationData.climateZone}`,
+          description: `Surface: ${calculationData.surfaceArea}m² • Amélioration: ${calculationData.improvementPercent?.toFixed(1)}% • Zone: ${calculationData.climateZone} • Couches: ${(calculationData.beforeLayers?.length || 0) + (calculationData.afterLayers?.length || 0)}`,
           duration: 4000,
         });
       } else {
