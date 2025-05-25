@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { useClientData } from "@/hooks/useClientData";
 import { useSavedCalculations } from "@/hooks/useSavedCalculations";
 import ClientInfoSidebar from "./sidebar/ClientInfoSidebar";
@@ -17,9 +18,18 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
   const [surfaceArea, setSurfaceArea] = useState("70");
   const [roofArea, setRoofArea] = useState("85");
   const [floorType, setFloorType] = useState("Bois");
+  const [climateZone, setClimateZone] = useState("C3");
   
   const { client } = useClientData(clientId);
   const { savedCalculations } = useSavedCalculations(clientId);
+
+  // Initialiser les valeurs par défaut depuis le client
+  useEffect(() => {
+    if (client) {
+      setFloorType(client.floorType || "Bois");
+      setClimateZone(client.climateZone || "C3");
+    }
+  }, [client]);
 
   const handleNewCalculation = () => {
     setCurrentProjectId(null);
@@ -59,6 +69,10 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
     setFloorType(value);
   };
 
+  const handleClimateZoneChange = (value: string) => {
+    setClimateZone(value);
+  };
+
   // Mock document stats for the header
   const documentStats = {
     total: 8,
@@ -86,7 +100,7 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
   if (currentView === "calculation") {
     return (
       <ProjectCalculationView
-        client={client}
+        client={{...client, climateZone}}
         clientId={clientId}
         currentProjectId={currentProjectId}
         savedCalculations={savedCalculations}
@@ -95,6 +109,10 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
         surfaceArea={surfaceArea}
         roofArea={roofArea}
         floorType={floorType}
+        onSurfaceAreaChange={handleSurfaceAreaChange}
+        onRoofAreaChange={handleRoofAreaChange}
+        onFloorTypeChange={handleFloorTypeChange}
+        onClimateZoneChange={handleClimateZoneChange}
       />
     );
   }
@@ -115,9 +133,14 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
       
       <ClientInfoSidebar 
         client={client} 
+        currentSurfaceArea={surfaceArea}
+        currentRoofArea={roofArea}
+        currentFloorType={floorType}
+        currentClimateZone={climateZone}
         onSurfaceAreaChange={handleSurfaceAreaChange}
         onRoofAreaChange={handleRoofAreaChange}
         onFloorTypeChange={handleFloorTypeChange}
+        onClimateZoneChange={handleClimateZoneChange}
       />
       <ClientTabsContainer
         client={client}

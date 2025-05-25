@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useCadastralData } from "@/hooks/useCadastralData";
 import CalculationHeader from "./CalculationHeader";
@@ -96,6 +96,7 @@ const ProjectCalculation = ({
     copyBeforeToAfter,
     updateLayer,
     calculationData,
+    climateZone,
     setClimateZone
   } = useCalculationState({
     savedData: {
@@ -107,6 +108,25 @@ const ProjectCalculation = ({
     clientClimateZone: effectiveClimateZone,
     floorType: floorType
   });
+
+  // Synchroniser les changements depuis les props vers les callbacks parents
+  useEffect(() => {
+    if (calcSurfaceArea !== surfaceArea && onSurfaceAreaChange) {
+      onSurfaceAreaChange(calcSurfaceArea);
+    }
+  }, [calcSurfaceArea, surfaceArea, onSurfaceAreaChange]);
+
+  useEffect(() => {
+    if (calcRoofArea !== roofArea && onRoofAreaChange) {
+      onRoofAreaChange(calcRoofArea);
+    }
+  }, [calcRoofArea, roofArea, onRoofAreaChange]);
+
+  useEffect(() => {
+    if (climateZone !== clientClimateZone && onClimateZoneChange) {
+      onClimateZoneChange(climateZone);
+    }
+  }, [climateZone, clientClimateZone, onClimateZoneChange]);
 
   const handleDeleteBeforeLayer = (id: string) => {
     setBeforeLayers(beforeLayers.filter(l => l.id !== id));
