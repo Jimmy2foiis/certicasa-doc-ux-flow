@@ -3,20 +3,28 @@ import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectsTabContent from "./ProjectsTabContent";
 import CalculationsTabContent from "./CalculationsTabContent";
-import { DocumentsTabContent } from "./DocumentsTabContent"; // Changed to named import
+import { DocumentsTabContent } from "./DocumentsTabContent";
 import SignaturesTabContent from "./SignaturesTabContent";
 import { Card } from "@/components/ui/card";
 
 interface ClientTabsContainerProps {
-  onShowCalculation?: (projectId?: string) => void;
-  clientId?: string;  // Ajout de clientId pour passer aux composants enfants
-  clientName?: string; // Ajout de clientName pour passer aux composants enfants
+  client: any;
+  clientId: string;
+  savedCalculations: any[];
+  onNewCalculation: () => void;
+  onEditCalculation: (projectId: string) => void;
+  onDeleteCalculation: (projectId: string) => void;
+  onBack: () => void;
 }
 
 export const ClientTabsContainer = ({ 
-  onShowCalculation, 
+  client,
   clientId,
-  clientName 
+  savedCalculations,
+  onNewCalculation,
+  onEditCalculation,
+  onDeleteCalculation,
+  onBack
 }: ClientTabsContainerProps) => {
   const [currentTab, setCurrentTab] = useState("projects");
 
@@ -55,11 +63,17 @@ export const ClientTabsContainer = ({
         </TabsContent>
 
         <TabsContent value="calculations" className="p-4">
-          <CalculationsTabContent onOpenCalculation={onShowCalculation} clientId={clientId} />
+          <CalculationsTabContent 
+            onOpenCalculation={onEditCalculation} 
+            clientId={clientId} 
+            savedCalculations={savedCalculations}
+            onNewCalculation={onNewCalculation}
+            onDeleteCalculation={onDeleteCalculation}
+          />
         </TabsContent>
 
         <TabsContent value="documents" className="p-4">
-          <DocumentsTabContent clientId={clientId} clientName={clientName} />
+          <DocumentsTabContent clientId={clientId} clientName={client?.name} />
         </TabsContent>
 
         <TabsContent value="signatures" className="p-4">
