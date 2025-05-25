@@ -19,7 +19,9 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
     
     try {
       if (clientId) {
+        console.log('Loading documents for client:', clientId);
         const documents = await getDocumentsForClient(clientId);
+        console.log('Loaded documents from Supabase:', documents);
         
         // Transform documents into AdminDocument format
         const formattedDocs: AdministrativeDocument[] = documents.map(doc => ({
@@ -39,6 +41,7 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
           statusLabel: getStatusLabelForDocument(doc.type || "pdf", doc.status || "available")
         }));
         
+        console.log('Formatted documents:', formattedDocs);
         setAdminDocuments(formattedDocs);
       } else {
         // If no clientId, load demo documents
@@ -65,6 +68,29 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
   useEffect(() => {
     loadDocuments();
   }, [loadDocuments]);
+
+  // Listen for document generation events
+  useEffect(() => {
+    const handleDocumentGenerated = (event: CustomEvent) => {
+      console.log('Document généré détecté dans useClientDocuments:', event.detail);
+      
+      if (event.detail.clientId === clientId) {
+        console.log('Refreshing documents for client:', clientId);
+        // Refresh documents after a short delay to ensure database is updated
+        setTimeout(() => {
+          loadDocuments();
+        }, 500);
+      }
+    };
+
+    // Listen for document generation events
+    window.addEventListener('document-generated', handleDocumentGenerated as EventListener);
+    
+    // Cleanup
+    return () => {
+      window.removeEventListener('document-generated', handleDocumentGenerated as EventListener);
+    };
+  }, [clientId, loadDocuments]);
   
   // Document search functionality
   const { searchQuery, setSearchQuery, filteredDocuments } = useDocumentSearch(adminDocuments);
@@ -74,7 +100,7 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
   
   // Function to refresh documents (this was missing!)
   const refreshDocuments = useCallback(() => {
-    console.log('Refreshing documents...');
+    console.log('Manual refresh triggered...');
     loadDocuments();
   }, [loadDocuments]);
   
@@ -147,6 +173,10 @@ export const useClientDocuments = (clientId?: string, clientName?: string) => {
 
 // Helper function to determine status label based on document type and status
 function getStatusLabelForDocument(type: string, status: string): string {
+  if (status === "generated") {
+    return "Document généré";
+  }
+  
   if (status === "pending") {
     switch (type.toLowerCase()) {
       case "ficha":

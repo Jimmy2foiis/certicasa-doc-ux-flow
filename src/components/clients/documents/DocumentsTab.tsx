@@ -29,6 +29,8 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
 
   // Préparer les documents requis avec leur ordre correct
   useEffect(() => {
+    console.log('Documents from Supabase:', documents);
+    
     // Définir les 8 documents obligatoires
     const requiredDocsList = [
       { 
@@ -99,10 +101,14 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
 
     // Mapper les documents existants aux documents requis
     const mappedDocuments: AdministrativeDocument[] = requiredDocsList.map(reqDoc => {
-      // Chercher si un document correspondant existe déjà
+      // Chercher si un document correspondant existe déjà (par type OU par nom)
       const existingDoc = documents.find(doc => 
-        doc.type?.toLowerCase() === reqDoc.type.toLowerCase()
+        doc.type?.toLowerCase() === reqDoc.type.toLowerCase() ||
+        doc.name?.toLowerCase().includes(reqDoc.name.toLowerCase()) ||
+        (reqDoc.type === 'fotos' && (doc.name?.toLowerCase().includes('fotográfico') || doc.name?.toLowerCase().includes('fotos')))
       );
+
+      console.log(`Mapping ${reqDoc.name} (${reqDoc.type}):`, existingDoc ? 'FOUND' : 'NOT FOUND');
 
       // Si le document existe, utiliser ses informations, sinon marquer comme manquant
       if (existingDoc) {
@@ -125,6 +131,7 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
       }
     });
 
+    console.log('Final mapped documents:', mappedDocuments);
     setRequiredDocuments(mappedDocuments);
   }, [documents]);
 

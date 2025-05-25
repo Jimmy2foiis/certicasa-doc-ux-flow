@@ -204,9 +204,9 @@ const PhotosChantierTab = ({
       
       console.log('Document généré, taille:', wordBlob.size);
       
-      // Créer l'enregistrement du document dans Supabase
+      // Créer l'enregistrement du document dans Supabase avec le bon type
       const documentRecord = await createDocument({
-        name: '4-Fotos.docx',
+        name: 'Informe fotográfico',
         type: 'fotos',
         status: 'generated',
         client_id: clientId,
@@ -218,7 +218,7 @@ const PhotosChantierTab = ({
         
         toast({
           title: "✅ Document créé",
-          description: "4-Fotos.docx a été ajouté au dossier client",
+          description: "Informe fotográfico a été ajouté au dossier client",
         });
         
         // Notifier la génération du document
@@ -231,7 +231,8 @@ const PhotosChantierTab = ({
           detail: { 
             clientId, 
             documentType: 'fotos',
-            documentName: '4-Fotos.docx'
+            documentName: 'Informe fotográfico',
+            documentId: documentRecord.id
           } 
         }));
         
@@ -245,7 +246,7 @@ const PhotosChantierTab = ({
       console.error('Erreur lors de la génération:', error);
       toast({
         title: "Erreur",
-        description: "Impossible de générer le document",
+        description: error instanceof Error ? error.message : "Impossible de générer le document",
         variant: "destructive",
       });
     } finally {
