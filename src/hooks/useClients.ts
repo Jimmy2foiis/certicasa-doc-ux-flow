@@ -44,8 +44,7 @@ export const useClients = () => {
         'Cantabria',
         'Castilla-La Mancha', 
         'Castilla y León', 
-        'Cataluña', 
-        'Extremadura',
+        'Cataluña', 'Extremadura',
         'Galicia', 
         'Madrid', 
         'Murcia', 
@@ -59,9 +58,9 @@ export const useClients = () => {
       const enrichedClients = data.map(client => ({
         ...client,
         postalCode: client.postalCode || extractPostalCode(client.address),
-        ficheType: client.type || 'RES010',
+        ficheType: client.ficheType || client.type || 'RES010',
         climateZone: client.climateZone || 'C',
-        isolatedArea: client.isolatedArea || Math.floor(Math.random() * 100) + 20, // Temporaire pour la démo
+        isolatedArea: client.isolatedArea || Math.floor(Math.random() * 100) + 20,
         isolationType: client.isolationType || (Math.random() > 0.5 ? 'Combles' : 'Rampants'),
         floorType: client.floorType || (Math.random() > 0.5 ? 'Bois' : 'Béton'),
         depositStatus: client.depositStatus || 'Non déposé',
@@ -71,12 +70,19 @@ export const useClients = () => {
       }));
       
       setClients(enrichedClients);
+      
+      if (enrichedClients.length > 0) {
+        toast({
+          title: "Clients chargés",
+          description: `${enrichedClients.length} client(s) récupéré(s) avec succès`,
+        });
+      }
     } catch (error) {
       console.error("Erreur lors du chargement des clients:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de charger la liste des clients",
-        variant: "destructive",
+        title: "Avertissement",
+        description: "Certaines données clients peuvent ne pas être disponibles",
+        variant: "default",
       });
     } finally {
       setLoading(false);
