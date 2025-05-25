@@ -1,8 +1,9 @@
 
 import React from "react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Phone, MapPin, User } from "lucide-react";
+import { Mail, Phone, MapPin, User, Eye } from "lucide-react";
 
 interface StatusBannerProps {
   client?: {
@@ -28,6 +29,36 @@ interface StatusBannerProps {
 const StatusBanner = ({ client, documentStats, onViewMissingDocs, onEditClient }: StatusBannerProps) => {
   return (
     <div className="bg-white border rounded-lg p-4 mb-4 space-y-4">
+      {/* Barre d'informations principale */}
+      <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3 border">
+        <div className="flex items-center gap-6">
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 px-3 py-1">
+            En cours
+          </Badge>
+          <span className="text-sm text-gray-600">
+            Numéro lot: <span className="font-medium">-</span>
+          </span>
+          <span className="text-sm text-gray-600">
+            Date dépôt: <span className="font-medium">-</span>
+          </span>
+          <span className="text-sm text-gray-600">
+            Documents: <span className="font-medium">{documentStats ? `${documentStats.generated}/${documentStats.total}` : '5/8'}</span>
+          </span>
+        </div>
+        
+        {documentStats && documentStats.missing > 0 && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onViewMissingDocs}
+            className="flex items-center gap-2"
+          >
+            <Eye className="h-4 w-4" />
+            Voir les documents manquants
+          </Button>
+        )}
+      </div>
+
       {/* Section Contact */}
       <div className="border-b pb-4">
         <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
@@ -108,7 +139,7 @@ const StatusBanner = ({ client, documentStats, onViewMissingDocs, onEditClient }
         </div>
       </div>
 
-      {/* Barre avec badges - RESTAURÉE */}
+      {/* Barre avec badges */}
       <div className="flex items-center gap-3">
         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
           Actif
