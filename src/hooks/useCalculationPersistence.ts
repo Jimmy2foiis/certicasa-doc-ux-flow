@@ -89,20 +89,25 @@ export const useCalculationPersistence = (clientId: string) => {
   const hasPersistedData = (): boolean => {
     try {
       const saved = getCalculationState();
-      const hasValidData = saved !== null && 
-                          saved.timestamp !== undefined &&
-                          (saved.beforeLayers?.length > 0 || saved.afterLayers?.length > 0 || 
-                           saved.surfaceArea || saved.roofArea);
+      
+      // Explicitly check each condition and return boolean
+      const dataExists = saved !== null;
+      const hasTimestamp = saved?.timestamp !== undefined;
+      const hasLayers = (saved?.beforeLayers?.length || 0) > 0 || (saved?.afterLayers?.length || 0) > 0;
+      const hasAreas = Boolean(saved?.surfaceArea) || Boolean(saved?.roofArea);
+      
+      const hasValidData = dataExists && hasTimestamp && (hasLayers || hasAreas);
       
       console.log('🔍 Vérification données persistées pour client:', clientId, {
         hasValidData,
-        dataExists: saved !== null,
-        hasTimestamp: saved?.timestamp !== undefined,
+        dataExists,
+        hasTimestamp,
         beforeLayersCount: saved?.beforeLayers?.length || 0,
         afterLayersCount: saved?.afterLayers?.length || 0,
-        hasSurfaceArea: !!saved?.surfaceArea,
-        hasRoofArea: !!saved?.roofArea
+        hasSurfaceArea: Boolean(saved?.surfaceArea),
+        hasRoofArea: Boolean(saved?.roofArea)
       });
+      
       return hasValidData;
     } catch (error) {
       console.error('❌ Erreur vérification données persistées:', error);
