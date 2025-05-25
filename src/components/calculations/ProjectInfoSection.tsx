@@ -14,7 +14,7 @@ interface ProjectInfoSectionProps {
 const ProjectInfoSection = ({
   isolationType = "Combles",
   floorType = "Bois",
-  climateZone = "C",
+  climateZone = "C3",
   surfaceArea,
   roofArea
 }: ProjectInfoSectionProps) => {

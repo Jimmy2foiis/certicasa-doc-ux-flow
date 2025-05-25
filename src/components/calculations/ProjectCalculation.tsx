@@ -109,25 +109,19 @@ const ProjectCalculation = ({
     floorType: floorType
   });
 
-  // Synchroniser les valeurs depuis les props vers le state interne
-  useEffect(() => {
-    setSurfaceArea(surfaceArea);
-  }, [surfaceArea, setSurfaceArea]);
-
-  useEffect(() => {
-    setRoofArea(roofArea);
-  }, [roofArea, setRoofArea]);
-
-  useEffect(() => {
-    setClimateZone(effectiveClimateZone);
-  }, [effectiveClimateZone, setClimateZone]);
-
   const handleDeleteBeforeLayer = (id: string) => {
     setBeforeLayers(beforeLayers.filter(l => l.id !== id));
   };
 
   const handleDeleteAfterLayer = (id: string) => {
     setAfterLayers(afterLayers.filter(l => l.id !== id));
+  };
+
+  const handleClimateZoneChange = (zone: string) => {
+    setClimateZone(zone);
+    if (onClimateZoneChange) {
+      onClimateZoneChange(zone);
+    }
   };
 
   // Prepare client data with fallbacks
@@ -158,7 +152,7 @@ const ProjectCalculation = ({
             projectName={projectName}
             clientData={preparedClientData}
             floorType={floorType}
-            climateZone={effectiveClimateZone}
+            climateZone={climateZone}
           />
           <CalculationContent 
             calculationData={calculationData}
@@ -176,6 +170,7 @@ const ProjectCalculation = ({
             setVentilationAfter={setVentilationAfter}
             setRatioBefore={setRatioBefore}
             setRatioAfter={setRatioAfter}
+            onClimateZoneChange={handleClimateZoneChange}
           />
         </Card>
       </div>

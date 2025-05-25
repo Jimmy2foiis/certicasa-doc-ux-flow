@@ -6,11 +6,11 @@ import { CalculationData } from "@/hooks/useCalculationState";
 
 interface CalculationContentProps {
   calculationData: CalculationData;
-  onAddLayer: (layerSet: "before" | "after", material: any) => void;
-  onUpdateLayer: (layerSet: "before" | "after", updatedLayer: any) => void;
+  onAddLayer: (type: "before" | "after") => void;
+  onUpdateLayer: (id: string, field: string, value: any) => void;
   onDeleteBeforeLayer: (id: string) => void;
   onDeleteAfterLayer: (id: string) => void;
-  onAddSouflr47: () => void;
+  onAddSouflr47: (type: "before" | "after") => void;
   onCopyBeforeToAfter: () => void;
   setRsiBefore: (value: string) => void;
   setRseBefore: (value: string) => void;
@@ -20,6 +20,7 @@ interface CalculationContentProps {
   setVentilationAfter: (value: any) => void;
   setRatioBefore: (value: number) => void;
   setRatioAfter: (value: number) => void;
+  onClimateZoneChange?: (zone: string) => void;
 }
 
 const CalculationContent = ({
@@ -37,86 +38,58 @@ const CalculationContent = ({
   setVentilationBefore,
   setVentilationAfter,
   setRatioBefore,
-  setRatioAfter
+  setRatioAfter,
+  onClimateZoneChange
 }: CalculationContentProps) => {
-  const {
-    beforeLayers,
-    afterLayers,
-    totalRBefore,
-    totalRAfter,
-    uValueBefore,
-    uValueAfter,
-    improvementPercent,
-    bCoefficientBefore,
-    bCoefficientAfter,
-    rsiBefore,
-    rseBefore,
-    rsiAfter,
-    rseAfter,
-    ventilationBefore,
-    ventilationAfter,
-    ratioBefore,
-    ratioAfter,
-    surfaceArea,
-    climateZone,
-    projectType
-  } = calculationData;
-
   return (
-    <CardContent className="space-y-6">
-      {/* Before Work Section */}
-      <LayerSection
-        title="Avant les travaux"
-        layers={beforeLayers}
-        totalR={totalRBefore}
-        uValue={uValueBefore}
-        bCoefficient={bCoefficientBefore}
-        onAddLayer={(material) => onAddLayer("before", material)}
-        onUpdateLayer={(updatedLayer) => onUpdateLayer("before", updatedLayer)}
-        onDeleteLayer={onDeleteBeforeLayer}
-        rsi={rsiBefore}
-        setRsi={setRsiBefore}
-        rse={rseBefore}
-        setRse={setRseBefore}
-        ventilationType={ventilationBefore}
-        setVentilationType={setVentilationBefore}
-        ratioValue={ratioBefore}
-        setRatioValue={setRatioBefore}
-      />
-      
-      {/* After Work Section */}
-      <LayerSection
-        title="Après les travaux"
-        layers={afterLayers}
-        totalR={totalRAfter}
-        uValue={uValueAfter}
-        bCoefficient={bCoefficientAfter}
-        onAddLayer={(material) => onAddLayer("after", material)}
-        onUpdateLayer={(updatedLayer) => onUpdateLayer("after", updatedLayer)}
-        onDeleteLayer={onDeleteAfterLayer}
-        showImprovement={true}
-        improvementPercent={improvementPercent}
-        isAfterWork={true}
-        rsi={rsiAfter}
-        setRsi={setRsiAfter}
-        rse={rseAfter}
-        setRse={setRseAfter}
-        ventilationType={ventilationAfter}
-        setVentilationType={setVentilationAfter}
-        ratioValue={ratioAfter}
-        setRatioValue={setRatioAfter}
-        onAddSouflr47={onAddSouflr47}
-        onCopyBeforeToAfter={onCopyBeforeToAfter}
-      />
-      
-      {/* Thermal Economy Section */}
-      <ThermalEconomySection 
-        surfaceArea={parseFloat(surfaceArea) || 0}
-        uValueBefore={uValueBefore}
-        uValueAfter={uValueAfter}
-        climateZone={climateZone}
-        projectType={projectType}
-      />
+    <CardContent className="p-6">
+      <div className="space-y-6">
+        <LayerSection
+          beforeLayers={calculationData.beforeLayers}
+          afterLayers={calculationData.afterLayers}
+          onAddLayer={onAddLayer}
+          onUpdateLayer={onUpdateLayer}
+          onDeleteBeforeLayer={onDeleteBeforeLayer}
+          onDeleteAfterLayer={onDeleteAfterLayer}
+          onAddSouflr47={onAddSouflr47}
+          onCopyBeforeToAfter={onCopyBeforeToAfter}
+          ventilationBefore={calculationData.ventilationBefore}
+          ventilationAfter={calculationData.ventilationAfter}
+          setVentilationBefore={setVentilationBefore}
+          setVentilationAfter={setVentilationAfter}
+          ratioBefore={calculationData.ratioBefore}
+          ratioAfter={calculationData.ratioAfter}
+          setRatioBefore={setRatioBefore}
+          setRatioAfter={setRatioAfter}
+          rsiBefore={calculationData.rsiBefore}
+          rseBefore={calculationData.rseBefore}
+          rsiAfter={calculationData.rsiAfter}
+          rseAfter={calculationData.rseAfter}
+          setRsiBefore={setRsiBefore}
+          setRseBefore={setRseBefore}
+          setRsiAfter={setRsiAfter}
+          setRseAfter={setRseAfter}
+          totalRBefore={calculationData.totalRBefore}
+          totalRAfter={calculationData.totalRAfter}
+          upValueBefore={calculationData.upValueBefore}
+          upValueAfter={calculationData.upValueAfter}
+          uValueBefore={calculationData.uValueBefore}
+          uValueAfter={calculationData.uValueAfter}
+          improvementPercent={calculationData.improvementPercent}
+          meetsRequirements={calculationData.meetsRequirements}
+          bCoefficientBefore={calculationData.bCoefficientBefore}
+          bCoefficientAfter={calculationData.bCoefficientAfter}
+        />
+
+        <ThermalEconomySection
+          surfaceArea={parseFloat(calculationData.surfaceArea)}
+          uValueBefore={calculationData.uValueBefore}
+          uValueAfter={calculationData.uValueAfter}
+          climateZone={calculationData.climateZone}
+          projectType={calculationData.projectType}
+          onClimateZoneChange={onClimateZoneChange}
+        />
+      </div>
     </CardContent>
   );
 };
