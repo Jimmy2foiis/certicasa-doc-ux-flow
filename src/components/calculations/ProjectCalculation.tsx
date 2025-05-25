@@ -116,7 +116,7 @@ const ProjectCalculation = ({
     setAfterLayers(afterLayers.filter(l => l.id !== id));
   };
 
-  // 🔧 FIX: Gestionnaire de changement de zone climatique unifié et correct
+  // Gestionnaire de changement de zone climatique unifié et correct
   const handleClimateZoneChange = (zone: string) => {
     console.log('🔄 Changement de zone climatique dans le calcul:', zone);
     
@@ -140,7 +140,7 @@ const ProjectCalculation = ({
     addLayer(type, defaultMaterial);
   };
 
-  // 🔧 FIX: Simplifier la mise à jour des couches - utiliser directement updateLayer
+  // Simplifier la mise à jour des couches - utiliser directement updateLayer
   const handleUpdateLayer = (id: string, field: string, updatedLayer: any) => {
     console.log(`🔧 Mise à jour couche ID ${id}:`, updatedLayer);
     
@@ -166,12 +166,6 @@ const ProjectCalculation = ({
     address: clientData?.address || clientAddress || '',
     phone: clientData?.phone || '',
     email: clientData?.email || ''
-  };
-
-  const handleSave = () => {
-    if (onSave) {
-      onSave(calculationData);
-    }
   };
 
   return (

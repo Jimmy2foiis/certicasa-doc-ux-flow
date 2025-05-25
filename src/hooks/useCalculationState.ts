@@ -1,4 +1,3 @@
-
 import { useLayerManagement, Layer } from "./useLayerManagement";
 import { useProjectSettings } from "./useProjectSettings";
 import { useThermalResistanceSettings } from "./useThermalResistanceSettings";
