@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { useCadastralData } from "@/hooks/useCadastralData";
 import CalculationHeader from "./CalculationHeader";
@@ -71,10 +70,12 @@ const ProjectCalculationContainer = ({
     updateLayer,
     calculationData,
     climateZone,
-    setClimateZone
+    setClimateZone,
+    isRestoringData
   } = useCalculationState({
     savedData: {
       ...savedData,
+      clientId: clientId, // Passer le clientId pour la persistance
       surfaceArea: surfaceArea,
       roofArea: roofArea,
       climateZone: clientClimateZone || "C3"
@@ -120,6 +121,16 @@ const ProjectCalculationContainer = ({
 
   return (
     <div className="space-y-6">
+      {/* Indicateur de restauration des données */}
+      {isRestoringData && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="flex items-center gap-2 text-blue-700 text-sm">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+            <span>Restauration des calculs sauvegardés...</span>
+          </div>
+        </div>
+      )}
+      
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Thermal Calculations - Full width */}
         <Card className="lg:col-span-12">

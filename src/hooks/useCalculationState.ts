@@ -5,7 +5,9 @@ import { useThermalResistanceSettings } from "./useThermalResistanceSettings";
 import { useThermalCalculations } from "./useThermalCalculations";
 import { useClimateZoneState } from "./useClimateZoneState";
 import { useCalculationData, CalculationData } from "./useCalculationData";
+import { useCalculationPersistence } from "./useCalculationPersistence";
 import { VentilationType } from "@/utils/calculationUtils";
+import { useEffect, useState } from "react";
 
 export interface CalculationStateProps {
   savedData?: any;
@@ -16,10 +18,31 @@ export interface CalculationStateProps {
 export type { CalculationData, Layer };
 
 export const useCalculationState = ({ savedData, clientClimateZone, floorType }: CalculationStateProps) => {
+  const clientId = savedData?.clientId || 'default';
+  const [isRestoringData, setIsRestoringData] = useState(true);
+  
+  // Système de persistance
+  const { 
+    saveCalculationState, 
+    getCalculationState, 
+    hasPersistedData 
+  } = useCalculationPersistence(clientId);
+
   // Climate zone management
   const { climateZone, setClimateZone } = useClimateZoneState({ clientClimateZone });
 
-  // Layer management
+  // Récupérer les données persistées au démarrage
+  const persistedData = hasPersistedData() ? getCalculationState() : null;
+  
+  console.log('🔄 useCalculationState - Initialisation:', {
+    clientId,
+    hasPersistedData: !!persistedData,
+    persistedBeforeLayers: persistedData?.beforeLayers?.length || 0,
+    persistedAfterLayers: persistedData?.afterLayers?.length || 0,
+    savedDataProvided: !!savedData
+  });
+
+  // Layer management avec données persistées
   const {
     beforeLayers,
     setBeforeLayers,
@@ -30,12 +53,12 @@ export const useCalculationState = ({ savedData, clientClimateZone, floorType }:
     copyBeforeToAfter: copyLayersBeforeToAfter,
     updateLayer,
   } = useLayerManagement({
-    savedBeforeLayers: savedData?.beforeLayers,
-    savedAfterLayers: savedData?.afterLayers,
+    savedBeforeLayers: persistedData?.beforeLayers || savedData?.beforeLayers,
+    savedAfterLayers: persistedData?.afterLayers || savedData?.afterLayers,
     floorType: floorType
   });
 
-  // Project settings
+  // Project settings avec données persistées
   const {
     projectType,
     setProjectType,
@@ -47,9 +70,18 @@ export const useCalculationState = ({ savedData, clientClimateZone, floorType }:
     setVentilationBefore,
     ventilationAfter,
     setVentilationAfter,
-  } = useProjectSettings({ savedData });
+  } = useProjectSettings({ 
+    savedData: {
+      ...savedData,
+      surfaceArea: persistedData?.surfaceArea || savedData?.surfaceArea,
+      roofArea: persistedData?.roofArea || savedData?.roofArea,
+      projectType: persistedData?.projectType || savedData?.projectType,
+      ventilationBefore: persistedData?.ventilationBefore || savedData?.ventilationBefore,
+      ventilationAfter: persistedData?.ventilationAfter || savedData?.ventilationAfter,
+    }
+  });
 
-  // Thermal resistance settings
+  // Thermal resistance settings avec données persistées
   const {
     ratioBefore,
     setRatioBefore,
@@ -65,7 +97,15 @@ export const useCalculationState = ({ savedData, clientClimateZone, floorType }:
     setRseAfter,
     copyBeforeToAfter: copyThermalBeforeToAfter,
   } = useThermalResistanceSettings({
-    savedData,
+    savedData: {
+      ...savedData,
+      rsiBefore: persistedData?.rsiBefore || savedData?.rsiBefore,
+      rseBefore: persistedData?.rseBefore || savedData?.rseBefore,
+      rsiAfter: persistedData?.rsiAfter || savedData?.rsiAfter,
+      rseAfter: persistedData?.rseAfter || savedData?.rseAfter,
+      ratioBefore: persistedData?.ratioBefore || savedData?.ratioBefore,
+      ratioAfter: persistedData?.ratioAfter || savedData?.ratioAfter,
+    },
     surfaceArea,
     roofArea,
   });
@@ -95,18 +135,53 @@ export const useCalculationState = ({ savedData, clientClimateZone, floorType }:
     rseAfter,
   });
 
+  // Sauvegarder automatiquement l'état à chaque changement
+  useEffect(() => {
+    if (isRestoringData) {
+      setIsRestoringData(false);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      saveCalculationState({
+        beforeLayers,
+        afterLayers,
+        surfaceArea,
+        roofArea,
+        projectType,
+        ventilationBefore,
+        ventilationAfter,
+        ratioBefore,
+        ratioAfter,
+        rsiBefore,
+        rseBefore,
+        rsiAfter,
+        rseAfter,
+        climateZone,
+      });
+    }, 500); // Debounce de 500ms
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    beforeLayers, afterLayers, surfaceArea, roofArea, projectType,
+    ventilationBefore, ventilationAfter, ratioBefore, ratioAfter,
+    rsiBefore, rseBefore, rsiAfter, rseAfter, climateZone,
+    saveCalculationState, isRestoringData
+  ]);
+
   // Combined copy function
   const copyBeforeToAfter = () => {
     copyLayersBeforeToAfter();
     copyThermalBeforeToAfter();
   };
 
-  // Aggregate calculation data - LOG des couches au moment de l'agrégation
+  // LOG des couches au moment de l'agrégation
   console.log('📊 useCalculationState - Agrégation calculationData:', {
     beforeLayersCount: beforeLayers.length,
     afterLayersCount: afterLayers.length,
     beforeLayersThickness: beforeLayers.map(l => `${l.name}: ${l.thickness}mm`),
-    afterLayersThickness: afterLayers.map(l => `${l.name}: ${l.thickness}mm`)
+    afterLayersThickness: afterLayers.map(l => `${l.name}: ${l.thickness}mm`),
+    persistenceActive: !isRestoringData
   });
 
   const calculationData = useCalculationData({
@@ -180,5 +255,6 @@ export const useCalculationState = ({ savedData, clientClimateZone, floorType }:
     calculationData,
     climateZone,
     setClimateZone,
+    isRestoringData,
   };
 };
