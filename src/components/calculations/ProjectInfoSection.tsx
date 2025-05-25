@@ -112,20 +112,9 @@ const ProjectInfoSection = ({
 
   return (
     <Card className="mb-4">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold">Informations Projet</CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <div className="grid grid-cols-1 gap-4 mb-4">
-          {/* Type d'isolation */}
-          <div className="flex flex-col">
-            <span className="text-sm text-gray-500 mb-1">Type d'isolation</span>
-            <span className="font-medium text-sm">{isolationType}</span>
-          </div>
-        </div>
-        
-        {/* Section Données Techniques */}
-        <div className="bg-white p-4 rounded-lg border shadow-sm">
+      <CardContent className="pt-6">
+        {/* Section Données Techniques - déplacée en haut */}
+        <div className="bg-white p-4 rounded-lg border shadow-sm mb-4">
           <h4 className="font-semibold text-gray-900 mb-4">Données Techniques</h4>
           
           <div className="space-y-4">
@@ -181,6 +170,19 @@ const ProjectInfoSection = ({
                 />
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Header - maintenant en dessous */}
+        <CardHeader className="pb-2 px-0">
+          <CardTitle className="text-lg font-semibold">Informations Projet</CardTitle>
+        </CardHeader>
+        
+        <div className="grid grid-cols-1 gap-4 mb-4">
+          {/* Type d'isolation */}
+          <div className="flex flex-col">
+            <span className="text-sm text-gray-500 mb-1">Type d'isolation</span>
+            <span className="font-medium text-sm">{isolationType}</span>
           </div>
         </div>
 
