@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useClientData } from "@/hooks/useClientData";
 import { useSavedCalculations } from "@/hooks/useSavedCalculations";
-import ClientInfoSidebar from "./sidebar/ClientInfoSidebar";
 import { ClientTabsContainer } from "./ClientTabsContainer";
 import ProjectCalculationView from "./ProjectCalculationView";
 import ClientDetailsHeader from "./ClientDetailsHeader";
@@ -131,17 +130,6 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
         onClientUpdated={handleClientUpdated}
       />
       
-      <ClientInfoSidebar 
-        client={client} 
-        currentSurfaceArea={surfaceArea}
-        currentRoofArea={roofArea}
-        currentFloorType={floorType}
-        currentClimateZone={climateZone}
-        onSurfaceAreaChange={handleSurfaceAreaChange}
-        onRoofAreaChange={handleRoofAreaChange}
-        onFloorTypeChange={handleFloorTypeChange}
-        onClimateZoneChange={handleClimateZoneChange}
-      />
       <ClientTabsContainer
         client={client}
         clientId={clientId}
