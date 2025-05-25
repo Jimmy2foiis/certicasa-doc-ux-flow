@@ -35,8 +35,24 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
   const { toast } = useToast();
   const { products } = useMaterialsAndProducts();
 
+  // Déterminer la zone climatique à utiliser en priorité
+  const getEffectiveClimateZone = () => {
+    // Si la zone client est valide, l'utiliser
+    if (clientData.climateZone && isValidClimateZone(clientData.climateZone)) {
+      return clientData.climateZone;
+    }
+    // Sinon, utiliser celle du calcul
+    if (calculationData.climateZone && isValidClimateZone(calculationData.climateZone)) {
+      return calculationData.climateZone;
+    }
+    // Si aucune n'est valide, retourner null
+    return null;
+  };
+
+  const effectiveClimateZone = getEffectiveClimateZone();
+
   // Utiliser la zone climatique de la fiche client en priorité
-  const effectiveClimateZone = clientData.climateZone || calculationData.climateZone;
+  const effectiveClimateZoneForDisplay = clientData.climateZone || calculationData.climateZone;
 
   // Extraire le matériau principal depuis les données de calcul
   const getMainMaterial = () => {
@@ -85,9 +101,9 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
   // Extract data from calculation
   const extractThermalData = (): ThermalCalculationData | null => {
     try {
-      // Utiliser la zone climatique de la fiche client en priorité
-      if (!effectiveClimateZone || !isValidClimateZone(effectiveClimateZone)) {
-        throw new Error(`Zone climatique invalide: ${effectiveClimateZone}. Zones valides: ${getAvailableClimateZones().join(', ')}`);
+      // Vérifier que nous avons une zone climatique valide
+      if (!effectiveClimateZone) {
+        throw new Error(`Aucune zone climatique valide trouvée. Fiche client: "${clientData.climateZone}", Calcul: "${calculationData.climateZone}". Zones valides: ${getAvailableClimateZones().join(', ')}`);
       }
 
       if (!calculationData.surfaceArea || parseFloat(calculationData.surfaceArea) <= 0) {
@@ -186,10 +202,17 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
             <div>
               <p className="text-sm text-gray-600">Zone Climatique</p>
               <p className="font-medium">{effectiveClimateZone || 'Non définie'}</p>
-              {clientData.climateZone && calculationData.climateZone !== clientData.climateZone && (
-                <p className="text-xs text-blue-600">
-                  (Fiche client: {clientData.climateZone} utilisée)
-                </p>
+              {/* Afficher des informations sur la source de la zone climatique */}
+              {clientData.climateZone && calculationData.climateZone && (
+                <div className="text-xs text-gray-500 mt-1">
+                  {effectiveClimateZone === clientData.climateZone ? (
+                    <span className="text-blue-600">✓ Zone client utilisée</span>
+                  ) : effectiveClimateZone === calculationData.climateZone ? (
+                    <span className="text-orange-600">⚠ Zone calcul utilisée (zone client "{clientData.climateZone}" invalide)</span>
+                  ) : (
+                    <span className="text-red-600">✗ Aucune zone valide</span>
+                  )}
+                </div>
               )}
             </div>
             <div>
