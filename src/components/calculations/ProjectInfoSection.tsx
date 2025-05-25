@@ -32,20 +32,10 @@ const ProjectInfoSection = ({
   const [localSurfaceArea, setLocalSurfaceArea] = useState(surfaceArea);
   const [localRoofArea, setLocalRoofArea] = useState(roofArea);
   const [localFloorType, setLocalFloorType] = useState(floorType);
-  const [localClimateZone, setLocalClimateZone] = useState(climateZone);
-
-  // 🐛 DEBUG: Tracer la réception de la zone climatique
-  console.log('🏠 ProjectInfoSection - zone reçue:', climateZone);
-  console.log('🏠 ProjectInfoSection - zone locale:', localClimateZone);
-
-  // 🛠️ FORCER la synchronisation quand la zone change
-  useEffect(() => {
-    console.log('🔧 ProjectInfo - Mise à jour zone forcée:', climateZone);
-    if (climateZone && climateZone !== localClimateZone) {
-      console.log('🔄 ProjectInfo - Synchronisation zone:', climateZone);
-      setLocalClimateZone(climateZone);
-    }
-  }, [climateZone, localClimateZone]);
+  
+  // 🔥 CORRECTION: Utiliser directement la prop climateZone au lieu d'un état local
+  console.log('🏠 ProjectInfoSection - zone reçue (PROP):', climateZone);
+  console.log('🏠 ProjectInfoSection - doit afficher:', climateZone);
 
   const handleSurfaceAreaChange = (value: string) => {
     setLocalSurfaceArea(value);
@@ -103,11 +93,15 @@ const ProjectInfoSection = ({
               <div>
                 <Label className="block text-sm text-gray-500 mb-2">Zone climatique</Label>
                 <div className="p-2 bg-muted rounded-md text-sm h-10 flex items-center">
-                  {/* 🐛 DEBUG: Afficher la zone avec indicateur visuel */}
-                  <span className="font-medium text-blue-600">{localClimateZone || 'Non définie'}</span>
-                  {localClimateZone && (
+                  {/* 🔥 CORRECTION: Afficher directement la prop climateZone */}
+                  <span className="font-medium text-blue-600">
+                    {climateZone || 'Non définie'}
+                  </span>
+                  {climateZone && (
                     <span className="text-muted-foreground ml-2">(déterminée automatiquement)</span>
                   )}
+                  {/* 🐛 DEBUG: Vérification console */}
+                  {console.log('🎯 ProjectInfoSection - AFFICHAGE FINAL:', climateZone)}
                 </div>
               </div>
             </div>
