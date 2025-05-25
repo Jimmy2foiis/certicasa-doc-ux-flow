@@ -7,7 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import ClientInfoSidebar from "./sidebar/ClientInfoSidebar";
 import CalculationsTabContent from "./CalculationsTabContent";
 import ProjectsTabContent from "./ProjectsTabContent";
-import { DocumentsTabContent } from "./DocumentsTabContent";
+import DocumentsTabContent from "./DocumentsTabContent";
 import PhotosChantierTab from "./PhotosChantierTab";
 import BillingTab from "./BillingTab";
 import StatisticsTab from "./StatisticsTab";
@@ -153,7 +153,7 @@ export const ClientTabsContainer = ({
               <CalculationsTabContent 
                 savedCalculations={savedCalculations}
                 onNewCalculation={() => handleShowCalculation()}
-                onEditCalculation={handleShowCalculation}
+                onOpenCalculation={handleShowCalculation}
                 onDeleteCalculation={onDeleteCalculation}
               />
             </TabsContent>
