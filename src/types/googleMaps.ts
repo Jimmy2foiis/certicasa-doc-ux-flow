@@ -54,6 +54,13 @@ export interface AddressComponents {
   country?: string;
   route?: string;
   streetNumber?: string;
+  // Données de zone climatique
+  climateZone?: string;
+  climateConfidence?: number;
+  climateMethod?: string;
+  climateReference?: string;
+  climateDistance?: number;
+  climateDescription?: string;
 }
 
 // Options for Google Maps Autocomplete

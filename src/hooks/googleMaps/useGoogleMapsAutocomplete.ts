@@ -1,12 +1,11 @@
 
 import { useState, useEffect } from 'react';
 import { GoogleMapsAutocompleteOptions, GoogleMapsAutocompleteResult, GoogleMapsTypes } from '@/types/googleMaps';
-import { loadGoogleMapsApi, isGoogleMapsLoaded } from '@/services/googleMapsService';
+import { loadGoogleMapsApi, isGoogleMapsLoaded, processPlaceWithClimateZone } from '@/services/googleMapsService';
 import { GOOGLE_MAPS_API_KEY, DEFAULT_AUTOCOMPLETE_OPTIONS } from '@/config/googleMapsConfig';
 
 /**
- * Hook personnalisé pour l'autocomplétion Google Maps
- * Gère le chargement de l'API, l'initialisation de l'autocomplete et la gestion des erreurs
+ * Hook personnalisé pour l'autocomplétion Google Maps avec détermination de zone climatique
  */
 export function useGoogleMapsAutocomplete({
   inputRef,
@@ -14,7 +13,9 @@ export function useGoogleMapsAutocomplete({
   onAddressSelected,
   onCoordinatesSelected,
   onAddressComponentsSelected
-}: GoogleMapsAutocompleteOptions): GoogleMapsAutocompleteResult {
+}: GoogleMapsAutocompleteOptions & {
+  onClimateZoneSelected?: (climateData: any) => void;
+}): GoogleMapsAutocompleteResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [apiAvailable, setApiAvailable] = useState(isGoogleMapsLoaded());
@@ -113,7 +114,7 @@ export function useGoogleMapsAutocomplete({
       return;
     }
 
-    console.log('Initialisation de l\'autocomplétion Google Maps');
+    console.log('Initialisation de l\'autocomplétion Google Maps avec détermination de zone climatique');
 
     try {
       // Créer une nouvelle instance d'autocomplétion avec les champs requis
@@ -148,6 +149,26 @@ export function useGoogleMapsAutocomplete({
           };
           console.log('Coordonnées GPS:', coordinates);
           onCoordinatesSelected(coordinates);
+
+          // Déterminer la zone climatique
+          try {
+            const climateData = processPlaceWithClimateZone(place);
+            console.log('Zone climatique déterminée:', climateData);
+            
+            // Transmettre les données de zone climatique via les composants d'adresse
+            if (onAddressComponentsSelected && climateData) {
+              const components = parseAddressComponents(place.address_components);
+              components.climateZone = climateData.zona;
+              components.climateConfidence = climateData.confianza;
+              components.climateMethod = climateData.metodo;
+              components.climateReference = climateData.ciudad_referencia;
+              components.climateDistance = climateData.distancia;
+              components.climateDescription = climateData.descripcion;
+              onAddressComponentsSelected(components);
+            }
+          } catch (error) {
+            console.error('Erreur lors de la détermination de la zone climatique:', error);
+          }
         }
 
         // Parser et transmettre les composants d'adresse

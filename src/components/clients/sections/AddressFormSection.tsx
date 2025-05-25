@@ -1,9 +1,9 @@
 
-
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { MapPin } from "lucide-react";
 import AddressSearch from "@/components/clients/AddressSearch";
+import ClimateZoneDisplay from "@/components/clients/ClimateZoneDisplay";
 import { AddressComponents } from "@/types/googleMaps";
 import { useClientCadastralData } from "@/hooks/useClientCadastralData";
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
@@ -15,6 +15,7 @@ interface AddressFormSectionProps {
     city?: string;
     province?: string;
     community?: string;
+    climateZone?: string;
   } | null;
 }
 
@@ -27,8 +28,17 @@ const AddressFormSection = ({ client }: AddressFormSectionProps) => {
     community: client?.community || "",
     utm: "",
     coordinates: "",
-    cadastralReference: ""
+    cadastralReference: "",
+    climateZone: client?.climateZone || ""
   });
+
+  const [climateData, setClimateData] = useState<{
+    confidence?: number;
+    method?: string;
+    referenceCity?: string;
+    distance?: number;
+    description?: string;
+  }>({});
 
   const [gpsCoordinates, setGpsCoordinates] = useState<GeoCoordinates | undefined>();
 
@@ -84,6 +94,22 @@ const AddressFormSection = ({ client }: AddressFormSectionProps) => {
       province: components.province || prev.province,
       community: components.community || prev.community
     }));
+
+    // Gérer les données de zone climatique si présentes
+    if (components.climateZone) {
+      setAddressData(prev => ({
+        ...prev,
+        climateZone: components.climateZone
+      }));
+      
+      setClimateData({
+        confidence: components.climateConfidence,
+        method: components.climateMethod,
+        referenceCity: components.climateReference,
+        distance: components.climateDistance,
+        description: components.climateDescription
+      });
+    }
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -91,6 +117,15 @@ const AddressFormSection = ({ client }: AddressFormSectionProps) => {
       ...prev,
       [field]: value
     }));
+  };
+
+  const handleClimateZoneChange = (zone: string) => {
+    setAddressData(prev => ({
+      ...prev,
+      climateZone: zone
+    }));
+    // Réinitialiser les données automatiques quand on change manuellement
+    setClimateData({});
   };
 
   return (
@@ -178,9 +213,22 @@ const AddressFormSection = ({ client }: AddressFormSectionProps) => {
         </div>
         <div></div>
       </div>
+
+      {/* Zone Climatique CTE */}
+      <div className="mt-4">
+        <ClimateZoneDisplay
+          climateZone={addressData.climateZone}
+          confidence={climateData.confidence}
+          method={climateData.method}
+          referenceCity={climateData.referenceCity}
+          distance={climateData.distance}
+          description={climateData.description}
+          onZoneChange={handleClimateZoneChange}
+          editable={true}
+        />
+      </div>
     </div>
   );
 };
 
 export default AddressFormSection;
-

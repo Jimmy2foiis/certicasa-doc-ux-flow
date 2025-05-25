@@ -1,5 +1,6 @@
 
 import { GOOGLE_MAPS_API_KEY } from '@/config/googleMapsConfig';
+import { processGooglePlaceResult } from '@/utils/climateZonesData';
 
 /**
  * Charge l'API Google Maps de manière asynchrone
@@ -56,4 +57,13 @@ export const loadGoogleMapsApi = (): Promise<void> => {
  */
 export const isGoogleMapsLoaded = (): boolean => {
   return !!(window.google && window.google.maps && window.google.maps.places);
+};
+
+/**
+ * Traite un résultat de Google Places et détermine la zone climatique
+ */
+export const processPlaceWithClimateZone = (place: any) => {
+  const climateResult = processGooglePlaceResult(place);
+  console.log('Zone climatique déterminée:', climateResult);
+  return climateResult;
 };
