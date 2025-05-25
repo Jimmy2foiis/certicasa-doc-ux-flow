@@ -37,12 +37,14 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
     };
 
     // Fonction avec retry pour plus de robustesse
-    const fetchImageWithRetry = async (url: string, maxRetries = 3): Promise<ArrayBuffer> => {
+    const fetchImageWithRetry = async (url: string, maxRetries = 3): Promise<Uint8Array> => {
       let lastError: Error | null = null;
       
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-          return await fetchImageAsArrayBuffer(url);
+          const arrayBuffer = await fetchImageAsArrayBuffer(url);
+          // Convertir en Uint8Array pour compatibilité navigateur
+          return new Uint8Array(arrayBuffer);
         } catch (error) {
           lastError = error as Error;
           if (attempt < maxRetries - 1) {
@@ -66,7 +68,7 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
     );
 
     // Fonction pour créer une grille 2x2 d'images
-    const create2x2Grid = (images: ArrayBuffer[], title: string) => {
+    const create2x2Grid = (images: Uint8Array[], title: string) => {
       const rows: TableRow[] = [];
       
       for (let i = 0; i < 2; i++) {
@@ -190,11 +192,8 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
     });
 
     console.log('Generating Word document...');
-    // Générer le blob
-    const buffer = await Packer.toBuffer(doc);
-    const blob = new Blob([buffer], { 
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
-    });
+    // CORRECTION PRINCIPALE: Utiliser toBlob() au lieu de toBuffer() pour le navigateur
+    const blob = await Packer.toBlob(doc);
     
     console.log('Document generated successfully');
     return blob;
