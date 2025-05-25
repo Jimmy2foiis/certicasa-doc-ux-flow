@@ -1,7 +1,10 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 interface ProjectInfoSectionProps {
   isolationType?: string;
   floorType?: string;
@@ -10,7 +13,9 @@ interface ProjectInfoSectionProps {
   roofArea: string;
   onSurfaceAreaChange?: (value: string) => void;
   onRoofAreaChange?: (value: string) => void;
+  onFloorTypeChange?: (value: string) => void;
 }
+
 const ProjectInfoSection = ({
   isolationType = "Combles",
   floorType = "Bois",
@@ -18,9 +23,17 @@ const ProjectInfoSection = ({
   surfaceArea,
   roofArea,
   onSurfaceAreaChange,
-  onRoofAreaChange
+  onRoofAreaChange,
+  onFloorTypeChange
 }: ProjectInfoSectionProps) => {
-  return <Card className="mb-4">
+  const floorTypeOptions = [
+    { value: "Béton", label: "🪨 Béton (Hormigón)" },
+    { value: "Bois", label: "🪵 Bois (Madera)" },
+    { value: "Céramique", label: "🧱 Céramique (Cerámico/Bovedilla)" }
+  ];
+
+  return (
+    <Card className="mb-4">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold">Informations Projet</CardTitle>
       </CardHeader>
@@ -35,7 +48,18 @@ const ProjectInfoSection = ({
           {/* Type de plancher */}
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 mb-1">Type de plancher</span>
-            <span className="font-medium text-sm">{floorType}</span>
+            <Select value={floorType} onValueChange={onFloorTypeChange}>
+              <SelectTrigger className="h-8 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {floorTypeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           
           {/* Zone climatique */}
@@ -59,6 +83,8 @@ const ProjectInfoSection = ({
           </div>
         </div>
       </CardContent>
-    </Card>;
+    </Card>
+  );
 };
+
 export default ProjectInfoSection;

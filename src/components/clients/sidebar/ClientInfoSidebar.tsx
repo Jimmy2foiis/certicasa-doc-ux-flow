@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ClientPersonalSection from "./ClientPersonalSection";
 import ProjectTeamSection from "./ProjectTeamSection";
 import { Client } from "@/services/api/types";
@@ -18,6 +19,7 @@ interface ClientInfoSidebarProps {
   onViewMissingDocs?: () => void;
   onSurfaceAreaChange?: (value: string) => void;
   onRoofAreaChange?: (value: string) => void;
+  onFloorTypeChange?: (value: string) => void;
 }
 
 const ClientInfoSidebar = ({ 
@@ -25,10 +27,12 @@ const ClientInfoSidebar = ({
   documentStats, 
   onViewMissingDocs,
   onSurfaceAreaChange,
-  onRoofAreaChange 
+  onRoofAreaChange,
+  onFloorTypeChange
 }: ClientInfoSidebarProps) => {
   const [surfaceArea, setSurfaceArea] = useState("56");
   const [roofArea, setRoofArea] = useState("89");
+  const [floorType, setFloorType] = useState(client?.floorType || "Bois");
 
   const handleSurfaceAreaChange = (value: string) => {
     setSurfaceArea(value);
@@ -44,7 +48,20 @@ const ClientInfoSidebar = ({
     }
   };
 
+  const handleFloorTypeChange = (value: string) => {
+    setFloorType(value);
+    if (onFloorTypeChange) {
+      onFloorTypeChange(value);
+    }
+  };
+
   if (!client) return null;
+
+  const floorTypeOptions = [
+    { value: "Béton", label: "🪨 Béton (Hormigón)" },
+    { value: "Bois", label: "🪵 Bois (Madera)" },
+    { value: "Céramique", label: "🧱 Céramique (Cerámico/Bovedilla)" }
+  ];
 
   return (
     <Card className="w-full shadow-sm">
@@ -70,7 +87,18 @@ const ClientInfoSidebar = ({
                 {/* Type de plancher */}
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Type de plancher</span>
-                  <span className="font-medium">{client.floorType || "Bois"}</span>
+                  <Select value={floorType} onValueChange={handleFloorTypeChange}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {floorTypeOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 {/* Zone climatique */}

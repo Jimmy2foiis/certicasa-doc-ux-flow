@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useClientData } from "@/hooks/useClientData";
 import { useSavedCalculations } from "@/hooks/useSavedCalculations";
@@ -17,6 +16,7 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
   const [surfaceArea, setSurfaceArea] = useState("70");
   const [roofArea, setRoofArea] = useState("85");
+  const [floorType, setFloorType] = useState("Bois");
   
   const { client } = useClientData(clientId);
   const { savedCalculations } = useSavedCalculations(clientId);
@@ -55,6 +55,10 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
     setRoofArea(value);
   };
 
+  const handleFloorTypeChange = (value: string) => {
+    setFloorType(value);
+  };
+
   // Mock document stats for the header
   const documentStats = {
     total: 8,
@@ -90,6 +94,7 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
         onSave={handleSaveCalculation}
         surfaceArea={surfaceArea}
         roofArea={roofArea}
+        floorType={floorType}
       />
     );
   }
@@ -112,6 +117,7 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
         client={client} 
         onSurfaceAreaChange={handleSurfaceAreaChange}
         onRoofAreaChange={handleRoofAreaChange}
+        onFloorTypeChange={handleFloorTypeChange}
       />
       <ClientTabsContainer
         client={client}
@@ -123,8 +129,10 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
         onBack={onBack}
         surfaceArea={surfaceArea}
         roofArea={roofArea}
+        floorType={floorType}
         onSurfaceAreaChange={handleSurfaceAreaChange}
         onRoofAreaChange={handleRoofAreaChange}
+        onFloorTypeChange={handleFloorTypeChange}
       />
     </div>
   );

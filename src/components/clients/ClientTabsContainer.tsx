@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DocumentsTabContent } from "./DocumentsTabContent";
@@ -18,8 +17,10 @@ interface ClientTabsContainerProps {
   onBack: () => void;
   surfaceArea: string;
   roofArea: string;
+  floorType: string;
   onSurfaceAreaChange?: (value: string) => void;
   onRoofAreaChange?: (value: string) => void;
+  onFloorTypeChange?: (value: string) => void;
 }
 
 export const ClientTabsContainer = ({ 
@@ -32,8 +33,10 @@ export const ClientTabsContainer = ({
   onBack,
   surfaceArea,
   roofArea,
+  floorType,
   onSurfaceAreaChange,
-  onRoofAreaChange
+  onRoofAreaChange,
+  onFloorTypeChange
 }: ClientTabsContainerProps) => {
   const [currentTab, setCurrentTab] = useState("calculations");
 
@@ -97,8 +100,10 @@ export const ClientTabsContainer = ({
               }}
               surfaceArea={surfaceArea}
               roofArea={roofArea}
+              floorType={floorType}
               onSurfaceAreaChange={onSurfaceAreaChange}
               onRoofAreaChange={onRoofAreaChange}
+              onFloorTypeChange={onFloorTypeChange}
             />
           </TabsContent>
 
