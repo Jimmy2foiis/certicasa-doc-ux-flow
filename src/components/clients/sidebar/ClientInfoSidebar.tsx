@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import ClientPersonalSection from "./ClientPersonalSection";
 import ProjectTeamSection from "./ProjectTeamSection";
 import { Client } from "@/services/api/types";
-import { formatDate } from "@/lib/utils";
 
 interface ClientInfoSidebarProps {
   client: Client | null;
@@ -24,8 +23,8 @@ const ClientInfoSidebar = ({ client, documentStats, onViewMissingDocs }: ClientI
   return (
     <Card className="w-full shadow-sm">
       <CardContent className="p-3">
-        <div className="grid grid-cols-4 gap-6">
-          {/* Colonne 1: Informations personnelles */}
+        <div className="grid grid-cols-3 gap-6">
+          {/* Colonne 1: Informations du client */}
           <div>
             <ClientPersonalSection client={client} />
           </div>
@@ -36,12 +35,6 @@ const ClientInfoSidebar = ({ client, documentStats, onViewMissingDocs }: ClientI
               <h3 className="font-semibold text-base border-b pb-1">Informations techniques</h3>
               
               <div className="space-y-2.5">
-                {/* Surface isolée */}
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Surface isolée</span>
-                  <span className="font-medium">{client.isolatedArea ? `${client.isolatedArea} m²` : "70 m²"}</span>
-                </div>
-                
                 {/* Type d'isolation */}
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Type d'isolation</span>
@@ -61,21 +54,28 @@ const ClientInfoSidebar = ({ client, documentStats, onViewMissingDocs }: ClientI
                     {client.climateZone || "C"}
                   </Badge>
                 </div>
+                
+                {/* Superficie des combles */}
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Superficie des combles (m²)</span>
+                  <span className="font-medium">{client.atticArea || "70"}</span>
+                </div>
+                
+                {/* Superficie de la toiture */}
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Superficie de la toiture (m²)</span>
+                  <span className="font-medium">{client.roofArea || "85"}</span>
+                </div>
               </div>
             </div>
           </div>
           
-          {/* Colonne 3: Vide pour l'instant */}
-          <div>
-            {/* Espace réservé pour futur contenu */}
-          </div>
-          
-          {/* Colonne 4: Équipe projet */}
+          {/* Colonne 3: Équipe projet */}
           <div>
             <ProjectTeamSection 
-              teleprospector={client.teleprospector || "Marc Dupont"}
-              confirmer={client.confirmer || "Sophie Martin"}
-              installationTeam={client.installationTeam || "Équipe A"}
+              teleprospector="Amir"
+              confirmer="Cynthia"
+              installationTeam="RA BAT 2"
             />
           </div>
         </div>
