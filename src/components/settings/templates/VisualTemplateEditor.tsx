@@ -111,7 +111,8 @@ const VisualTemplateEditor = ({ template, onSave, onCancel }: VisualTemplateEdit
       layout: {
         ...prev.layout,
         elements: [...prev.layout.elements, newElement]
-      }
+      },
+      updated_at: new Date().toISOString().split('T')[0]
     }));
   };
 
@@ -137,11 +138,18 @@ const VisualTemplateEditor = ({ template, onSave, onCancel }: VisualTemplateEdit
   });
 
   const handleTemplateChange = (updatedTemplate: Template) => {
-    setCurrentTemplate(updatedTemplate);
+    setCurrentTemplate({
+      ...updatedTemplate,
+      updated_at: new Date().toISOString().split('T')[0]
+    });
   };
 
   const handleSave = () => {
-    saveTemplate(currentTemplate);
+    const templateToSave = {
+      ...currentTemplate,
+      updated_at: new Date().toISOString().split('T')[0]
+    };
+    saveTemplate(templateToSave);
     toast({
       title: "Template sauvegardé",
       description: "Votre template a été sauvegardé avec succès"
