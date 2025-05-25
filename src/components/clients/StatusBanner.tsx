@@ -25,13 +25,15 @@ interface StatusBannerProps {
   };
   onViewMissingDocs?: () => void;
   onEditClient?: (e: React.MouseEvent) => void;
+  onClimateZoneChange?: (zone: string, confidence?: number, method?: string, referenceCity?: string, distance?: number, description?: string) => void;
 }
 
 const StatusBanner = ({
   client,
   documentStats,
   onViewMissingDocs,
-  onEditClient
+  onEditClient,
+  onClimateZoneChange
 }: StatusBannerProps) => {
   const [climateZone, setClimateZone] = useState(client?.climateZone || "");
   const [climateData, setClimateData] = useState<{
@@ -50,6 +52,7 @@ const StatusBanner = ({
     distance?: number;
     description?: string;
   }) => {
+    console.log('🌍 Zone climatique déterminée automatiquement:', climateInfo);
     setClimateZone(climateInfo.zone);
     setClimateData({
       confidence: climateInfo.confidence,
@@ -58,12 +61,30 @@ const StatusBanner = ({
       distance: climateInfo.distance,
       description: climateInfo.description
     });
+
+    // Propager le changement vers le parent (pour synchroniser avec ThermalEconomySection)
+    if (onClimateZoneChange) {
+      onClimateZoneChange(
+        climateInfo.zone,
+        climateInfo.confidence,
+        climateInfo.method,
+        climateInfo.referenceCity,
+        climateInfo.distance,
+        climateInfo.description
+      );
+    }
   };
 
   const handleManualClimateZoneChange = (zone: string) => {
+    console.log('🌍 Zone climatique changée manuellement:', zone);
     setClimateZone(zone);
     // Réinitialiser les données automatiques quand on change manuellement
     setClimateData({});
+
+    // Propager le changement vers le parent
+    if (onClimateZoneChange) {
+      onClimateZoneChange(zone);
+    }
   };
 
   return (

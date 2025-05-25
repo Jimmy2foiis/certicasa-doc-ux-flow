@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,6 +33,10 @@ interface ThermalEconomySectionProps {
   uValueAfter: number;
   climateZone?: string;
   projectType: string;
+  climateConfidence?: number;
+  climateMethod?: string;
+  climateReferenceCity?: string;
+  climateDistance?: number;
   onClimateZoneChange?: (zone: string) => void;
 }
 
@@ -43,13 +46,17 @@ const ThermalEconomySection = ({
   uValueAfter, 
   climateZone = "C3",
   projectType,
+  climateConfidence,
+  climateMethod,
+  climateReferenceCity,
+  climateDistance,
   onClimateZoneChange
 }: ThermalEconomySectionProps) => {
   const [cherryEnabled, setCherryEnabled] = useState(false);
   const [delegate, setDelegate] = useState<"Eiffage" | "GreenFlex">("Eiffage");
   const [selectedClimateZone, setSelectedClimateZone] = useState(climateZone);
   
-  // 🔧 FIX: Synchroniser la zone climatique avec la prop sans causer de boucle
+  // 🔧 Synchroniser la zone climatique avec la prop reçue
   useEffect(() => {
     if (climateZone !== selectedClimateZone) {
       console.log('🌍 Synchronisation zone climatique dans ThermalEconomySection:', climateZone);
@@ -80,15 +87,27 @@ const ThermalEconomySection = ({
   const totalPricePerSqm = pricePerSqm + cherryPricePerSqm;
   const totalProjectPrice = projectPrice + cherryProjectPrice;
 
-  // 🔧 FIX: Gestionnaire de changement optimisé
+  // 🔧 Gestionnaire de changement optimisé avec propagation
   const handleClimateZoneChange = (zone: string) => {
     console.log('🌍 Changement zone climatique depuis ThermalEconomySection:', zone);
     setSelectedClimateZone(zone);
     
-    // Propager le changement immédiatement
+    // Propager le changement vers le parent pour synchroniser avec les autres composants
     if (onClimateZoneChange) {
       onClimateZoneChange(zone);
     }
+  };
+
+  // Afficher l'indicateur de confiance s'il y en a un
+  const renderConfidenceIndicator = () => {
+    if (climateConfidence && climateMethod) {
+      return (
+        <span className="text-xs text-blue-600 ml-2">
+          (Déterminé: {climateConfidence}%)
+        </span>
+      );
+    }
+    return null;
   };
 
   return (
@@ -125,6 +144,7 @@ const ThermalEconomySection = ({
                 </SelectContent>
               </Select>
               <span className="text-sm text-gray-500">(G: {gCoefficient})</span>
+              {renderConfidenceIndicator()}
             </div>
           </div>
           
