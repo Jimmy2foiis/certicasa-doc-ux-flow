@@ -6,6 +6,8 @@ import CalculationsTabContent from "./CalculationsTabContent";
 import { DocumentsTabContent } from "./DocumentsTabContent";
 import SignaturesTabContent from "./SignaturesTabContent";
 import { Card } from "@/components/ui/card";
+import BillingTab from "./BillingTab";
+import { DocumentsTab } from "./documents/DocumentsTab";
 
 interface ClientTabsContainerProps {
   client: any;
@@ -31,7 +33,7 @@ export const ClientTabsContainer = ({
   return (
     <Card>
       <Tabs defaultValue="projects" onValueChange={setCurrentTab}>
-        <TabsList className="grid w-full grid-cols-4 bg-muted/20">
+        <TabsList className="grid w-full grid-cols-6 bg-muted/20">
           <TabsTrigger 
             value="projects" 
             className={`${currentTab === "projects" ? "bg-primary text-primary-foreground" : ""} transition-all`}
@@ -49,6 +51,18 @@ export const ClientTabsContainer = ({
             className={`${currentTab === "documents" ? "bg-primary text-primary-foreground" : ""} transition-all`}
           >
             Documents
+          </TabsTrigger>
+          <TabsTrigger 
+            value="billing" 
+            className={`${currentTab === "billing" ? "bg-primary text-primary-foreground" : ""} transition-all`}
+          >
+            Facturation
+          </TabsTrigger>
+          <TabsTrigger 
+            value="photos" 
+            className={`${currentTab === "photos" ? "bg-primary text-primary-foreground" : ""} transition-all`}
+          >
+            Photos Chantier
           </TabsTrigger>
           <TabsTrigger 
             value="signatures" 
@@ -73,7 +87,23 @@ export const ClientTabsContainer = ({
         </TabsContent>
 
         <TabsContent value="documents" className="p-4">
-          <DocumentsTabContent clientId={clientId} clientName={client?.name} />
+          <DocumentsTab clientId={clientId} />
+        </TabsContent>
+
+        <TabsContent value="billing" className="p-4">
+          <BillingTab clientId={clientId} />
+        </TabsContent>
+
+        <TabsContent value="photos" className="p-4">
+          <div className="text-center p-8">
+            <h3 className="text-lg font-medium mb-2">Photos de Chantier</h3>
+            <p className="text-gray-600 mb-4">
+              Gestion des photos avant/après travaux pour le client {client?.name}
+            </p>
+            <p className="text-sm text-gray-500">
+              Module en développement - Upload et organisation des photos de chantier
+            </p>
+          </div>
         </TabsContent>
 
         <TabsContent value="signatures" className="p-4">
