@@ -15,7 +15,6 @@ interface StatusBannerProps {
     error: number;
   };
   onViewMissingDocs?: () => void;
-  onGenerateDocument?: () => void;
   onEditClient?: (e: React.MouseEvent) => void;
 }
 
@@ -23,7 +22,6 @@ const StatusBanner = ({
   client, 
   documentStats, 
   onViewMissingDocs = () => {},
-  onGenerateDocument = () => {},
   onEditClient = () => {}
 }: StatusBannerProps) => {
   if (!client) return null;
@@ -32,7 +30,8 @@ const StatusBanner = ({
     switch (status?.toLowerCase()) {
       case 'active':
       case 'actif':
-        return 'bg-green-100 text-green-800 border-green-200';
+      case 'en cours':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'pending':
       case 'en attente':
         return 'bg-yellow-100 text-yellow-800 border-yellow-200';
@@ -54,19 +53,40 @@ const StatusBanner = ({
           variant="outline" 
           className={`px-3 py-1 ${getStatusColor(client.status || 'En cours')}`}
         >
-          Statut: {client.status || 'En cours'}
+          {client.status || 'En cours'}
         </Badge>
         
-        {client.delegate && (
-          <Badge variant="outline" className="px-3 py-1">
-            Délégué: {client.delegate}
-          </Badge>
-        )}
+        <Badge variant="outline" className="px-3 py-1 bg-gray-800 text-white">
+          RES020
+        </Badge>
         
-        {client.lotNumber && (
-          <Badge variant="outline" className="px-3 py-1">
-            Lot: {client.lotNumber}
-          </Badge>
+        <span className="text-sm text-gray-600">
+          Date pose: {client.installationDate || '2025-04-21'}
+        </span>
+        
+        <span className="text-sm text-gray-600">
+          Numéro lot: {client.lotNumber || '-'}
+        </span>
+        
+        <span className="text-sm text-gray-600">
+          Date dépôt: {client.depositDate || '-'}
+        </span>
+        
+        <span className="text-sm text-gray-600">
+          Documents: {documentStats ? `${documentStats.generated}/${documentStats.total}` : '6/8'}
+        </span>
+        
+        {/* Bouton voir documents manquants */}
+        {hasMissingDocuments && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onViewMissingDocs}
+            className="text-gray-700 border-gray-300 hover:bg-gray-100"
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            Voir les documents manquants
+          </Button>
         )}
         
         {/* Bouton d'édition */}
@@ -89,31 +109,8 @@ const StatusBanner = ({
             <span className="text-orange-800">
               {documentStats.missing} document(s) manquant(s) pour finaliser le dossier
             </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onViewMissingDocs}
-              className="text-orange-700 border-orange-300 hover:bg-orange-100"
-            >
-              <Eye className="h-4 w-4 mr-1" />
-              Voir les documents manquants
-            </Button>
           </AlertDescription>
         </Alert>
-      )}
-
-      {/* Statistiques des documents */}
-      {documentStats && (
-        <div className="flex items-center gap-4 text-sm text-gray-600">
-          <span>Documents: {documentStats.total} total</span>
-          <span className="text-green-600">{documentStats.generated} générés</span>
-          {documentStats.missing > 0 && (
-            <span className="text-orange-600">{documentStats.missing} manquants</span>
-          )}
-          {documentStats.error > 0 && (
-            <span className="text-red-600">{documentStats.error} en erreur</span>
-          )}
-        </div>
       )}
     </div>
   );
