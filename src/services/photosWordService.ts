@@ -1,11 +1,19 @@
+
 import { Document, Packer, Paragraph, ImageRun, Table, TableRow, TableCell, WidthType, HeightRule, AlignmentType, TextRun } from 'docx';
 import type { SelectedPhoto, PhotosReportData } from '@/types/safetyCulture';
 
 export const generatePhotosWordDocument = async (reportData: PhotosReportData): Promise<Blob> => {
   try {
-    // Fonction corrigée pour télécharger et convertir une image en ArrayBuffer
-    const fetchImageAsArrayBuffer = async (imageUrl: string): Promise<ArrayBuffer> => {
+    console.log('Début génération DOCX avec photos:', {
+      avantCount: reportData.photosAvant.length,
+      apresCount: reportData.photosApres.length
+    });
+
+    // Fonction corrigée pour télécharger et convertir une image en Uint8Array
+    const fetchImageAsUint8Array = async (imageUrl: string): Promise<Uint8Array> => {
       try {
+        console.log('Chargement image:', imageUrl);
+        
         const response = await fetch(imageUrl, {
           headers: {
             'Accept': 'image/*',
@@ -27,7 +35,10 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
           throw new Error('Image data too small');
         }
         
-        return arrayBuffer;
+        // Convertir en Uint8Array pour compatibilité navigateur
+        const uint8Array = new Uint8Array(arrayBuffer);
+        console.log('Image chargée, taille:', uint8Array.length);
+        return uint8Array;
         
       } catch (error) {
         console.error(`Failed to fetch image from ${imageUrl}:`, error);
@@ -41,9 +52,7 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
       
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
-          const arrayBuffer = await fetchImageAsArrayBuffer(url);
-          // Convertir en Uint8Array pour compatibilité navigateur
-          return new Uint8Array(arrayBuffer);
+          return await fetchImageAsUint8Array(url);
         } catch (error) {
           lastError = error as Error;
           if (attempt < maxRetries - 1) {
@@ -55,7 +64,7 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
       throw lastError;
     };
 
-    // Télécharger toutes les photos avec gestion d'erreur robuste
+    // Télécharger toutes les photos
     console.log('Fetching AVANT photos...');
     const avantPhotosBuffers = await Promise.all(
       reportData.photosAvant.map(photo => fetchImageWithRetry(photo.photo.url))
@@ -66,8 +75,8 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
       reportData.photosApres.map(photo => fetchImageWithRetry(photo.photo.url))
     );
 
-    // Fonction pour créer une grille 2x2 d'images
-    const create2x2Grid = (images: Uint8Array[], title: string) => {
+    // Fonction pour créer une grille 2x2 d'images avec bordures et espacement professionnel
+    const create2x2GridProfessional = (images: Uint8Array[], title: string) => {
       const rows: TableRow[] = [];
       
       for (let i = 0; i < 2; i++) {
@@ -82,42 +91,69 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                   new ImageRun({
                     data: images[imageIndex],
                     transformation: {
-                      width: 250,
-                      height: 250
+                      width: 240,  // Dimensions optimisées 3:4 ratio portrait
+                      height: 320
                     },
                     type: "jpg"
                   })
                 ],
-                alignment: AlignmentType.CENTER
+                alignment: AlignmentType.CENTER,
+                spacing: { before: 100, after: 100 }  // Espacement avant/après chaque image
               })
             ],
-            width: { size: 50, type: WidthType.PERCENTAGE }
+            width: { size: 50, type: WidthType.PERCENTAGE },
+            margins: {
+              top: 100,     // Marges internes pour espacement
+              bottom: 100,
+              left: 100,
+              right: 100,
+            },
+            verticalAlign: "center"  // Centrage vertical dans la cellule
           }));
         }
+        
         rows.push(new TableRow({ 
           children: cells,
-          height: { value: 3000, rule: HeightRule.EXACT }
+          height: { value: 5000, rule: HeightRule.EXACT }  // Hauteur fixe ~13cm
         }));
       }
 
       return new Table({
         rows,
-        width: { size: 100, type: WidthType.PERCENTAGE }
+        width: { size: 100, type: WidthType.PERCENTAGE },
+        borders: {
+          top: { style: "single", size: 1, color: "000000" },
+          bottom: { style: "single", size: 1, color: "000000" },
+          left: { style: "single", size: 1, color: "000000" },
+          right: { style: "single", size: 1, color: "000000" },
+          insideHorizontal: { style: "single", size: 1, color: "000000" },
+          insideVertical: { style: "single", size: 1, color: "000000" },
+        }
       });
     };
 
-    // Créer le document avec la structure corrigée
+    // Créer le document avec la structure professionnelle
     const doc = new Document({
       sections: [
         {
+          properties: {
+            page: {
+              margin: {
+                top: 720,    // Marges de page optimisées
+                right: 720,
+                bottom: 720,
+                left: 720,
+              },
+            },
+          },
           children: [
-            // Titre
+            // Titre principal
             new Paragraph({
               children: [
                 new TextRun({ 
                   text: "FOTOS ACTUACIÓN", 
                   bold: true, 
-                  size: 32 
+                  size: 36 
                 })
               ],
               alignment: AlignmentType.CENTER,
@@ -146,27 +182,25 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
               spacing: { after: 400 }
             }),
             
-            // Espacement
-            new Paragraph({ text: "" }),
-            
             // Section ANTES
             new Paragraph({
               children: [
                 new TextRun({ 
                   text: "ANTES", 
                   bold: true, 
-                  size: 28 
+                  size: 32 
                 })
               ],
               alignment: AlignmentType.CENTER,
-              spacing: { after: 200 }
+              spacing: { after: 300 }
             }),
             
-            // Grille 2x2 pour photos AVANT
-            create2x2Grid(avantPhotosBuffers, "ANTES"),
+            // Grille 2x2 pour photos AVANT avec bordures
+            create2x2GridProfessional(avantPhotosBuffers, "ANTES"),
             
             // Saut de page
             new Paragraph({
+              text: "",
               pageBreakBefore: true
             }),
             
@@ -176,15 +210,15 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                 new TextRun({ 
                   text: "DESPUÉS", 
                   bold: true, 
-                  size: 28 
+                  size: 32 
                 })
               ],
               alignment: AlignmentType.CENTER,
-              spacing: { after: 200 }
+              spacing: { after: 300 }
             }),
             
-            // Grille 2x2 pour photos APRÈS
-            create2x2Grid(apresPhotosBuffers, "DESPUÉS")
+            // Grille 2x2 pour photos APRÈS avec bordures
+            create2x2GridProfessional(apresPhotosBuffers, "DESPUÉS")
           ]
         }
       ]
