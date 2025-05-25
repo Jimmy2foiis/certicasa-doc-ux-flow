@@ -60,9 +60,9 @@ const BillingTab = ({ clientId }: BillingTabProps) => {
     }
   ]);
 
-  // Use the updated hook with real-time updates
-  const { client, loading } = useClientInfo(clientId);
-  const { savedCalculations } = useSavedCalculations(clientId);
+  // Use the updated hooks with correct property names
+  const { client } = useClientInfo(clientId);
+  const { savedCalculations, loading } = useSavedCalculations(clientId);
 
   // Find the most recent calculation for this client
   const latestCalculation = savedCalculations && savedCalculations.length > 0 
