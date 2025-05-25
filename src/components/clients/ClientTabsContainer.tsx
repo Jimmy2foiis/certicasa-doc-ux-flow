@@ -8,7 +8,6 @@ import BillingTab from "./BillingTab";
 import DocumentsTab from "./documents/DocumentsTab";
 import ProjectCalculation from "../calculations/ProjectCalculation";
 import PhotosChantierTab from "./PhotosChantierTab";
-import ClientProfileCard from "./ClientProfileCard";
 
 interface ClientTabsContainerProps {
   client: any;
@@ -60,106 +59,88 @@ export const ClientTabsContainer = ({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      {/* Fiche client à gauche */}
-      <div className="lg:col-span-1">
-        <ClientProfileCard
-          client={client}
-          surfaceArea={surfaceArea}
-          roofArea={roofArea}
-          floorType={floorType}
-          climateZone={climateZone}
-          onSurfaceAreaChange={onSurfaceAreaChange}
-          onRoofAreaChange={onRoofAreaChange}
-          onFloorTypeChange={onFloorTypeChange}
-          onClimateZoneChange={onClimateZoneChange}
-        />
-      </div>
+    <div className="w-full">
+      <Card>
+        <Tabs defaultValue="calculations" onValueChange={setCurrentTab}>
+          <TabsList className="grid w-full grid-cols-5 bg-muted/20">
+            <TabsTrigger 
+              value="calculations" 
+              className={`${currentTab === "calculations" ? "bg-primary text-primary-foreground" : ""} transition-all`}
+            >
+              Calculs
+            </TabsTrigger>
+            <TabsTrigger 
+              value="documents" 
+              className={`${currentTab === "documents" ? "bg-primary text-primary-foreground" : ""} transition-all`}
+            >
+              Documents
+            </TabsTrigger>
+            <TabsTrigger 
+              value="billing" 
+              className={`${currentTab === "billing" ? "bg-primary text-primary-foreground" : ""} transition-all`}
+            >
+              Facturation
+            </TabsTrigger>
+            <TabsTrigger 
+              value="photos" 
+              className={`${currentTab === "photos" ? "bg-primary text-primary-foreground" : ""} transition-all`}
+            >
+              Photos Chantier
+            </TabsTrigger>
+            <TabsTrigger 
+              value="signatures" 
+              className={`${currentTab === "signatures" ? "bg-primary text-primary-foreground" : ""} transition-all`}
+            >
+              Signatures
+            </TabsTrigger>
+          </TabsList>
 
-      {/* Onglets à droite */}
-      <div className="lg:col-span-3">
-        <Card>
-          <Tabs defaultValue="calculations" onValueChange={setCurrentTab}>
-            <TabsList className="grid w-full grid-cols-5 bg-muted/20">
-              <TabsTrigger 
-                value="calculations" 
-                className={`${currentTab === "calculations" ? "bg-primary text-primary-foreground" : ""} transition-all`}
-              >
-                Calculs
-              </TabsTrigger>
-              <TabsTrigger 
-                value="documents" 
-                className={`${currentTab === "documents" ? "bg-primary text-primary-foreground" : ""} transition-all`}
-              >
-                Documents
-              </TabsTrigger>
-              <TabsTrigger 
-                value="billing" 
-                className={`${currentTab === "billing" ? "bg-primary text-primary-foreground" : ""} transition-all`}
-              >
-                Facturation
-              </TabsTrigger>
-              <TabsTrigger 
-                value="photos" 
-                className={`${currentTab === "photos" ? "bg-primary text-primary-foreground" : ""} transition-all`}
-              >
-                Photos Chantier
-              </TabsTrigger>
-              <TabsTrigger 
-                value="signatures" 
-                className={`${currentTab === "signatures" ? "bg-primary text-primary-foreground" : ""} transition-all`}
-              >
-                Signatures
-              </TabsTrigger>
-            </TabsList>
+          <TabsContent value="calculations" className="p-4">
+            <ProjectCalculation 
+              clientId={clientId}
+              onSave={handleSave}
+              clientClimateZone={climateZone || client?.climateZone || "C3"}
+              clientName={client?.name}
+              clientAddress={client?.address}
+              projectName={`Calcul thermique pour ${client?.name}`}
+              clientData={{
+                name: client?.name || '',
+                address: client?.address || '',
+                nif: client?.nif || '',
+                phone: client?.phone || '',
+                email: client?.email || ''
+              }}
+              surfaceArea={surfaceArea}
+              roofArea={roofArea}
+              floorType={floorType}
+              onSurfaceAreaChange={onSurfaceAreaChange}
+              onRoofAreaChange={onRoofAreaChange}
+              onFloorTypeChange={onFloorTypeChange}
+              onClimateZoneChange={handleClimateZoneChangeFromCalculation}
+            />
+          </TabsContent>
 
-            <TabsContent value="calculations" className="p-4">
-              <ProjectCalculation 
-                clientId={clientId}
-                onSave={handleSave}
-                clientClimateZone={climateZone || client?.climateZone || "C3"}
-                clientName={client?.name}
-                clientAddress={client?.address}
-                projectName={`Calcul thermique pour ${client?.name}`}
-                clientData={{
-                  name: client?.name || '',
-                  address: client?.address || '',
-                  nif: client?.nif || '',
-                  phone: client?.phone || '',
-                  email: client?.email || ''
-                }}
-                surfaceArea={surfaceArea}
-                roofArea={roofArea}
-                floorType={floorType}
-                onSurfaceAreaChange={onSurfaceAreaChange}
-                onRoofAreaChange={onRoofAreaChange}
-                onFloorTypeChange={onFloorTypeChange}
-                onClimateZoneChange={handleClimateZoneChangeFromCalculation}
-              />
-            </TabsContent>
+          <TabsContent value="documents" className="p-4">
+            <DocumentsTab clientId={clientId} />
+          </TabsContent>
 
-            <TabsContent value="documents" className="p-4">
-              <DocumentsTab clientId={clientId} />
-            </TabsContent>
+          <TabsContent value="billing" className="p-4">
+            <BillingTab clientId={clientId} />
+          </TabsContent>
 
-            <TabsContent value="billing" className="p-4">
-              <BillingTab clientId={clientId} />
-            </TabsContent>
+          <TabsContent value="photos" className="p-4">
+            <PhotosChantierTab 
+              clientId={clientId}
+              clientName={client?.name}
+              safetyCultureAuditId={client?.safetyCultureAuditId}
+            />
+          </TabsContent>
 
-            <TabsContent value="photos" className="p-4">
-              <PhotosChantierTab 
-                clientId={clientId}
-                clientName={client?.name}
-                safetyCultureAuditId={client?.safetyCultureAuditId}
-              />
-            </TabsContent>
-
-            <TabsContent value="signatures" className="p-4">
-              <SignaturesTabContent clientId={clientId} />
-            </TabsContent>
-          </Tabs>
-        </Card>
-      </div>
+          <TabsContent value="signatures" className="p-4">
+            <SignaturesTabContent clientId={clientId} />
+          </TabsContent>
+        </Tabs>
+      </Card>
     </div>
   );
 };
