@@ -47,14 +47,6 @@ const ProjectInfoSection = ({
             </Badge>
           </div>
           
-          {/* Superficie des combles */}
-          <div className="flex flex-col">
-            <span className="text-sm text-gray-500 mb-1">Superficie des combles (m²)</span>
-            <Badge variant="secondary" className="w-fit text-xs">
-              {surfaceArea} m²
-            </Badge>
-          </div>
-          
           {/* Superficie de la toiture */}
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 mb-1">Superficie de la toiture (m²)</span>
