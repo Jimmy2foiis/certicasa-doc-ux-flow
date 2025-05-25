@@ -18,6 +18,24 @@ interface SavedCalculation {
   calculationData: any;
 }
 
+// Type pour les calculs stockés localement (différent du type API)
+interface LocalStorageCalculation {
+  id?: string;
+  project_id?: string;
+  project_name?: string;
+  client_id?: string;
+  client_name?: string;
+  type?: string;
+  surface_area?: number;
+  surface?: number;
+  improvement_percent?: number;
+  improvement?: number;
+  calculation_data?: any;
+  calculationData?: any;
+  created_at?: string;
+  saved_at?: string;
+}
+
 export const useSavedCalculations = (clientId: string) => {
   const { toast } = useToast();
   
@@ -29,19 +47,37 @@ export const useSavedCalculations = (clientId: string) => {
       setLoading(true);
       console.log('🔍 Chargement des calculs pour le client:', clientId);
       
-      // Utiliser la nouvelle fonction de service
-      const calculations = await getCalculationsForClient(clientId);
+      // Récupérer depuis localStorage directement
+      const savedData = localStorage.getItem('saved_calculations');
+      let localCalculations: LocalStorageCalculation[] = [];
+      
+      if (savedData) {
+        try {
+          const allCalculations = JSON.parse(savedData);
+          localCalculations = Array.isArray(allCalculations) ? allCalculations : [];
+        } catch (parseError) {
+          console.error('Erreur parsing localStorage:', parseError);
+          localCalculations = [];
+        }
+      }
+
+      // Filtrer les calculs pour ce client
+      const clientCalculations = localCalculations.filter((calc: LocalStorageCalculation) => 
+        calc.client_id === clientId || (calc as any).clientId === clientId
+      );
       
       // Formater les données pour l'affichage
-      const formattedCalculations: SavedCalculation[] = calculations.map(calc => {
+      const formattedCalculations: SavedCalculation[] = clientCalculations.map(calc => {
         return {
-          id: calc.id || '',
-          projectId: calc.project_id || '',
-          projectName: calc.project_name || calc.projectName || 'Projet sans nom',
-          clientId: calc.client_id || calc.clientId || '',
-          type: calc.type || '',
+          id: calc.id || `calc_${Date.now()}`,
+          projectId: calc.project_id || `project_${Date.now()}`,
+          projectName: calc.project_name || (calc as any).projectName || 'Projet sans nom',
+          clientId: calc.client_id || (calc as any).clientId || clientId,
+          type: calc.type || 'RES010',
           surface: calc.surface_area || calc.surface || 0,
-          date: calc.created_at ? new Date(calc.created_at).toLocaleDateString('fr-FR') : new Date().toLocaleDateString('fr-FR'),
+          date: calc.created_at ? new Date(calc.created_at).toLocaleDateString('fr-FR') : 
+                calc.saved_at ? new Date(calc.saved_at).toLocaleDateString('fr-FR') : 
+                new Date().toLocaleDateString('fr-FR'),
           improvement: calc.improvement_percent || calc.improvement || 0,
           calculationData: calc.calculation_data || calc.calculationData || {}
         };
