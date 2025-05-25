@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { User, Mail, Phone, MapPin, Building, Clock, ChevronRight } from "lucide-react";
+import { Mail, Phone, MapPin, User, CheckSquare, Building } from "lucide-react";
 import { Client } from "@/services/api/types";
 
 interface ClientProfileCardProps {
@@ -84,104 +84,168 @@ const ClientProfileCard = ({
   return (
     <Card className="w-full max-w-sm mx-auto shadow-sm">
       <CardContent className="p-6">
-        {/* Photo de profil et nom */}
+        {/* Nom du client et statut */}
         <div className="text-center mb-6">
-          <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center mx-auto mb-4">
-            <User className="h-12 w-12 text-gray-500" />
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-1">{client.name}</h2>
-          <p className="text-gray-500 text-sm">Client Certicasa</p>
-          <Badge variant="secondary" className="mt-2 bg-green-100 text-green-800 border-green-200">
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">{client.name}</h2>
+          <p className="text-gray-500 text-sm mb-3">Client Certicasa</p>
+          <Badge variant="secondary" className="bg-green-100 text-green-800 border-green-200 mb-2">
             ACTIF
           </Badge>
         </div>
 
+        {/* Code projet en carte verte */}
+        <div className="mb-6">
+          <Card className="bg-green-500 text-white">
+            <CardContent className="p-3 text-center">
+              <p className="text-sm font-medium">Code Projet</p>
+              <p className="text-lg font-bold">RES020</p>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Informations de contact */}
-        <div className="space-y-4 mb-6">
+        <div className="space-y-3 mb-6">
           <div className="flex items-center text-gray-600">
-            <Mail className="h-4 w-4 mr-3" />
+            <Mail className="h-4 w-4 mr-3 flex-shrink-0" />
             <span className="text-sm">{client.email}</span>
           </div>
           <div className="flex items-center text-gray-600">
-            <Phone className="h-4 w-4 mr-3" />
+            <Phone className="h-4 w-4 mr-3 flex-shrink-0" />
             <span className="text-sm">{client.phone}</span>
-          </div>
-          <div className="flex items-center text-gray-600">
-            <MapPin className="h-4 w-4 mr-3" />
-            <span className="text-sm">{client.address}</span>
           </div>
         </div>
 
-        {/* Informations techniques */}
-        <div className="space-y-4 mb-6">
-          <div className="border-t pt-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Données Techniques</h3>
-            
-            <div className="space-y-3">
+        {/* Adresse complète structurée */}
+        <div className="border-t pt-4 mb-6">
+          <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+            <MapPin className="h-4 w-4 mr-2" />
+            Adresse complète
+          </h3>
+          <div className="space-y-2 text-sm">
+            <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Type de plancher</label>
-                <Select value={localFloorType} onValueChange={handleFloorTypeChange}>
-                  <SelectTrigger className="h-8 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {floorTypeOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <span className="text-xs text-gray-500">✅ Rue :</span>
+                <p className="font-medium">Calle Alonso Castrillo 43</p>
               </div>
-
               <div>
-                <label className="text-xs text-gray-500 mb-1 block">Zone climatique</label>
-                <Select value={localClimateZone} onValueChange={handleClimateZoneChange}>
-                  <SelectTrigger className="h-8 text-sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {climateZoneOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <span className="text-xs text-gray-500">✅ Code postal :</span>
+                <p className="font-medium">24200</p>
               </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Surface combles (m²)</label>
-                  <Input
-                    type="number"
-                    value={localSurfaceArea}
-                    onChange={(e) => handleSurfaceAreaChange(e.target.value)}
-                    className="h-8 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs text-gray-500 mb-1 block">Surface toiture (m²)</label>
-                  <Input
-                    type="number"
-                    value={localRoofArea}
-                    onChange={(e) => handleRoofAreaChange(e.target.value)}
-                    className="h-8 text-sm"
-                  />
-                </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="text-xs text-gray-500">✅ Ville :</span>
+                <p className="font-medium">Valencia de Don Juan</p>
+              </div>
+              <div>
+                <span className="text-xs text-gray-500">✅ Province :</span>
+                <p className="font-medium">León</p>
+              </div>
+            </div>
+            <div>
+              <span className="text-xs text-gray-500">✅ Communauté autonome :</span>
+              <p className="font-medium">Castille-et-León</p>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <span className="text-xs text-gray-500">✅ Géolocalisation :</span>
+                <p className="font-medium text-orange-600">À définir</p>
+              </div>
+              <div>
+                <span className="text-xs text-gray-500">✅ UTM 30 :</span>
+                <p className="font-medium text-orange-600">À définir</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Équipe */}
-        <div className="border-t pt-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-500">Équipe assignée</span>
-            <ChevronRight className="h-3 w-3 text-gray-400" />
+        {/* Données techniques */}
+        <div className="border-t pt-4 mb-6">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Données Techniques</h3>
+          
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Type de plancher</label>
+              <Select value={localFloorType} onValueChange={handleFloorTypeChange}>
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {floorTypeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Zone climatique</label>
+              <Select value={localClimateZone} onValueChange={handleClimateZoneChange}>
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {climateZoneOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Surface combles (m²)</label>
+                <Input
+                  type="number"
+                  value={localSurfaceArea}
+                  onChange={(e) => handleSurfaceAreaChange(e.target.value)}
+                  className="h-8 text-sm"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500 mb-1 block">Surface toiture (m²)</label>
+                <Input
+                  type="number"
+                  value={localRoofArea}
+                  onChange={(e) => handleRoofAreaChange(e.target.value)}
+                  className="h-8 text-sm"
+                />
+              </div>
+            </div>
           </div>
-          <div className="text-sm text-gray-700">
-            <span className="font-medium">Amir</span> • <span className="font-medium">Cynthia</span> • <span className="font-medium">RA BAT 2</span>
+        </div>
+
+        {/* Équipe détaillée */}
+        <div className="border-t pt-4">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Équipe assignée</h3>
+          <div className="space-y-2.5">
+            <div className="flex items-center">
+              <User className="h-4 w-4 text-gray-500 mr-2.5" />
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-500">Téléprospecteur</span>
+                <span className="text-sm font-medium">Amir</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center">
+              <CheckSquare className="h-4 w-4 text-gray-500 mr-2.5" />
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-500">Confirmateur</span>
+                <span className="text-sm font-medium">Cynthia</span>
+              </div>
+            </div>
+            
+            <div className="flex items-center">
+              <Building className="h-4 w-4 text-gray-500 mr-2.5" />
+              <div className="flex flex-col">
+                <span className="text-xs text-gray-500">Équipe de pose</span>
+                <span className="text-sm font-medium">RA BAT 2</span>
+              </div>
+            </div>
           </div>
         </div>
 
