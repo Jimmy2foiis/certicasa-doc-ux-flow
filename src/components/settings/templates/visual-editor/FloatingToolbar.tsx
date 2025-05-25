@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,18 +5,42 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, Trash2 } from "lucide-react";
 
-interface Template {
-  layout: {
-    elements: Array<{
-      id: string;
-      style: {
-        fontSize: number;
-        fontWeight: string;
-        color: string;
-        textAlign: string;
-      };
-    }>;
+interface TemplateElement {
+  id: string;
+  type: 'text' | 'variable' | 'table' | 'logo' | 'mentions';
+  content: string;
+  position: { x: number; y: number };
+  style: {
+    fontSize: number;
+    fontWeight: string;
+    color: string;
+    textAlign: string;
   };
+}
+
+interface TemplateLayout {
+  elements: TemplateElement[];
+  styles: {
+    fontSize: number;
+    fontFamily: string;
+    lineHeight: number;
+    margins: { top: number; right: number; bottom: number; left: number };
+  };
+}
+
+interface Template {
+  id: string;
+  name: string;
+  type: "facture" | "devis";
+  content: string;
+  layout: TemplateLayout;
+  logo?: {
+    url: string;
+    position: 'top-left' | 'top-center' | 'top-right';
+    size: number;
+  };
+  created_at: string;
+  updated_at: string;
 }
 
 interface FloatingToolbarProps {
@@ -41,7 +64,8 @@ const FloatingToolbar = ({ elementId, template, onTemplateChange }: FloatingTool
             ? { ...el, style: { ...el.style, ...styleUpdates } }
             : el
         )
-      }
+      },
+      updated_at: new Date().toISOString().split('T')[0]
     };
     onTemplateChange(updatedTemplate);
   };
@@ -52,7 +76,8 @@ const FloatingToolbar = ({ elementId, template, onTemplateChange }: FloatingTool
       layout: {
         ...template.layout,
         elements: template.layout.elements.filter(el => el.id !== elementId)
-      }
+      },
+      updated_at: new Date().toISOString().split('T')[0]
     };
     onTemplateChange(updatedTemplate);
   };

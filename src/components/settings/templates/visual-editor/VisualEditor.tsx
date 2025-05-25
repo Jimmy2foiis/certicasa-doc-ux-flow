@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,20 +17,29 @@ interface TemplateElement {
   };
 }
 
+interface TemplateLayout {
+  elements: TemplateElement[];
+  styles: {
+    fontSize: number;
+    fontFamily: string;
+    lineHeight: number;
+    margins: { top: number; right: number; bottom: number; left: number };
+  };
+}
+
 interface Template {
   id: string;
   name: string;
   type: "facture" | "devis";
   content: string;
-  layout: {
-    elements: TemplateElement[];
-    styles: any;
-  };
+  layout: TemplateLayout;
   logo?: {
     url: string;
-    position: string;
+    position: 'top-left' | 'top-center' | 'top-right';
     size: number;
   };
+  created_at: string;
+  updated_at: string;
 }
 
 interface VisualEditorProps {
@@ -88,7 +96,8 @@ const VisualEditor = ({
             url,
             position: 'top-left',
             size: 150
-          }
+          },
+          updated_at: new Date().toISOString().split('T')[0]
         });
       };
       reader.readAsDataURL(file);
