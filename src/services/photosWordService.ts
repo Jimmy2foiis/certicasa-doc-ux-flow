@@ -67,10 +67,8 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                           children: [
                             new ImageRun({
                               data: avantPhotosBuffers[0],
-                              transformation: {
-                                width: 213, // 7.5cm en points
-                                height: 284  // 10cm en points
-                              }
+                              width: 213, // 7.5cm en points
+                              height: 284  // 10cm en points
                             })
                           ]
                         })
@@ -83,10 +81,8 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                           children: [
                             new ImageRun({
                               data: avantPhotosBuffers[1],
-                              transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                              width: 213,
+                              height: 284
                             })
                           ]
                         })
@@ -104,10 +100,8 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                           children: [
                             new ImageRun({
                               data: avantPhotosBuffers[2],
-                              transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                              width: 213,
+                              height: 284
                             })
                           ]
                         })
@@ -120,10 +114,8 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                           children: [
                             new ImageRun({
                               data: avantPhotosBuffers[3],
-                              transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                              width: 213,
+                              height: 284
                             })
                           ]
                         })
@@ -158,10 +150,8 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                           children: [
                             new ImageRun({
                               data: apresPhotosBuffers[0],
-                              transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                              width: 213,
+                              height: 284
                             })
                           ]
                         })
@@ -174,10 +164,8 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                           children: [
                             new ImageRun({
                               data: apresPhotosBuffers[1],
-                              transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                              width: 213,
+                              height: 284
                             })
                           ]
                         })
@@ -195,10 +183,8 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                           children: [
                             new ImageRun({
                               data: apresPhotosBuffers[2],
-                              transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                              width: 213,
+                              height: 284
                             })
                           ]
                         })
@@ -211,10 +197,8 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                           children: [
                             new ImageRun({
                               data: apresPhotosBuffers[3],
-                              transformation: {
-                                width: 213,
-                                height: 284
-                              }
+                              width: 213,
+                              height: 284
                             })
                           ]
                         })
