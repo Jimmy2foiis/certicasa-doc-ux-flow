@@ -1,103 +1,34 @@
 
-import React from "react";
+import React from 'react';
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Edit, Eye } from "lucide-react";
 import { Client } from "@/services/api/types";
 
 interface StatusBannerProps {
-  client: Client | null;
-  documentStats?: {
-    total: number;
-    generated: number;
-    missing: number;
-    error: number;
-  };
-  onViewMissingDocs?: () => void;
-  onEditClient?: (e: React.MouseEvent) => void;
+  client: Client;
 }
 
-const StatusBanner = ({ 
-  client, 
-  documentStats, 
-  onViewMissingDocs = () => {},
-  onEditClient = () => {}
-}: StatusBannerProps) => {
-  if (!client) return null;
-
-  const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case 'active':
-      case 'actif':
-      case 'en cours':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-      case 'pending':
-      case 'en attente':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'inactive':
-      case 'inactif':
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-      default:
-        return 'bg-blue-100 text-blue-800 border-blue-200';
-    }
-  };
-
-  const hasMissingDocuments = documentStats && documentStats.missing > 0;
-
+const StatusBanner = ({ client }: StatusBannerProps) => {
   return (
-    <div className="space-y-3">
-      {/* Statut principal du client */}
-      <div className="flex items-center gap-3">
-        <Badge 
-          variant="outline" 
-          className={`px-3 py-1 ${getStatusColor(client.status || 'En cours')}`}
-        >
-          {client.status || 'En cours'}
-        </Badge>
-        
-        <Badge variant="outline" className="px-3 py-1 bg-gray-800 text-white">
-          RES020
-        </Badge>
-        
-        <span className="text-sm text-gray-600">
-          Date pose: {client.installationDate || '2025-04-21'}
-        </span>
-        
-        <span className="text-sm text-gray-600">
-          Numéro lot: {client.lotNumber || '-'}
-        </span>
-        
-        <span className="text-sm text-gray-600">
-          Date dépôt: {client.depositDate || '-'}
-        </span>
-        
-        <span className="text-sm text-gray-600">
-          Documents: {documentStats ? `${documentStats.generated}/${documentStats.total}` : '6/8'}
-        </span>
-        
-        {/* Bouton voir documents manquants */}
-        {hasMissingDocuments && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onViewMissingDocs}
-            className="text-gray-700 border-gray-300 hover:bg-gray-100"
-          >
-            <Eye className="h-4 w-4 mr-1" />
-            Voir les documents manquants
-          </Button>
-        )}
-        
-        {/* Bouton d'édition */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onEditClient}
-          className="ml-auto"
-        >
-          <Edit className="h-4 w-4 mr-1" />
-          Modifier
-        </Button>
+    <div className="bg-white border-b border-gray-200 px-6 py-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">{client.name}</h1>
+              <p className="text-sm text-gray-500 mt-1">Client Certicasa</p>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className="px-3 py-1 bg-gray-800 text-white rounded-full text-sm font-medium">
+                RES020
+              </Badge>
+            </div>
+          </div>
+          
+          <div className="text-sm text-gray-600 space-y-1">
+            <div>Numéro lot: {client.lotNumber || "Non assigné"}</div>
+          </div>
+        </div>
       </div>
     </div>
   );
