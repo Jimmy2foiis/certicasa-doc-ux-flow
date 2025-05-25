@@ -1,15 +1,5 @@
 
-import { Calculator, Download } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import ExportExcelButton from "../calculations/ExportExcelButton";
+import ProjectCalculation from "../calculations/ProjectCalculation";
 
 interface CalculationsTabProps {
   clientId: string;
@@ -34,94 +24,67 @@ const CalculationsTab = ({
   clientId, 
   clientName = "Client",
   clientAddress = "",
-  savedCalculations = [], // Valeur par défaut: tableau vide pour éviter undefined
+  savedCalculations = [],
   onOpenCalculation, 
   onCreateNewCalculation 
 }: CalculationsTabProps) => {
   // S'assurer que savedCalculations est toujours un tableau
   const calculations = Array.isArray(savedCalculations) ? savedCalculations : [];
 
+  // Fonction pour sauvegarder un calcul
+  const handleSave = (calculationData: any) => {
+    try {
+      // Générer un ID unique pour ce calcul
+      const calculationId = `calc_${Date.now()}`;
+      const projectNumber = calculations.length + 1;
+
+      const newCalculation = {
+        id: calculationId,
+        projectId: `project_${projectNumber}`,
+        projectName: `Réhabilitation Énergétique #${projectNumber}`,
+        clientId: clientId,
+        type: calculationData.projectType || 'RES020',
+        surface: parseFloat(calculationData.surfaceArea) || 120,
+        date: new Date().toLocaleDateString('fr-FR'),
+        improvement: calculationData.improvementPercent || 35,
+        calculationData: calculationData,
+      };
+
+      // Récupérer tous les calculs existants
+      const savedData = localStorage.getItem('saved_calculations');
+      let allCalculations: any[] = [];
+
+      if (savedData) {
+        allCalculations = JSON.parse(savedData);
+      }
+
+      // Ajouter le nouveau calcul
+      allCalculations.push(newCalculation);
+
+      // Sauvegarder dans le localStorage
+      localStorage.setItem('saved_calculations', JSON.stringify(allCalculations));
+
+      console.log('Calcul sauvegardé avec succès:', newCalculation);
+    } catch (error) {
+      console.error('Erreur lors de la sauvegarde du calcul:', error);
+    }
+  };
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Module de Calcul</CardTitle>
-        <CardDescription>
-          Calculs thermiques et énergétiques pour les projets du client
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {calculations.map((calculation) => (
-              <Card key={calculation.id} className="overflow-hidden">
-                <CardHeader className="bg-slate-50 pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg">{calculation.projectName}</CardTitle>
-                    <Badge variant="success">Enregistré</Badge>
-                  </div>
-                  <CardDescription>Réhabilitation Énergétique</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-4">
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div>
-                        <p className="text-gray-500">Type:</p>
-                        <p className="font-medium">{calculation.type}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-500">Surface:</p>
-                        <p className="font-medium">{calculation.surface} m²</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-500">Date:</p>
-                        <p className="font-medium">{calculation.date}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-500">Amélioration:</p>
-                        <p className="font-medium">
-                          {calculation.improvement.toFixed(2)}%
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex justify-end space-x-2">
-                      <ExportExcelButton 
-                        calculationData={calculation.calculationData} 
-                        clientName={clientName}
-                        clientAddress={clientAddress}
-                        projectName={calculation.projectName}
-                      />
-                      <Button 
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700"
-                        onClick={() => onOpenCalculation(calculation)}
-                      >
-                        <Calculator className="h-4 w-4 mr-1" />
-                        Voir/Modifier
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            
-            <Card className="border-dashed border-2 flex flex-col items-center justify-center p-6">
-              <div className="text-center space-y-3">
-                <Calculator className="h-12 w-12 mx-auto text-gray-400" />
-                <h3 className="font-medium">Nouveau Calcul</h3>
-                <p className="text-sm text-gray-500">Créer un nouveau module de calcul pour ce client</p>
-                <Button 
-                  className="mt-2 bg-blue-600 hover:bg-blue-700"
-                  onClick={onCreateNewCalculation}
-                >
-                  Créer
-                </Button>
-              </div>
-            </Card>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      <ProjectCalculation 
+        clientId={clientId}
+        clientName={clientName}
+        clientAddress={clientAddress}
+        onSave={handleSave}
+        clientClimateZone="B3"
+        projectName={`Calcul thermique pour ${clientName}`}
+        clientData={{
+          name: clientName,
+          address: clientAddress
+        }}
+      />
+    </div>
   );
 };
 
