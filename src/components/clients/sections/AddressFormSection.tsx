@@ -1,9 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { MapPin } from "lucide-react";
 import AddressSearch from "@/components/clients/AddressSearch";
+import CadastralInfo from "@/components/clients/CadastralInfo";
 import { AddressComponents } from "@/types/googleMaps";
+import { useClientCadastralData } from "@/hooks/useClientCadastralData";
+import { GeoCoordinates } from "@/services/geoCoordinatesService";
 
 interface AddressFormSectionProps {
   client?: {
@@ -27,6 +30,37 @@ const AddressFormSection = ({ client }: AddressFormSectionProps) => {
     cadastralReference: ""
   });
 
+  const [gpsCoordinates, setGpsCoordinates] = useState<GeoCoordinates | undefined>();
+
+  // Utiliser le hook pour les données cadastrales
+  const {
+    utmCoordinates,
+    cadastralReference,
+    climateZone,
+    apiSource,
+    loadingCadastral,
+    refreshCadastralData
+  } = useClientCadastralData("local_demo", addressData.street, gpsCoordinates);
+
+  // Mettre à jour les données locales quand les données cadastrales arrivent
+  useEffect(() => {
+    if (cadastralReference) {
+      setAddressData(prev => ({
+        ...prev,
+        cadastralReference
+      }));
+    }
+  }, [cadastralReference]);
+
+  useEffect(() => {
+    if (utmCoordinates) {
+      setAddressData(prev => ({
+        ...prev,
+        utm: utmCoordinates
+      }));
+    }
+  }, [utmCoordinates]);
+
   const handleAddressSelected = (selectedAddress: string) => {
     setAddressData(prev => ({
       ...prev,
@@ -35,6 +69,7 @@ const AddressFormSection = ({ client }: AddressFormSectionProps) => {
   };
 
   const handleCoordinatesSelected = (coords: { lat: number; lng: number }) => {
+    setGpsCoordinates(coords);
     setAddressData(prev => ({
       ...prev,
       coordinates: `${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`
@@ -117,12 +152,13 @@ const AddressFormSection = ({ client }: AddressFormSectionProps) => {
             onChange={(e) => handleInputChange('utm', e.target.value)}
             placeholder="UTM" 
             className="text-sm h-8" 
+            readOnly={loadingCadastral}
           />
         </div>
       </div>
 
       {/* Ligne 3: Géolocalisation, Référence Cadastrale, cellule vide */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3 mb-3">
         <div>
           <Input 
             value={addressData.coordinates} 
@@ -136,11 +172,25 @@ const AddressFormSection = ({ client }: AddressFormSectionProps) => {
             value={addressData.cadastralReference} 
             onChange={(e) => handleInputChange('cadastralReference', e.target.value)}
             placeholder="Référence Cadastrale" 
-            className="text-sm h-8" 
+            className="text-sm h-8"
+            readOnly={loadingCadastral}
           />
         </div>
         <div></div>
       </div>
+
+      {/* Affichage des informations cadastrales détaillées */}
+      {(gpsCoordinates || loadingCadastral || cadastralReference) && (
+        <CadastralInfo
+          utmCoordinates={utmCoordinates}
+          cadastralReference={cadastralReference}
+          climateZone={climateZone}
+          loadingCadastral={loadingCadastral}
+          apiSource={apiSource}
+          gpsCoordinates={gpsCoordinates}
+          onRefresh={refreshCadastralData}
+        />
+      )}
     </div>
   );
 };
