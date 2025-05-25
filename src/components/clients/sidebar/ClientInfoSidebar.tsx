@@ -35,6 +35,18 @@ const ClientInfoSidebar = ({ client, documentStats, onViewMissingDocs }: ClientI
               <h3 className="font-semibold text-base border-b pb-1">Informations techniques</h3>
               
               <div className="space-y-2.5">
+                {/* Superficie des combles */}
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Superficie des combles (m²)</span>
+                  <span className="font-medium">70</span>
+                </div>
+                
+                {/* Superficie de la toiture */}
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Superficie de la toiture (m²)</span>
+                  <span className="font-medium">85</span>
+                </div>
+                
                 {/* Type d'isolation */}
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Type d'isolation</span>
@@ -53,18 +65,6 @@ const ClientInfoSidebar = ({ client, documentStats, onViewMissingDocs }: ClientI
                   <Badge variant="outline" className="mt-1 w-fit">
                     {client.climateZone || "C"}
                   </Badge>
-                </div>
-                
-                {/* Superficie des combles */}
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Superficie des combles (m²)</span>
-                  <span className="font-medium">{client.atticArea || "70"}</span>
-                </div>
-                
-                {/* Superficie de la toiture */}
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Superficie de la toiture (m²)</span>
-                  <span className="font-medium">{client.roofArea || "85"}</span>
                 </div>
               </div>
             </div>
