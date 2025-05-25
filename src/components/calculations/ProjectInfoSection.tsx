@@ -1,10 +1,8 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
 interface ProjectInfoSectionProps {
   isolationType?: string;
   floorType?: string;
@@ -16,7 +14,6 @@ interface ProjectInfoSectionProps {
   onFloorTypeChange?: (value: string) => void;
   onClimateZoneChange?: (value: string) => void;
 }
-
 const ProjectInfoSection = ({
   isolationType = "Combles",
   floorType = "Bois",
@@ -32,35 +29,30 @@ const ProjectInfoSection = ({
   const [localRoofArea, setLocalRoofArea] = useState(roofArea);
   const [localFloorType, setLocalFloorType] = useState(floorType);
   const [localClimateZone, setLocalClimateZone] = useState(climateZone);
-
   const handleSurfaceAreaChange = (value: string) => {
     setLocalSurfaceArea(value);
     if (onSurfaceAreaChange) {
       onSurfaceAreaChange(value);
     }
   };
-
   const handleRoofAreaChange = (value: string) => {
     setLocalRoofArea(value);
     if (onRoofAreaChange) {
       onRoofAreaChange(value);
     }
   };
-
   const handleFloorTypeChange = (value: string) => {
     setLocalFloorType(value);
     if (onFloorTypeChange) {
       onFloorTypeChange(value);
     }
   };
-
   const handleClimateZoneChange = (value: string) => {
     setLocalClimateZone(value);
     if (onClimateZoneChange) {
       onClimateZoneChange(value);
     }
   };
-
   const floorTypeOptions = [{
     value: "Béton",
     label: "🪨 Béton"
@@ -71,7 +63,6 @@ const ProjectInfoSection = ({
     value: "Céramique",
     label: "🧱 Céramique"
   }];
-
   const climateZoneOptions = [{
     value: "A3",
     label: "A3"
@@ -109,9 +100,7 @@ const ProjectInfoSection = ({
     value: "E1",
     label: "E1"
   }];
-
-  return (
-    <Card className="mb-4">
+  return <Card className="mb-4">
       <CardContent className="pt-6">
         {/* Section Données Techniques avec titre H3 */}
         <div className="mb-6">
@@ -125,11 +114,9 @@ const ProjectInfoSection = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {floorTypeOptions.map(option => 
-                    <SelectItem key={option.value} value={option.value}>
+                  {floorTypeOptions.map(option => <SelectItem key={option.value} value={option.value}>
                       {option.label}
-                    </SelectItem>
-                  )}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -141,11 +128,9 @@ const ProjectInfoSection = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {climateZoneOptions.map(option => 
-                    <SelectItem key={option.value} value={option.value}>
+                  {climateZoneOptions.map(option => <SelectItem key={option.value} value={option.value}>
                       {option.label}
-                    </SelectItem>
-                  )}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -153,21 +138,11 @@ const ProjectInfoSection = ({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Surface combles (m²)</label>
-                <Input 
-                  type="number" 
-                  value={localSurfaceArea} 
-                  onChange={e => handleSurfaceAreaChange(e.target.value)} 
-                  className="w-full" 
-                />
+                <Input type="number" value={localSurfaceArea} onChange={e => handleSurfaceAreaChange(e.target.value)} className="w-full" />
               </div>
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Surface toiture (m²)</label>
-                <Input 
-                  type="number" 
-                  value={localRoofArea} 
-                  onChange={e => handleRoofAreaChange(e.target.value)} 
-                  className="w-full" 
-                />
+                <Input type="number" value={localRoofArea} onChange={e => handleRoofAreaChange(e.target.value)} className="w-full" />
               </div>
             </div>
           </div>
@@ -177,39 +152,26 @@ const ProjectInfoSection = ({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
           {/* Type de plancher */}
           <div className="flex flex-col">
-            <span className="text-sm text-gray-500 mb-1">Type de plancher</span>
-            <Badge variant="outline" className="w-fit text-xs">
-              {localFloorType}
-            </Badge>
+            
+            
           </div>
           
           {/* Zone climatique */}
           <div className="flex flex-col">
-            <span className="text-sm text-gray-500 mb-1">Zone climatique</span>
-            <Badge variant="outline" className="w-fit text-xs">
-              {localClimateZone}
-            </Badge>
+            
+            
           </div>
           
           {/* Superficie des combles */}
           <div className="flex flex-col">
-            <span className="text-sm text-gray-500 mb-1">Superficie des combles (m²)</span>
-            <Badge variant="secondary" className="w-fit text-xs">
-              {localSurfaceArea} m²
-            </Badge>
+            
+            
           </div>
           
           {/* Superficie de la toiture */}
-          <div className="flex flex-col">
-            <span className="text-sm text-gray-500 mb-1">Superficie de la toiture (m²)</span>
-            <Badge variant="secondary" className="w-fit text-xs">
-              {localRoofArea} m²
-            </Badge>
-          </div>
+          
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ProjectInfoSection;

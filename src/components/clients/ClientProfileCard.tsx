@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,9 +31,7 @@ const ClientProfileCard = ({
   onClimateZoneChange
 }: ClientProfileCardProps) => {
   const [isTeamExpanded, setIsTeamExpanded] = useState(false);
-
   if (!client) return null;
-
   return <Card className="w-full max-w-lg mx-auto bg-white border border-gray-200 rounded-xl shadow-sm">
       <CardContent className="">
         {/* Header */}
@@ -42,7 +39,7 @@ const ClientProfileCard = ({
           {/* Nom du client */}
           <div>
             <h1 className="text-2xl font-bold text-gray-900 mb-1">{client.name}</h1>
-            <p className="text-gray-500 text-sm mb-3">Client Certicasa</p>
+            
           </div>
 
           {/* Badges */}
