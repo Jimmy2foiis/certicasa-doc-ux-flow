@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { getCadastralDataForClient } from "@/services/api";
 import { httpClient } from "@/services/api/httpClient";
-import { getCalculationsForClient } from "@/services/api/calculationService";
 import { useCalculationEventListener } from "./useCalculationEvents";
 
 interface SavedCalculation {
@@ -18,24 +17,6 @@ interface SavedCalculation {
   calculationData: any;
 }
 
-// Type pour les calculs stockés localement (différent du type API)
-interface LocalStorageCalculation {
-  id?: string;
-  project_id?: string;
-  project_name?: string;
-  client_id?: string;
-  client_name?: string;
-  type?: string;
-  surface_area?: number;
-  surface?: number;
-  improvement_percent?: number;
-  improvement?: number;
-  calculation_data?: any;
-  calculationData?: any;
-  created_at?: string;
-  saved_at?: string;
-}
-
 export const useSavedCalculations = (clientId: string) => {
   const { toast } = useToast();
   
@@ -45,59 +26,72 @@ export const useSavedCalculations = (clientId: string) => {
   const loadSavedCalculations = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('🔍 Chargement des calculs pour le client:', clientId);
       
-      // Récupérer depuis localStorage directement
-      const savedData = localStorage.getItem('saved_calculations');
-      let localCalculations: LocalStorageCalculation[] = [];
-      
-      if (savedData) {
-        try {
-          const allCalculations = JSON.parse(savedData);
-          localCalculations = Array.isArray(allCalculations) ? allCalculations : [];
-        } catch (parseError) {
-          console.error('Erreur parsing localStorage:', parseError);
-          localCalculations = [];
+      if (clientId.startsWith('local_')) {
+        const localData = localStorage.getItem('saved_calculations');
+        if (localData) {
+          const allCalculations = JSON.parse(localData);
+          const clientCalculations = allCalculations.filter((calc: any) => calc.clientId === clientId);
+          setSavedCalculations(clientCalculations);
+          console.log(`${clientCalculations.length} calculs trouvés pour le client ${clientId}`);
+        } else {
+          setSavedCalculations([]);
         }
+        return;
       }
-
-      // Filtrer les calculs pour ce client
-      const clientCalculations = localCalculations.filter((calc: LocalStorageCalculation) => 
-        calc.client_id === clientId || (calc as any).clientId === clientId
-      );
       
-      // Formater les données pour l'affichage
-      const formattedCalculations: SavedCalculation[] = clientCalculations.map(calc => {
-        return {
-          id: calc.id || `calc_${Date.now()}`,
-          projectId: calc.project_id || `project_${Date.now()}`,
-          projectName: calc.project_name || (calc as any).projectName || 'Projet sans nom',
-          clientId: calc.client_id || (calc as any).clientId || clientId,
-          type: calc.type || 'RES010',
-          surface: calc.surface_area || calc.surface || 0,
-          date: calc.created_at ? new Date(calc.created_at).toLocaleDateString('fr-FR') : 
-                calc.saved_at ? new Date(calc.saved_at).toLocaleDateString('fr-FR') : 
-                new Date().toLocaleDateString('fr-FR'),
-          improvement: calc.improvement_percent || calc.improvement || 0,
-          calculationData: calc.calculation_data || calc.calculationData || {}
-        };
-      });
-      
-      setSavedCalculations(formattedCalculations);
-      console.log(`✅ ${formattedCalculations.length} calculs chargés pour le client ${clientId}`);
-      
+      try {
+        const response = await httpClient.get<any[]>(`/prospects/${clientId}/calculations`);
+        
+        if (response.success && response.data) {
+          const formattedCalculations: SavedCalculation[] = response.data.map(calc => {
+            return {
+              id: calc.id || '',
+              projectId: calc.project_id || '',
+              projectName: calc.project_name || 'Projet sans nom',
+              clientId: calc.client_id || '',
+              type: calc.type || '',
+              surface: calc.surface_area || 0,
+              date: new Date(calc.created_at).toLocaleDateString('fr-FR'),
+              improvement: calc.improvement_percent || 0,
+              calculationData: calc.calculation_data || {}
+            };
+          });
+          
+          setSavedCalculations(formattedCalculations);
+        } else {
+          useLocalStorage();
+        }
+      } catch (error) {
+        console.error("Erreur lors du chargement des calculs sauvegardés depuis l'API:", error);
+        useLocalStorage();
+      }
     } catch (error) {
-      console.error("❌ Erreur lors du chargement des calculs sauvegardés:", error);
-      setSavedCalculations([]);
+      console.error("Erreur lors du chargement des calculs sauvegardés:", error);
+      useLocalStorage();
     } finally {
       setLoading(false);
     }
   }, [clientId]);
 
+  const useLocalStorage = () => {
+    try {
+      const localData = localStorage.getItem('saved_calculations');
+      if (localData) {
+        const allCalculations = JSON.parse(localData);
+        const clientCalculations = allCalculations.filter((calc: any) => calc.clientId === clientId);
+        setSavedCalculations(clientCalculations);
+        console.log(`${clientCalculations.length} calculs trouvés localement pour le client ${clientId}`);
+      }
+    } catch (e) {
+      console.error("Impossible de récupérer les données locales:", e);
+    }
+  };
+
   // Listen to calculation events for real-time updates
   useCalculationEventListener(
     () => {
-      console.log("📡 Événement calcul détecté, rechargement...");
+      console.log("Événement calcul détecté, rechargement...");
       loadSavedCalculations();
     },
     () => {
@@ -109,25 +103,20 @@ export const useSavedCalculations = (clientId: string) => {
   );
 
   useEffect(() => {
-    if (clientId) {
-      loadSavedCalculations();
-    }
+    loadSavedCalculations();
     
-    // Charger les données cadastrales en parallèle
     const loadCadastralData = async () => {
       try {
         const cadastralData = await getCadastralDataForClient(clientId);
         if (cadastralData) {
-          console.log("🗺️ Données cadastrales chargées:", cadastralData);
+          console.log("Données cadastrales chargées:", cadastralData);
         }
       } catch (error) {
-        console.error("❌ Erreur lors du chargement des données cadastrales:", error);
+        console.error("Erreur lors du chargement des données cadastrales:", error);
       }
     };
     
-    if (clientId) {
-      loadCadastralData();
-    }
+    loadCadastralData();
   }, [clientId, loadSavedCalculations]);
 
   return {

@@ -33,7 +33,7 @@ const CalculationHeader = ({
 }: CalculationHeaderProps) => {
   return (
     <div>
-      {/* Section Informations Projet */}
+      {/* 3️⃣ Section Informations Projet - reçoit zoneClimatique */}
       <ProjectInfoSection 
         surfaceArea={calculationData.surfaceArea}
         roofArea={calculationData.roofArea}
@@ -44,9 +44,7 @@ const CalculationHeader = ({
       {/* Header du calcul */}
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <div>
-          <CardTitle className="text-lg font-semibold">
-            Module de Calcul
-          </CardTitle>
+          <CardTitle className="text-lg font-semibold">Module de Calcul</CardTitle>
           <CardDescription>
             Saisissez les matériaux et épaisseurs pour calculer la résistance thermique
           </CardDescription>

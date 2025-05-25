@@ -14,7 +14,7 @@ export const getCalculationsForProject = async (projectId: string): Promise<Calc
       const savedData = localStorage.getItem('saved_calculations');
       if (savedData) {
         const allCalculations = JSON.parse(savedData);
-        return allCalculations.filter((calc: any) => calc.project_id === projectId);
+        return allCalculations.filter((calc: any) => calc.projectId === projectId);
       }
       return [];
     } catch (error) {
@@ -47,7 +47,7 @@ export const getCalculationsForProject = async (projectId: string): Promise<Calc
  * Crée un nouveau calcul
  */
 export const createCalculation = async (
-  calculationData: any,
+  calculationData: Calculation,
 ): Promise<Calculation | null> => {
   // Si l'ID du projet commence par "local_" ou "project_", on sauvegarde localement
   if (
@@ -58,67 +58,24 @@ export const createCalculation = async (
     try {
       // Récupérer les calculs existants
       const savedData = localStorage.getItem('saved_calculations');
-      let allCalculations: any[] = [];
+      let allCalculations: Calculation[] = [];
       if (savedData) {
         allCalculations = JSON.parse(savedData);
       }
 
-      // Créer l'objet de calcul complet avec TOUTES les données
-      const completeCalculation = {
+      // Ajouter le nouveau calcul avec un ID unique
+      const newCalculation = {
+        ...calculationData,
         id: calculationData.id || `calc_${Date.now()}`,
-        project_id: calculationData.project_id,
-        project_name: calculationData.project_name || 'Calcul thermique',
-        client_id: calculationData.client_id,
-        client_name: calculationData.client_name || 'Client',
-        client_address: calculationData.client_address || '',
-        type: calculationData.type || 'RES010',
-        surface_area: calculationData.surface_area || 0,
-        roof_area: calculationData.roof_area || 0,
-        improvement_percent: calculationData.improvement_percent || 0,
-        u_value_before: calculationData.u_value_before || 0,
-        u_value_after: calculationData.u_value_after || 0,
-        climate_zone: calculationData.climate_zone || 'C3',
-        // Sauvegarder TOUTES les données du calcul thermique SANS modification
-        calculation_data: calculationData.calculation_data ? {
-          ...calculationData.calculation_data,
-          // S'assurer que les couches sont sauvegardées EXACTEMENT comme elles sont
-          beforeLayers: calculationData.calculation_data.beforeLayers ? 
-            calculationData.calculation_data.beforeLayers.map((layer: any) => ({
-              id: layer.id,
-              name: layer.name,
-              thickness: layer.thickness, // Garder l'épaisseur EXACTE modifiée par l'utilisateur
-              lambda: layer.lambda,
-              r: layer.r,
-              isNew: layer.isNew
-            })) : [],
-          afterLayers: calculationData.calculation_data.afterLayers ? 
-            calculationData.calculation_data.afterLayers.map((layer: any) => ({
-              id: layer.id,
-              name: layer.name,
-              thickness: layer.thickness, // Garder l'épaisseur EXACTE modifiée par l'utilisateur
-              lambda: layer.lambda,
-              r: layer.r,
-              isNew: layer.isNew
-            })) : []
-        } : {},
         created_at: new Date().toISOString(),
-        saved_at: new Date().toISOString()
       };
 
-      allCalculations.push(completeCalculation);
+      allCalculations.push(newCalculation);
       localStorage.setItem('saved_calculations', JSON.stringify(allCalculations));
 
-      console.log('✅ Calcul complet sauvegardé avec épaisseurs exactes:', {
-        id: completeCalculation.id,
-        beforeLayersCount: completeCalculation.calculation_data.beforeLayers?.length || 0,
-        afterLayersCount: completeCalculation.calculation_data.afterLayers?.length || 0,
-        beforeLayersThickness: completeCalculation.calculation_data.beforeLayers?.map((l: any) => `${l.name}: ${l.thickness}mm`) || [],
-        afterLayersThickness: completeCalculation.calculation_data.afterLayers?.map((l: any) => `${l.name}: ${l.thickness}mm`) || []
-      });
-
-      return completeCalculation;
+      return newCalculation;
     } catch (error) {
-      console.error('❌ Erreur lors de la sauvegarde locale du calcul:', error);
+      console.error('Erreur lors de la sauvegarde locale du calcul:', error);
       return null;
     }
   }
@@ -158,7 +115,7 @@ export const updateCalculation = async (
         const allCalculations = JSON.parse(savedData);
         const updatedCalculations = allCalculations.map((calc: any) => {
           if (calc.id === calculationId) {
-            return { ...calc, ...calculationData, updated_at: new Date().toISOString() };
+            return { ...calc, ...calculationData };
           }
           return calc;
         });
@@ -226,26 +183,5 @@ export const deleteCalculation = async (calculationId: string): Promise<boolean>
   } catch (error) {
     console.error(`Erreur lors de la suppression du calcul ${calculationId}:`, error);
     return false;
-  }
-};
-
-/**
- * Récupère tous les calculs pour un client spécifique
- */
-export const getCalculationsForClient = async (clientId: string): Promise<Calculation[]> => {
-  try {
-    const savedData = localStorage.getItem('saved_calculations');
-    if (savedData) {
-      const allCalculations = JSON.parse(savedData);
-      const clientCalculations = allCalculations.filter((calc: any) => 
-        calc.client_id === clientId || calc.clientId === clientId
-      );
-      console.log(`📋 Calculs trouvés pour le client ${clientId}:`, clientCalculations.length);
-      return clientCalculations;
-    }
-    return [];
-  } catch (error) {
-    console.error('Erreur lors de la récupération des calculs du client:', error);
-    return [];
   }
 };

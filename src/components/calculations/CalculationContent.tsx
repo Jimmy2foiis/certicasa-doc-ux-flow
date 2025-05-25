@@ -1,6 +1,7 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import LayerSection from "./LayerSection";
-import ThermalEconomySection from "./thermal-economy/ThermalEconomySection";
+import ThermalEconomySection from "./ThermalEconomySection";
 import { CalculationData } from "@/hooks/useCalculationState";
 import { Material } from "@/data/materials";
 import { Layer } from "@/hooks/useLayerManagement";

@@ -23,55 +23,27 @@ interface UseLayerManagementProps {
 }
 
 export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorType }: UseLayerManagementProps) => {
-  const [beforeLayers, setBeforeLayers] = useState<Layer[]>([]);
-  const [afterLayers, setAfterLayers] = useState<Layer[]>([]);
+  const [beforeLayers, setBeforeLayers] = useState<Layer[]>(initialLayers);
+  const [afterLayers, setAfterLayers] = useState<Layer[]>([...initialLayers]);
   const { products } = useMaterialsAndProducts();
 
-  // Initialiser les couches UNIQUEMENT si aucune donnée sauvegardée n'existe
   useEffect(() => {
-    console.log('🔄 useLayerManagement - Initialisation des couches:', {
-      savedBeforeLayers: savedBeforeLayers?.length || 0,
-      savedAfterLayers: savedAfterLayers?.length || 0,
-      floorType
-    });
+    if (savedBeforeLayers) setBeforeLayers(savedBeforeLayers);
+    if (savedAfterLayers) setAfterLayers(savedAfterLayers);
+    else if (!savedBeforeLayers) setAfterLayers([...beforeLayers]);
+  }, [savedBeforeLayers, savedAfterLayers]);
 
-    // Si nous avons des données sauvegardées, les utiliser en priorité
-    if (savedBeforeLayers && savedBeforeLayers.length > 0) {
-      console.log('✅ useLayerManagement - Chargement des couches AVANT sauvegardées:', 
-        savedBeforeLayers.map(l => ({ name: l.name, thickness: l.thickness })));
-      setBeforeLayers(savedBeforeLayers);
-    } else {
-      // Sinon, utiliser les valeurs par défaut ou le preset
-      const preset = floorType ? getFloorTypePreset(floorType) : null;
+  // Logique de pré-remplissage selon le type de plancher
+  useEffect(() => {
+    if (floorType && !savedBeforeLayers && !savedAfterLayers) {
+      const preset = getFloorTypePreset(floorType);
       if (preset) {
-        console.log('📋 useLayerManagement - Application du preset pour plancher:', floorType);
+        console.log(`Pré-remplissage automatique pour plancher: ${floorType}`);
         setBeforeLayers(preset.beforeLayers.map(layer => ({ ...layer, id: `${layer.id}_${Date.now()}` })));
-      } else {
-        console.log('📋 useLayerManagement - Application des couches par défaut AVANT');
-        setBeforeLayers([...initialLayers]);
-      }
-    }
-
-    if (savedAfterLayers && savedAfterLayers.length > 0) {
-      console.log('✅ useLayerManagement - Chargement des couches APRÈS sauvegardées:', 
-        savedAfterLayers.map(l => ({ name: l.name, thickness: l.thickness })));
-      setAfterLayers(savedAfterLayers);
-    } else {
-      // Sinon, utiliser les valeurs par défaut ou le preset
-      const preset = floorType ? getFloorTypePreset(floorType) : null;
-      if (preset) {
-        console.log('📋 useLayerManagement - Application du preset pour plancher APRÈS:', floorType);
         setAfterLayers(preset.afterLayers.map(layer => ({ ...layer, id: `${layer.id}_${Date.now()}` })));
-      } else if (savedBeforeLayers && savedBeforeLayers.length > 0) {
-        // Copier les couches avant si elles existent
-        console.log('📋 useLayerManagement - Copie des couches AVANT vers APRÈS');
-        setAfterLayers([...savedBeforeLayers]);
-      } else {
-        console.log('📋 useLayerManagement - Application des couches par défaut APRÈS');
-        setAfterLayers([...initialLayers]);
       }
     }
-  }, [savedBeforeLayers, savedAfterLayers, floorType]);
+  }, [floorType, savedBeforeLayers, savedAfterLayers]);
 
   const addLayer = (layerSet: "before" | "after", material: Material) => {
     const newLayer = {
@@ -116,37 +88,25 @@ export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorT
   };
 
   const copyBeforeToAfter = () => {
-    console.log('📋 useLayerManagement - Copie des couches AVANT vers APRÈS');
     setAfterLayers([...beforeLayers]);
   };
 
+  // 🔧 FIX: Simplifier updateLayer pour éviter les objets imbriqués
   const updateLayer = (layerSet: "before" | "after", updatedLayer: Layer) => {
-    console.log(`✅ useLayerManagement - Mise à jour couche ${layerSet}:`, {
-      id: updatedLayer.id,
-      name: updatedLayer.name,
-      thickness: updatedLayer.thickness,
-      lambda: updatedLayer.lambda,
-      r: updatedLayer.r
-    });
+    console.log(`✅ Mise à jour couche ${layerSet}:`, updatedLayer);
     
     if (layerSet === "before") {
-      setBeforeLayers(prev => {
-        const updated = prev.map((layer) => 
+      setBeforeLayers(prev => 
+        prev.map((layer) => 
           layer.id === updatedLayer.id ? { ...updatedLayer } : layer
-        );
-        console.log('🔄 useLayerManagement - beforeLayers mis à jour:', 
-          updated.map(l => ({ name: l.name, thickness: l.thickness })));
-        return updated;
-      });
+        )
+      );
     } else {
-      setAfterLayers(prev => {
-        const updated = prev.map((layer) => 
+      setAfterLayers(prev => 
+        prev.map((layer) => 
           layer.id === updatedLayer.id ? { ...updatedLayer } : layer
-        );
-        console.log('🔄 useLayerManagement - afterLayers mis à jour:', 
-          updated.map(l => ({ name: l.name, thickness: l.thickness })));
-        return updated;
-      });
+        )
+      );
     }
   };
 

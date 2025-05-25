@@ -1,13 +1,12 @@
 
 import { TableRow, TableCell } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { Material, predefinedMaterials } from "@/data/materials";
-import MaterialSelect from "./layer-section/MaterialSelect";
-import ThicknessInput from "./layer-section/ThicknessInput";
-import LambdaInput from "./layer-section/LambdaInput";
-import ResistanceDisplay from "./layer-section/ResistanceDisplay";
-import DeleteButton from "./layer-section/DeleteButton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface Layer extends Material {
   isNew?: boolean;
@@ -55,29 +54,12 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
         lambda: lambda === "-" ? "-" : parseFloat(lambda) || layer.lambda,
         r: rValue
       };
-      
-      console.log('📊 LayerRow - Mise à jour couche:', {
-        id: updatedLayer.id,
-        name: updatedLayer.name,
-        thicknessOriginal: layer.thickness,
-        thicknessModified: updatedLayer.thickness,
-        lambda: updatedLayer.lambda,
-        r: updatedLayer.r
-      });
-      
       onUpdate(updatedLayer);
     }
-  }, [name, thickness, lambda, rValue, onUpdate, layer]);
+  }, [name, thickness, lambda, rValue, onUpdate]);
 
   // Met à jour l'épaisseur en mm quand l'utilisateur modifie l'épaisseur en mètres
   const handleThicknessInMetersChange = (value: string) => {
-    console.log('🔄 LayerRow - Changement épaisseur:', {
-      layerId: layer.id,
-      layerName: layer.name,
-      oldValue: thicknessInMeters,
-      newValue: value
-    });
-    
     setThicknessInMeters(value);
     // Convertir en mm pour le stockage interne
     const thicknessInMm = Math.round(parseFloat(value) * 1000);
@@ -108,28 +90,53 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
   return (
     <TableRow className={cn(isNew && "bg-green-50")}>
       <TableCell>
-        <MaterialSelect 
-          currentName={name}
-          onMaterialSelect={handleMaterialSelect}
-        />
+        <Select onValueChange={handleMaterialSelect} defaultValue="">
+          <SelectTrigger className="h-8">
+            <SelectValue placeholder={name} />
+          </SelectTrigger>
+          <SelectContent>
+            {predefinedMaterials.map((material) => (
+              <SelectItem key={material.id} value={material.id}>{material.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </TableCell>
       <TableCell>
-        <ThicknessInput
-          value={thicknessInMeters}
-          onChange={handleThicknessInMetersChange}
-        />
+        <div className="flex items-center space-x-2">
+          <Input
+            type="number"
+            value={thicknessInMeters}
+            onChange={(e) => handleThicknessInMetersChange(e.target.value)}
+            className="h-8"
+            step="0.001"
+            min="0.001"
+          />
+          <span className="text-xs text-gray-500">m</span>
+        </div>
       </TableCell>
       <TableCell>
-        <LambdaInput
+        <Input
           value={lambda}
-          onChange={handleLambdaChange}
+          onChange={(e) => handleLambdaChange(e.target.value)}
+          className="h-8"
         />
       </TableCell>
       <TableCell>
-        <ResistanceDisplay value={rValue} />
+        <Input
+          value={rValue.toFixed(3)}
+          readOnly
+          className="h-8 bg-gray-50"
+        />
       </TableCell>
       <TableCell>
-        <DeleteButton onDelete={onDelete} />
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={onDelete}
+          className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
       </TableCell>
     </TableRow>
   );
