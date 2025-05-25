@@ -44,6 +44,20 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
     setThicknessInMeters((parseFloat(thickness) / 1000).toFixed(3));
   }, [thickness]);
 
+  // Met à jour automatiquement le layer parent quand les valeurs changent
+  useEffect(() => {
+    if (onUpdate) {
+      const updatedLayer = { 
+        ...layer, 
+        name,
+        thickness: parseFloat(thickness) || layer.thickness,
+        lambda: lambda === "-" ? "-" : parseFloat(lambda) || layer.lambda,
+        r: rValue
+      };
+      onUpdate(updatedLayer);
+    }
+  }, [name, thickness, lambda, rValue]);
+
   // Met à jour l'épaisseur en mm quand l'utilisateur modifie l'épaisseur en mètres
   const handleThicknessInMetersChange = (value: string) => {
     setThicknessInMeters(value);
@@ -51,15 +65,6 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
     const thicknessInMm = Math.round(parseFloat(value) * 1000);
     if (!isNaN(thicknessInMm)) {
       setThickness(thicknessInMm.toString());
-      
-      if (onUpdate) {
-        const updatedLayer = { 
-          ...layer, 
-          thickness: thicknessInMm,
-          r: lambda !== "-" && !isNaN(parseFloat(lambda)) ? thicknessInMm / 1000 / parseFloat(lambda) : layer.r
-        };
-        onUpdate(updatedLayer);
-      }
     }
   };
 
@@ -71,37 +76,15 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
       setThickness(selectedMaterial.thickness.toString());
       setThicknessInMeters((selectedMaterial.thickness / 1000).toFixed(3));
       setLambda(selectedMaterial.lambda.toString());
-      
-      if (onUpdate) {
-        onUpdate({
-          ...layer,
-          name: selectedMaterial.name,
-          thickness: selectedMaterial.thickness,
-          lambda: selectedMaterial.lambda,
-          r: selectedMaterial.r
-        });
-      }
     }
   };
 
-  const handleUpdate = (field: string, value: string) => {
-    let updatedLayer: Layer;
-    
-    if (field === "name") {
-      setName(value);
-      updatedLayer = { ...layer, name: value };
-    } else if (field === "lambda") {
-      setLambda(value);
-      const lambdaValue = value === "-" ? "-" : parseFloat(value);
-      const r = value !== "-" && !isNaN(parseFloat(value)) ? parseFloat(thickness) / 1000 / parseFloat(value) : layer.r;
-      updatedLayer = { ...layer, lambda: lambdaValue, r };
-    } else {
-      return;
-    }
-    
-    if (onUpdate) {
-      onUpdate(updatedLayer);
-    }
+  const handleNameChange = (value: string) => {
+    setName(value);
+  };
+
+  const handleLambdaChange = (value: string) => {
+    setLambda(value);
   };
   
   return (
@@ -134,7 +117,7 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
       <TableCell>
         <Input
           value={lambda}
-          onChange={(e) => handleUpdate("lambda", e.target.value)}
+          onChange={(e) => handleLambdaChange(e.target.value)}
           className="h-8"
         />
       </TableCell>
