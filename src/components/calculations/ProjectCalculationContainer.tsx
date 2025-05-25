@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { useCadastralData } from "@/hooks/useCadastralData";
 import CalculationHeader from "./CalculationHeader";
 import CalculationContent from "./CalculationContent";
+import SaveDebugPanel from "./SaveDebugPanel";
 import { useCalculationState } from "@/hooks/useCalculationState";
 import { useProjectCalculationHandlers } from "./hooks/useProjectCalculationHandlers";
 import { ProjectCalculationProps } from "./types/ProjectCalculationProps";
@@ -130,6 +131,13 @@ const ProjectCalculationContainer = ({
           </div>
         </div>
       )}
+
+      {/* Panel de debug pour la sauvegarde */}
+      <SaveDebugPanel 
+        clientId={clientId || 'default'}
+        onSave={handleSave}
+        calculationData={calculationData}
+      />
       
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Thermal Calculations - Full width */}

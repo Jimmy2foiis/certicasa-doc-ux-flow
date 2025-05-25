@@ -1,5 +1,4 @@
 
-// src/hooks/useCalculationPersistence.ts
 import { useRef } from 'react';
 import { Layer } from './useLayerManagement';
 
@@ -25,7 +24,7 @@ export const useCalculationPersistence = (clientId: string) => {
   const storageKey = `calculation_state_${clientId}`;
   const isInitialLoad = useRef(true);
 
-  /* ---------- 1. Sauvegarde ---------- */
+  // Sauvegarde simplifiée
   const saveCalculationState = (data: Partial<CalculationPersistenceData>) => {
     try {
       const existing = getCalculationState();
@@ -36,58 +35,56 @@ export const useCalculationPersistence = (clientId: string) => {
       };
 
       localStorage.setItem(storageKey, JSON.stringify(updated));
-      console.log('💾 État des calculs sauvegardé pour client:', clientId, {
-        beforeLayersCount: updated.beforeLayers?.length || 0,
-        afterLayersCount: updated.afterLayers?.length || 0
+      console.log('💾 État sauvegardé:', clientId, {
+        beforeLayers: updated.beforeLayers?.length || 0,
+        afterLayers: updated.afterLayers?.length || 0
       });
+      return true;
     } catch (error) {
-      console.error('❌ Erreur sauvegarde état calculs:', error);
+      console.error('❌ Erreur sauvegarde:', error);
+      return false;
     }
   };
 
-  /* ---------- 2. Lecture (avec fallback) ---------- */
+  // Lecture avec fallback
   const getCalculationState = (): CalculationPersistenceData | null => {
     const candidateKeys = [storageKey, 'calculation_state_default'];
 
     for (const key of candidateKeys) {
       try {
         const saved = localStorage.getItem(key);
-        if (!saved) continue;
-
-        const data = JSON.parse(saved);
-        if (data && typeof data === 'object') {
-          console.log('📂 État des calculs récupéré depuis', key, {
-            beforeLayers: data.beforeLayers?.length || 0,
-            afterLayers: data.afterLayers?.length || 0,
-            timestamp: data.timestamp
-          });
-          return data;
+        if (saved) {
+          const data = JSON.parse(saved);
+          if (data && typeof data === 'object') {
+            console.log('📂 Données récupérées depuis', key);
+            return data;
+          }
         }
       } catch (error) {
-        console.error(`❌ Erreur récupération état calculs (clé ${key}):`, error);
+        console.error(`❌ Erreur lecture ${key}:`, error);
       }
     }
 
-    console.log('📂 Aucune donnée sauvegardée valide trouvée pour client:', clientId);
     return null;
   };
 
-  /* ---------- 3. Suppression ---------- */
+  // Suppression
   const clearCalculationState = () => {
     try {
       localStorage.removeItem(storageKey);
-      console.log('🗑️ État des calculs effacé pour client:', clientId);
+      localStorage.removeItem('calculation_state_default');
+      console.log('🗑️ Cache effacé pour:', clientId);
+      return true;
     } catch (error) {
-      console.error('❌ Erreur effacement état calculs:', error);
+      console.error('❌ Erreur effacement:', error);
+      return false;
     }
   };
 
-  /* ---------- 4. Existence de données ---------- */
+  // Test d'existence simplifié
   const hasPersistedData = (): boolean => {
-    const saved = getCalculationState();
-    const hasData = Boolean(saved);
-    console.log('🔍 Vérification données persistées pour client:', clientId, { hasData });
-    return hasData;
+    const data = getCalculationState();
+    return Boolean(data);
   };
 
   return {
