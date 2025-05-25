@@ -19,7 +19,7 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
   const [requiredDocuments, setRequiredDocuments] = useState<AdministrativeDocument[]>([]);
   const { toast } = useToast();
 
-  // Use the client documents hook
+  // Use the client documents hook - now with refreshDocuments function
   const { 
     adminDocuments: documents,
     isLoading: loading,
