@@ -22,10 +22,8 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
           throw new Error('Response is not an image');
         }
         
-        // CRITIQUE: Utiliser arrayBuffer() et non blob()
         const arrayBuffer = await response.arrayBuffer();
         
-        // Valider que les données d'image ne sont pas vides
         if (arrayBuffer.byteLength < 100) {
           throw new Error('Image data too small');
         }
@@ -40,15 +38,14 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
 
     // Fonction avec retry pour plus de robustesse
     const fetchImageWithRetry = async (url: string, maxRetries = 3): Promise<ArrayBuffer> => {
-      let lastError;
+      let lastError: Error | null = null;
       
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         try {
           return await fetchImageAsArrayBuffer(url);
         } catch (error) {
-          lastError = error;
+          lastError = error as Error;
           if (attempt < maxRetries - 1) {
-            // Attendre avant de réessayer
             await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
           }
         }
@@ -70,10 +67,10 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
 
     // Fonction pour créer une grille 2x2 d'images
     const create2x2Grid = (images: ArrayBuffer[], title: string) => {
-      const rows = [];
+      const rows: TableRow[] = [];
       
       for (let i = 0; i < 2; i++) {
-        const cells = [];
+        const cells: TableCell[] = [];
         for (let j = 0; j < 2; j++) {
           const imageIndex = i * 2 + j;
           
@@ -84,9 +81,10 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
                   new ImageRun({
                     data: images[imageIndex],
                     transformation: {
-                      width: 250,  // OBLIGATOIRE - largeur en pixels
-                      height: 250  // OBLIGATOIRE - hauteur en pixels
-                    }
+                      width: 250,
+                      height: 250
+                    },
+                    type: "jpg"
                   })
                 ],
                 alignment: AlignmentType.CENTER
@@ -203,6 +201,7 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
     
   } catch (error) {
     console.error('Erreur lors de la génération du document Word:', error);
-    throw new Error(`Failed to generate document: ${error.message}`);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    throw new Error(`Failed to generate document: ${errorMessage}`);
   }
 };
