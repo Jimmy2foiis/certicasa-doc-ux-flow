@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProjectsTabContent from "./ProjectsTabContent";
@@ -27,18 +28,12 @@ export const ClientTabsContainer = ({
   onDeleteCalculation,
   onBack
 }: ClientTabsContainerProps) => {
-  const [currentTab, setCurrentTab] = useState("projects");
+  const [currentTab, setCurrentTab] = useState("calculations");
 
   return (
     <Card>
-      <Tabs defaultValue="projects" onValueChange={setCurrentTab}>
-        <TabsList className="grid w-full grid-cols-6 bg-muted/20">
-          <TabsTrigger 
-            value="projects" 
-            className={`${currentTab === "projects" ? "bg-primary text-primary-foreground" : ""} transition-all`}
-          >
-            Projets
-          </TabsTrigger>
+      <Tabs defaultValue="calculations" onValueChange={setCurrentTab}>
+        <TabsList className="grid w-full grid-cols-5 bg-muted/20">
           <TabsTrigger 
             value="calculations" 
             className={`${currentTab === "calculations" ? "bg-primary text-primary-foreground" : ""} transition-all`}
@@ -70,10 +65,6 @@ export const ClientTabsContainer = ({
             Signatures
           </TabsTrigger>
         </TabsList>
-
-        <TabsContent value="projects" className="p-4">
-          <ProjectsTabContent clientId={clientId} />
-        </TabsContent>
 
         <TabsContent value="calculations" className="p-4">
           <CalculationsTabContent 
