@@ -124,6 +124,35 @@ const ProjectCalculation = ({
     }
   };
 
+  const handleAddLayer = (type: "before" | "after") => {
+    const defaultMaterial = { 
+      id: Date.now().toString(), 
+      name: "Sélectionnez un matériau", 
+      thickness: 10, 
+      lambda: 0.5, 
+      r: 0.02 
+    };
+    addLayer(type, defaultMaterial);
+  };
+
+  const handleUpdateLayer = (id: string, field: string, value: any) => {
+    // Find the layer in either before or after arrays and update it
+    const beforeLayer = beforeLayers.find(l => l.id === id);
+    const afterLayer = afterLayers.find(l => l.id === id);
+    
+    if (beforeLayer) {
+      const updatedLayer = { ...beforeLayer, [field]: value };
+      updateLayer("before", updatedLayer);
+    } else if (afterLayer) {
+      const updatedLayer = { ...afterLayer, [field]: value };
+      updateLayer("after", updatedLayer);
+    }
+  };
+
+  const handleAddSouflr47 = (type: "before" | "after") => {
+    addSouflr47(type);
+  };
+
   // Prepare client data with fallbacks
   const preparedClientData = {
     name: clientData?.name || clientName || 'Client',
@@ -156,11 +185,11 @@ const ProjectCalculation = ({
           />
           <CalculationContent 
             calculationData={calculationData}
-            onAddLayer={addLayer}
-            onUpdateLayer={updateLayer}
+            onAddLayer={handleAddLayer}
+            onUpdateLayer={handleUpdateLayer}
             onDeleteBeforeLayer={handleDeleteBeforeLayer}
             onDeleteAfterLayer={handleDeleteAfterLayer}
-            onAddSouflr47={addSouflr47}
+            onAddSouflr47={handleAddSouflr47}
             onCopyBeforeToAfter={copyBeforeToAfter}
             setRsiBefore={setRsiBefore}
             setRseBefore={setRseBefore}
