@@ -12,58 +12,45 @@ import VisualEditor from "./visual-editor/VisualEditor";
 import LivePDFPreview from "./visual-editor/LivePDFPreview";
 import FloatingToolbar from "./visual-editor/FloatingToolbar";
 
+interface TemplateElement {
+  id: string;
+  type: 'text' | 'variable' | 'table' | 'logo' | 'mentions';
+  content: string;
+  position: { x: number; y: number };
+  style: {
+    fontSize: number;
+    fontWeight: string;
+    color: string;
+    textAlign: string;
+    backgroundColor?: string;
+    padding?: string;
+    margin?: string;
+  };
+}
+
+interface TemplateLayout {
+  elements: TemplateElement[];
+  styles: {
+    fontSize: number;
+    fontFamily: string;
+    lineHeight: number;
+    margins: { top: number; right: number; bottom: number; left: number };
+  };
+}
+
 interface Template {
   id: string;
   name: string;
   type: "facture" | "devis";
   content: string;
   layout: TemplateLayout;
-  logo?: LogoSettings;
-  mentions?: MentionsSettings;
+  logo?: {
+    url: string;
+    position: 'top-left' | 'top-center' | 'top-right';
+    size: number;
+  };
   created_at: string;
   updated_at: string;
-}
-
-interface TemplateLayout {
-  elements: TemplateElement[];
-  styles: TemplateStyles;
-}
-
-interface TemplateElement {
-  id: string;
-  type: 'text' | 'variable' | 'table' | 'logo' | 'mentions';
-  content: string;
-  position: { x: number; y: number };
-  style: ElementStyle;
-}
-
-interface ElementStyle {
-  fontSize: number;
-  fontWeight: string;
-  color: string;
-  textAlign: string;
-  backgroundColor?: string;
-  padding?: string;
-  margin?: string;
-}
-
-interface TemplateStyles {
-  fontSize: number;
-  fontFamily: string;
-  lineHeight: number;
-  margins: { top: number; right: number; bottom: number; left: number };
-}
-
-interface LogoSettings {
-  url: string;
-  position: 'top-left' | 'top-center' | 'top-right';
-  size: number;
-}
-
-interface MentionsSettings {
-  predefined: string[];
-  custom: string;
-  position: 'bottom' | 'footer';
 }
 
 interface VisualTemplateEditorProps {
@@ -142,12 +129,16 @@ const VisualTemplateEditor = ({ template, onSave, onCancel }: VisualTemplateEdit
     }
   };
 
-  const getDefaultStyle = (): ElementStyle => ({
+  const getDefaultStyle = () => ({
     fontSize: 14,
     fontWeight: 'normal',
     color: '#000000',
     textAlign: 'left'
   });
+
+  const handleTemplateChange = (updatedTemplate: Template) => {
+    setCurrentTemplate(updatedTemplate);
+  };
 
   const handleSave = () => {
     saveTemplate(currentTemplate);
@@ -203,7 +194,7 @@ const VisualTemplateEditor = ({ template, onSave, onCancel }: VisualTemplateEdit
         <div className="flex-1 bg-gray-100 overflow-auto relative">
           <VisualEditor
             template={currentTemplate}
-            onTemplateChange={setCurrentTemplate}
+            onTemplateChange={handleTemplateChange}
             onElementDrop={handleElementDrop}
             selectedElement={selectedElement}
             onElementSelect={setSelectedElement}
@@ -213,7 +204,7 @@ const VisualTemplateEditor = ({ template, onSave, onCancel }: VisualTemplateEdit
             <FloatingToolbar
               elementId={selectedElement}
               template={currentTemplate}
-              onTemplateChange={setCurrentTemplate}
+              onTemplateChange={handleTemplateChange}
             />
           )}
         </div>

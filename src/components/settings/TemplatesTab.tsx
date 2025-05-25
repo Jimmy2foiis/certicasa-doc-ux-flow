@@ -13,15 +13,36 @@ import VisualTemplateEditor from "./templates/VisualTemplateEditor";
 import TemplatesList from "./templates/TemplatesList";
 import ProductMapping from "./templates/ProductMapping";
 
+interface TemplateLayout {
+  elements: Array<{
+    id: string;
+    type: 'text' | 'variable' | 'table' | 'logo' | 'mentions';
+    content: string;
+    position: { x: number; y: number };
+    style: {
+      fontSize: number;
+      fontWeight: string;
+      color: string;
+      textAlign: string;
+      backgroundColor?: string;
+      padding?: string;
+      margin?: string;
+    };
+  }>;
+  styles: {
+    fontSize: number;
+    fontFamily: string;
+    lineHeight: number;
+    margins: { top: number; right: number; bottom: number; left: number };
+  };
+}
+
 interface Template {
   id: string;
   name: string;
   type: "facture" | "devis";
   content: string;
-  layout?: {
-    elements: any[];
-    styles: any;
-  };
+  layout: TemplateLayout;
   logo?: {
     url: string;
     position: string;
@@ -60,7 +81,12 @@ IVA ({{tva_taux}}%): {{tva_montant}}€
 TOTAL: {{total_ttc}}€`,
       layout: {
         elements: [],
-        styles: {}
+        styles: {
+          fontSize: 14,
+          fontFamily: 'Arial',
+          lineHeight: 1.5,
+          margins: { top: 20, right: 20, bottom: 20, left: 20 }
+        }
       },
       created_at: "2025-01-15",
       updated_at: "2025-01-15"
@@ -86,7 +112,12 @@ Detalles del presupuesto:
 TOTAL PRESUPUESTO: {{total_ttc}}€`,
       layout: {
         elements: [],
-        styles: {}
+        styles: {
+          fontSize: 14,
+          fontFamily: 'Arial',
+          lineHeight: 1.5,
+          margins: { top: 20, right: 20, bottom: 20, left: 20 }
+        }
       },
       created_at: "2025-01-15",
       updated_at: "2025-01-15"
@@ -107,7 +138,12 @@ TOTAL PRESUPUESTO: {{total_ttc}}€`,
       content: "",
       layout: {
         elements: [],
-        styles: {}
+        styles: {
+          fontSize: 14,
+          fontFamily: 'Arial',
+          lineHeight: 1.5,
+          margins: { top: 20, right: 20, bottom: 20, left: 20 }
+        }
       },
       created_at: new Date().toISOString().split('T')[0],
       updated_at: new Date().toISOString().split('T')[0]

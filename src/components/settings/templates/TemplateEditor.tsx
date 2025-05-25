@@ -16,6 +16,34 @@ interface Template {
   name: string;
   type: "facture" | "devis";
   content: string;
+  layout: {
+    elements: Array<{
+      id: string;
+      type: 'text' | 'variable' | 'table' | 'logo' | 'mentions';
+      content: string;
+      position: { x: number; y: number };
+      style: {
+        fontSize: number;
+        fontWeight: string;
+        color: string;
+        textAlign: string;
+        backgroundColor?: string;
+        padding?: string;
+        margin?: string;
+      };
+    }>;
+    styles: {
+      fontSize: number;
+      fontFamily: string;
+      lineHeight: number;
+      margins: { top: number; right: number; bottom: number; left: number };
+    };
+  };
+  logo?: {
+    url: string;
+    position: string;
+    size: number;
+  };
   created_at: string;
   updated_at: string;
 }
@@ -131,34 +159,20 @@ const TemplateEditor = ({ template, onSave, onCancel }: TemplateEditorProps) => 
               <CardTitle>Contenu du Template</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-2">
-                <Label htmlFor="template-content">
-                  Contenu (utilisez la syntaxe {"{variable}"} pour insérer des variables)
-                </Label>
-                <Textarea
-                  id="template-content"
-                  value={editedTemplate.content}
-                  onChange={(e) => setEditedTemplate(prev => ({ ...prev, content: e.target.value }))}
-                  placeholder="Saisissez le contenu de votre template..."
-                  className="min-h-[500px] font-mono text-sm"
-                />
-              </div>
-              <div className="mt-4 p-4 bg-blue-50 rounded-md">
-                <h4 className="font-medium text-blue-900 mb-2">💡 Conseils d'utilisation :</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Utilisez {"{variable}"} pour insérer des variables</li>
-                  <li>• Cliquez sur les variables à droite pour les insérer automatiquement</li>
-                  <li>• Utilisez des caractères ASCII pour les tableaux (─ │ ┌ ┐ └ ┘ ├ ┤)</li>
-                  <li>• Prévisualisez régulièrement votre template</li>
-                </ul>
-              </div>
+              <Textarea
+                id="template-content"
+                value={editedTemplate.content}
+                onChange={(e) => setEditedTemplate(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="Contenu du template..."
+                className="min-h-[500px] font-mono text-sm"
+              />
             </CardContent>
           </Card>
         </div>
 
         {/* Variables Panel */}
         <div>
-          <TemplateVariables onInsertVariable={insertVariable} />
+          <TemplateVariables onVariableClick={insertVariable} />
         </div>
       </div>
     </div>
