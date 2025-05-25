@@ -1,10 +1,8 @@
-
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Edit, Eye } from "lucide-react";
 import { Client } from "@/services/api/types";
-
 interface StatusBannerProps {
   client: Client | null;
   documentStats?: {
@@ -16,15 +14,13 @@ interface StatusBannerProps {
   onViewMissingDocs?: () => void;
   onEditClient?: (e: React.MouseEvent) => void;
 }
-
-const StatusBanner = ({ 
-  client, 
-  documentStats, 
+const StatusBanner = ({
+  client,
+  documentStats,
   onViewMissingDocs = () => {},
   onEditClient = () => {}
 }: StatusBannerProps) => {
   if (!client) return null;
-
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'active':
@@ -41,27 +37,17 @@ const StatusBanner = ({
         return 'bg-blue-100 text-blue-800 border-blue-200';
     }
   };
-
   const hasMissingDocuments = documentStats && documentStats.missing > 0;
-
-  return (
-    <div className="space-y-3">
+  return <div className="space-y-3">
       {/* Statut principal du client */}
       <div className="flex items-center gap-3">
-        <Badge 
-          variant="outline" 
-          className={`px-3 py-1 ${getStatusColor(client.status || 'En cours')}`}
-        >
+        <Badge variant="outline" className={`px-3 py-1 ${getStatusColor(client.status || 'En cours')}`}>
           {client.status || 'En cours'}
         </Badge>
         
-        <Badge variant="outline" className="px-3 py-1 bg-gray-800 text-white">
-          RES020
-        </Badge>
         
-        <span className="text-sm text-gray-600">
-          Date pose: {client.installationDate || '2025-04-21'}
-        </span>
+        
+        
         
         <span className="text-sm text-gray-600">
           Numéro lot: {client.lotNumber || '-'}
@@ -76,31 +62,17 @@ const StatusBanner = ({
         </span>
         
         {/* Bouton voir documents manquants */}
-        {hasMissingDocuments && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onViewMissingDocs}
-            className="text-gray-700 border-gray-300 hover:bg-gray-100"
-          >
+        {hasMissingDocuments && <Button variant="outline" size="sm" onClick={onViewMissingDocs} className="text-gray-700 border-gray-300 hover:bg-gray-100 text-right">
             <Eye className="h-4 w-4 mr-1" />
             Voir les documents manquants
-          </Button>
-        )}
+          </Button>}
         
         {/* Bouton d'édition */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onEditClient}
-          className="ml-auto"
-        >
+        <Button variant="outline" size="sm" onClick={onEditClient} className="ml-auto">
           <Edit className="h-4 w-4 mr-1" />
           Modifier
         </Button>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default StatusBanner;

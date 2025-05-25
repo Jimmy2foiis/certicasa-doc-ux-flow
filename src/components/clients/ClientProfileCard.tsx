@@ -108,7 +108,7 @@ const ClientProfileCard = ({
     label: "E1"
   }];
   return <Card className="w-full max-w-lg mx-auto bg-white border border-gray-200 rounded-xl shadow-sm">
-      <CardContent className="p-6 space-y-6">
+      <CardContent className="">
         {/* Header */}
         <div className="text-center space-y-4">
           {/* Nom du client */}
@@ -127,7 +127,7 @@ const ClientProfileCard = ({
           {/* Informations supplémentaires */}
           <div className="text-sm text-gray-600 space-y-1">
             <p>Date pose: {client.installationDate || "À définir"}</p>
-            <p>Numéro lot: {client.lotNumber || "Non assigné"}</p>
+            
           </div>
         </div>
 
