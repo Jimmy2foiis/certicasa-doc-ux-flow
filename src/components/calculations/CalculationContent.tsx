@@ -43,25 +43,26 @@ const CalculationContent = ({
   setRatioAfter,
   onClimateZoneChange
 }: CalculationContentProps) => {
-  // Adapter functions to match LayerSection expectations
+  // Adapter functions for before layers
   const handleAddLayerBefore = (material: Material) => {
     onAddLayer("before");
-  };
-
-  const handleAddLayerAfter = (material: Material) => {
-    onAddLayer("after");
   };
 
   const handleUpdateLayerBefore = (updatedLayer: Layer) => {
     onUpdateLayer(updatedLayer.id, "layer", updatedLayer);
   };
 
-  const handleUpdateLayerAfter = (updatedLayer: Layer) => {
-    onUpdateLayer(updatedLayer.id, "layer", updatedLayer);
-  };
-
   const handleAddSouflr47Before = () => {
     onAddSouflr47("before");
+  };
+
+  // Adapter functions for after layers
+  const handleAddLayerAfter = (material: Material) => {
+    onAddLayer("after");
+  };
+
+  const handleUpdateLayerAfter = (updatedLayer: Layer) => {
+    onUpdateLayer(updatedLayer.id, "layer", updatedLayer);
   };
 
   const handleAddSouflr47After = () => {
@@ -71,44 +72,49 @@ const CalculationContent = ({
   return (
     <CardContent className="p-6">
       <div className="space-y-6">
+        {/* Section Avant Travaux */}
         <LayerSection
-          beforeLayers={calculationData.beforeLayers}
-          afterLayers={calculationData.afterLayers}
-          onAddLayerBefore={handleAddLayerBefore}
-          onAddLayerAfter={handleAddLayerAfter}
-          onUpdateLayerBefore={handleUpdateLayerBefore}
-          onUpdateLayerAfter={handleUpdateLayerAfter}
-          onDeleteBeforeLayer={onDeleteBeforeLayer}
-          onDeleteAfterLayer={onDeleteAfterLayer}
-          onAddSouflr47Before={handleAddSouflr47Before}
-          onAddSouflr47After={handleAddSouflr47After}
-          onCopyBeforeToAfter={onCopyBeforeToAfter}
-          ventilationBefore={calculationData.ventilationBefore}
-          ventilationAfter={calculationData.ventilationAfter}
-          setVentilationBefore={setVentilationBefore}
-          setVentilationAfter={setVentilationAfter}
-          ratioBefore={calculationData.ratioBefore}
-          ratioAfter={calculationData.ratioAfter}
-          setRatioBefore={setRatioBefore}
-          setRatioAfter={setRatioAfter}
-          rsiBefore={calculationData.rsiBefore}
-          rseBefore={calculationData.rseBefore}
-          rsiAfter={calculationData.rsiAfter}
-          rseAfter={calculationData.rseAfter}
-          setRsiBefore={setRsiBefore}
-          setRseBefore={setRseBefore}
-          setRsiAfter={setRsiAfter}
-          setRseAfter={setRseAfter}
-          totalRBefore={calculationData.totalRBefore}
-          totalRAfter={calculationData.totalRAfter}
-          upValueBefore={calculationData.upValueBefore}
-          upValueAfter={calculationData.upValueAfter}
-          uValueBefore={calculationData.uValueBefore}
-          uValueAfter={calculationData.uValueAfter}
+          title="Avant Travaux"
+          layers={calculationData.beforeLayers}
+          totalR={calculationData.totalRBefore}
+          uValue={calculationData.uValueBefore}
+          onAddLayer={handleAddLayerBefore}
+          onUpdateLayer={handleUpdateLayerBefore}
+          onDeleteLayer={onDeleteBeforeLayer}
+          bCoefficient={calculationData.bCoefficientBefore}
+          rsi={calculationData.rsiBefore}
+          setRsi={setRsiBefore}
+          rse={calculationData.rseBefore}
+          setRse={setRseBefore}
+          ventilationType={calculationData.ventilationBefore}
+          setVentilationType={setVentilationBefore}
+          ratioValue={calculationData.ratioBefore}
+          setRatioValue={setRatioBefore}
+        />
+
+        {/* Section Après Travaux */}
+        <LayerSection
+          title="Après Travaux"
+          layers={calculationData.afterLayers}
+          totalR={calculationData.totalRAfter}
+          uValue={calculationData.uValueAfter}
+          onAddLayer={handleAddLayerAfter}
+          onUpdateLayer={handleUpdateLayerAfter}
+          onDeleteLayer={onDeleteAfterLayer}
+          showImprovement={true}
           improvementPercent={calculationData.improvementPercent}
-          meetsRequirements={calculationData.meetsRequirements}
-          bCoefficientBefore={calculationData.bCoefficientBefore}
-          bCoefficientAfter={calculationData.bCoefficientAfter}
+          bCoefficient={calculationData.bCoefficientAfter}
+          isAfterWork={true}
+          rsi={calculationData.rsiAfter}
+          setRsi={setRsiAfter}
+          rse={calculationData.rseAfter}
+          setRse={setRseAfter}
+          ventilationType={calculationData.ventilationAfter}
+          setVentilationType={setVentilationAfter}
+          ratioValue={calculationData.ratioAfter}
+          setRatioValue={setRatioAfter}
+          onAddSouflr47={handleAddSouflr47After}
+          onCopyBeforeToAfter={onCopyBeforeToAfter}
         />
 
         <ThermalEconomySection
