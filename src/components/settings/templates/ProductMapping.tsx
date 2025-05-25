@@ -110,7 +110,7 @@ const ProductMapping = () => {
                 <li>• Chaque produit est associé à une variable de template</li>
                 <li>• Le prix fixe de 7€/m² est appliqué pour tous les matériaux</li>
                 <li>• La main d'œuvre est calculée automatiquement : ((CAE×0.1)/1.21/surface) - 7€</li>
-                <li>• Utilisez les variables dans vos templates : {{`{producto_nombre}`}}, {{`{producto_descripcion}`}}</li>
+                <li>• Utilisez les variables dans vos templates : {"{producto_nombre}"}, {"{producto_descripcion}"}</li>
               </ul>
             </div>
 
@@ -131,7 +131,7 @@ const ProductMapping = () => {
                     <TableCell className="font-medium">{mapping.productName}</TableCell>
                     <TableCell>
                       <code className="bg-gray-100 px-2 py-1 rounded text-sm">
-                        {{`{${mapping.templateVariable}}`}}
+                        {"{" + mapping.templateVariable + "}"}
                       </code>
                     </TableCell>
                     <TableCell>{mapping.templateDescription}</TableCell>
@@ -245,7 +245,7 @@ const MappingForm = ({ mapping, onSave, onCancel }: MappingFormProps) => {
             required
           />
           <p className="text-xs text-gray-500">
-            Utilisez {{`{${formData.templateVariable}}`}} dans vos templates
+            Utilisez {"{" + formData.templateVariable + "}"} dans vos templates
           </p>
         </div>
       </div>

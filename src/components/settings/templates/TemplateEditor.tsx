@@ -133,7 +133,7 @@ const TemplateEditor = ({ template, onSave, onCancel }: TemplateEditorProps) => 
             <CardContent>
               <div className="space-y-2">
                 <Label htmlFor="template-content">
-                  Contenu (utilisez la syntaxe {{`{variable}`}} pour insérer des variables)
+                  Contenu (utilisez la syntaxe {"{variable}"} pour insérer des variables)
                 </Label>
                 <Textarea
                   id="template-content"
@@ -146,7 +146,7 @@ const TemplateEditor = ({ template, onSave, onCancel }: TemplateEditorProps) => 
               <div className="mt-4 p-4 bg-blue-50 rounded-md">
                 <h4 className="font-medium text-blue-900 mb-2">💡 Conseils d'utilisation :</h4>
                 <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• Utilisez {{`{variable}`}} pour insérer des variables</li>
+                  <li>• Utilisez {"{variable}"} pour insérer des variables</li>
                   <li>• Cliquez sur les variables à droite pour les insérer automatiquement</li>
                   <li>• Utilisez des caractères ASCII pour les tableaux (─ │ ┌ ┐ └ ┘ ├ ┤)</li>
                   <li>• Prévisualisez régulièrement votre template</li>
