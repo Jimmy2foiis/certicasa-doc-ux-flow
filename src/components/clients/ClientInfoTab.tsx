@@ -38,6 +38,7 @@ const ClientInfoTab = ({
   const [address, setAddress] = useState(client.address || "Rue Serrano 120, 28006 Madrid");
   const [surfaceArea, setSurfaceArea] = useState("56");
   const [roofArea, setRoofArea] = useState("89");
+  const [floorType, setFloorType] = useState("Bois");
   
   // Gestionnaire de changement d'adresse
   const handleAddressChange = (newAddress: string) => {
@@ -135,6 +136,7 @@ const ClientInfoTab = ({
           onBack={handleBack}
           surfaceArea={surfaceArea}
           roofArea={roofArea}
+          floorType={floorType}
         />
       </div>
     </div>

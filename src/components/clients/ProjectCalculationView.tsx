@@ -23,6 +23,7 @@ interface ProjectCalculationViewProps {
   onSave: (calculationData: any) => void;
   surfaceArea?: string;
   roofArea?: string;
+  floorType?: string;
 }
 
 const ProjectCalculationView = ({ 
@@ -33,7 +34,8 @@ const ProjectCalculationView = ({
   onBack, 
   onSave,
   surfaceArea = "70",
-  roofArea = "85"
+  roofArea = "85",
+  floorType = "Bois"
 }: ProjectCalculationViewProps) => {
   // Find the calculation data if we're editing an existing calculation
   const currentCalculation = currentProjectId
@@ -66,6 +68,7 @@ const ProjectCalculationView = ({
         projectName={currentCalculation?.projectName}
         surfaceArea={surfaceArea}
         roofArea={roofArea}
+        floorType={floorType}
       />
     </div>
   );
