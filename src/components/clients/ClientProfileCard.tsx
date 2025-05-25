@@ -3,9 +3,10 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Mail, Phone, MapPin, User, CheckSquare, Building, Settings } from "lucide-react";
+import { Mail, Phone, MapPin, User, CheckSquare, Building, Settings, Hash } from "lucide-react";
 import { Client } from "@/services/api/types";
 
 interface ClientProfileCardProps {
@@ -82,109 +83,112 @@ const ClientProfileCard = ({
   ];
 
   return (
-    <Card className="h-fit border-border bg-card">
-      <CardHeader className="pb-4">
+    <Card className="h-fit bg-white border-gray-200 shadow-sm">
+      <CardHeader className="pb-6 border-b border-gray-100">
         <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-lg font-semibold text-foreground">{client.name}</h3>
-            <p className="text-sm text-muted-foreground">Client Certicasa</p>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+              <User className="w-5 h-5 text-gray-600" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">{client.name}</h3>
+              <p className="text-sm text-gray-500">Client Certicasa</p>
+            </div>
           </div>
-          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">
-            ACTIF
-          </Badge>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-lg">
+              <Hash className="w-3 h-3 text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">RES020</span>
+            </div>
+            <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100">
+              ACTIF
+            </Badge>
+          </div>
         </div>
       </CardHeader>
       
-      <CardContent className="space-y-6">
-        {/* Code projet */}
-        <Card className="bg-primary border-primary">
-          <CardContent className="p-4 text-center">
-            <p className="text-sm font-medium text-primary-foreground/80">Code Projet</p>
-            <p className="text-xl font-bold text-primary-foreground">RES020</p>
-          </CardContent>
-        </Card>
-
+      <CardContent className="p-6 space-y-8">
         {/* Contact */}
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-            <Mail className="h-4 w-4" />
-            Contact
-          </h4>
-          <div className="space-y-2 pl-6">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Mail className="h-3 w-3" />
-              <span>{client.email}</span>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Mail className="w-4 h-4 text-gray-500" />
+            <Label className="text-sm font-medium text-gray-900">Contact</Label>
+          </div>
+          <div className="space-y-3 ml-6">
+            <div className="flex items-center gap-3">
+              <Mail className="w-3 h-3 text-gray-400" />
+              <span className="text-sm text-gray-600">{client.email}</span>
             </div>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Phone className="h-3 w-3" />
-              <span>{client.phone}</span>
+            <div className="flex items-center gap-3">
+              <Phone className="w-3 h-3 text-gray-400" />
+              <span className="text-sm text-gray-600">{client.phone}</span>
             </div>
           </div>
         </div>
 
         {/* Adresse */}
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            Adresse complète
-          </h4>
-          <div className="space-y-3 pl-6">
-            <div className="grid grid-cols-1 gap-2">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-gray-500" />
+            <Label className="text-sm font-medium text-gray-900">Adresse</Label>
+          </div>
+          <div className="space-y-4 ml-6">
+            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
               <div className="flex items-start gap-2">
-                <span className="text-xs text-primary">✅</span>
-                <div>
-                  <span className="text-xs text-muted-foreground">Rue :</span>
-                  <p className="text-sm font-medium text-foreground">Calle Alonso Castrillo 43</p>
+                <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
+                <div className="flex-1">
+                  <p className="text-xs text-gray-500 mb-1">Rue</p>
+                  <p className="text-sm font-medium text-gray-900">Calle Alonso Castrillo 43</p>
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-start gap-2">
-                  <span className="text-xs text-primary">✅</span>
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
                   <div>
-                    <span className="text-xs text-muted-foreground">Code postal :</span>
-                    <p className="text-sm font-medium text-foreground">24200</p>
+                    <p className="text-xs text-gray-500 mb-1">Code postal</p>
+                    <p className="text-sm font-medium text-gray-900">24200</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-xs text-primary">✅</span>
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
                   <div>
-                    <span className="text-xs text-muted-foreground">Ville :</span>
-                    <p className="text-sm font-medium text-foreground">Valencia de Don Juan</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex items-start gap-2">
-                  <span className="text-xs text-primary">✅</span>
-                  <div>
-                    <span className="text-xs text-muted-foreground">Province :</span>
-                    <p className="text-sm font-medium text-foreground">León</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-xs text-primary">✅</span>
-                  <div>
-                    <span className="text-xs text-muted-foreground">Communauté :</span>
-                    <p className="text-sm font-medium text-foreground">Castille-et-León</p>
+                    <p className="text-xs text-gray-500 mb-1">Ville</p>
+                    <p className="text-sm font-medium text-gray-900">Valencia de Don Juan</p>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-start gap-2">
-                  <span className="text-xs text-orange-500">⏳</span>
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
                   <div>
-                    <span className="text-xs text-muted-foreground">Géolocalisation :</span>
-                    <p className="text-sm text-orange-600">À définir</p>
+                    <p className="text-xs text-gray-500 mb-1">Province</p>
+                    <p className="text-sm font-medium text-gray-900">León</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-xs text-orange-500">⏳</span>
+                  <div className="w-2 h-2 bg-emerald-500 rounded-full mt-2"></div>
                   <div>
-                    <span className="text-xs text-muted-foreground">UTM 30 :</span>
-                    <p className="text-sm text-orange-600">À définir</p>
+                    <p className="text-xs text-gray-500 mb-1">Communauté</p>
+                    <p className="text-sm font-medium text-gray-900">Castille-et-León</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-amber-400 rounded-full mt-2"></div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">Géolocalisation</p>
+                    <p className="text-sm text-amber-600">À définir</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2">
+                  <div className="w-2 h-2 bg-amber-400 rounded-full mt-2"></div>
+                  <div>
+                    <p className="text-xs text-gray-500 mb-1">UTM 30</p>
+                    <p className="text-sm text-amber-600">À définir</p>
                   </div>
                 </div>
               </div>
@@ -193,17 +197,17 @@ const ClientProfileCard = ({
         </div>
 
         {/* Données techniques */}
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Données Techniques
-          </h4>
-          <div className="space-y-3 pl-6">
-            <div className="grid grid-cols-1 gap-3">
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">Type de plancher</label>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Settings className="w-4 h-4 text-gray-500" />
+            <Label className="text-sm font-medium text-gray-900">Données Techniques</Label>
+          </div>
+          <div className="space-y-4 ml-6">
+            <div className="grid grid-cols-1 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-gray-600">Type de plancher</Label>
                 <Select value={localFloorType} onValueChange={handleFloorTypeChange}>
-                  <SelectTrigger className="h-9 text-sm border-input">
+                  <SelectTrigger className="h-10 bg-white border-gray-200 focus:border-gray-300">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -216,10 +220,10 @@ const ClientProfileCard = ({
                 </Select>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">Zone climatique</label>
+              <div className="space-y-2">
+                <Label className="text-xs font-medium text-gray-600">Zone climatique</Label>
                 <Select value={localClimateZone} onValueChange={handleClimateZoneChange}>
-                  <SelectTrigger className="h-9 text-sm border-input">
+                  <SelectTrigger className="h-10 bg-white border-gray-200 focus:border-gray-300">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -232,23 +236,23 @@ const ClientProfileCard = ({
                 </Select>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">Surface combles (m²)</label>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-gray-600">Surface combles (m²)</Label>
                   <Input
                     type="number"
                     value={localSurfaceArea}
                     onChange={(e) => handleSurfaceAreaChange(e.target.value)}
-                    className="h-9 text-sm border-input"
+                    className="h-10 bg-white border-gray-200 focus:border-gray-300"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs text-muted-foreground">Surface toiture (m²)</label>
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-gray-600">Surface toiture (m²)</Label>
                   <Input
                     type="number"
                     value={localRoofArea}
                     onChange={(e) => handleRoofAreaChange(e.target.value)}
-                    className="h-9 text-sm border-input"
+                    className="h-10 bg-white border-gray-200 focus:border-gray-300"
                   />
                 </div>
               </div>
@@ -257,40 +261,46 @@ const ClientProfileCard = ({
         </div>
 
         {/* Équipe */}
-        <div className="space-y-3">
-          <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
-            <User className="h-4 w-4" />
-            Équipe assignée
-          </h4>
-          <div className="space-y-2 pl-6">
-            <div className="flex items-center gap-3">
-              <User className="h-4 w-4 text-muted-foreground" />
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <User className="w-4 h-4 text-gray-500" />
+            <Label className="text-sm font-medium text-gray-900">Équipe assignée</Label>
+          </div>
+          <div className="space-y-3 ml-6">
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-blue-600" />
+              </div>
               <div>
-                <span className="text-xs text-muted-foreground">Téléprospecteur</span>
-                <p className="text-sm font-medium text-foreground">Amir</p>
+                <p className="text-xs text-gray-500">Téléprospecteur</p>
+                <p className="text-sm font-medium text-gray-900">Amir</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
-              <CheckSquare className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <CheckSquare className="w-4 h-4 text-purple-600" />
+              </div>
               <div>
-                <span className="text-xs text-muted-foreground">Confirmateur</span>
-                <p className="text-sm font-medium text-foreground">Cynthia</p>
+                <p className="text-xs text-gray-500">Confirmateur</p>
+                <p className="text-sm font-medium text-gray-900">Cynthia</p>
               </div>
             </div>
             
-            <div className="flex items-center gap-3">
-              <Building className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                <Building className="w-4 h-4 text-orange-600" />
+              </div>
               <div>
-                <span className="text-xs text-muted-foreground">Équipe de pose</span>
-                <p className="text-sm font-medium text-foreground">RA BAT 2</p>
+                <p className="text-xs text-gray-500">Équipe de pose</p>
+                <p className="text-sm font-medium text-gray-900">RA BAT 2</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Action */}
-        <Button className="w-full" variant="outline">
+        <Button className="w-full bg-gray-900 hover:bg-gray-800 text-white">
           Modifier les informations
         </Button>
       </CardContent>
