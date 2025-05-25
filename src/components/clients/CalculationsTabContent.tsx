@@ -11,6 +11,7 @@ interface CalculationsTabContentProps {
   onOpenCalculation?: (calculationId: string) => void;
   onNewCalculation?: () => void;
   onDeleteCalculation?: (projectId: string) => void;
+  onEditCalculation?: (projectId: string) => void;
 }
 
 const CalculationsTabContent = ({ 
@@ -20,7 +21,8 @@ const CalculationsTabContent = ({
   savedCalculations = [], 
   onOpenCalculation, 
   onNewCalculation,
-  onDeleteCalculation
+  onDeleteCalculation,
+  onEditCalculation
 }: CalculationsTabContentProps) => {
   return (
     <Card>
@@ -52,7 +54,14 @@ const CalculationsTabContent = ({
                     </div>
                     <Button 
                       size="sm"
-                      onClick={() => onOpenCalculation && onOpenCalculation(calculation.id || calculation.projectId)}
+                      onClick={() => {
+                        const calculationId = calculation.id || calculation.projectId;
+                        if (onEditCalculation) {
+                          onEditCalculation(calculationId);
+                        } else if (onOpenCalculation) {
+                          onOpenCalculation(calculationId);
+                        }
+                      }}
                     >
                       Voir détails
                     </Button>
