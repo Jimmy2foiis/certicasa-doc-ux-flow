@@ -45,7 +45,7 @@ interface Template {
   layout: TemplateLayout;
   logo?: {
     url: string;
-    position: string;
+    position: 'top-left' | 'top-center' | 'top-right';
     size: number;
   };
   created_at: string;

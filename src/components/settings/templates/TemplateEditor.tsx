@@ -41,7 +41,7 @@ interface Template {
   };
   logo?: {
     url: string;
-    position: string;
+    position: 'top-left' | 'top-center' | 'top-right';
     size: number;
   };
   created_at: string;
@@ -172,7 +172,7 @@ const TemplateEditor = ({ template, onSave, onCancel }: TemplateEditorProps) => 
 
         {/* Variables Panel */}
         <div>
-          <TemplateVariables onVariableClick={insertVariable} />
+          <TemplateVariables onInsertVariable={insertVariable} />
         </div>
       </div>
     </div>
