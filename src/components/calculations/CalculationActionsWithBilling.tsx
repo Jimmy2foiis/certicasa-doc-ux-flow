@@ -7,6 +7,7 @@ import { CalculationData } from "@/hooks/useCalculationState";
 import AutomaticBillingGenerator from "@/components/billing/AutomaticBillingGenerator";
 import { useToast } from "@/hooks/use-toast";
 import { useCalculationEventEmitter } from "@/hooks/useCalculationEvents";
+import { createCalculation } from "@/services/api/calculationService";
 
 interface CalculationActionsWithBillingProps {
   calculationData: CalculationData;
@@ -32,40 +33,69 @@ const CalculationActionsWithBilling = ({
   clientData
 }: CalculationActionsWithBillingProps) => {
   const [showBillingDialog, setShowBillingDialog] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const { emitCalculationSaved } = useCalculationEventEmitter();
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsSaving(true);
     try {
+      // Générer un ID unique pour ce calcul
+      const calculationId = `calc_${Date.now()}`;
+      const clientId = `local_${Date.now()}`;
+      const projectId = `project_${Date.now()}`;
+
       const dataToSave = {
-        ...calculationData,
-        projectName: projectName || `Projet ${new Date().toLocaleDateString()}`,
-        clientName,
-        clientAddress,
-        savedAt: new Date().toISOString()
+        id: calculationId,
+        project_id: projectId,
+        client_id: clientId,
+        project_name: projectName || `Calcul thermique ${new Date().toLocaleDateString()}`,
+        client_name: clientName || 'Client',
+        client_address: clientAddress || '',
+        type: calculationData.projectType || 'RES010',
+        surface_area: parseFloat(calculationData.surfaceArea) || 0,
+        improvement_percent: calculationData.improvementPercent || 0,
+        u_value_before: calculationData.uValueBefore || 0,
+        u_value_after: calculationData.uValueAfter || 0,
+        climate_zone: calculationData.climateZone || 'C3',
+        calculation_data: calculationData,
+        created_at: new Date().toISOString(),
+        saved_at: new Date().toISOString()
       };
 
       console.log('💾 Sauvegarde du calcul:', dataToSave);
 
-      if (onSave) {
-        onSave(dataToSave);
+      // Utiliser le service de calculs pour sauvegarder
+      const savedCalculation = await createCalculation(dataToSave);
+
+      if (savedCalculation) {
+        // Callback personnalisé si fourni
+        if (onSave) {
+          onSave(dataToSave);
+        }
+
+        // Émettre l'événement de sauvegarde pour notifier les autres composants
+        emitCalculationSaved(dataToSave);
+
+        toast({
+          title: "✅ Calcul sauvegardé avec succès",
+          description: `Surface: ${calculationData.surfaceArea}m² • Amélioration: ${calculationData.improvementPercent?.toFixed(1)}% • Zone: ${calculationData.climateZone}`,
+          duration: 4000,
+        });
+      } else {
+        throw new Error('Échec de la sauvegarde');
       }
 
-      // Émettre l'événement de sauvegarde pour notifier les autres composants
-      emitCalculationSaved(dataToSave);
-
-      toast({
-        title: "Calcul sauvegardé",
-        description: `Le calcul thermique a été sauvegardé avec succès. Surface: ${calculationData.surfaceArea}m², Amélioration: ${calculationData.improvementPercent?.toFixed(1)}%`,
-      });
-
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
+      console.error('❌ Erreur lors de la sauvegarde:', error);
       toast({
-        title: "Erreur de sauvegarde",
-        description: "Une erreur est survenue lors de la sauvegarde du calcul.",
+        title: "❌ Erreur de sauvegarde",
+        description: "Une erreur est survenue lors de la sauvegarde du calcul. Veuillez réessayer.",
         variant: "destructive",
+        duration: 5000,
       });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -88,9 +118,15 @@ const CalculationActionsWithBilling = ({
   return (
     <div className="flex gap-2">
       {/* Save Button */}
-      <Button onClick={handleSave} variant="outline" size="sm" className="bg-blue-50 hover:bg-blue-100 border-blue-200">
+      <Button 
+        onClick={handleSave} 
+        disabled={isSaving}
+        variant="outline" 
+        size="sm" 
+        className="bg-blue-50 hover:bg-blue-100 border-blue-200 disabled:opacity-50"
+      >
         <Save className="h-4 w-4 mr-1" />
-        Sauvegarder
+        {isSaving ? 'Sauvegarde...' : 'Sauvegarder'}
       </Button>
 
       {/* Export Excel Button */}

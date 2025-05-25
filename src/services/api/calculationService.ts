@@ -1,3 +1,4 @@
+
 /**
  * Service pour la gestion des calculs
  */
@@ -14,7 +15,7 @@ export const getCalculationsForProject = async (projectId: string): Promise<Calc
       const savedData = localStorage.getItem('saved_calculations');
       if (savedData) {
         const allCalculations = JSON.parse(savedData);
-        return allCalculations.filter((calc: any) => calc.projectId === projectId);
+        return allCalculations.filter((calc: any) => calc.project_id === projectId);
       }
       return [];
     } catch (error) {
@@ -73,9 +74,12 @@ export const createCalculation = async (
       allCalculations.push(newCalculation);
       localStorage.setItem('saved_calculations', JSON.stringify(allCalculations));
 
+      console.log('✅ Calcul sauvegardé localement:', newCalculation);
+      console.log('📊 Total calculs sauvegardés:', allCalculations.length);
+
       return newCalculation;
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde locale du calcul:', error);
+      console.error('❌ Erreur lors de la sauvegarde locale du calcul:', error);
       return null;
     }
   }
@@ -115,7 +119,7 @@ export const updateCalculation = async (
         const allCalculations = JSON.parse(savedData);
         const updatedCalculations = allCalculations.map((calc: any) => {
           if (calc.id === calculationId) {
-            return { ...calc, ...calculationData };
+            return { ...calc, ...calculationData, updated_at: new Date().toISOString() };
           }
           return calc;
         });
@@ -183,5 +187,26 @@ export const deleteCalculation = async (calculationId: string): Promise<boolean>
   } catch (error) {
     console.error(`Erreur lors de la suppression du calcul ${calculationId}:`, error);
     return false;
+  }
+};
+
+/**
+ * Récupère tous les calculs pour un client spécifique
+ */
+export const getCalculationsForClient = async (clientId: string): Promise<Calculation[]> => {
+  try {
+    const savedData = localStorage.getItem('saved_calculations');
+    if (savedData) {
+      const allCalculations = JSON.parse(savedData);
+      const clientCalculations = allCalculations.filter((calc: any) => 
+        calc.client_id === clientId || calc.clientId === clientId
+      );
+      console.log(`📋 Calculs trouvés pour le client ${clientId}:`, clientCalculations.length);
+      return clientCalculations;
+    }
+    return [];
+  } catch (error) {
+    console.error('Erreur lors de la récupération des calculs du client:', error);
+    return [];
   }
 };
