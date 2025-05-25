@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-
 interface ProjectInfoSectionProps {
   isolationType?: string;
   floorType?: string;
@@ -13,20 +11,18 @@ interface ProjectInfoSectionProps {
   onSurfaceAreaChange?: (value: string) => void;
   onRoofAreaChange?: (value: string) => void;
 }
-
 const ProjectInfoSection = ({
   isolationType = "Combles",
-  floorType = "Bois", 
+  floorType = "Bois",
   climateZone = "C",
   surfaceArea,
   roofArea,
   onSurfaceAreaChange,
   onRoofAreaChange
 }: ProjectInfoSectionProps) => {
-  return (
-    <Card className="mb-4">
+  return <Card className="mb-4">
       <CardHeader className="pb-2">
-        <CardTitle className="text-base">Informations Projet</CardTitle>
+        <CardTitle className="text-lg font-semibold">Informations Projet</CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -53,28 +49,16 @@ const ProjectInfoSection = ({
           {/* Superficie des combles */}
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 mb-1">Superficie des combles (m²)</span>
-            <Input
-              type="number"
-              value={surfaceArea}
-              onChange={(e) => onSurfaceAreaChange?.(e.target.value)}
-              className="h-8 text-sm"
-            />
+            <Input type="number" value={surfaceArea} onChange={e => onSurfaceAreaChange?.(e.target.value)} className="h-8 text-sm" />
           </div>
           
           {/* Superficie de la toiture */}
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 mb-1">Superficie de la toiture (m²)</span>
-            <Input
-              type="number"
-              value={roofArea}
-              onChange={(e) => onRoofAreaChange?.(e.target.value)}
-              className="h-8 text-sm"
-            />
+            <Input type="number" value={roofArea} onChange={e => onRoofAreaChange?.(e.target.value)} className="h-8 text-sm" />
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ProjectInfoSection;
