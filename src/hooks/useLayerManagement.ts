@@ -92,10 +92,12 @@ export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorT
   };
 
   const updateLayer = (layerSet: "before" | "after", updatedLayer: Layer) => {
+    console.log(`🔄 Mise à jour couche ${layerSet}:`, updatedLayer);
+    
     if (layerSet === "before") {
-      setBeforeLayers(beforeLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
+      setBeforeLayers(prev => prev.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
     } else {
-      setAfterLayers(afterLayers.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
+      setAfterLayers(prev => prev.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
     }
   };
 
