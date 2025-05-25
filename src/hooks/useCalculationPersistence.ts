@@ -46,22 +46,28 @@ export const useCalculationPersistence = (clientId: string) => {
     }
   };
 
-  // Récupérer l'état depuis localStorage
+  // Récupérer l'état depuis localStorage avec validation
   const getCalculationState = (): CalculationPersistenceData | null => {
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const data = JSON.parse(saved);
-        console.log('📂 État des calculs récupéré pour client:', clientId, {
-          beforeLayersCount: data.beforeLayers?.length || 0,
-          afterLayersCount: data.afterLayers?.length || 0,
-          timestamp: data.timestamp,
-          beforeLayersDetails: data.beforeLayers?.map(l => ({name: l.name, thickness: l.thickness})) || [],
-          afterLayersDetails: data.afterLayers?.map(l => ({name: l.name, thickness: l.thickness})) || []
-        });
-        return data;
+        
+        // Validation des données essentielles
+        if (data && typeof data === 'object') {
+          console.log('📂 État des calculs récupéré pour client:', clientId, {
+            beforeLayersCount: data.beforeLayers?.length || 0,
+            afterLayersCount: data.afterLayers?.length || 0,
+            timestamp: data.timestamp,
+            surfaceArea: data.surfaceArea,
+            roofArea: data.roofArea,
+            beforeLayersDetails: data.beforeLayers?.map(l => ({name: l.name, thickness: l.thickness})) || [],
+            afterLayersDetails: data.afterLayers?.map(l => ({name: l.name, thickness: l.thickness})) || []
+          });
+          return data;
+        }
       }
-      console.log('📂 Aucune donnée sauvegardée trouvée pour client:', clientId);
+      console.log('📂 Aucune donnée sauvegardée valide trouvée pour client:', clientId);
       return null;
     } catch (error) {
       console.error('❌ Erreur récupération état calculs:', error);
@@ -83,15 +89,21 @@ export const useCalculationPersistence = (clientId: string) => {
   const hasPersistedData = (): boolean => {
     try {
       const saved = getCalculationState();
-      const hasData = saved !== null && saved.timestamp !== undefined;
+      const hasValidData = saved !== null && 
+                          saved.timestamp !== undefined &&
+                          (saved.beforeLayers?.length > 0 || saved.afterLayers?.length > 0 || 
+                           saved.surfaceArea || saved.roofArea);
+      
       console.log('🔍 Vérification données persistées pour client:', clientId, {
-        hasData,
+        hasValidData,
         dataExists: saved !== null,
         hasTimestamp: saved?.timestamp !== undefined,
         beforeLayersCount: saved?.beforeLayers?.length || 0,
-        afterLayersCount: saved?.afterLayers?.length || 0
+        afterLayersCount: saved?.afterLayers?.length || 0,
+        hasSurfaceArea: !!saved?.surfaceArea,
+        hasRoofArea: !!saved?.roofArea
       });
-      return hasData;
+      return hasValidData;
     } catch (error) {
       console.error('❌ Erreur vérification données persistées:', error);
       return false;
