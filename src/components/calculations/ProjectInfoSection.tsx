@@ -24,7 +24,7 @@ const ProjectInfoSection = ({
         <CardTitle className="text-lg font-semibold">Informations Projet</CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {/* Type d'isolation */}
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 mb-1">Type d'isolation</span>
@@ -36,6 +36,14 @@ const ProjectInfoSection = ({
             <span className="text-sm text-gray-500 mb-1">Type de plancher</span>
             <Badge variant="outline" className="w-fit text-xs">
               {floorType}
+            </Badge>
+          </div>
+          
+          {/* Zone climatique */}
+          <div className="flex flex-col">
+            <span className="text-sm text-gray-500 mb-1">Zone climatique</span>
+            <Badge variant="outline" className="w-fit text-xs">
+              {climateZone}
             </Badge>
           </div>
           
