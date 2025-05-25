@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { User, Mail, Phone, MapPin, ChevronDown, ChevronRight, MoreVertical } from "lucide-react";
+import { Mail, Phone, MapPin, ChevronDown, ChevronRight, MoreVertical } from "lucide-react";
 import { Client } from "@/services/api/types";
 
 interface ClientProfileCardProps {
@@ -89,11 +89,6 @@ const ClientProfileCard = ({
       <CardContent className="p-6 space-y-6">
         {/* Header */}
         <div className="text-center space-y-4">
-          {/* Avatar circulaire */}
-          <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center mx-auto">
-            <User className="h-12 w-12 text-gray-500" />
-          </div>
-          
           {/* Nom du client */}
           <div>
             <h1 className="text-2xl font-bold text-gray-900 mb-1">{client.name}</h1>
@@ -102,9 +97,6 @@ const ClientProfileCard = ({
 
           {/* Badges */}
           <div className="flex flex-wrap justify-center gap-2">
-            <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-200">
-              En cours
-            </Badge>
             <Badge className="bg-black text-white hover:bg-gray-800">
               RES020
             </Badge>
