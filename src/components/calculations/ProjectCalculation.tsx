@@ -12,6 +12,11 @@ interface ProjectCalculationProps {
   savedData?: any;
   onSave?: (calculationData: any) => void;
   clientClimateZone?: string;
+  clientClimateConfidence?: number;
+  clientClimateMethod?: string;
+  clientClimateReferenceCity?: string;
+  clientClimateDistance?: number;
+  clientClimateDescription?: string;
   clientName?: string;
   clientAddress?: string;
   projectName?: string;
@@ -38,6 +43,11 @@ const ProjectCalculation = ({
   savedData, 
   onSave,
   clientClimateZone,
+  clientClimateConfidence,
+  clientClimateMethod,
+  clientClimateReferenceCity,
+  clientClimateDistance,
+  clientClimateDescription,
   clientName,
   clientAddress,
   projectName,
@@ -200,6 +210,11 @@ const ProjectCalculation = ({
             setRatioBefore={setRatioBefore}
             setRatioAfter={setRatioAfter}
             onClimateZoneChange={handleClimateZoneChange}
+            climateConfidence={clientClimateConfidence}
+            climateMethod={clientClimateMethod}
+            climateReferenceCity={clientClimateReferenceCity}
+            climateDistance={clientClimateDistance}
+            climateDescription={clientClimateDescription}
           />
         </Card>
       </div>
