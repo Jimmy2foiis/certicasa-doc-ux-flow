@@ -80,7 +80,6 @@ const ClientDetailsHeader = ({
           client={client}
           documentStats={documentStats}
           onViewMissingDocs={onViewMissingDocs}
-          onGenerateDocument={handleGenerateDocument}
           onEditClient={handleEditClient}
         />
       </div>
