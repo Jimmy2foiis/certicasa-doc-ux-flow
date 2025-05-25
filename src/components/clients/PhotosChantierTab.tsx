@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,14 +10,14 @@ import { PhotoSelectionPanel } from './photos/PhotoSelectionPanel';
 import { PhotoModeSelector } from './photos/PhotoModeSelector';
 import { SafetyCultureService } from '@/services/safetyCultureService';
 import { generatePhotosWordDocument } from '@/services/photosWordService';
-import { createDocument, updateDocument } from '@/services/supabase/documentService';
+import { createDocument } from '@/services/supabase/documentService';
 import type { SafetyCultureAudit, SafetyCulturePhoto, SelectedPhoto } from '@/types/safetyCulture';
 
 interface PhotosChantierTabProps {
   clientId: string;
   clientName?: string;
   safetyCultureAuditId?: string;
-  onDocumentGenerated?: () => void; // Nouvelle prop pour notifier la génération
+  onDocumentGenerated?: () => void;
 }
 
 export type SelectionMode = 'avant' | 'apres';
@@ -194,58 +193,53 @@ const PhotosChantierTab = ({
         photosApres: selectedPhotos.apres.sort((a, b) => a.order - b.order)
       };
 
+      console.log('Génération du document avec données:', reportData);
+
       // Générer le document Word
       const wordBlob = await generatePhotosWordDocument(reportData);
       
       // Convertir le blob en base64 pour stockage
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64data = reader.result as string;
-        
-        // Créer l'enregistrement du document dans Supabase
-        const documentRecord = await createDocument({
-          name: '4-Fotos.docx',
-          type: 'fotos',
-          status: 'generated',
-          client_id: clientId,
-          content: base64data
-        });
-
-        if (documentRecord) {
-          toast({
-            title: "✅ Document créé",
-            description: "4-Fotos.docx a été ajouté au dossier client",
-          });
-          
-          // Notifier la génération du document pour mettre à jour l'onglet Documents
-          if (onDocumentGenerated) {
-            onDocumentGenerated();
-          }
-          
-          // Trigger un refresh des données client si possible
-          if (window.location.pathname.includes('/clients')) {
-            // Déclencher un événement personnalisé pour actualiser les documents
-            window.dispatchEvent(new CustomEvent('document-generated', { 
-              detail: { 
-                clientId, 
-                documentType: 'fotos',
-                documentName: '4-Fotos.docx'
-              } 
-            }));
-          }
-          
-          // Réinitialiser les sélections
-          setSelectedPhotos({ avant: [], apres: [] });
-        } else {
-          toast({
-            title: "Erreur",
-            description: "Impossible d'enregistrer le document",
-            variant: "destructive",
-          });
-        }
-      };
+      const arrayBuffer = await wordBlob.arrayBuffer();
+      const base64data = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
       
-      reader.readAsDataURL(wordBlob);
+      console.log('Document généré, taille:', wordBlob.size);
+      
+      // Créer l'enregistrement du document dans Supabase
+      const documentRecord = await createDocument({
+        name: '4-Fotos.docx',
+        type: 'fotos',
+        status: 'generated',
+        client_id: clientId,
+        content: base64data
+      });
+
+      if (documentRecord) {
+        console.log('Document enregistré dans Supabase:', documentRecord);
+        
+        toast({
+          title: "✅ Document créé",
+          description: "4-Fotos.docx a été ajouté au dossier client",
+        });
+        
+        // Notifier la génération du document
+        if (onDocumentGenerated) {
+          onDocumentGenerated();
+        }
+        
+        // Déclencher un événement personnalisé pour actualiser les documents
+        window.dispatchEvent(new CustomEvent('document-generated', { 
+          detail: { 
+            clientId, 
+            documentType: 'fotos',
+            documentName: '4-Fotos.docx'
+          } 
+        }));
+        
+        // Réinitialiser les sélections
+        setSelectedPhotos({ avant: [], apres: [] });
+      } else {
+        throw new Error('Impossible d\'enregistrer le document');
+      }
       
     } catch (error) {
       console.error('Erreur lors de la génération:', error);

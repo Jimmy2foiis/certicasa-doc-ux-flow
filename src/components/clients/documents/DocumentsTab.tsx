@@ -23,7 +23,8 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
   const { 
     adminDocuments: documents,
     isLoading: loading,
-    handleDocumentAction
+    handleDocumentAction,
+    refreshDocuments
   } = useClientDocuments(clientId);
 
   // Préparer les documents requis avec leur ordre correct
@@ -184,6 +185,7 @@ const DocumentsTab = ({ clientId }: DocumentsTabProps) => {
             documents={requiredDocuments}
             isLoading={loading}
             onAction={handleDocAction}
+            onRefresh={refreshDocuments}
           />
         </CardContent>
 

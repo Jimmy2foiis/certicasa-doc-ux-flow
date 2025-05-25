@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { AdministrativeDocument } from '@/types/documents';
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ interface DocumentsWithDragDropProps {
   documents: AdministrativeDocument[];
   isLoading: boolean;
   onAction: (documentId: string, action: string) => void;
-  onRefresh?: () => void; // Nouvelle prop pour rafraîchir les documents
+  onRefresh?: () => void;
 }
 
 const DocumentsLoadingState = () => (
@@ -44,18 +45,19 @@ export const DocumentsWithDragDrop: React.FC<DocumentsWithDragDropProps> = ({
   // Écouter les événements de génération de documents
   useEffect(() => {
     const handleDocumentGenerated = (event: CustomEvent) => {
-      console.log('Document généré détecté:', event.detail);
+      console.log('Document généré détecté dans DocumentsWithDragDrop:', event.detail);
       
-      // Rafraîchir les documents après un court délai
+      // Rafraîchir les documents immédiatement
       if (onRefresh) {
-        setTimeout(() => {
-          onRefresh();
-        }, 1000);
+        console.log('Rafraîchissement des documents...');
+        onRefresh();
       }
     };
 
+    // Ajouter l'écouteur d'événement
     window.addEventListener('document-generated', handleDocumentGenerated as EventListener);
     
+    // Nettoyage
     return () => {
       window.removeEventListener('document-generated', handleDocumentGenerated as EventListener);
     };

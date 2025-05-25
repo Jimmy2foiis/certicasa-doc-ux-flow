@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export interface Document {
@@ -16,18 +15,23 @@ export interface Document {
 
 // Fonctions pour gérer les documents
 export const getDocumentsForClient = async (clientId: string): Promise<Document[]> => {
-  const { data, error } = await supabase
-    .from('documents')
-    .select('*')
-    .eq('client_id', clientId)
-    .order('created_at', { ascending: false });
-  
-  if (error) {
+  try {
+    const { data, error } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('Erreur lors de la récupération des documents du client:', error);
+      return [];
+    }
+    
+    return data || [];
+  } catch (error) {
     console.error('Erreur lors de la récupération des documents du client:', error);
     return [];
   }
-  
-  return data || [];
 };
 
 export const getDocumentsForProject = async (projectId: string): Promise<Document[]> => {
@@ -46,32 +50,40 @@ export const getDocumentsForProject = async (projectId: string): Promise<Documen
 };
 
 export const createDocument = async (documentData: Partial<Document>): Promise<Document | null> => {
-  // Vérifier que le nom du document est défini
-  if (!documentData.name) {
-    console.error('Erreur: Le nom du document est obligatoire');
-    return null;
-  }
-  
-  const { data, error } = await supabase
-    .from('documents')
-    .insert({
-      name: documentData.name, // Champ obligatoire
-      type: documentData.type || 'other',
-      status: documentData.status || 'draft',
-      client_id: documentData.client_id || null,
-      project_id: documentData.project_id || null,
-      content: documentData.content || null,
-      file_path: documentData.file_path || null,
-      // created_at est automatiquement défini par Supabase
-    })
-    .select();
-  
-  if (error) {
+  try {
+    // Vérifier que le nom du document est défini
+    if (!documentData.name) {
+      console.error('Erreur: Le nom du document est obligatoire');
+      return null;
+    }
+    
+    console.log('Création document avec données:', documentData);
+    
+    const { data, error } = await supabase
+      .from('documents')
+      .insert({
+        name: documentData.name,
+        type: documentData.type || 'other',
+        status: documentData.status || 'draft',
+        client_id: documentData.client_id || null,
+        project_id: documentData.project_id || null,
+        content: documentData.content || null,
+        file_path: documentData.file_path || null,
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Erreur lors de la création du document:', error);
+      return null;
+    }
+    
+    console.log('Document créé avec succès:', data);
+    return data;
+  } catch (error) {
     console.error('Erreur lors de la création du document:', error);
     return null;
   }
-  
-  return data?.[0] || null;
 };
 
 export const updateDocument = async (documentId: string, documentData: Partial<Document>): Promise<Document | null> => {
