@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Control } from "react-hook-form";
 import { ClientFormValues } from "../schemas/clientSchema";
@@ -50,18 +49,25 @@ export const ClientTypeFields = ({ control, initialData }: ClientTypeFieldsProps
             <FormLabel>Zone climatique</FormLabel>
             <FormControl>
               <Select
-                value={field.value || initialData?.climateZone || "C"}
+                value={field.value || initialData?.climateZone || "C3"}
                 onValueChange={field.onChange}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Sélectionner une zone" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="A">Zone A</SelectItem>
-                  <SelectItem value="B">Zone B</SelectItem>
-                  <SelectItem value="C">Zone C</SelectItem>
-                  <SelectItem value="D">Zone D</SelectItem>
-                  <SelectItem value="E">Zone E</SelectItem>
+                  <SelectItem value="A3">A3 (Coeff: 25)</SelectItem>
+                  <SelectItem value="A4">A4 (Coeff: 26)</SelectItem>
+                  <SelectItem value="B3">B3 (Coeff: 32)</SelectItem>
+                  <SelectItem value="B4">B4 (Coeff: 33)</SelectItem>
+                  <SelectItem value="C1">C1 (Coeff: 44)</SelectItem>
+                  <SelectItem value="C2">C2 (Coeff: 45)</SelectItem>
+                  <SelectItem value="C3">C3 (Coeff: 46)</SelectItem>
+                  <SelectItem value="C4">C4 (Coeff: 46)</SelectItem>
+                  <SelectItem value="D1">D1 (Coeff: 60)</SelectItem>
+                  <SelectItem value="D2">D2 (Coeff: 60)</SelectItem>
+                  <SelectItem value="D3">D3 (Coeff: 61)</SelectItem>
+                  <SelectItem value="E1">E1 (Coeff: 74)</SelectItem>
                 </SelectContent>
               </Select>
             </FormControl>

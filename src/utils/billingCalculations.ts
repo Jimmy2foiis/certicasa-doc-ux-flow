@@ -1,7 +1,7 @@
 
-// Climate coefficients according to ANEXO II (in thousands of hours·K/año)
+// Climate coefficients according to ANEXO II (in thousands of hours·K/año) - Certicasa values
 export const CLIMATE_COEFFICIENTS = {
-  // Zone A - Verano
+  // Zone A
   'A3': 25,
   'A4': 26,
   

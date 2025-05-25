@@ -1,4 +1,3 @@
-
 // Fonction pour normaliser les noms de province (suppression des accents, majuscules, etc.)
 export const normalizeProvince = (province: string): string => {
   if (!province) return "";
@@ -9,11 +8,10 @@ export const normalizeProvince = (province: string): string => {
     .trim();
 };
 
-// Mapping des provinces espagnoles à leurs zones climatiques selon CTE
+// Mapping des provinces espagnoles à leurs zones climatiques selon CTE (mis à jour avec les zones Certicasa)
 export const provinceToClimateZone: Record<string, string> = {
-  // Zone α3
-  "ALMERIA": "α3",
   // Zone A3
+  "ALMERIA": "A3",
   "CADIZ": "A3",
   "HUELVA": "A3",
   "MALAGA": "A3",
