@@ -21,22 +21,41 @@ const TechnicalDataSection = ({
   onClimateZoneChange 
 }: TechnicalDataSectionProps) => {
   
-  // 🐛 DEBUG: Tracer la zone climatique dans TechnicalDataSection
-  console.log('⚙️ TechnicalDataSection - zone climatique reçue:', climateZone);
-  console.log('⚙️ TechnicalDataSection - climateData:', climateData);
+  // 🚨 DEBUG URGENT: Tracer toutes les props reçues
+  console.log('⚙️ TechnicalDataSection - PROPS COMPLÈTES REÇUES:', {
+    climateZone,
+    climateData,
+    onClimateZoneChange: !!onClimateZoneChange
+  });
   
-  // 🛠️ EFFET pour surveiller les changements
+  // 🚨 DEBUG: Surveiller les changements
   useEffect(() => {
-    console.log('🔄 TechnicalDataSection - Effet déclenché, zone:', climateZone);
-  }, [climateZone]);
+    console.log('🔄 TechnicalDataSection - EFFET déclenché:', {
+      climateZone,
+      climateDataMethod: climateData?.method,
+      climateDataReferenceCity: climateData?.referenceCity,
+      climateDataConfidence: climateData?.confidence
+    });
+  }, [climateZone, climateData]);
+
+  // 🚨 DEBUG: Handler de changement
+  const handleZoneChange = (zone: string) => {
+    console.log('🌍 TechnicalDataSection - Changement zone:', zone);
+    if (onClimateZoneChange) {
+      onClimateZoneChange(zone);
+    }
+  };
 
   return (
     <div className="border-b pb-4">
+      {/* 🚨 DEBUG: Log avant rendu */}
+      {console.log('🎯 TechnicalDataSection - RENDU avec zone:', climateZone)}
+      
       <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
         <Settings className="h-4 w-4" />
         Données techniques
-        {/* 🐛 DEBUG: Afficher la zone dans le titre */}
-        <span className="text-xs text-blue-600">({climateZone})</span>
+        {/* 🚨 DEBUG: Afficher la zone dans le titre */}
+        <span className="text-xs text-red-600 font-bold">[DEBUG: {climateZone}]</span>
       </h3>
       
       {/* Zone Climatique CTE */}
@@ -48,7 +67,7 @@ const TechnicalDataSection = ({
           referenceCity={climateData?.referenceCity}
           distance={climateData?.distance}
           description={climateData?.description}
-          onZoneChange={onClimateZoneChange}
+          onZoneChange={handleZoneChange}
           editable={true}
         />
       </div>

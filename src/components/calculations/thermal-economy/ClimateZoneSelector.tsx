@@ -2,6 +2,7 @@
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2 } from "lucide-react";
+import { useEffect } from "react";
 
 interface ClimateZoneSelectorProps {
   selectedClimateZone: string;
@@ -24,8 +25,26 @@ const ClimateZoneSelector = ({
   climateDistance,
   climateDescription
 }: ClimateZoneSelectorProps) => {
+  
+  // 🚨 DEBUG URGENT: Tracer toutes les props reçues
+  console.log('🔥 ClimateZoneSelector - PROPS REÇUES:', {
+    selectedClimateZone,
+    climateConfidence,
+    climateMethod,
+    climateReferenceCity,
+    climateDistance,
+    climateDescription
+  });
+
+  // 🚨 DEBUG: Surveiller les changements de zone
+  useEffect(() => {
+    console.log('🔄 ClimateZoneSelector - selectedClimateZone changé:', selectedClimateZone);
+  }, [selectedClimateZone]);
+
   // Afficher l'indicateur de confiance comme dans l'image
   const renderConfidenceIndicator = () => {
+    console.log('🎯 ClimateZoneSelector - Rendu confiance:', { climateConfidence, climateMethod });
+    
     if (climateConfidence && climateMethod) {
       return (
         <div className="flex items-center gap-2 text-green-600">
@@ -39,6 +58,8 @@ const ClimateZoneSelector = ({
 
   // Afficher la description et les informations automatiques
   const renderClimateInfo = () => {
+    console.log('🎯 ClimateZoneSelector - Rendu info:', { climateDescription, climateReferenceCity, climateMethod });
+    
     if (climateDescription || climateReferenceCity) {
       return (
         <div className="space-y-2 text-sm text-gray-600">
@@ -59,8 +80,17 @@ const ClimateZoneSelector = ({
     return null;
   };
 
+  // 🚨 DEBUG: Handler de changement
+  const handleZoneChange = (zone: string) => {
+    console.log('🌍 ClimateZoneSelector - Changement manuel zone:', zone);
+    onClimateZoneChange(zone);
+  };
+
   return (
     <div className="space-y-2">
+      {/* 🚨 DEBUG: Afficher la zone dans le log */}
+      {console.log('🎯 ClimateZoneSelector - RENDU FINAL avec zone:', selectedClimateZone)}
+      
       <Label htmlFor="climate-zone" className="flex items-center gap-2">
         Zone Climatique
         {selectedClimateZone && (
@@ -68,12 +98,14 @@ const ClimateZoneSelector = ({
             (G: {getCoefficient(selectedClimateZone)})
           </span>
         )}
+        {/* 🚨 DEBUG: Afficher la zone dans le label */}
+        <span className="text-xs text-red-600 font-bold">[DEBUG: {selectedClimateZone}]</span>
       </Label>
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Select
             value={selectedClimateZone}
-            onValueChange={onClimateZoneChange}
+            onValueChange={handleZoneChange}
           >
             <SelectTrigger className="w-40">
               <SelectValue placeholder="Sélectionner une zone" />

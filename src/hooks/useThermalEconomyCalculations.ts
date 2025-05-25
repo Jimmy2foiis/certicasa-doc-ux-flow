@@ -27,33 +27,47 @@ export const useThermalEconomyCalculations = ({
   const [delegate, setDelegate] = useState<"Eiffage" | "GreenFlex">("Eiffage");
   const [selectedClimateZone, setSelectedClimateZone] = useState(climateZone);
   
-  // 🐛 DEBUG: Tracer la réception de la zone dans le hook
-  console.log('🔗 useThermalEconomyCalculations - zone reçue:', climateZone);
-  console.log('🔗 useThermalEconomyCalculations - zone sélectionnée:', selectedClimateZone);
+  // 🚨 DEBUG URGENT: Tracer toutes les valeurs d'entrée
+  console.log('🔗 useThermalEconomyCalculations - PROPS D\'ENTRÉE:', {
+    surfaceArea,
+    uValueBefore,
+    uValueAfter,
+    climateZone,
+    selectedClimateZone
+  });
   
-  // 🔥 SYNCHRONISATION IMMÉDIATE et FORCÉE avec la zone climatique déterminée
+  // 🚨 DEBUG: Effet d'initialisation
   useEffect(() => {
-    console.log('🔄 Hook - Effect de synchronisation déclenché:', { climateZone, selectedClimateZone });
+    console.log('🔄 Hook ThermalEconomy - INITIALISATION:', {
+      climateZoneReçue: climateZone,
+      selectedClimateZoneActuel: selectedClimateZone
+    });
+    
+    if (climateZone && !selectedClimateZone) {
+      console.log('🎯 Hook ThermalEconomy - Initialisation zone climatique:', climateZone);
+      setSelectedClimateZone(climateZone);
+    }
+  }, []);
+
+  // 🚨 DEBUG: Synchronisation forcée
+  useEffect(() => {
+    console.log('🔄 Hook ThermalEconomy - SYNCHRONISATION:', {
+      climateZoneReçue: climateZone,
+      selectedClimateZoneActuel: selectedClimateZone,
+      sontDifférents: climateZone !== selectedClimateZone
+    });
     
     if (climateZone && climateZone !== selectedClimateZone) {
-      console.log('🌍 Hook - Synchronisation automatique zone climatique:', climateZone);
+      console.log('🌍 Hook ThermalEconomy - FORCER la synchronisation:', climateZone);
       setSelectedClimateZone(climateZone);
       
-      // Propager immédiatement le changement pour mettre à jour le coefficient G
+      // Propager immédiatement le changement
       if (onClimateZoneChange) {
-        console.log('🔄 Hook - Propagation du changement vers le parent:', climateZone);
+        console.log('🔄 Hook ThermalEconomy - Propagation vers parent:', climateZone);
         onClimateZoneChange(climateZone);
       }
     }
   }, [climateZone, selectedClimateZone, onClimateZoneChange]);
-
-  // 🔄 INITIALISATION: S'assurer que la zone est correctement initialisée au premier rendu
-  useEffect(() => {
-    if (climateZone && !selectedClimateZone) {
-      console.log('🎯 Hook - Initialisation zone climatique:', climateZone);
-      setSelectedClimateZone(climateZone);
-    }
-  }, [climateZone, selectedClimateZone]);
 
   // Get coefficient G based on selected climate zone
   const gCoefficient = climateZoneCoefficients[selectedClimateZone] || 46;
@@ -81,23 +95,24 @@ export const useThermalEconomyCalculations = ({
   const totalPricePerSqm = pricePerSqm + cherryPricePerSqm;
   const totalProjectPrice = projectPrice + cherryProjectPrice;
 
-  // 🔧 Gestionnaire de changement optimisé avec propagation
+  // 🚨 DEBUG: Gestionnaire de changement optimisé
   const handleClimateZoneChange = (zone: string) => {
-    console.log('🌍 Hook - Changement zone climatique manuel:', zone);
+    console.log('🌍 Hook ThermalEconomy - CHANGEMENT MANUEL zone:', zone);
     setSelectedClimateZone(zone);
     
-    // Propager le changement vers le parent pour synchroniser avec les autres composants
+    // Propager le changement vers le parent
     if (onClimateZoneChange) {
-      console.log('🔄 Hook - Propagation vers parent du changement manuel:', zone);
+      console.log('🔄 Hook ThermalEconomy - Propagation changement manuel:', zone);
       onClimateZoneChange(zone);
     }
   };
 
-  // 🐛 DEBUG: Afficher les valeurs finales
-  console.log('✅ Hook - Valeurs finales:', {
+  // 🚨 DEBUG: Afficher les valeurs calculées
+  console.log('✅ Hook ThermalEconomy - VALEURS FINALES:', {
     selectedClimateZone,
     gCoefficient,
-    annualSavings: annualSavings.toFixed(2)
+    annualSavings: annualSavings.toFixed(2),
+    projectPrice: projectPrice.toFixed(2)
   });
 
   return {
