@@ -40,7 +40,8 @@ const StatusBanner = ({
     province: client?.province || "",
     community: client?.community || "",
     utm: "",
-    coordinates: ""
+    coordinates: "",
+    cadastralReference: ""
   });
 
   const handleAddressSelected = (selectedAddress: string) => {
@@ -156,7 +157,7 @@ const StatusBanner = ({
             </div>
           </div>
 
-          {/* Ligne 3: Géolocalisation, deux cellules vides */}
+          {/* Ligne 3: Géolocalisation, Référence Cadastrale, cellule vide */}
           <div className="grid grid-cols-3 gap-3">
             <div>
               <Input 
@@ -166,7 +167,14 @@ const StatusBanner = ({
                 className="text-sm h-8" 
               />
             </div>
-            <div></div>
+            <div>
+              <Input 
+                value={addressData.cadastralReference} 
+                onChange={(e) => handleInputChange('cadastralReference', e.target.value)}
+                placeholder="Référence Cadastrale" 
+                className="text-sm h-8" 
+              />
+            </div>
             <div></div>
           </div>
         </div>
