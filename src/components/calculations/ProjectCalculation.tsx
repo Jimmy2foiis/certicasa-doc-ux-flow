@@ -150,16 +150,17 @@ const ProjectCalculation = ({
     addLayer(type, defaultMaterial);
   };
 
-  const handleUpdateLayer = (id: string, field: string, value: any) => {
-    // Find the layer in either before or after arrays and update it
-    const beforeLayer = beforeLayers.find(l => l.id === id);
-    const afterLayer = afterLayers.find(l => l.id === id);
+  // 🔧 FIX: Simplifier la mise à jour des couches - utiliser directement updateLayer
+  const handleUpdateLayer = (id: string, field: string, updatedLayer: any) => {
+    console.log(`🔧 Mise à jour couche ID ${id}:`, updatedLayer);
     
-    if (beforeLayer) {
-      const updatedLayer = { ...beforeLayer, [field]: value };
+    // Déterminer si c'est une couche "before" ou "after"
+    const isBeforeLayer = beforeLayers.some(l => l.id === id);
+    const isAfterLayer = afterLayers.some(l => l.id === id);
+    
+    if (isBeforeLayer) {
       updateLayer("before", updatedLayer);
-    } else if (afterLayer) {
-      const updatedLayer = { ...afterLayer, [field]: value };
+    } else if (isAfterLayer) {
       updateLayer("after", updatedLayer);
     }
   };

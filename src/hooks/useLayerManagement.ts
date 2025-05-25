@@ -91,13 +91,22 @@ export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorT
     setAfterLayers([...beforeLayers]);
   };
 
+  // 🔧 FIX: Simplifier updateLayer pour éviter les objets imbriqués
   const updateLayer = (layerSet: "before" | "after", updatedLayer: Layer) => {
-    console.log(`🔄 Mise à jour couche ${layerSet}:`, updatedLayer);
+    console.log(`✅ Mise à jour couche ${layerSet}:`, updatedLayer);
     
     if (layerSet === "before") {
-      setBeforeLayers(prev => prev.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
+      setBeforeLayers(prev => 
+        prev.map((layer) => 
+          layer.id === updatedLayer.id ? { ...updatedLayer } : layer
+        )
+      );
     } else {
-      setAfterLayers(prev => prev.map((layer) => (layer.id === updatedLayer.id ? updatedLayer : layer)));
+      setAfterLayers(prev => 
+        prev.map((layer) => 
+          layer.id === updatedLayer.id ? { ...updatedLayer } : layer
+        )
+      );
     }
   };
 
