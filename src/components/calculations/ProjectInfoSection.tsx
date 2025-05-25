@@ -32,11 +32,6 @@ const ProjectInfoSection = ({
   const [localSurfaceArea, setLocalSurfaceArea] = useState(surfaceArea);
   const [localRoofArea, setLocalRoofArea] = useState(roofArea);
   const [localFloorType, setLocalFloorType] = useState(floorType);
-  
-  // 🔥 CORRECTION: Utiliser directement la prop climateZone au lieu d'un état local
-  console.log('🏠 ProjectInfoSection - zone reçue (PROP):', climateZone);
-  console.log('🏠 ProjectInfoSection - doit afficher:', climateZone);
-  console.log('🎯 ProjectInfoSection - AFFICHAGE FINAL:', climateZone);
 
   const handleSurfaceAreaChange = (value: string) => {
     setLocalSurfaceArea(value);
@@ -94,7 +89,6 @@ const ProjectInfoSection = ({
               <div>
                 <Label className="block text-sm text-gray-500 mb-2">Zone climatique</Label>
                 <div className="p-2 bg-muted rounded-md text-sm h-10 flex items-center">
-                  {/* 🔥 CORRECTION: Afficher directement la prop climateZone */}
                   <span className="font-medium text-blue-600">
                     {climateZone || 'Non définie'}
                   </span>
