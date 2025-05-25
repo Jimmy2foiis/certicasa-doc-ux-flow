@@ -9,7 +9,9 @@ import { Cherry } from "lucide-react";
 // Climate zone coefficients mapping
 export const climateZoneCoefficients: Record<string, number> = {
   "A3": 25,
+  "A4": 26,
   "B3": 32,
+  "B4": 33,
   "C1": 44,
   "C2": 45,
   "C3": 46,
@@ -32,6 +34,7 @@ interface ThermalEconomySectionProps {
   uValueAfter: number;
   climateZone?: string;
   projectType: string;
+  onClimateZoneChange?: (zone: string) => void;
 }
 
 const ThermalEconomySection = ({ 
@@ -39,15 +42,20 @@ const ThermalEconomySection = ({
   uValueBefore, 
   uValueAfter, 
   climateZone = "C3",
-  projectType
+  projectType,
+  onClimateZoneChange
 }: ThermalEconomySectionProps) => {
   const [cherryEnabled, setCherryEnabled] = useState(false);
   const [delegate, setDelegate] = useState<"Eiffage" | "GreenFlex">("Eiffage");
+  const [selectedClimateZone, setSelectedClimateZone] = useState(climateZone);
   
-  // Get coefficient G based on climate zone - default to the given zone or C3 if not found
-  const gCoefficient = climateZone && climateZoneCoefficients[climateZone] 
-    ? climateZoneCoefficients[climateZone] 
-    : 46; // Default to C3 coefficient if not found
+  // Update selected climate zone when prop changes
+  useEffect(() => {
+    setSelectedClimateZone(climateZone);
+  }, [climateZone]);
+
+  // Get coefficient G based on selected climate zone
+  const gCoefficient = climateZoneCoefficients[selectedClimateZone] || 46;
   
   // Get multiplier based on delegate
   const multiplier = delegateMultipliers[delegate];
@@ -69,6 +77,13 @@ const ThermalEconomySection = ({
   const totalPricePerSqm = pricePerSqm + cherryPricePerSqm;
   const totalProjectPrice = projectPrice + cherryProjectPrice;
 
+  const handleClimateZoneChange = (zone: string) => {
+    setSelectedClimateZone(zone);
+    if (onClimateZoneChange) {
+      onClimateZoneChange(zone);
+    }
+  };
+
   return (
     <Card className="mt-6">
       <CardHeader className="pb-2">
@@ -76,12 +91,33 @@ const ThermalEconomySection = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Climate Zone */}
+          {/* Climate Zone Selector */}
           <div className="space-y-2">
-            <Label>Zone Climatique</Label>
+            <Label htmlFor="climate-zone">Zone Climatique</Label>
             <div className="flex items-center space-x-2">
-              <div className="font-medium">{climateZone}</div>
-              <span className="text-sm text-gray-500">(coefficient G: {gCoefficient})</span>
+              <Select
+                value={selectedClimateZone}
+                onValueChange={handleClimateZoneChange}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Sélectionner une zone" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="A3">A3 (Coeff: 25)</SelectItem>
+                  <SelectItem value="A4">A4 (Coeff: 26)</SelectItem>
+                  <SelectItem value="B3">B3 (Coeff: 32)</SelectItem>
+                  <SelectItem value="B4">B4 (Coeff: 33)</SelectItem>
+                  <SelectItem value="C1">C1 (Coeff: 44)</SelectItem>
+                  <SelectItem value="C2">C2 (Coeff: 45)</SelectItem>
+                  <SelectItem value="C3">C3 (Coeff: 46)</SelectItem>
+                  <SelectItem value="C4">C4 (Coeff: 46)</SelectItem>
+                  <SelectItem value="D1">D1 (Coeff: 60)</SelectItem>
+                  <SelectItem value="D2">D2 (Coeff: 60)</SelectItem>
+                  <SelectItem value="D3">D3 (Coeff: 61)</SelectItem>
+                  <SelectItem value="E1">E1 (Coeff: 74)</SelectItem>
+                </SelectContent>
+              </Select>
+              <span className="text-sm text-gray-500">(G: {gCoefficient})</span>
             </div>
           </div>
           
