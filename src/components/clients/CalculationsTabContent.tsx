@@ -4,12 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 interface CalculationsTabContentProps {
-  clientId?: string; // Added clientId prop
+  clientId?: string;
   clientName?: string;
   clientAddress?: string;
   savedCalculations?: any[];
-  onOpenCalculation?: (calculationId?: string) => void;
-  onCreateNewCalculation?: () => void;
+  onOpenCalculation?: (calculationId: string) => void;
+  onNewCalculation?: () => void;
+  onDeleteCalculation?: (projectId: string) => void;
 }
 
 const CalculationsTabContent = ({ 
@@ -18,7 +19,8 @@ const CalculationsTabContent = ({
   clientAddress = "Adresse non définie", 
   savedCalculations = [], 
   onOpenCalculation, 
-  onCreateNewCalculation 
+  onNewCalculation,
+  onDeleteCalculation
 }: CalculationsTabContentProps) => {
   return (
     <Card>
@@ -50,7 +52,7 @@ const CalculationsTabContent = ({
                     </div>
                     <Button 
                       size="sm"
-                      onClick={() => onOpenCalculation && onOpenCalculation(calculation.id)}
+                      onClick={() => onOpenCalculation && onOpenCalculation(calculation.id || calculation.projectId)}
                     >
                       Voir détails
                     </Button>
@@ -68,7 +70,7 @@ const CalculationsTabContent = ({
             <p className="text-gray-600 mb-4">
               Aucun calcul thermique n'a été effectué pour ce client.
             </p>
-            <Button onClick={() => onCreateNewCalculation && onCreateNewCalculation()}>
+            <Button onClick={() => onNewCalculation && onNewCalculation()}>
               Créer un nouveau calcul
             </Button>
           </div>

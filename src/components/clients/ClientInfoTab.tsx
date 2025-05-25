@@ -80,6 +80,29 @@ const ClientInfoTab = ({
       await onRefreshCadastralData();
     }
   };
+
+  // Mock data for ClientTabsContainer
+  const mockSavedCalculations: any[] = [];
+  
+  const handleNewCalculation = () => {
+    if (onShowCalculation) {
+      onShowCalculation();
+    }
+  };
+
+  const handleEditCalculation = (projectId: string) => {
+    if (onShowCalculation) {
+      onShowCalculation(projectId);
+    }
+  };
+
+  const handleDeleteCalculation = (projectId: string) => {
+    console.log("Deleting calculation:", projectId);
+  };
+
+  const handleBack = () => {
+    // Handle back navigation if needed
+  };
   
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -100,7 +123,15 @@ const ClientInfoTab = ({
       </div>
 
       <div className="lg:col-span-2">
-        <ClientTabsContainer onShowCalculation={onShowCalculation} />
+        <ClientTabsContainer 
+          client={client}
+          clientId={client?.id || ""}
+          savedCalculations={mockSavedCalculations}
+          onNewCalculation={handleNewCalculation}
+          onEditCalculation={handleEditCalculation}
+          onDeleteCalculation={handleDeleteCalculation}
+          onBack={handleBack}
+        />
       </div>
     </div>
   );
