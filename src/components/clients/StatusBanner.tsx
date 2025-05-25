@@ -1,4 +1,5 @@
 
+
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -34,12 +35,12 @@ const StatusBanner = ({
       {/* Barre d'informations principale - maintenant dans la zone grise */}
       <div className="flex items-center justify-between bg-gray-50 rounded-lg p-3 border">
         <div className="flex items-center gap-6">
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 px-3 py-1">
+            RES020
+          </Badge>
           <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 px-3 py-1">
             En cours
           </Badge>
-          <Button variant="outline" size="sm" className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 px-3 py-1 h-auto font-semibold">
-            RES020
-          </Button>
           <span className="text-sm text-gray-600">
             Numéro lot: <span className="font-medium">-</span>
           </span>
@@ -103,3 +104,4 @@ const StatusBanner = ({
     </div>;
 };
 export default StatusBanner;
+
