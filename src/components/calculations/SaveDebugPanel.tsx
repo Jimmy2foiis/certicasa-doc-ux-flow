@@ -1,8 +1,8 @@
 
 import { Button } from "@/components/ui/button";
-import { Save, Trash2, RefreshCw } from "lucide-react";
+import { Save, Trash2, RefreshCw, Database } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useCalculationPersistence } from "@/hooks/useCalculationPersistence";
+import { calculationPersistenceService } from "@/services/calculationPersistenceService";
 
 interface SaveDebugPanelProps {
   clientId: string;
@@ -12,17 +12,16 @@ interface SaveDebugPanelProps {
 
 const SaveDebugPanel = ({ clientId, onSave, calculationData }: SaveDebugPanelProps) => {
   const { toast } = useToast();
-  const { clearCalculationState, hasPersistedData, getCalculationState } = useCalculationPersistence(clientId);
 
   const handleClearCache = () => {
-    const success = clearCalculationState();
+    const success = calculationPersistenceService.clearCalculationState(clientId);
     if (success) {
       toast({
         title: "🗑️ Cache effacé",
         description: "Toutes les données sauvegardées ont été supprimées",
         duration: 3000,
       });
-      // Forcer un rechargement de la page pour voir l'effet
+      // Forcer un rechargement pour voir l'effet
       setTimeout(() => window.location.reload(), 1000);
     } else {
       toast({
@@ -34,19 +33,19 @@ const SaveDebugPanel = ({ clientId, onSave, calculationData }: SaveDebugPanelPro
   };
 
   const handleShowSavedData = () => {
-    const data = getCalculationState();
-    console.log('📊 Données actuellement sauvegardées:', data);
+    const data = calculationPersistenceService.getCalculationState(clientId);
+    console.log('📊 Données sauvegardées (service isolé):', data);
     
     if (data) {
       toast({
-        title: "📊 Données trouvées dans le cache",
-        description: `${data.beforeLayers?.length || 0} + ${data.afterLayers?.length || 0} couches sauvegardées`,
+        title: "📊 Données trouvées",
+        description: `${data.beforeLayers?.length || 0} + ${data.afterLayers?.length || 0} couches • Session: ${data.sessionId?.slice(-8) || 'N/A'}`,
         duration: 3000,
       });
     } else {
       toast({
-        title: "📭 Aucune donnée en cache",
-        description: "Aucune sauvegarde trouvée",
+        title: "📭 Aucune donnée",
+        description: "Aucune sauvegarde trouvée pour ce client",
         duration: 3000,
       });
     }
@@ -55,14 +54,32 @@ const SaveDebugPanel = ({ clientId, onSave, calculationData }: SaveDebugPanelPro
   const handleManualSave = () => {
     if (onSave) {
       onSave();
+      toast({
+        title: "💾 Sauvegarde manuelle",
+        description: "Sauvegarde forcée déclenchée",
+        duration: 2000,
+      });
     } else {
       toast({
-        title: "⚠️ Fonction de sauvegarde manuelle non disponible",
-        description: "Utilisez l'auto-sauvegarde ou le bouton principal",
+        title: "⚠️ Fonction indisponible",
+        description: "Utilisez l'auto-sauvegarde",
         variant: "destructive",
       });
     }
   };
+
+  const handleMarkForSync = () => {
+    if (calculationData) {
+      calculationPersistenceService.markForDatabaseSync(clientId, calculationData);
+      toast({
+        title: "📋 Marqué pour sync BDD",
+        description: "Ces calculs seront synchronisés avec la base de données future",
+        duration: 3000,
+      });
+    }
+  };
+
+  const hasData = calculationPersistenceService.hasPersistedData(clientId);
 
   return (
     <div className="flex gap-2 p-3 bg-gray-50 border rounded-lg">
@@ -86,6 +103,17 @@ const SaveDebugPanel = ({ clientId, onSave, calculationData }: SaveDebugPanelPro
       </Button>
       
       <Button 
+        onClick={handleMarkForSync} 
+        variant="outline" 
+        size="sm"
+        className="text-green-600 hover:bg-green-50"
+        disabled={!calculationData}
+      >
+        <Database className="h-4 w-4 mr-1" />
+        Marquer Sync BDD
+      </Button>
+      
+      <Button 
         onClick={handleClearCache} 
         variant="outline" 
         size="sm"
@@ -96,7 +124,7 @@ const SaveDebugPanel = ({ clientId, onSave, calculationData }: SaveDebugPanelPro
       </Button>
       
       <div className="flex items-center text-xs text-gray-500 ml-2">
-        Cache: {hasPersistedData() ? '✅ Données trouvées' : '❌ Vide'}
+        Service Isolé: {hasData ? '✅ Données' : '❌ Vide'} • Auto-save: 3s
       </div>
     </div>
   );

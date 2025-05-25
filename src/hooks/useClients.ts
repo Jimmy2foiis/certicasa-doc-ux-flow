@@ -14,6 +14,15 @@ export interface ClientFilters {
   community: string | null;
 }
 
+// Cache pour éviter les re-générations aléatoires
+const CLIENTS_CACHE_KEY = 'enriched_clients_cache';
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+
+interface CachedClientsData {
+  clients: Client[];
+  timestamp: number;
+}
+
 export const useClients = () => {
   const { toast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
@@ -32,43 +41,22 @@ export const useClients = () => {
   const loadClients = async () => {
     try {
       setLoading(true);
+      
+      // Vérifier le cache d'abord
+      const cached = getCachedClients();
+      if (cached) {
+        console.log('📂 Clients chargés depuis le cache:', cached.length);
+        setClients(cached);
+        setLoading(false);
+        return;
+      }
+      
+      console.log('🔄 Chargement des clients depuis l\'API...');
       const data = await getClients();
       
-      // Communautés autonomes espagnoles pour les exemples
-      const communities = [
-        'Andalucía', 
-        'Aragón', 
-        'Asturias', 
-        'Baleares', 
-        'Canarias', 
-        'Cantabria',
-        'Castilla-La Mancha', 
-        'Castilla y León', 
-        'Cataluña', 'Extremadura',
-        'Galicia', 
-        'Madrid', 
-        'Murcia', 
-        'Navarra', 
-        'País Vasco', 
-        'La Rioja',
-        'Valencia'
-      ];
-      
-      // Enrichir les données avec des valeurs par défaut pour les nouveaux champs requis
-      const enrichedClients = data.map(client => ({
-        ...client,
-        postalCode: client.postalCode || extractPostalCode(client.address),
-        ficheType: client.ficheType || client.type || 'RES010',
-        climateZone: client.climateZone || 'C',
-        isolatedArea: client.isolatedArea || Math.floor(Math.random() * 100) + 20,
-        isolationType: client.isolationType || (Math.random() > 0.5 ? 'Combles' : 'Rampants'),
-        floorType: client.floorType || (Math.random() > 0.5 ? 'Bois' : 'Béton'),
-        depositStatus: client.depositStatus || 'Non déposé',
-        installationDate: client.installationDate || getRandomPastDate(),
-        lotNumber: client.lotNumber || (Math.random() > 0.7 ? `LOT-${Math.floor(Math.random() * 100)}` : null),
-        community: client.community || (Math.random() > 0.3 ? communities[Math.floor(Math.random() * communities.length)] : undefined)
-      }));
-      
+      // Enrichir une seule fois et mettre en cache
+      const enrichedClients = enrichClientsData(data);
+      setCachedClients(enrichedClients);
       setClients(enrichedClients);
       
       if (enrichedClients.length > 0) {
@@ -89,9 +77,64 @@ export const useClients = () => {
     }
   };
 
+  // Fonction pour enrichir les données (une seule fois)
+  const enrichClientsData = (rawClients: Client[]): Client[] => {
+    const communities = [
+      'Andalucía', 'Aragón', 'Asturias', 'Baleares', 'Canarias', 'Cantabria',
+      'Castilla-La Mancha', 'Castilla y León', 'Cataluña', 'Extremadura',
+      'Galicia', 'Madrid', 'Murcia', 'Navarra', 'País Vasco', 'La Rioja', 'Valencia'
+    ];
+    
+    return rawClients.map((client, index) => ({
+      ...client,
+      postalCode: client.postalCode || extractPostalCode(client.address),
+      ficheType: client.ficheType || client.type || 'RES010',
+      climateZone: client.climateZone || 'C',
+      isolatedArea: client.isolatedArea || (20 + (index * 3) % 80), // Déterministe basé sur l'index
+      isolationType: client.isolationType || (index % 2 === 0 ? 'Combles' : 'Rampants'),
+      floorType: client.floorType || (index % 2 === 0 ? 'Bois' : 'Béton'),
+      depositStatus: client.depositStatus || 'Non déposé',
+      installationDate: client.installationDate || getDateFromIndex(index),
+      lotNumber: client.lotNumber || (index % 5 === 0 ? `LOT-${index + 100}` : null),
+      community: client.community || (index % 4 !== 0 ? communities[index % communities.length] : undefined)
+    }));
+  };
+
+  // Gestion du cache
+  const getCachedClients = (): Client[] | null => {
+    try {
+      const cached = localStorage.getItem(CLIENTS_CACHE_KEY);
+      if (cached) {
+        const data: CachedClientsData = JSON.parse(cached);
+        const now = Date.now();
+        
+        if (now - data.timestamp < CACHE_DURATION) {
+          return data.clients;
+        } else {
+          localStorage.removeItem(CLIENTS_CACHE_KEY);
+        }
+      }
+    } catch (error) {
+      console.error('Erreur lecture cache clients:', error);
+    }
+    return null;
+  };
+
+  const setCachedClients = (clients: Client[]) => {
+    try {
+      const data: CachedClientsData = {
+        clients,
+        timestamp: Date.now()
+      };
+      localStorage.setItem(CLIENTS_CACHE_KEY, JSON.stringify(data));
+    } catch (error) {
+      console.error('Erreur sauvegarde cache clients:', error);
+    }
+  };
+
   useEffect(() => {
     loadClients();
-  }, []);
+  }, []); // Une seule fois au montage
 
   // Filtrer les clients selon les critères
   const filteredClients = useMemo(() => {
@@ -107,40 +150,14 @@ export const useClients = () => {
         if (!matchesSearch) return false;
       }
       
-      // Filtre par statut du dossier
-      if (filters.status && client.status !== filters.status) {
-        return false;
-      }
-      
-      // Filtre par type de fiche
-      if (filters.ficheType && client.ficheType !== filters.ficheType) {
-        return false;
-      }
-      
-      // Filtre par zone climatique
-      if (filters.climateZone && client.climateZone !== filters.climateZone) {
-        return false;
-      }
-      
-      // Filtre par type d'isolation
-      if (filters.isolationType && client.isolationType !== filters.isolationType) {
-        return false;
-      }
-      
-      // Filtre par type de plancher
-      if (filters.floorType && client.floorType !== filters.floorType) {
-        return false;
-      }
-      
-      // Filtre par statut de dépôt
-      if (filters.depositStatus && client.depositStatus !== filters.depositStatus) {
-        return false;
-      }
-      
-      // Filtre par communauté autonome
-      if (filters.community && (!client.community || !client.community.includes(filters.community))) {
-        return false;
-      }
+      // Filtres spécifiques
+      if (filters.status && client.status !== filters.status) return false;
+      if (filters.ficheType && client.ficheType !== filters.ficheType) return false;
+      if (filters.climateZone && client.climateZone !== filters.climateZone) return false;
+      if (filters.isolationType && client.isolationType !== filters.isolationType) return false;
+      if (filters.floorType && client.floorType !== filters.floorType) return false;
+      if (filters.depositStatus && client.depositStatus !== filters.depositStatus) return false;
+      if (filters.community && (!client.community || !client.community.includes(filters.community))) return false;
       
       return true;
     });
@@ -156,19 +173,15 @@ export const useClients = () => {
   };
 };
 
-// Fonctions utilitaires
+// Fonctions utilitaires déterministes
 const extractPostalCode = (address: string | undefined): string => {
   if (!address) return '';
-  
-  // Essaie de trouver un code postal à 5 chiffres dans l'adresse
   const match = address.match(/\b\d{5}\b/);
   return match ? match[0] : '';
 };
 
-const getRandomPastDate = (): string => {
-  const today = new Date();
-  const pastDate = new Date(today);
-  pastDate.setDate(today.getDate() - Math.floor(Math.random() * 90));
-  
-  return pastDate.toISOString().split('T')[0]; // Format YYYY-MM-DD
+const getDateFromIndex = (index: number): string => {
+  const baseDate = new Date('2024-01-01');
+  baseDate.setDate(baseDate.getDate() + (index * 2)); // Date déterministe
+  return baseDate.toISOString().split('T')[0];
 };
