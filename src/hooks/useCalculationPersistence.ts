@@ -1,5 +1,6 @@
 
-import { useEffect, useRef } from 'react';
+// src/hooks/useCalculationPersistence.ts
+import { useRef } from 'react';
 import { Layer } from './useLayerManagement';
 
 interface CalculationPersistenceData {
@@ -24,7 +25,7 @@ export const useCalculationPersistence = (clientId: string) => {
   const storageKey = `calculation_state_${clientId}`;
   const isInitialLoad = useRef(true);
 
-  // Sauvegarder l'état dans localStorage
+  /* ---------- 1. Sauvegarde ---------- */
   const saveCalculationState = (data: Partial<CalculationPersistenceData>) => {
     try {
       const existing = getCalculationState();
@@ -33,49 +34,45 @@ export const useCalculationPersistence = (clientId: string) => {
         ...data,
         timestamp: new Date().toISOString()
       };
-      
+
       localStorage.setItem(storageKey, JSON.stringify(updated));
       console.log('💾 État des calculs sauvegardé pour client:', clientId, {
         beforeLayersCount: updated.beforeLayers?.length || 0,
-        afterLayersCount: updated.afterLayers?.length || 0,
-        beforeLayersDetails: updated.beforeLayers?.map(l => ({name: l.name, thickness: l.thickness})) || [],
-        afterLayersDetails: updated.afterLayers?.map(l => ({name: l.name, thickness: l.thickness})) || []
+        afterLayersCount: updated.afterLayers?.length || 0
       });
     } catch (error) {
       console.error('❌ Erreur sauvegarde état calculs:', error);
     }
   };
 
-  // Récupérer l'état depuis localStorage avec validation
+  /* ---------- 2. Lecture (avec fallback) ---------- */
   const getCalculationState = (): CalculationPersistenceData | null => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
+    const candidateKeys = [storageKey, 'calculation_state_default'];
+
+    for (const key of candidateKeys) {
+      try {
+        const saved = localStorage.getItem(key);
+        if (!saved) continue;
+
         const data = JSON.parse(saved);
-        
-        // Validation des données essentielles
         if (data && typeof data === 'object') {
-          console.log('📂 État des calculs récupéré pour client:', clientId, {
-            beforeLayersCount: data.beforeLayers?.length || 0,
-            afterLayersCount: data.afterLayers?.length || 0,
-            timestamp: data.timestamp,
-            surfaceArea: data.surfaceArea,
-            roofArea: data.roofArea,
-            beforeLayersDetails: data.beforeLayers?.map(l => ({name: l.name, thickness: l.thickness})) || [],
-            afterLayersDetails: data.afterLayers?.map(l => ({name: l.name, thickness: l.thickness})) || []
+          console.log('📂 État des calculs récupéré depuis', key, {
+            beforeLayers: data.beforeLayers?.length || 0,
+            afterLayers: data.afterLayers?.length || 0,
+            timestamp: data.timestamp
           });
           return data;
         }
+      } catch (error) {
+        console.error(`❌ Erreur récupération état calculs (clé ${key}):`, error);
       }
-      console.log('📂 Aucune donnée sauvegardée valide trouvée pour client:', clientId);
-      return null;
-    } catch (error) {
-      console.error('❌ Erreur récupération état calculs:', error);
-      return null;
     }
+
+    console.log('📂 Aucune donnée sauvegardée valide trouvée pour client:', clientId);
+    return null;
   };
 
-  // Effacer l'état sauvegardé
+  /* ---------- 3. Suppression ---------- */
   const clearCalculationState = () => {
     try {
       localStorage.removeItem(storageKey);
@@ -85,34 +82,12 @@ export const useCalculationPersistence = (clientId: string) => {
     }
   };
 
-  // Vérifier si des données sont sauvegardées
+  /* ---------- 4. Existence de données ---------- */
   const hasPersistedData = (): boolean => {
-    try {
-      const saved = getCalculationState();
-      
-      // Explicitly check each condition and return boolean
-      const dataExists = saved !== null;
-      const hasTimestamp = saved?.timestamp !== undefined;
-      const hasLayers = (saved?.beforeLayers?.length || 0) > 0 || (saved?.afterLayers?.length || 0) > 0;
-      const hasAreas = Boolean(saved?.surfaceArea) || Boolean(saved?.roofArea);
-      
-      const hasValidData = dataExists && hasTimestamp && (hasLayers || hasAreas);
-      
-      console.log('🔍 Vérification données persistées pour client:', clientId, {
-        hasValidData,
-        dataExists,
-        hasTimestamp,
-        beforeLayersCount: saved?.beforeLayers?.length || 0,
-        afterLayersCount: saved?.afterLayers?.length || 0,
-        hasSurfaceArea: Boolean(saved?.surfaceArea),
-        hasRoofArea: Boolean(saved?.roofArea)
-      });
-      
-      return hasValidData;
-    } catch (error) {
-      console.error('❌ Erreur vérification données persistées:', error);
-      return false;
-    }
+    const saved = getCalculationState();
+    const hasData = Boolean(saved);
+    console.log('🔍 Vérification données persistées pour client:', clientId, { hasData });
+    return hasData;
   };
 
   return {
