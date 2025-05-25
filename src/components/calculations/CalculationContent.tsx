@@ -23,6 +23,11 @@ interface CalculationContentProps {
   setRatioBefore: (value: number) => void;
   setRatioAfter: (value: number) => void;
   onClimateZoneChange?: (zone: string) => void;
+  climateConfidence?: number;
+  climateMethod?: string;
+  climateReferenceCity?: string;
+  climateDistance?: number;
+  climateDescription?: string;
 }
 
 const CalculationContent = ({
@@ -41,7 +46,12 @@ const CalculationContent = ({
   setVentilationAfter,
   setRatioBefore,
   setRatioAfter,
-  onClimateZoneChange
+  onClimateZoneChange,
+  climateConfidence,
+  climateMethod,
+  climateReferenceCity,
+  climateDistance,
+  climateDescription
 }: CalculationContentProps) => {
   // Adapter functions for before layers
   const handleAddLayerBefore = (material: Material) => {
@@ -124,6 +134,11 @@ const CalculationContent = ({
           climateZone={calculationData.climateZone}
           projectType={calculationData.projectType}
           onClimateZoneChange={onClimateZoneChange}
+          climateConfidence={climateConfidence}
+          climateMethod={climateMethod}
+          climateReferenceCity={climateReferenceCity}
+          climateDistance={climateDistance}
+          climateDescription={climateDescription}
         />
       </div>
     </CardContent>
