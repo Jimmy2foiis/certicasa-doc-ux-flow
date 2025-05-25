@@ -5,7 +5,7 @@ import { Client } from "@/services/api/types";
 import StatusBanner from "./StatusBanner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ClientForm } from "./ClientForm";
-import { FileText } from "lucide-react";
+import { FileText, Mail, Phone } from "lucide-react";
 
 interface ClientDetailsHeaderProps {
   client: Client | null;
@@ -64,7 +64,19 @@ const ClientDetailsHeader = ({
     <>
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">{clientName}</h1>
+          <div className="flex items-center gap-6">
+            <h1 className="text-2xl font-bold tracking-tight">{clientName}</h1>
+            <div className="flex items-center gap-4 text-sm text-gray-600">
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4" />
+                <span>{client?.email || "email@example.com"}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                <span>{client?.phone || "+34 XXX XXX XXX"}</span>
+              </div>
+            </div>
+          </div>
           <Button 
             variant="default" 
             className="bg-green-600 hover:bg-green-700"
