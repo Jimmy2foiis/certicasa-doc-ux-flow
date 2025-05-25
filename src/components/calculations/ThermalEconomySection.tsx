@@ -59,16 +59,23 @@ const ThermalEconomySection = ({
   const [delegate, setDelegate] = useState<"Eiffage" | "GreenFlex">("Eiffage");
   const [selectedClimateZone, setSelectedClimateZone] = useState(climateZone);
   
-  // 🔧 Synchroniser la zone climatique avec la prop reçue
+  // 🔥 SYNCHRONISATION AUTOMATIQUE avec la zone climatique déterminée
   useEffect(() => {
-    if (climateZone !== selectedClimateZone) {
-      console.log('🌍 Synchronisation zone climatique dans ThermalEconomySection:', climateZone);
+    if (climateZone && climateZone !== selectedClimateZone) {
+      console.log('🌍 Synchronisation automatique zone climatique dans ThermalEconomySection:', climateZone);
       setSelectedClimateZone(climateZone);
+      // Propager immédiatement le changement pour mettre à jour le coefficient G
+      if (onClimateZoneChange) {
+        onClimateZoneChange(climateZone);
+      }
     }
-  }, [climateZone]);
+  }, [climateZone, selectedClimateZone, onClimateZoneChange]);
 
   // Get coefficient G based on selected climate zone
   const gCoefficient = climateZoneCoefficients[selectedClimateZone] || 46;
+  
+  // Helper function to get coefficient for any zone
+  const getCoefficient = (zone: string) => climateZoneCoefficients[zone] || 46;
   
   // Get multiplier based on delegate
   const multiplier = delegateMultipliers[delegate];
@@ -92,7 +99,7 @@ const ThermalEconomySection = ({
 
   // 🔧 Gestionnaire de changement optimisé avec propagation
   const handleClimateZoneChange = (zone: string) => {
-    console.log('🌍 Changement zone climatique depuis ThermalEconomySection:', zone);
+    console.log('🌍 Changement zone climatique manuel depuis ThermalEconomySection:', zone);
     setSelectedClimateZone(zone);
     
     // Propager le changement vers le parent pour synchroniser avec les autres composants
@@ -143,34 +150,40 @@ const ThermalEconomySection = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Climate Zone Selector */}
+          {/* Climate Zone Selector avec coefficient G visible */}
           <div className="space-y-2">
-            <Label htmlFor="climate-zone">Zone Climatique</Label>
+            <Label htmlFor="climate-zone" className="flex items-center gap-2">
+              Zone Climatique
+              {selectedClimateZone && (
+                <span className="font-normal text-muted-foreground text-sm">
+                  (G: {getCoefficient(selectedClimateZone)})
+                </span>
+              )}
+            </Label>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Select
                   value={selectedClimateZone}
                   onValueChange={handleClimateZoneChange}
                 >
-                  <SelectTrigger className="w-32">
+                  <SelectTrigger className="w-40">
                     <SelectValue placeholder="Sélectionner une zone" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="A3">A3 (Coeff: 25)</SelectItem>
-                    <SelectItem value="A4">A4 (Coeff: 26)</SelectItem>
-                    <SelectItem value="B3">B3 (Coeff: 32)</SelectItem>
-                    <SelectItem value="B4">B4 (Coeff: 33)</SelectItem>
-                    <SelectItem value="C1">C1 (Coeff: 44)</SelectItem>
-                    <SelectItem value="C2">C2 (Coeff: 45)</SelectItem>
-                    <SelectItem value="C3">C3 (Coeff: 46)</SelectItem>
-                    <SelectItem value="C4">C4 (Coeff: 46)</SelectItem>
-                    <SelectItem value="D1">D1 (Coeff: 60)</SelectItem>
-                    <SelectItem value="D2">D2 (Coeff: 60)</SelectItem>
-                    <SelectItem value="D3">D3 (Coeff: 61)</SelectItem>
-                    <SelectItem value="E1">E1 (Coeff: 74)</SelectItem>
+                  <SelectContent className="bg-white border shadow-lg z-50">
+                    <SelectItem value="A3">A3 (G: 25)</SelectItem>
+                    <SelectItem value="A4">A4 (G: 26)</SelectItem>
+                    <SelectItem value="B3">B3 (G: 32)</SelectItem>
+                    <SelectItem value="B4">B4 (G: 33)</SelectItem>
+                    <SelectItem value="C1">C1 (G: 44)</SelectItem>
+                    <SelectItem value="C2">C2 (G: 45)</SelectItem>
+                    <SelectItem value="C3">C3 (G: 46)</SelectItem>
+                    <SelectItem value="C4">C4 (G: 46)</SelectItem>
+                    <SelectItem value="D1">D1 (G: 60)</SelectItem>
+                    <SelectItem value="D2">D2 (G: 60)</SelectItem>
+                    <SelectItem value="D3">D3 (G: 61)</SelectItem>
+                    <SelectItem value="E1">E1 (G: 74)</SelectItem>
                   </SelectContent>
                 </Select>
-                <span className="text-sm text-gray-500">(G: {gCoefficient})</span>
                 {renderConfidenceIndicator()}
               </div>
               {renderClimateInfo()}
@@ -187,7 +200,7 @@ const ThermalEconomySection = ({
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Sélectionner un délégataire" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border shadow-lg z-50">
                 <SelectItem value="Eiffage">Eiffage (0,130)</SelectItem>
                 <SelectItem value="GreenFlex">GreenFlex (0,115)</SelectItem>
               </SelectContent>
