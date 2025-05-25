@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DocumentsTabContent } from "./DocumentsTabContent";
@@ -6,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import BillingTab from "./BillingTab";
 import DocumentsTab from "./documents/DocumentsTab";
 import ProjectCalculation from "../calculations/ProjectCalculation";
+import PhotosChantierTab from "./PhotosChantierTab";
 
 interface ClientTabsContainerProps {
   client: any;
@@ -116,15 +118,11 @@ export const ClientTabsContainer = ({
           </TabsContent>
 
           <TabsContent value="photos" className="p-4">
-            <div className="text-center p-8">
-              <h3 className="text-lg font-medium mb-2">Photos de Chantier</h3>
-              <p className="text-gray-600 mb-4">
-                Gestion des photos avant/après travaux pour le client {client?.name}
-              </p>
-              <p className="text-sm text-gray-500">
-                Module en développement - Upload et organisation des photos de chantier
-              </p>
-            </div>
+            <PhotosChantierTab 
+              clientId={clientId}
+              clientName={client?.name}
+              safetyCultureAuditId={client?.safetyCultureAuditId}
+            />
           </TabsContent>
 
           <TabsContent value="signatures" className="p-4">
