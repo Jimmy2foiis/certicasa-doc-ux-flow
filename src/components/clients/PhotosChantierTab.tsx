@@ -11,13 +11,14 @@ import { PhotoSelectionPanel } from './photos/PhotoSelectionPanel';
 import { PhotoModeSelector } from './photos/PhotoModeSelector';
 import { SafetyCultureService } from '@/services/safetyCultureService';
 import { generatePhotosWordDocument } from '@/services/photosWordService';
-import { createDocument } from '@/services/supabase/documentService';
+import { createDocument, updateDocument } from '@/services/supabase/documentService';
 import type { SafetyCultureAudit, SafetyCulturePhoto, SelectedPhoto } from '@/types/safetyCulture';
 
 interface PhotosChantierTabProps {
   clientId: string;
   clientName?: string;
   safetyCultureAuditId?: string;
+  onDocumentGenerated?: () => void; // Nouvelle prop pour notifier la génération
 }
 
 export type SelectionMode = 'avant' | 'apres';
@@ -25,7 +26,8 @@ export type SelectionMode = 'avant' | 'apres';
 const PhotosChantierTab = ({ 
   clientId, 
   clientName = 'Client', 
-  safetyCultureAuditId 
+  safetyCultureAuditId,
+  onDocumentGenerated
 }: PhotosChantierTabProps) => {
   const [audits, setAudits] = useState<SafetyCultureAudit[]>([]);
   const [selectedAuditId, setSelectedAuditId] = useState<string>(safetyCultureAuditId || '');
@@ -203,8 +205,8 @@ const PhotosChantierTab = ({
         // Créer l'enregistrement du document dans Supabase
         const documentRecord = await createDocument({
           name: '4-Fotos.docx',
-          type: 'photos_report',
-          status: 'completed',
+          type: 'fotos',
+          status: 'generated',
           client_id: clientId,
           content: base64data
         });
@@ -214,6 +216,23 @@ const PhotosChantierTab = ({
             title: "✅ Document créé",
             description: "4-Fotos.docx a été ajouté au dossier client",
           });
+          
+          // Notifier la génération du document pour mettre à jour l'onglet Documents
+          if (onDocumentGenerated) {
+            onDocumentGenerated();
+          }
+          
+          // Trigger un refresh des données client si possible
+          if (window.location.pathname.includes('/clients')) {
+            // Déclencher un événement personnalisé pour actualiser les documents
+            window.dispatchEvent(new CustomEvent('document-generated', { 
+              detail: { 
+                clientId, 
+                documentType: 'fotos',
+                documentName: '4-Fotos.docx'
+              } 
+            }));
+          }
           
           // Réinitialiser les sélections
           setSelectedPhotos({ avant: [], apres: [] });

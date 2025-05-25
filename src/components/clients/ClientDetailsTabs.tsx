@@ -1,11 +1,11 @@
-
 import { 
   User, 
   Home, 
   FileText, 
   Receipt, 
   BarChart, 
-  Calculator 
+  Calculator, 
+  ImageIcon 
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ClientInfoTab from "./ClientInfoTab";
@@ -14,6 +14,7 @@ import CalculationsTab from "./CalculationsTab";
 import DocumentsTab from "./DocumentsTab";
 import BillingTab from "./BillingTab";
 import StatisticsTab from "./StatisticsTab";
+import PhotosChantierTab from "./PhotosChantierTab";
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
 
 interface ClientDetailsTabsProps {
@@ -53,6 +54,20 @@ const ClientDetailsTabs = ({
   onCoordinatesChange,
   onRefreshCadastralData
 }: ClientDetailsTabsProps) => {
+  
+  // Fonction pour gérer la génération de documents et basculer vers l'onglet Documents
+  const handleDocumentGenerated = () => {
+    // Basculer automatiquement vers l'onglet Documents
+    setActiveTab('documents');
+    
+    // Déclencher un refresh des données
+    if (onRefreshCadastralData) {
+      setTimeout(() => {
+        onRefreshCadastralData();
+      }, 1000);
+    }
+  };
+
   return (
     <Tabs 
       value={activeTab} 
@@ -75,6 +90,10 @@ const ClientDetailsTabs = ({
         <TabsTrigger value="documents" className="flex items-center gap-1">
           <FileText className="h-4 w-4" />
           <span>Documents</span>
+        </TabsTrigger>
+        <TabsTrigger value="photos-chantier" className="flex items-center gap-1">
+          <ImageIcon className="h-4 w-4" />
+          <span>Photos Chantier</span>
         </TabsTrigger>
         <TabsTrigger value="billing" className="flex items-center gap-1">
           <Receipt className="h-4 w-4" />
@@ -119,6 +138,14 @@ const ClientDetailsTabs = ({
 
       <TabsContent value="documents">
         <DocumentsTab clientId={clientId} />
+      </TabsContent>
+
+      <TabsContent value="photos-chantier">
+        <PhotosChantierTab 
+          clientId={clientId} 
+          clientName={client?.name}
+          onDocumentGenerated={handleDocumentGenerated}
+        />
       </TabsContent>
 
       <TabsContent value="billing">
