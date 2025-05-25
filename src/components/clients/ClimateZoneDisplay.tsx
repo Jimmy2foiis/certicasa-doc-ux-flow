@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Thermometer, CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
@@ -56,6 +56,22 @@ const ClimateZoneDisplay = ({
   onZoneChange,
   editable = true
 }: ClimateZoneDisplayProps) => {
+  
+  // 🐛 DEBUG: Tracer la réception de la zone climatique
+  console.log('🌡️ ClimateZoneDisplay - zone affichée:', climateZone);
+  console.log('🌡️ ClimateZoneDisplay - props complètes:', {
+    climateZone,
+    confidence,
+    method,
+    referenceCity,
+    distance
+  });
+
+  // 🛠️ EFFET pour vérifier les changements de props
+  useEffect(() => {
+    console.log('🔄 ClimateZoneDisplay - Effet déclenché, zone:', climateZone);
+  }, [climateZone]);
+
   const confidenceColor = getConfidenceColor(confidence);
   const confidenceIcon = getConfidenceIcon(confidence);
   const zoneBadgeVariant = getZoneBadgeColor(climateZone);
@@ -65,6 +81,8 @@ const ClimateZoneDisplay = ({
       <div className="flex items-center gap-2">
         <Thermometer className="h-4 w-4 text-blue-600" />
         <span className="text-sm font-medium text-blue-800">Zone Climatique CTE</span>
+        {/* 🐛 DEBUG: Afficher la zone dans le titre */}
+        <span className="text-xs text-gray-500">({climateZone})</span>
       </div>
       
       <div className="space-y-3">

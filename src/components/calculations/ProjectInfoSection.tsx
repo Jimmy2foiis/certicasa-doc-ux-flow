@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,20 @@ const ProjectInfoSection = ({
   const [localSurfaceArea, setLocalSurfaceArea] = useState(surfaceArea);
   const [localRoofArea, setLocalRoofArea] = useState(roofArea);
   const [localFloorType, setLocalFloorType] = useState(floorType);
+  const [localClimateZone, setLocalClimateZone] = useState(climateZone);
+
+  // 🐛 DEBUG: Tracer la réception de la zone climatique
+  console.log('🏠 ProjectInfoSection - zone reçue:', climateZone);
+  console.log('🏠 ProjectInfoSection - zone locale:', localClimateZone);
+
+  // 🛠️ FORCER la synchronisation quand la zone change
+  useEffect(() => {
+    console.log('🔧 ProjectInfo - Mise à jour zone forcée:', climateZone);
+    if (climateZone && climateZone !== localClimateZone) {
+      console.log('🔄 ProjectInfo - Synchronisation zone:', climateZone);
+      setLocalClimateZone(climateZone);
+    }
+  }, [climateZone, localClimateZone]);
 
   const handleSurfaceAreaChange = (value: string) => {
     setLocalSurfaceArea(value);
@@ -89,8 +103,9 @@ const ProjectInfoSection = ({
               <div>
                 <Label className="block text-sm text-gray-500 mb-2">Zone climatique</Label>
                 <div className="p-2 bg-muted rounded-md text-sm h-10 flex items-center">
-                  <span className="font-medium">{climateZone || 'Non définie'}</span>
-                  {climateZone && (
+                  {/* 🐛 DEBUG: Afficher la zone avec indicateur visuel */}
+                  <span className="font-medium text-blue-600">{localClimateZone || 'Non définie'}</span>
+                  {localClimateZone && (
                     <span className="text-muted-foreground ml-2">(déterminée automatiquement)</span>
                   )}
                 </div>
@@ -120,9 +135,6 @@ const ProjectInfoSection = ({
             </div>
           </div>
         </div>
-
-        {/* Section récapitulatif avec badges */}
-        
       </CardContent>
     </Card>
   );

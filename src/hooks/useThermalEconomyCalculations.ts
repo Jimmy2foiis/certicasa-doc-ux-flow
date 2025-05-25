@@ -27,17 +27,33 @@ export const useThermalEconomyCalculations = ({
   const [delegate, setDelegate] = useState<"Eiffage" | "GreenFlex">("Eiffage");
   const [selectedClimateZone, setSelectedClimateZone] = useState(climateZone);
   
-  // 🔥 SYNCHRONISATION AUTOMATIQUE avec la zone climatique déterminée
+  // 🐛 DEBUG: Tracer la réception de la zone dans le hook
+  console.log('🔗 useThermalEconomyCalculations - zone reçue:', climateZone);
+  console.log('🔗 useThermalEconomyCalculations - zone sélectionnée:', selectedClimateZone);
+  
+  // 🔥 SYNCHRONISATION IMMÉDIATE et FORCÉE avec la zone climatique déterminée
   useEffect(() => {
+    console.log('🔄 Hook - Effect de synchronisation déclenché:', { climateZone, selectedClimateZone });
+    
     if (climateZone && climateZone !== selectedClimateZone) {
-      console.log('🌍 Synchronisation automatique zone climatique dans ThermalEconomySection:', climateZone);
+      console.log('🌍 Hook - Synchronisation automatique zone climatique:', climateZone);
       setSelectedClimateZone(climateZone);
+      
       // Propager immédiatement le changement pour mettre à jour le coefficient G
       if (onClimateZoneChange) {
+        console.log('🔄 Hook - Propagation du changement vers le parent:', climateZone);
         onClimateZoneChange(climateZone);
       }
     }
   }, [climateZone, selectedClimateZone, onClimateZoneChange]);
+
+  // 🔄 INITIALISATION: S'assurer que la zone est correctement initialisée au premier rendu
+  useEffect(() => {
+    if (climateZone && !selectedClimateZone) {
+      console.log('🎯 Hook - Initialisation zone climatique:', climateZone);
+      setSelectedClimateZone(climateZone);
+    }
+  }, [climateZone, selectedClimateZone]);
 
   // Get coefficient G based on selected climate zone
   const gCoefficient = climateZoneCoefficients[selectedClimateZone] || 46;
@@ -67,14 +83,22 @@ export const useThermalEconomyCalculations = ({
 
   // 🔧 Gestionnaire de changement optimisé avec propagation
   const handleClimateZoneChange = (zone: string) => {
-    console.log('🌍 Changement zone climatique manuel depuis ThermalEconomySection:', zone);
+    console.log('🌍 Hook - Changement zone climatique manuel:', zone);
     setSelectedClimateZone(zone);
     
     // Propager le changement vers le parent pour synchroniser avec les autres composants
     if (onClimateZoneChange) {
+      console.log('🔄 Hook - Propagation vers parent du changement manuel:', zone);
       onClimateZoneChange(zone);
     }
   };
+
+  // 🐛 DEBUG: Afficher les valeurs finales
+  console.log('✅ Hook - Valeurs finales:', {
+    selectedClimateZone,
+    gCoefficient,
+    annualSavings: annualSavings.toFixed(2)
+  });
 
   return {
     cherryEnabled,
