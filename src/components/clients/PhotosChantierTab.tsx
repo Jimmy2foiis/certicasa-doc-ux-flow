@@ -4,13 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Download, Image as ImageIcon, Settings } from 'lucide-react';
+import { FileText, Image as ImageIcon, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { PhotoGallery } from './photos/PhotoGallery';
 import { PhotoSelectionPanel } from './photos/PhotoSelectionPanel';
 import { PhotoModeSelector } from './photos/PhotoModeSelector';
 import { SafetyCultureService } from '@/services/safetyCultureService';
-import { generatePhotosReportPDF } from '@/services/photosReportService';
+import { generatePhotosWordDocument } from '@/services/photosWordService';
+import { createDocument } from '@/services/supabase/documentService';
 import type { SafetyCultureAudit, SafetyCulturePhoto, SelectedPhoto } from '@/types/safetyCulture';
 
 interface PhotosChantierTabProps {
@@ -36,11 +37,13 @@ const PhotosChantierTab = ({
   const [selectionMode, setSelectionMode] = useState<SelectionMode>('avant');
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [client, setClient] = useState<any>(null);
   const { toast } = useToast();
 
   // Charger les inspections disponibles
   useEffect(() => {
     loadAudits();
+    loadClientData();
   }, []);
 
   // Charger les photos quand une inspection est sélectionnée
@@ -49,6 +52,16 @@ const PhotosChantierTab = ({
       loadPhotos(selectedAuditId);
     }
   }, [selectedAuditId]);
+
+  const loadClientData = async () => {
+    try {
+      // Récupérer les données du client depuis le localStorage ou API
+      const clientData = JSON.parse(localStorage.getItem(`client_${clientId}`) || '{}');
+      setClient(clientData);
+    } catch (error) {
+      console.error('Erreur lors du chargement des données client:', error);
+    }
+  };
 
   const loadAudits = async () => {
     try {
@@ -101,14 +114,18 @@ const PhotosChantierTab = ({
     const isSelected = currentSelection.some(p => p.photo.id === photo.id);
     
     if (isSelected) {
-      // Retirer la photo
+      // Retirer la photo et réorganiser les numéros
+      const newSelection = currentSelection
+        .filter(p => p.photo.id !== photo.id)
+        .map((p, index) => ({ ...p, order: index + 1 }));
+      
       setSelectedPhotos(prev => ({
         ...prev,
-        [selectionMode]: prev[selectionMode].filter(p => p.photo.id !== photo.id)
+        [selectionMode]: newSelection
       }));
     } else {
-      // Ajouter la photo si limite pas atteinte
-      if (currentSelection.length < 6) {
+      // Ajouter la photo si limite pas atteinte (exactement 4)
+      if (currentSelection.length < 4) {
         const newSelectedPhoto: SelectedPhoto = {
           photo,
           order: currentSelection.length + 1
@@ -120,7 +137,7 @@ const PhotosChantierTab = ({
       } else {
         toast({
           title: "Limite atteinte",
-          description: `Maximum 6 photos ${selectionMode.toUpperCase()}`,
+          description: `Maximum 4 photos ${selectionMode.toUpperCase()}`,
           variant: "destructive",
         });
       }
@@ -128,9 +145,13 @@ const PhotosChantierTab = ({
   };
 
   const handlePhotoRemove = (photoId: string, mode: SelectionMode) => {
+    const newSelection = selectedPhotos[mode]
+      .filter(p => p.photo.id !== photoId)
+      .map((p, index) => ({ ...p, order: index + 1 }));
+    
     setSelectedPhotos(prev => ({
       ...prev,
-      [mode]: prev[mode].filter(p => p.photo.id !== photoId)
+      [mode]: newSelection
     }));
   };
 
@@ -146,11 +167,11 @@ const PhotosChantierTab = ({
     }));
   };
 
-  const generateReport = async () => {
-    if (selectedPhotos.avant.length === 0 && selectedPhotos.apres.length === 0) {
+  const generateDocument = async () => {
+    if (selectedPhotos.avant.length !== 4 || selectedPhotos.apres.length !== 4) {
       toast({
-        title: "Aucune photo sélectionnée",
-        description: "Veuillez sélectionner au moins une photo avant ou après",
+        title: "Sélection incomplète",
+        description: "Veuillez sélectionner exactement 4 photos AVANT et 4 photos APRÈS",
         variant: "destructive",
       });
       return;
@@ -165,16 +186,48 @@ const PhotosChantierTab = ({
         clientName,
         projectTitle: selectedAudit?.title || 'Inspection chantier',
         auditDate: selectedAudit?.created_at || new Date().toISOString(),
-        photosAvant: selectedPhotos.avant,
-        photosApres: selectedPhotos.apres
+        refCatastral: client?.cadastralReference || client?.refCatastral || 'N/A',
+        coordenadasUTM: client?.utmCoordinates || client?.coordenadasUTM || 'N/A',
+        photosAvant: selectedPhotos.avant.sort((a, b) => a.order - b.order),
+        photosApres: selectedPhotos.apres.sort((a, b) => a.order - b.order)
       };
 
-      await generatePhotosReportPDF(reportData);
+      // Générer le document Word
+      const wordBlob = await generatePhotosWordDocument(reportData);
       
-      toast({
-        title: "Document généré",
-        description: "Le rapport photos a été téléchargé avec succès",
-      });
+      // Convertir le blob en base64 pour stockage
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64data = reader.result as string;
+        
+        // Créer l'enregistrement du document dans Supabase
+        const documentRecord = await createDocument({
+          name: '4-Fotos.docx',
+          type: 'photos_report',
+          status: 'completed',
+          client_id: clientId,
+          content: base64data
+        });
+
+        if (documentRecord) {
+          toast({
+            title: "✅ Document créé",
+            description: "4-Fotos.docx a été ajouté au dossier client",
+          });
+          
+          // Réinitialiser les sélections
+          setSelectedPhotos({ avant: [], apres: [] });
+        } else {
+          toast({
+            title: "Erreur",
+            description: "Impossible d'enregistrer le document",
+            variant: "destructive",
+          });
+        }
+      };
+      
+      reader.readAsDataURL(wordBlob);
+      
     } catch (error) {
       console.error('Erreur lors de la génération:', error);
       toast({
@@ -187,6 +240,7 @@ const PhotosChantierTab = ({
     }
   };
 
+  const canGenerate = selectedPhotos.avant.length === 4 && selectedPhotos.apres.length === 4;
   const totalSelectedPhotos = selectedPhotos.avant.length + selectedPhotos.apres.length;
 
   return (
@@ -198,23 +252,26 @@ const PhotosChantierTab = ({
             <div>
               <CardTitle className="flex items-center gap-2">
                 <ImageIcon className="h-5 w-5" />
-                Photos de Chantier
+                Photos de Chantier - 4-Fotos.docx
               </CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                Sélection et organisation des photos avant/après pour {clientName}
+                Sélection de 4 photos AVANT et 4 photos APRÈS pour {clientName}
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Badge variant="outline">
-                {totalSelectedPhotos} photo(s) sélectionnée(s)
+              <Badge 
+                variant="outline"
+                className={canGenerate ? 'border-green-500 text-green-700' : ''}
+              >
+                {totalSelectedPhotos}/8 photos sélectionnées
               </Badge>
               <Button
-                onClick={generateReport}
-                disabled={generating || totalSelectedPhotos === 0}
+                onClick={generateDocument}
+                disabled={generating || !canGenerate}
                 className="bg-green-600 hover:bg-green-700"
               >
-                <Download className="h-4 w-4 mr-2" />
-                {generating ? 'Génération...' : 'Générer PDF'}
+                <FileText className="h-4 w-4 mr-2" />
+                {generating ? 'Génération...' : 'Générer 4-Fotos.docx'}
               </Button>
             </div>
           </div>

@@ -35,8 +35,11 @@ export const PhotoSelectionPanel = ({
     <ScrollArea className="h-[400px]">
       {photos.length === 0 ? (
         <div className="text-center p-8 text-muted-foreground">
-          <p>Aucune photo {mode} sélectionnée</p>
+          <p>Aucune photo {mode === 'avant' ? 'ANTES' : 'DESPUÉS'} sélectionnée</p>
           <p className="text-sm mt-1">Cliquez sur les photos dans la galerie</p>
+          <p className="text-xs mt-2 font-medium">
+            {mode === 'avant' ? 'ANTES' : 'DESPUÉS'}: 0/4 photos
+          </p>
         </div>
       ) : (
         <div className="space-y-2 p-2">
@@ -85,6 +88,16 @@ export const PhotoSelectionPanel = ({
                 </Button>
               </div>
             ))}
+          
+          {/* Indicateur de progression */}
+          <div className="text-center p-2">
+            <Badge 
+              variant={photos.length === 4 ? 'default' : 'outline'}
+              className={photos.length === 4 ? 'bg-green-500 text-white' : ''}
+            >
+              {photos.length}/4 photos {mode === 'avant' ? 'ANTES' : 'DESPUÉS'}
+            </Badge>
+          </div>
         </div>
       )}
     </ScrollArea>
@@ -94,21 +107,36 @@ export const PhotoSelectionPanel = ({
     <Card className="h-full">
       <CardHeader>
         <CardTitle className="text-lg">Photos sélectionnées</CardTitle>
+        <p className="text-sm text-muted-foreground">
+          Exactement 4 photos ANTES et 4 photos DESPUÉS
+        </p>
       </CardHeader>
       <CardContent className="p-3">
         <Tabs defaultValue="avant" className="h-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="avant" className="flex items-center gap-2">
-              <Badge className="bg-blue-500 text-white">
+              <Badge 
+                className={`${
+                  selectedPhotos.avant.length === 4 
+                    ? 'bg-green-500' 
+                    : 'bg-blue-500'
+                } text-white`}
+              >
                 {selectedPhotos.avant.length}
               </Badge>
-              AVANT
+              ANTES
             </TabsTrigger>
             <TabsTrigger value="apres" className="flex items-center gap-2">
-              <Badge className="bg-green-500 text-white">
+              <Badge 
+                className={`${
+                  selectedPhotos.apres.length === 4 
+                    ? 'bg-green-500' 
+                    : 'bg-green-600'
+                } text-white`}
+              >
                 {selectedPhotos.apres.length}
               </Badge>
-              APRÈS
+              DESPUÉS
             </TabsTrigger>
           </TabsList>
           

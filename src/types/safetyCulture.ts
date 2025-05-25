@@ -43,6 +43,8 @@ export interface PhotosReportData {
   clientName: string;
   projectTitle: string;
   auditDate: string;
+  refCatastral?: string;
+  coordenadasUTM?: string;
   photosAvant: SelectedPhoto[];
   photosApres: SelectedPhoto[];
 }

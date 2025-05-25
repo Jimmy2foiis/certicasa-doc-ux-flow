@@ -26,7 +26,7 @@ export const PhotoModeSelector = ({
         <div className="text-center">
           <h3 className="font-semibold text-lg mb-2">Mode de sélection</h3>
           <p className="text-sm text-muted-foreground">
-            Sélectionnez le type de photos à organiser
+            Sélectionnez exactement 4 photos AVANT et 4 photos APRÈS
           </p>
         </div>
 
@@ -46,13 +46,15 @@ export const PhotoModeSelector = ({
           >
             <div className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
-              <span className="font-semibold">AVANT</span>
+              <span className="font-semibold">ANTES</span>
             </div>
             <Badge 
               variant={mode === 'avant' ? 'secondary' : 'outline'}
-              className={mode === 'avant' ? 'bg-blue-600 text-white' : ''}
+              className={`${mode === 'avant' ? 'bg-blue-600 text-white' : ''} ${
+                selectedCounts.avant === 4 ? 'bg-green-500 text-white' : ''
+              }`}
             >
-              {selectedCounts.avant}/6 photos
+              {selectedCounts.avant}/4 photos
             </Badge>
           </Button>
 
@@ -63,7 +65,7 @@ export const PhotoModeSelector = ({
             <div className="w-full h-px bg-border"></div>
           </div>
 
-          {/* Bouton APRÈS */}
+          {/* Bouton DESPUÉS */}
           <Button
             variant={mode === 'apres' ? 'default' : 'outline'}
             size="lg"
@@ -77,21 +79,23 @@ export const PhotoModeSelector = ({
             `}
           >
             <div className="flex items-center gap-2">
-              <span className="font-semibold">APRÈS</span>
+              <span className="font-semibold">DESPUÉS</span>
               <ArrowRight className="h-4 w-4" />
             </div>
             <Badge 
               variant={mode === 'apres' ? 'secondary' : 'outline'}
-              className={mode === 'apres' ? 'bg-green-600 text-white' : ''}
+              className={`${mode === 'apres' ? 'bg-green-600 text-white' : ''} ${
+                selectedCounts.apres === 4 ? 'bg-green-500 text-white' : ''
+              }`}
             >
-              {selectedCounts.apres}/6 photos
+              {selectedCounts.apres}/4 photos
             </Badge>
           </Button>
         </div>
 
         <div className="text-center">
           <p className="text-xs text-muted-foreground">
-            Maximum 6 photos par catégorie
+            Exactement 4 photos par catégorie
           </p>
         </div>
       </CardContent>
