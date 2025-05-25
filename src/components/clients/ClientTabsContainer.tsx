@@ -20,9 +20,11 @@ interface ClientTabsContainerProps {
   surfaceArea: string;
   roofArea: string;
   floorType: string;
+  climateZone?: string;
   onSurfaceAreaChange?: (value: string) => void;
   onRoofAreaChange?: (value: string) => void;
   onFloorTypeChange?: (value: string) => void;
+  onClimateZoneChange?: (value: string) => void;
 }
 
 export const ClientTabsContainer = ({ 
@@ -36,9 +38,11 @@ export const ClientTabsContainer = ({
   surfaceArea,
   roofArea,
   floorType,
+  climateZone,
   onSurfaceAreaChange,
   onRoofAreaChange,
-  onFloorTypeChange
+  onFloorTypeChange,
+  onClimateZoneChange
 }: ClientTabsContainerProps) => {
   const [currentTab, setCurrentTab] = useState("calculations");
 
@@ -89,7 +93,7 @@ export const ClientTabsContainer = ({
             <ProjectCalculation 
               clientId={clientId}
               onSave={handleSave}
-              clientClimateZone={client?.climateZone || "C3"}
+              clientClimateZone={climateZone || client?.climateZone || "C3"}
               clientName={client?.name}
               clientAddress={client?.address}
               projectName={`Calcul thermique pour ${client?.name}`}
@@ -106,6 +110,7 @@ export const ClientTabsContainer = ({
               onSurfaceAreaChange={onSurfaceAreaChange}
               onRoofAreaChange={onRoofAreaChange}
               onFloorTypeChange={onFloorTypeChange}
+              onClimateZoneChange={onClimateZoneChange}
             />
           </TabsContent>
 
