@@ -37,7 +37,9 @@ export const useCalculationPersistence = (clientId: string) => {
       localStorage.setItem(storageKey, JSON.stringify(updated));
       console.log('💾 État des calculs sauvegardé pour client:', clientId, {
         beforeLayersCount: updated.beforeLayers?.length || 0,
-        afterLayersCount: updated.afterLayers?.length || 0
+        afterLayersCount: updated.afterLayers?.length || 0,
+        beforeLayersDetails: updated.beforeLayers?.map(l => ({name: l.name, thickness: l.thickness})) || [],
+        afterLayersDetails: updated.afterLayers?.map(l => ({name: l.name, thickness: l.thickness})) || []
       });
     } catch (error) {
       console.error('❌ Erreur sauvegarde état calculs:', error);
@@ -53,10 +55,13 @@ export const useCalculationPersistence = (clientId: string) => {
         console.log('📂 État des calculs récupéré pour client:', clientId, {
           beforeLayersCount: data.beforeLayers?.length || 0,
           afterLayersCount: data.afterLayers?.length || 0,
-          timestamp: data.timestamp
+          timestamp: data.timestamp,
+          beforeLayersDetails: data.beforeLayers?.map(l => ({name: l.name, thickness: l.thickness})) || [],
+          afterLayersDetails: data.afterLayers?.map(l => ({name: l.name, thickness: l.thickness})) || []
         });
         return data;
       }
+      console.log('📂 Aucune donnée sauvegardée trouvée pour client:', clientId);
       return null;
     } catch (error) {
       console.error('❌ Erreur récupération état calculs:', error);
@@ -76,8 +81,21 @@ export const useCalculationPersistence = (clientId: string) => {
 
   // Vérifier si des données sont sauvegardées
   const hasPersistedData = (): boolean => {
-    const saved = getCalculationState();
-    return saved !== null && saved.timestamp !== undefined;
+    try {
+      const saved = getCalculationState();
+      const hasData = saved !== null && saved.timestamp !== undefined;
+      console.log('🔍 Vérification données persistées pour client:', clientId, {
+        hasData,
+        dataExists: saved !== null,
+        hasTimestamp: saved?.timestamp !== undefined,
+        beforeLayersCount: saved?.beforeLayers?.length || 0,
+        afterLayersCount: saved?.afterLayers?.length || 0
+      });
+      return hasData;
+    } catch (error) {
+      console.error('❌ Erreur vérification données persistées:', error);
+      return false;
+    }
   };
 
   return {
