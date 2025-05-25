@@ -59,7 +59,7 @@ const ClientProfileCard = ({
 
   return (
     <Card className="mb-4">
-      <CardContent className="pt-6">
+      <CardContent>
         {/* Header */}
         <div className="text-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">{client.name}</h1>
