@@ -61,6 +61,18 @@ const ClientInfoSidebar = ({
               <h3 className="font-semibold text-base border-b pb-1">Informations techniques</h3>
               
               <div className="space-y-2.5">
+                {/* Type d'isolation */}
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Type d'isolation</span>
+                  <span className="font-medium">{client.isolationType || "Combles"}</span>
+                </div>
+                
+                {/* Type de plancher */}
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-500">Type de plancher</span>
+                  <span className="font-medium">{client.floorType || "Bois"}</span>
+                </div>
+                
                 {/* Zone climatique */}
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Zone climatique</span>
@@ -89,18 +101,6 @@ const ClientInfoSidebar = ({
                     onChange={(e) => handleRoofAreaChange(e.target.value)}
                     className="mt-1"
                   />
-                </div>
-                
-                {/* Type d'isolation */}
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Type d'isolation</span>
-                  <span className="font-medium">{client.isolationType || "Combles"}</span>
-                </div>
-                
-                {/* Type de plancher */}
-                <div className="flex flex-col">
-                  <span className="text-sm text-gray-500">Type de plancher</span>
-                  <span className="font-medium">{client.floorType || "Bois"}</span>
                 </div>
               </div>
             </div>
