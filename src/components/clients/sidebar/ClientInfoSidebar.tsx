@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -45,6 +45,13 @@ const ClientInfoSidebar = ({
   const [floorType, setFloorType] = useState(currentFloorType || client?.floorType || "Bois");
   const [climateZone, setClimateZone] = useState(currentClimateZone || client?.climateZone || "C3");
 
+  // Synchroniser avec les props externes
+  useEffect(() => {
+    if (currentClimateZone && currentClimateZone !== climateZone) {
+      setClimateZone(currentClimateZone);
+    }
+  }, [currentClimateZone]);
+
   const handleSurfaceAreaChange = (value: string) => {
     setSurfaceArea(value);
     if (onSurfaceAreaChange) {
@@ -67,9 +74,11 @@ const ClientInfoSidebar = ({
   };
 
   const handleClimateZoneChange = (value: string) => {
+    console.log("🌡️ Zone climatique changée dans sidebar:", value);
     setClimateZone(value);
     if (onClimateZoneChange) {
       onClimateZoneChange(value);
+      console.log("🚀 Propagation vers parent:", value);
     }
   };
 
@@ -134,7 +143,7 @@ const ClientInfoSidebar = ({
                   </Select>
                 </div>
                 
-                {/* Zone climatique */}
+                {/* Zone climatique - 🎯 Source de vérité */}
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Zone climatique</span>
                   <Select value={climateZone} onValueChange={handleClimateZoneChange}>
