@@ -3,6 +3,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import LayerSection from "./LayerSection";
 import ThermalEconomySection from "./ThermalEconomySection";
 import { CalculationData } from "@/hooks/useCalculationState";
+import { Material } from "@/data/materials";
+import { Layer } from "@/hooks/useLayerManagement";
 
 interface CalculationContentProps {
   calculationData: CalculationData;
@@ -41,17 +43,45 @@ const CalculationContent = ({
   setRatioAfter,
   onClimateZoneChange
 }: CalculationContentProps) => {
+  // Adapter functions to match LayerSection expectations
+  const handleAddLayerBefore = (material: Material) => {
+    onAddLayer("before");
+  };
+
+  const handleAddLayerAfter = (material: Material) => {
+    onAddLayer("after");
+  };
+
+  const handleUpdateLayerBefore = (updatedLayer: Layer) => {
+    onUpdateLayer(updatedLayer.id, "layer", updatedLayer);
+  };
+
+  const handleUpdateLayerAfter = (updatedLayer: Layer) => {
+    onUpdateLayer(updatedLayer.id, "layer", updatedLayer);
+  };
+
+  const handleAddSouflr47Before = () => {
+    onAddSouflr47("before");
+  };
+
+  const handleAddSouflr47After = () => {
+    onAddSouflr47("after");
+  };
+
   return (
     <CardContent className="p-6">
       <div className="space-y-6">
         <LayerSection
           beforeLayers={calculationData.beforeLayers}
           afterLayers={calculationData.afterLayers}
-          onAddLayer={onAddLayer}
-          onUpdateLayer={onUpdateLayer}
+          onAddLayerBefore={handleAddLayerBefore}
+          onAddLayerAfter={handleAddLayerAfter}
+          onUpdateLayerBefore={handleUpdateLayerBefore}
+          onUpdateLayerAfter={handleUpdateLayerAfter}
           onDeleteBeforeLayer={onDeleteBeforeLayer}
           onDeleteAfterLayer={onDeleteAfterLayer}
-          onAddSouflr47={onAddSouflr47}
+          onAddSouflr47Before={handleAddSouflr47Before}
+          onAddSouflr47After={handleAddSouflr47After}
           onCopyBeforeToAfter={onCopyBeforeToAfter}
           ventilationBefore={calculationData.ventilationBefore}
           ventilationAfter={calculationData.ventilationAfter}

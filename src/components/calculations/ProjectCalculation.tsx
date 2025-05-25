@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { useCadastralData } from "@/hooks/useCadastralData";
@@ -149,8 +148,8 @@ const ProjectCalculation = ({
     }
   };
 
-  const handleAddSouflr47 = (type: "before" | "after") => {
-    addSouflr47(type);
+  const handleAddSouflr47 = () => {
+    addSouflr47();
   };
 
   // Prepare client data with fallbacks
