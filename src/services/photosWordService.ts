@@ -1,4 +1,3 @@
-
 import { Document, Packer, Paragraph, ImageRun, Table, TableRow, TableCell, WidthType, HeightRule, AlignmentType, TextRun } from 'docx';
 import type { SelectedPhoto, PhotosReportData } from '@/types/safetyCulture';
 
@@ -192,10 +191,20 @@ export const generatePhotosWordDocument = async (reportData: PhotosReportData): 
     });
 
     console.log('Generating Word document...');
-    // CORRECTION PRINCIPALE: Utiliser toBlob() au lieu de toBuffer() pour le navigateur
+    // Générer le blob
     const blob = await Packer.toBlob(doc);
     
-    console.log('Document generated successfully');
+    // DÉCLENCHER LE TÉLÉCHARGEMENT AUTOMATIQUEMENT
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = '4-Fotos.docx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    console.log('Document generated and download triggered successfully');
     return blob;
     
   } catch (error) {
