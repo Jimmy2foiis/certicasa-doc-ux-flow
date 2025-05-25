@@ -1,254 +1,208 @@
 
-import { Document, Packer, Paragraph, ImageRun, Table, TableRow, TableCell, WidthType, HeightRule } from 'docx';
+import { Document, Packer, Paragraph, ImageRun, Table, TableRow, TableCell, WidthType, HeightRule, AlignmentType, TextRun } from 'docx';
 import type { SelectedPhoto, PhotosReportData } from '@/types/safetyCulture';
 
 export const generatePhotosWordDocument = async (reportData: PhotosReportData): Promise<Blob> => {
   try {
-    // Fonction pour télécharger et convertir une image en buffer
-    const imageToBuffer = async (imageUrl: string): Promise<ArrayBuffer> => {
-      const response = await fetch(imageUrl);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch image: ${response.statusText}`);
+    // Fonction corrigée pour télécharger et convertir une image en ArrayBuffer
+    const fetchImageAsArrayBuffer = async (imageUrl: string): Promise<ArrayBuffer> => {
+      try {
+        const response = await fetch(imageUrl, {
+          headers: {
+            'Accept': 'image/*',
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: Failed to load image from ${imageUrl}`);
+        }
+        
+        const contentType = response.headers.get('content-type');
+        if (!contentType?.startsWith('image/')) {
+          throw new Error('Response is not an image');
+        }
+        
+        // CRITIQUE: Utiliser arrayBuffer() et non blob()
+        const arrayBuffer = await response.arrayBuffer();
+        
+        // Valider que les données d'image ne sont pas vides
+        if (arrayBuffer.byteLength < 100) {
+          throw new Error('Image data too small');
+        }
+        
+        return arrayBuffer;
+        
+      } catch (error) {
+        console.error(`Failed to fetch image from ${imageUrl}:`, error);
+        throw error;
       }
-      return response.arrayBuffer();
     };
 
-    // Fonction pour détecter le type d'image
-    const getImageType = (url: string): 'jpg' | 'png' => {
-      return url.toLowerCase().includes('.png') ? 'png' : 'jpg';
+    // Fonction avec retry pour plus de robustesse
+    const fetchImageWithRetry = async (url: string, maxRetries = 3): Promise<ArrayBuffer> => {
+      let lastError;
+      
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          return await fetchImageAsArrayBuffer(url);
+        } catch (error) {
+          lastError = error;
+          if (attempt < maxRetries - 1) {
+            // Attendre avant de réessayer
+            await new Promise(resolve => setTimeout(resolve, 1000 * (attempt + 1)));
+          }
+        }
+      }
+      
+      throw lastError;
     };
 
-    // Télécharger toutes les photos
+    // Télécharger toutes les photos avec gestion d'erreur robuste
+    console.log('Fetching AVANT photos...');
     const avantPhotosBuffers = await Promise.all(
-      reportData.photosAvant.map(photo => imageToBuffer(photo.photo.url))
+      reportData.photosAvant.map(photo => fetchImageWithRetry(photo.photo.url))
     );
     
+    console.log('Fetching APRÈS photos...');
     const apresPhotosBuffers = await Promise.all(
-      reportData.photosApres.map(photo => imageToBuffer(photo.photo.url))
+      reportData.photosApres.map(photo => fetchImageWithRetry(photo.photo.url))
     );
 
-    // Créer le document
+    // Fonction pour créer une grille 2x2 d'images
+    const create2x2Grid = (images: ArrayBuffer[], title: string) => {
+      const rows = [];
+      
+      for (let i = 0; i < 2; i++) {
+        const cells = [];
+        for (let j = 0; j < 2; j++) {
+          const imageIndex = i * 2 + j;
+          
+          cells.push(new TableCell({
+            children: [
+              new Paragraph({
+                children: [
+                  new ImageRun({
+                    data: images[imageIndex],
+                    transformation: {
+                      width: 250,  // OBLIGATOIRE - largeur en pixels
+                      height: 250  // OBLIGATOIRE - hauteur en pixels
+                    }
+                  })
+                ],
+                alignment: AlignmentType.CENTER
+              })
+            ],
+            width: { size: 50, type: WidthType.PERCENTAGE }
+          }));
+        }
+        rows.push(new TableRow({ 
+          children: cells,
+          height: { value: 3000, rule: HeightRule.EXACT }
+        }));
+      }
+
+      return new Table({
+        rows,
+        width: { size: 100, type: WidthType.PERCENTAGE }
+      });
+    };
+
+    // Créer le document avec la structure corrigée
     const doc = new Document({
       sections: [
         {
           children: [
             // Titre
             new Paragraph({
-              text: "FOTOS ACTUACIÓN",
-              heading: "Heading1",
+              children: [
+                new TextRun({ 
+                  text: "FOTOS ACTUACIÓN", 
+                  bold: true, 
+                  size: 32 
+                })
+              ],
+              alignment: AlignmentType.CENTER,
               spacing: { after: 400 }
             }),
             
             // Ref catastral
             new Paragraph({
-              text: `Ref catastral: ${reportData.refCatastral || 'N/A'}`,
+              children: [
+                new TextRun({ 
+                  text: `Ref catastral: ${reportData.refCatastral || 'N/A'}`, 
+                  size: 24 
+                })
+              ],
               spacing: { after: 200 }
             }),
             
             // Coordenadas UTM
             new Paragraph({
-              text: `Coordenadas UTM: ${reportData.coordenadasUTM || 'N/A'}`,
+              children: [
+                new TextRun({ 
+                  text: `Coordenadas UTM: ${reportData.coordenadasUTM || 'N/A'}`, 
+                  size: 24 
+                })
+              ],
               spacing: { after: 400 }
             }),
             
+            // Espacement
+            new Paragraph({ text: "" }),
+            
             // Section ANTES
             new Paragraph({
-              text: "ANTES:",
-              heading: "Heading2",
+              children: [
+                new TextRun({ 
+                  text: "ANTES", 
+                  bold: true, 
+                  size: 28 
+                })
+              ],
+              alignment: AlignmentType.CENTER,
               spacing: { after: 200 }
             }),
             
-            // Table 2x2 pour photos AVANT
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: [
-                new TableRow({
-                  height: { value: 3000, rule: HeightRule.EXACT },
-                  children: [
-                    new TableCell({
-                      width: { size: 50, type: WidthType.PERCENTAGE },
-                      children: [
-                        new Paragraph({
-                          children: [
-                            new ImageRun({
-                              data: avantPhotosBuffers[0],
-                              transformation: {
-                                width: 283, // ~7.5cm en pixels (96 DPI)
-                                height: 377  // ~10cm en pixels (96 DPI)
-                              },
-                              type: getImageType(reportData.photosAvant[0].photo.url)
-                            })
-                          ]
-                        })
-                      ]
-                    }),
-                    new TableCell({
-                      width: { size: 50, type: WidthType.PERCENTAGE },
-                      children: [
-                        new Paragraph({
-                          children: [
-                            new ImageRun({
-                              data: avantPhotosBuffers[1],
-                              transformation: {
-                                width: 283,
-                                height: 377
-                              },
-                              type: getImageType(reportData.photosAvant[1].photo.url)
-                            })
-                          ]
-                        })
-                      ]
-                    })
-                  ]
-                }),
-                new TableRow({
-                  height: { value: 3000, rule: HeightRule.EXACT },
-                  children: [
-                    new TableCell({
-                      width: { size: 50, type: WidthType.PERCENTAGE },
-                      children: [
-                        new Paragraph({
-                          children: [
-                            new ImageRun({
-                              data: avantPhotosBuffers[2],
-                              transformation: {
-                                width: 283,
-                                height: 377
-                              },
-                              type: getImageType(reportData.photosAvant[2].photo.url)
-                            })
-                          ]
-                        })
-                      ]
-                    }),
-                    new TableCell({
-                      width: { size: 50, type: WidthType.PERCENTAGE },
-                      children: [
-                        new Paragraph({
-                          children: [
-                            new ImageRun({
-                              data: avantPhotosBuffers[3],
-                              transformation: {
-                                width: 283,
-                                height: 377
-                              },
-                              type: getImageType(reportData.photosAvant[3].photo.url)
-                            })
-                          ]
-                        })
-                      ]
-                    })
-                  ]
-                })
-              ]
-            })
-          ]
-        },
-        {
-          children: [
+            // Grille 2x2 pour photos AVANT
+            create2x2Grid(avantPhotosBuffers, "ANTES"),
+            
+            // Saut de page
+            new Paragraph({
+              pageBreakBefore: true
+            }),
+            
             // Section DESPUÉS
             new Paragraph({
-              text: "DESPUÉS:",
-              heading: "Heading2",
+              children: [
+                new TextRun({ 
+                  text: "DESPUÉS", 
+                  bold: true, 
+                  size: 28 
+                })
+              ],
+              alignment: AlignmentType.CENTER,
               spacing: { after: 200 }
             }),
             
-            // Table 2x2 pour photos APRÈS
-            new Table({
-              width: { size: 100, type: WidthType.PERCENTAGE },
-              rows: [
-                new TableRow({
-                  height: { value: 3000, rule: HeightRule.EXACT },
-                  children: [
-                    new TableCell({
-                      width: { size: 50, type: WidthType.PERCENTAGE },
-                      children: [
-                        new Paragraph({
-                          children: [
-                            new ImageRun({
-                              data: apresPhotosBuffers[0],
-                              transformation: {
-                                width: 283,
-                                height: 377
-                              },
-                              type: getImageType(reportData.photosApres[0].photo.url)
-                            })
-                          ]
-                        })
-                      ]
-                    }),
-                    new TableCell({
-                      width: { size: 50, type: WidthType.PERCENTAGE },
-                      children: [
-                        new Paragraph({
-                          children: [
-                            new ImageRun({
-                              data: apresPhotosBuffers[1],
-                              transformation: {
-                                width: 283,
-                                height: 377
-                              },
-                              type: getImageType(reportData.photosApres[1].photo.url)
-                            })
-                          ]
-                        })
-                      ]
-                    })
-                  ]
-                }),
-                new TableRow({
-                  height: { value: 3000, rule: HeightRule.EXACT },
-                  children: [
-                    new TableCell({
-                      width: { size: 50, type: WidthType.PERCENTAGE },
-                      children: [
-                        new Paragraph({
-                          children: [
-                            new ImageRun({
-                              data: apresPhotosBuffers[2],
-                              transformation: {
-                                width: 283,
-                                height: 377
-                              },
-                              type: getImageType(reportData.photosApres[2].photo.url)
-                            })
-                          ]
-                        })
-                      ]
-                    }),
-                    new TableCell({
-                      width: { size: 50, type: WidthType.PERCENTAGE },
-                      children: [
-                        new Paragraph({
-                          children: [
-                            new ImageRun({
-                              data: apresPhotosBuffers[3],
-                              transformation: {
-                                width: 283,
-                                height: 377
-                              },
-                              type: getImageType(reportData.photosApres[3].photo.url)
-                            })
-                          ]
-                        })
-                      ]
-                    })
-                  ]
-                })
-              ]
-            })
+            // Grille 2x2 pour photos APRÈS
+            create2x2Grid(apresPhotosBuffers, "DESPUÉS")
           ]
         }
       ]
     });
 
+    console.log('Generating Word document...');
     // Générer le blob
     const buffer = await Packer.toBuffer(doc);
-    return new Blob([buffer], { 
+    const blob = new Blob([buffer], { 
       type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
     });
+    
+    console.log('Document generated successfully');
+    return blob;
+    
   } catch (error) {
     console.error('Erreur lors de la génération du document Word:', error);
-    throw error;
+    throw new Error(`Failed to generate document: ${error.message}`);
   }
 };
