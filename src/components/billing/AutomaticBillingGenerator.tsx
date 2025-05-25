@@ -24,6 +24,7 @@ interface AutomaticBillingGeneratorProps {
     address?: string;
     phone?: string;
     email?: string;
+    climateZone?: string; // Zone climatique de la fiche client
   };
 }
 
@@ -33,6 +34,9 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { products } = useMaterialsAndProducts();
+
+  // Utiliser la zone climatique de la fiche client en priorité
+  const effectiveClimateZone = clientData.climateZone || calculationData.climateZone;
 
   // Extraire le matériau principal depuis les données de calcul
   const getMainMaterial = () => {
@@ -81,9 +85,9 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
   // Extract data from calculation
   const extractThermalData = (): ThermalCalculationData | null => {
     try {
-      // Validate required data
-      if (!calculationData.climateZone || !isValidClimateZone(calculationData.climateZone)) {
-        throw new Error(`Zone climatique invalide: ${calculationData.climateZone}. Zones valides: ${getAvailableClimateZones().join(', ')}`);
+      // Utiliser la zone climatique de la fiche client en priorité
+      if (!effectiveClimateZone || !isValidClimateZone(effectiveClimateZone)) {
+        throw new Error(`Zone climatique invalide: ${effectiveClimateZone}. Zones valides: ${getAvailableClimateZones().join(', ')}`);
       }
 
       if (!calculationData.surfaceArea || parseFloat(calculationData.surfaceArea) <= 0) {
@@ -100,7 +104,7 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
         ui: calculationData.uValueBefore, // Ui (transmittance après coefficient b)
         uf: calculationData.uValueAfter,  // Uf (transmittance après coefficient b)
         surface: surface,
-        climateZone: calculationData.climateZone,
+        climateZone: effectiveClimateZone,
         clientInfo: {
           fullName: clientData.name || 'Client',
           nif: clientData.nif || '',
@@ -181,7 +185,12 @@ const AutomaticBillingGenerator = ({ calculationData, clientData }: AutomaticBil
             </div>
             <div>
               <p className="text-sm text-gray-600">Zone Climatique</p>
-              <p className="font-medium">{calculationData.climateZone || 'Non définie'}</p>
+              <p className="font-medium">{effectiveClimateZone || 'Non définie'}</p>
+              {clientData.climateZone && calculationData.climateZone !== clientData.climateZone && (
+                <p className="text-xs text-blue-600">
+                  (Fiche client: {clientData.climateZone} utilisée)
+                </p>
+              )}
             </div>
             <div>
               <p className="text-sm text-gray-600">Surface Isolée</p>
