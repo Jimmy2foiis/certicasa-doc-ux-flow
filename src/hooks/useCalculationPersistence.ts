@@ -1,6 +1,7 @@
 
 import { useRef } from 'react';
 import { Layer } from './useLayerManagement';
+import { VentilationType } from '@/utils/calculationUtils';
 import { calculationPersistenceService } from '@/services/calculationPersistenceService';
 
 interface CalculationPersistenceData {
@@ -9,8 +10,8 @@ interface CalculationPersistenceData {
   surfaceArea: string;
   roofArea: string;
   projectType: string;
-  ventilationBefore: string;
-  ventilationAfter: string;
+  ventilationBefore: VentilationType;
+  ventilationAfter: VentilationType;
   ratioBefore: number;
   ratioAfter: number;
   rsiBefore: string;
