@@ -45,7 +45,28 @@ const CalculationActionsWithBilling = ({
       const clientId = `local_${Date.now()}`;
       const projectId = `project_${Date.now()}`;
 
-      // Créer l'objet de données COMPLET à sauvegarder
+      // LOG complet de ce qui va être sauvegardé AVANT la création
+      console.log('💾 CalculationActionsWithBilling - ÉTAT ACTUEL DES COUCHES AVANT SAUVEGARDE:');
+      console.log('📋 beforeLayers (état actuel):', 
+        calculationData.beforeLayers?.map(l => ({ 
+          id: l.id, 
+          name: l.name, 
+          thickness: l.thickness, 
+          lambda: l.lambda, 
+          r: l.r 
+        })) || []
+      );
+      console.log('📋 afterLayers (état actuel):', 
+        calculationData.afterLayers?.map(l => ({ 
+          id: l.id, 
+          name: l.name, 
+          thickness: l.thickness, 
+          lambda: l.lambda, 
+          r: l.r 
+        })) || []
+      );
+
+      // Créer l'objet de données COMPLET à sauvegarder avec les VRAIES valeurs actuelles
       const completeDataToSave = {
         id: calculationId,
         project_id: projectId,
@@ -60,12 +81,26 @@ const CalculationActionsWithBilling = ({
         u_value_before: calculationData.uValueBefore || 0,
         u_value_after: calculationData.uValueAfter || 0,
         climate_zone: calculationData.climateZone || 'C3',
-        // TOUTES les données du calcul thermique
+        // TOUTES les données du calcul thermique avec les VRAIES valeurs actuelles
         calculation_data: {
           ...calculationData,
-          // S'assurer que les couches sont bien incluses
-          beforeLayers: calculationData.beforeLayers || [],
-          afterLayers: calculationData.afterLayers || [],
+          // S'assurer que les couches avec leurs VRAIES épaisseurs modifiées sont incluses
+          beforeLayers: calculationData.beforeLayers?.map(layer => ({
+            id: layer.id,
+            name: layer.name,
+            thickness: layer.thickness, // ÉPAISSEUR RÉELLE MODIFIÉE par l'utilisateur
+            lambda: layer.lambda,
+            r: layer.r,
+            isNew: layer.isNew
+          })) || [],
+          afterLayers: calculationData.afterLayers?.map(layer => ({
+            id: layer.id,
+            name: layer.name,
+            thickness: layer.thickness, // ÉPAISSEUR RÉELLE MODIFIÉE par l'utilisateur
+            lambda: layer.lambda,
+            r: layer.r,
+            isNew: layer.isNew
+          })) || [],
           // S'assurer que tous les paramètres critiques sont inclus
           rsiBefore: calculationData.rsiBefore || '0.10',
           rseBefore: calculationData.rseBefore || '0.10',
@@ -80,9 +115,17 @@ const CalculationActionsWithBilling = ({
         saved_at: new Date().toISOString()
       };
 
-      console.log('💾 Données complètes à sauvegarder:', completeDataToSave);
-      console.log('📋 Couches avant:', completeDataToSave.calculation_data.beforeLayers?.length || 0);
-      console.log('📋 Couches après:', completeDataToSave.calculation_data.afterLayers?.length || 0);
+      console.log('💾 CalculationActionsWithBilling - DONNÉES COMPLÈTES À SAUVEGARDER:');
+      console.log('📊 Surface:', completeDataToSave.surface_area, 'm²');
+      console.log('📊 Amélioration:', completeDataToSave.improvement_percent, '%');
+      console.log('📊 beforeLayers count:', completeDataToSave.calculation_data.beforeLayers.length);
+      console.log('📊 afterLayers count:', completeDataToSave.calculation_data.afterLayers.length);
+      console.log('📊 beforeLayers épaisseurs:', 
+        completeDataToSave.calculation_data.beforeLayers.map(l => `${l.name}: ${l.thickness}mm`)
+      );
+      console.log('📊 afterLayers épaisseurs:', 
+        completeDataToSave.calculation_data.afterLayers.map(l => `${l.name}: ${l.thickness}mm`)
+      );
 
       // Utiliser le service de calculs pour sauvegarder
       const savedCalculation = await createCalculation(completeDataToSave);
@@ -96,17 +139,26 @@ const CalculationActionsWithBilling = ({
         // Émettre l'événement de sauvegarde pour notifier les autres composants
         emitCalculationSaved(completeDataToSave);
 
+        // Toast de confirmation avec détails des couches
+        const beforeLayersInfo = completeDataToSave.calculation_data.beforeLayers.length;
+        const afterLayersInfo = completeDataToSave.calculation_data.afterLayers.length;
+        const souflrLayer = completeDataToSave.calculation_data.afterLayers.find(l => 
+          l.name.includes('SOUFL') || l.name.includes('Laine')
+        );
+        
         toast({
-          title: "✅ Calcul sauvegardé avec succès",
-          description: `Surface: ${calculationData.surfaceArea}m² • Amélioration: ${calculationData.improvementPercent?.toFixed(1)}% • Zone: ${calculationData.climateZone} • Couches: ${(calculationData.beforeLayers?.length || 0) + (calculationData.afterLayers?.length || 0)}`,
-          duration: 4000,
+          title: "✅ Calcul sauvegardé avec toutes les modifications",
+          description: `Surface: ${calculationData.surfaceArea}m² • Amélioration: ${calculationData.improvementPercent?.toFixed(1)}% • Couches: ${beforeLayersInfo}+${afterLayersInfo}${souflrLayer ? ` • ${souflrLayer.name}: ${souflrLayer.thickness}mm` : ''}`,
+          duration: 5000,
         });
+        
+        console.log('✅ CalculationActionsWithBilling - Sauvegarde réussie avec toutes les modifications d\'épaisseur');
       } else {
         throw new Error('Échec de la sauvegarde');
       }
 
     } catch (error) {
-      console.error('❌ Erreur lors de la sauvegarde:', error);
+      console.error('❌ CalculationActionsWithBilling - Erreur lors de la sauvegarde:', error);
       toast({
         title: "❌ Erreur de sauvegarde",
         description: "Une erreur est survenue lors de la sauvegarde du calcul. Veuillez réessayer.",

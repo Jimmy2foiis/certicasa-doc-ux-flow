@@ -55,12 +55,29 @@ const LayerRow = ({ layer, onDelete, onUpdate, isNew = false }: LayerRowProps) =
         lambda: lambda === "-" ? "-" : parseFloat(lambda) || layer.lambda,
         r: rValue
       };
+      
+      console.log('📊 LayerRow - Mise à jour couche:', {
+        id: updatedLayer.id,
+        name: updatedLayer.name,
+        thicknessOriginal: layer.thickness,
+        thicknessModified: updatedLayer.thickness,
+        lambda: updatedLayer.lambda,
+        r: updatedLayer.r
+      });
+      
       onUpdate(updatedLayer);
     }
-  }, [name, thickness, lambda, rValue, onUpdate]);
+  }, [name, thickness, lambda, rValue, onUpdate, layer]);
 
   // Met à jour l'épaisseur en mm quand l'utilisateur modifie l'épaisseur en mètres
   const handleThicknessInMetersChange = (value: string) => {
+    console.log('🔄 LayerRow - Changement épaisseur:', {
+      layerId: layer.id,
+      layerName: layer.name,
+      oldValue: thicknessInMeters,
+      newValue: value
+    });
+    
     setThicknessInMeters(value);
     // Convertir en mm pour le stockage interne
     const thicknessInMm = Math.round(parseFloat(value) * 1000);

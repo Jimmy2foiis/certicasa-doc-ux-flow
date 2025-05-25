@@ -101,7 +101,14 @@ export const useCalculationState = ({ savedData, clientClimateZone, floorType }:
     copyThermalBeforeToAfter();
   };
 
-  // Aggregate calculation data
+  // Aggregate calculation data - LOG des couches au moment de l'agrégation
+  console.log('📊 useCalculationState - Agrégation calculationData:', {
+    beforeLayersCount: beforeLayers.length,
+    afterLayersCount: afterLayers.length,
+    beforeLayersThickness: beforeLayers.map(l => `${l.name}: ${l.thickness}mm`),
+    afterLayersThickness: afterLayers.map(l => `${l.name}: ${l.thickness}mm`)
+  });
+
   const calculationData = useCalculationData({
     projectType,
     surfaceArea,
