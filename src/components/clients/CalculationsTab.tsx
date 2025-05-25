@@ -1,5 +1,7 @@
 
 import ProjectCalculation from "../calculations/ProjectCalculation";
+import { useCalculationEventEmitter } from "@/hooks/useCalculationEvents";
+import { useToast } from "@/components/ui/use-toast";
 
 interface CalculationsTabProps {
   clientId: string;
@@ -28,13 +30,13 @@ const CalculationsTab = ({
   onOpenCalculation, 
   onCreateNewCalculation 
 }: CalculationsTabProps) => {
-  // S'assurer que savedCalculations est toujours un tableau
+  const { toast } = useToast();
+  const { emitCalculationSaved } = useCalculationEventEmitter();
+
   const calculations = Array.isArray(savedCalculations) ? savedCalculations : [];
 
-  // Fonction pour sauvegarder un calcul
   const handleSave = (calculationData: any) => {
     try {
-      // Générer un ID unique pour ce calcul
       const calculationId = `calc_${Date.now()}`;
       const projectNumber = calculations.length + 1;
 
@@ -50,7 +52,6 @@ const CalculationsTab = ({
         calculationData: calculationData,
       };
 
-      // Récupérer tous les calculs existants
       const savedData = localStorage.getItem('saved_calculations');
       let allCalculations: any[] = [];
 
@@ -58,15 +59,26 @@ const CalculationsTab = ({
         allCalculations = JSON.parse(savedData);
       }
 
-      // Ajouter le nouveau calcul
       allCalculations.push(newCalculation);
-
-      // Sauvegarder dans le localStorage
       localStorage.setItem('saved_calculations', JSON.stringify(allCalculations));
 
       console.log('Calcul sauvegardé avec succès:', newCalculation);
+      
+      // Emit event to notify other components
+      emitCalculationSaved(newCalculation);
+      
+      toast({
+        title: "Calcul sauvegardé",
+        description: `Le calcul thermique a été sauvegardé avec succès. Surface: ${newCalculation.surface}m², Amélioration: ${newCalculation.improvement}%`,
+      });
+      
     } catch (error) {
       console.error('Erreur lors de la sauvegarde du calcul:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de sauvegarder le calcul.",
+        variant: "destructive",
+      });
     }
   };
 

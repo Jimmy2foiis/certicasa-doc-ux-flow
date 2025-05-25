@@ -1,8 +1,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { getCadastralDataForClient } from "@/services/api"; // Importation depuis la nouvelle API
+import { getCadastralDataForClient } from "@/services/api";
 import { httpClient } from "@/services/api/httpClient";
+import { useCalculationEventListener } from "./useCalculationEvents";
 
 interface SavedCalculation {
   id: string;
@@ -19,33 +20,30 @@ interface SavedCalculation {
 export const useSavedCalculations = (clientId: string) => {
   const { toast } = useToast();
   
-  // État pour stocker les calculs sauvegardés
   const [savedCalculations, setSavedCalculations] = useState<SavedCalculation[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Fonction pour récupérer les calculs sauvegardés depuis l'API
   const loadSavedCalculations = useCallback(async () => {
     try {
-      // Vérifier si l'ID client commence par "local_" pour gérer les données locales
+      setLoading(true);
+      
       if (clientId.startsWith('local_')) {
-        // Récupérer depuis le localStorage
         const localData = localStorage.getItem('saved_calculations');
         if (localData) {
           const allCalculations = JSON.parse(localData);
           const clientCalculations = allCalculations.filter((calc: any) => calc.clientId === clientId);
           setSavedCalculations(clientCalculations);
+          console.log(`${clientCalculations.length} calculs trouvés pour le client ${clientId}`);
         } else {
           setSavedCalculations([]);
         }
         return;
       }
       
-      // Si ce n'est pas un ID local, récupérer depuis l'API
-      // Note: cet endpoint n'existe peut-être pas encore, à adapter selon l'API réelle
       try {
         const response = await httpClient.get<any[]>(`/prospects/${clientId}/calculations`);
         
         if (response.success && response.data) {
-          // Convertir du format API au format local
           const formattedCalculations: SavedCalculation[] = response.data.map(calc => {
             return {
               id: calc.id || '',
@@ -62,7 +60,6 @@ export const useSavedCalculations = (clientId: string) => {
           
           setSavedCalculations(formattedCalculations);
         } else {
-          // Fallback au localStorage
           useLocalStorage();
         }
       } catch (error) {
@@ -71,17 +68,12 @@ export const useSavedCalculations = (clientId: string) => {
       }
     } catch (error) {
       console.error("Erreur lors du chargement des calculs sauvegardés:", error);
-      toast({
-        title: "Erreur",
-        description: "Impossible de charger les calculs sauvegardés.",
-        variant: "destructive",
-      });
-      // Essayer de récupérer depuis le localStorage en dernier recours
       useLocalStorage();
+    } finally {
+      setLoading(false);
     }
-  }, [clientId, toast]);
+  }, [clientId]);
 
-  // Fonction utilitaire pour récupérer les données depuis le localStorage
   const useLocalStorage = () => {
     try {
       const localData = localStorage.getItem('saved_calculations');
@@ -89,22 +81,30 @@ export const useSavedCalculations = (clientId: string) => {
         const allCalculations = JSON.parse(localData);
         const clientCalculations = allCalculations.filter((calc: any) => calc.clientId === clientId);
         setSavedCalculations(clientCalculations);
-        toast({
-          title: "Information",
-          description: "Utilisation des calculs stockés localement.",
-          duration: 3000,
-        });
+        console.log(`${clientCalculations.length} calculs trouvés localement pour le client ${clientId}`);
       }
     } catch (e) {
       console.error("Impossible de récupérer les données locales:", e);
     }
   };
 
-  // Charger les calculs sauvegardés et les données cadastrales au montage du composant
+  // Listen to calculation events for real-time updates
+  useCalculationEventListener(
+    () => {
+      console.log("Événement calcul détecté, rechargement...");
+      loadSavedCalculations();
+    },
+    () => {
+      loadSavedCalculations();
+    },
+    () => {
+      loadSavedCalculations();
+    }
+  );
+
   useEffect(() => {
     loadSavedCalculations();
     
-    // Récupérer les données cadastrales existantes
     const loadCadastralData = async () => {
       try {
         const cadastralData = await getCadastralDataForClient(clientId);
@@ -121,6 +121,7 @@ export const useSavedCalculations = (clientId: string) => {
 
   return {
     savedCalculations,
+    loading,
     loadSavedCalculations
   };
 };
