@@ -36,6 +36,7 @@ const ProjectInfoSection = ({
   // 🔥 CORRECTION: Utiliser directement la prop climateZone au lieu d'un état local
   console.log('🏠 ProjectInfoSection - zone reçue (PROP):', climateZone);
   console.log('🏠 ProjectInfoSection - doit afficher:', climateZone);
+  console.log('🎯 ProjectInfoSection - AFFICHAGE FINAL:', climateZone);
 
   const handleSurfaceAreaChange = (value: string) => {
     setLocalSurfaceArea(value);
@@ -100,8 +101,6 @@ const ProjectInfoSection = ({
                   {climateZone && (
                     <span className="text-muted-foreground ml-2">(déterminée automatiquement)</span>
                   )}
-                  {/* 🐛 DEBUG: Vérification console */}
-                  {console.log('🎯 ProjectInfoSection - AFFICHAGE FINAL:', climateZone)}
                 </div>
               </div>
             </div>
