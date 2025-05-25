@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,83 +31,10 @@ const ClientProfileCard = ({
   onFloorTypeChange,
   onClimateZoneChange
 }: ClientProfileCardProps) => {
-  const [localSurfaceArea, setLocalSurfaceArea] = useState(surfaceArea);
-  const [localRoofArea, setLocalRoofArea] = useState(roofArea);
-  const [localFloorType, setLocalFloorType] = useState(floorType);
-  const [localClimateZone, setLocalClimateZone] = useState(climateZone);
   const [isTeamExpanded, setIsTeamExpanded] = useState(false);
-  const handleSurfaceAreaChange = (value: string) => {
-    setLocalSurfaceArea(value);
-    if (onSurfaceAreaChange) {
-      onSurfaceAreaChange(value);
-    }
-  };
-  const handleRoofAreaChange = (value: string) => {
-    setLocalRoofArea(value);
-    if (onRoofAreaChange) {
-      onRoofAreaChange(value);
-    }
-  };
-  const handleFloorTypeChange = (value: string) => {
-    setLocalFloorType(value);
-    if (onFloorTypeChange) {
-      onFloorTypeChange(value);
-    }
-  };
-  const handleClimateZoneChange = (value: string) => {
-    setLocalClimateZone(value);
-    if (onClimateZoneChange) {
-      onClimateZoneChange(value);
-    }
-  };
+
   if (!client) return null;
-  const floorTypeOptions = [{
-    value: "Béton",
-    label: "🪨 Béton"
-  }, {
-    value: "Bois",
-    label: "🪵 Bois"
-  }, {
-    value: "Céramique",
-    label: "🧱 Céramique"
-  }];
-  const climateZoneOptions = [{
-    value: "A3",
-    label: "A3"
-  }, {
-    value: "A4",
-    label: "A4"
-  }, {
-    value: "B3",
-    label: "B3"
-  }, {
-    value: "B4",
-    label: "B4"
-  }, {
-    value: "C1",
-    label: "C1"
-  }, {
-    value: "C2",
-    label: "C2"
-  }, {
-    value: "C3",
-    label: "C3"
-  }, {
-    value: "C4",
-    label: "C4"
-  }, {
-    value: "D1",
-    label: "D1"
-  }, {
-    value: "D2",
-    label: "D2"
-  }, {
-    value: "D3",
-    label: "D3"
-  }, {
-    value: "E1",
-    label: "E1"
-  }];
+
   return <Card className="w-full max-w-lg mx-auto bg-white border border-gray-200 rounded-xl shadow-sm">
       <CardContent className="">
         {/* Header */}
@@ -122,12 +50,6 @@ const ClientProfileCard = ({
             <Badge className="bg-green-600 hover:bg-green-700">
               RES020
             </Badge>
-          </div>
-
-          {/* Informations supplémentaires */}
-          <div className="text-sm text-gray-600 space-y-1">
-            <p>Date pose: {client.installationDate || "À définir"}</p>
-            
           </div>
         </div>
 
@@ -160,52 +82,6 @@ const ClientProfileCard = ({
             <div><span className="text-gray-500">Communauté autonome:</span> <span className="text-gray-900">{client.community || "Castille-et-León"}</span></div>
             <div><span className="text-gray-500">Géolocalisation:</span> <span className="text-gray-900 italic">À définir</span></div>
             <div><span className="text-gray-500">UTM:</span> <span className="text-gray-900 italic">À définir</span></div>
-          </div>
-        </div>
-
-        {/* Section Données Techniques */}
-        <div className="bg-white p-4 rounded-lg border shadow-sm">
-          <h3 className="font-semibold text-gray-900 mb-4">Données Techniques</h3>
-          
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm text-gray-500 mb-2">Type de plancher</label>
-              <Select value={localFloorType} onValueChange={handleFloorTypeChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {floorTypeOptions.map(option => <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <label className="block text-sm text-gray-500 mb-2">Zone climatique</label>
-              <Select value={localClimateZone} onValueChange={handleClimateZoneChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {climateZoneOptions.map(option => <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm text-gray-500 mb-2">Surface combles (m²)</label>
-                <Input type="number" value={localSurfaceArea} onChange={e => handleSurfaceAreaChange(e.target.value)} className="w-full" />
-              </div>
-              <div>
-                <label className="block text-sm text-gray-500 mb-2">Surface toiture (m²)</label>
-                <Input type="number" value={localRoofArea} onChange={e => handleRoofAreaChange(e.target.value)} className="w-full" />
-              </div>
-            </div>
           </div>
         </div>
 
