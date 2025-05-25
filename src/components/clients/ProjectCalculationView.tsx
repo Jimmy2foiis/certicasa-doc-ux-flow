@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProjectCalculation from "../calculations/ProjectCalculation";
@@ -24,6 +24,10 @@ interface ProjectCalculationViewProps {
   surfaceArea?: string;
   roofArea?: string;
   floorType?: string;
+  onSurfaceAreaChange?: (value: string) => void;
+  onRoofAreaChange?: (value: string) => void;
+  onFloorTypeChange?: (value: string) => void;
+  onClimateZoneChange?: (value: string) => void;
 }
 
 const ProjectCalculationView = ({ 
@@ -35,14 +39,64 @@ const ProjectCalculationView = ({
   onSave,
   surfaceArea = "70",
   roofArea = "85",
-  floorType = "Bois"
+  floorType = "Bois",
+  onSurfaceAreaChange,
+  onRoofAreaChange,
+  onFloorTypeChange,
+  onClimateZoneChange
 }: ProjectCalculationViewProps) => {
+  const [currentSurfaceArea, setCurrentSurfaceArea] = useState(surfaceArea);
+  const [currentRoofArea, setCurrentRoofArea] = useState(roofArea);
+  const [currentFloorType, setCurrentFloorType] = useState(floorType);
+  const [currentClimateZone, setCurrentClimateZone] = useState(client?.climateZone || "C3");
+
   // Find the calculation data if we're editing an existing calculation
   const currentCalculation = currentProjectId
     ? savedCalculations.find(c => c.projectId === currentProjectId)
     : undefined;
     
   const calculationData = currentCalculation?.calculationData;
+
+  // Synchroniser les valeurs quand elles changent depuis la sidebar
+  useEffect(() => {
+    setCurrentSurfaceArea(surfaceArea);
+  }, [surfaceArea]);
+
+  useEffect(() => {
+    setCurrentRoofArea(roofArea);
+  }, [roofArea]);
+
+  useEffect(() => {
+    setCurrentFloorType(floorType);
+  }, [floorType]);
+
+  const handleSurfaceAreaChangeInternal = (value: string) => {
+    setCurrentSurfaceArea(value);
+    if (onSurfaceAreaChange) {
+      onSurfaceAreaChange(value);
+    }
+  };
+
+  const handleRoofAreaChangeInternal = (value: string) => {
+    setCurrentRoofArea(value);
+    if (onRoofAreaChange) {
+      onRoofAreaChange(value);
+    }
+  };
+
+  const handleFloorTypeChangeInternal = (value: string) => {
+    setCurrentFloorType(value);
+    if (onFloorTypeChange) {
+      onFloorTypeChange(value);
+    }
+  };
+
+  const handleClimateZoneChangeInternal = (value: string) => {
+    setCurrentClimateZone(value);
+    if (onClimateZoneChange) {
+      onClimateZoneChange(value);
+    }
+  };
     
   return (
     <div className="space-y-4">
@@ -62,13 +116,17 @@ const ProjectCalculationView = ({
         projectId={currentProjectId}
         savedData={calculationData}
         onSave={onSave}
-        clientClimateZone={client.climateZone || "B3"}
+        clientClimateZone={currentClimateZone}
         clientName={client.name}
         clientAddress={client.address}
         projectName={currentCalculation?.projectName}
-        surfaceArea={surfaceArea}
-        roofArea={roofArea}
-        floorType={floorType}
+        surfaceArea={currentSurfaceArea}
+        roofArea={currentRoofArea}
+        floorType={currentFloorType}
+        onSurfaceAreaChange={handleSurfaceAreaChangeInternal}
+        onRoofAreaChange={handleRoofAreaChangeInternal}
+        onFloorTypeChange={handleFloorTypeChangeInternal}
+        onClimateZoneChange={handleClimateZoneChangeInternal}
       />
     </div>
   );

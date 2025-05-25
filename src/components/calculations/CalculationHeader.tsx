@@ -21,6 +21,7 @@ interface CalculationHeaderProps {
   onRoofAreaChange?: (value: string) => void;
   floorType?: string;
   onFloorTypeChange?: (value: string) => void;
+  onClimateZoneChange?: (value: string) => void;
 }
 
 const CalculationHeader = ({ 
@@ -33,7 +34,8 @@ const CalculationHeader = ({
   onSurfaceAreaChange,
   onRoofAreaChange,
   floorType = "Bois",
-  onFloorTypeChange
+  onFloorTypeChange,
+  onClimateZoneChange
 }: CalculationHeaderProps) => {
   return (
     <div>
@@ -46,6 +48,7 @@ const CalculationHeader = ({
         onSurfaceAreaChange={onSurfaceAreaChange}
         onRoofAreaChange={onRoofAreaChange}
         onFloorTypeChange={onFloorTypeChange}
+        onClimateZoneChange={onClimateZoneChange}
       />
       
       {/* Header du calcul */}

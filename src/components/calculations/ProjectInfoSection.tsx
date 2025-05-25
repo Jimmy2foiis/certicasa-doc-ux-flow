@@ -14,6 +14,7 @@ interface ProjectInfoSectionProps {
   onSurfaceAreaChange?: (value: string) => void;
   onRoofAreaChange?: (value: string) => void;
   onFloorTypeChange?: (value: string) => void;
+  onClimateZoneChange?: (value: string) => void;
 }
 
 const ProjectInfoSection = ({
@@ -24,12 +25,28 @@ const ProjectInfoSection = ({
   roofArea,
   onSurfaceAreaChange,
   onRoofAreaChange,
-  onFloorTypeChange
+  onFloorTypeChange,
+  onClimateZoneChange
 }: ProjectInfoSectionProps) => {
   const floorTypeOptions = [
     { value: "Béton", label: "🪨 Béton (Hormigón)" },
     { value: "Bois", label: "🪵 Bois (Madera)" },
     { value: "Céramique", label: "🧱 Céramique (Cerámico/Bovedilla)" }
+  ];
+
+  const climateZoneOptions = [
+    { value: "A3", label: "A3" },
+    { value: "A4", label: "A4" },
+    { value: "B3", label: "B3" },
+    { value: "B4", label: "B4" },
+    { value: "C1", label: "C1" },
+    { value: "C2", label: "C2" },
+    { value: "C3", label: "C3" },
+    { value: "C4", label: "C4" },
+    { value: "D1", label: "D1" },
+    { value: "D2", label: "D2" },
+    { value: "D3", label: "D3" },
+    { value: "E1", label: "E1" }
   ];
 
   return (
@@ -65,9 +82,24 @@ const ProjectInfoSection = ({
           {/* Zone climatique */}
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 mb-1">Zone climatique</span>
-            <Badge variant="outline" className="w-fit text-xs">
-              {climateZone}
-            </Badge>
+            {onClimateZoneChange ? (
+              <Select value={climateZone} onValueChange={onClimateZoneChange}>
+                <SelectTrigger className="h-8 text-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {climateZoneOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Badge variant="outline" className="w-fit text-xs">
+                {climateZone}
+              </Badge>
+            )}
           </div>
           
           {/* Superficie des combles */}

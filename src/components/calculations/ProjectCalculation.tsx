@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { useCadastralData } from "@/hooks/useCadastralData";
@@ -28,6 +29,7 @@ interface ProjectCalculationProps {
   onSurfaceAreaChange?: (value: string) => void;
   onRoofAreaChange?: (value: string) => void;
   onFloorTypeChange?: (value: string) => void;
+  onClimateZoneChange?: (value: string) => void;
 }
 
 const ProjectCalculation = ({ 
@@ -45,7 +47,8 @@ const ProjectCalculation = ({
   floorType = "Bois",
   onSurfaceAreaChange,
   onRoofAreaChange,
-  onFloorTypeChange
+  onFloorTypeChange,
+  onClimateZoneChange
 }: ProjectCalculationProps) => {
   // Get climate zone from cadastral data (for demo purposes)
   const { climateZone: fetchedClimateZone } = useCadastralData(clientId ? `Client ID ${clientId}` : "123 Demo Street");
@@ -92,12 +95,14 @@ const ProjectCalculation = ({
     addSouflr47,
     copyBeforeToAfter,
     updateLayer,
-    calculationData
+    calculationData,
+    setClimateZone
   } = useCalculationState({
     savedData: {
       ...savedData,
       surfaceArea: surfaceArea,
-      roofArea: roofArea
+      roofArea: roofArea,
+      climateZone: effectiveClimateZone
     },
     clientClimateZone: effectiveClimateZone,
     floorType: floorType
@@ -132,6 +137,13 @@ const ProjectCalculation = ({
     }
   };
 
+  const handleClimateZoneChangeInternal = (value: string) => {
+    setClimateZone(value);
+    if (onClimateZoneChange) {
+      onClimateZoneChange(value);
+    }
+  };
+
   // Prepare client data with fallbacks
   const preparedClientData = {
     name: clientData?.name || clientName || 'Client',
@@ -163,6 +175,7 @@ const ProjectCalculation = ({
             onRoofAreaChange={handleRoofAreaChangeInternal}
             floorType={floorType}
             onFloorTypeChange={handleFloorTypeChangeInternal}
+            onClimateZoneChange={handleClimateZoneChangeInternal}
           />
           <CalculationContent 
             calculationData={calculationData}

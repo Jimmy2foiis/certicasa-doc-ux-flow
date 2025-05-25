@@ -20,6 +20,11 @@ interface ClientInfoSidebarProps {
   onSurfaceAreaChange?: (value: string) => void;
   onRoofAreaChange?: (value: string) => void;
   onFloorTypeChange?: (value: string) => void;
+  onClimateZoneChange?: (value: string) => void;
+  currentSurfaceArea?: string;
+  currentRoofArea?: string;
+  currentFloorType?: string;
+  currentClimateZone?: string;
 }
 
 const ClientInfoSidebar = ({ 
@@ -28,11 +33,17 @@ const ClientInfoSidebar = ({
   onViewMissingDocs,
   onSurfaceAreaChange,
   onRoofAreaChange,
-  onFloorTypeChange
+  onFloorTypeChange,
+  onClimateZoneChange,
+  currentSurfaceArea = "56",
+  currentRoofArea = "89",
+  currentFloorType,
+  currentClimateZone
 }: ClientInfoSidebarProps) => {
-  const [surfaceArea, setSurfaceArea] = useState("56");
-  const [roofArea, setRoofArea] = useState("89");
-  const [floorType, setFloorType] = useState(client?.floorType || "Bois");
+  const [surfaceArea, setSurfaceArea] = useState(currentSurfaceArea);
+  const [roofArea, setRoofArea] = useState(currentRoofArea);
+  const [floorType, setFloorType] = useState(currentFloorType || client?.floorType || "Bois");
+  const [climateZone, setClimateZone] = useState(currentClimateZone || client?.climateZone || "C3");
 
   const handleSurfaceAreaChange = (value: string) => {
     setSurfaceArea(value);
@@ -55,12 +66,34 @@ const ClientInfoSidebar = ({
     }
   };
 
+  const handleClimateZoneChange = (value: string) => {
+    setClimateZone(value);
+    if (onClimateZoneChange) {
+      onClimateZoneChange(value);
+    }
+  };
+
   if (!client) return null;
 
   const floorTypeOptions = [
     { value: "Béton", label: "🪨 Béton (Hormigón)" },
     { value: "Bois", label: "🪵 Bois (Madera)" },
     { value: "Céramique", label: "🧱 Céramique (Cerámico/Bovedilla)" }
+  ];
+
+  const climateZoneOptions = [
+    { value: "A3", label: "A3" },
+    { value: "A4", label: "A4" },
+    { value: "B3", label: "B3" },
+    { value: "B4", label: "B4" },
+    { value: "C1", label: "C1" },
+    { value: "C2", label: "C2" },
+    { value: "C3", label: "C3" },
+    { value: "C4", label: "C4" },
+    { value: "D1", label: "D1" },
+    { value: "D2", label: "D2" },
+    { value: "D3", label: "D3" },
+    { value: "E1", label: "E1" }
   ];
 
   return (
@@ -104,9 +137,18 @@ const ClientInfoSidebar = ({
                 {/* Zone climatique */}
                 <div className="flex flex-col">
                   <span className="text-sm text-gray-500">Zone climatique</span>
-                  <Badge variant="outline" className="mt-1 w-fit">
-                    {client.climateZone || "C"}
-                  </Badge>
+                  <Select value={climateZone} onValueChange={handleClimateZoneChange}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {climateZoneOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 {/* Superficie des combles */}
