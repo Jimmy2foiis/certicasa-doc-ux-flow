@@ -68,8 +68,8 @@ const ProjectInfoSection = ({
           <h3 className="text-lg font-semibold mb-4">Données Techniques</h3>
           
           <div className="space-y-4">
-            {/* Ligne 1: Type de plancher et Zone climatique (2 colonnes) */}
-            <div className="grid grid-cols-2 gap-3">
+            {/* Ligne 1: Type de plancher seulement */}
+            <div className="grid grid-cols-1 gap-3">
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Type de plancher</label>
                 <Select value={localFloorType} onValueChange={handleFloorTypeChange}>
@@ -84,18 +84,6 @@ const ProjectInfoSection = ({
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div>
-                <Label className="block text-sm text-gray-500 mb-2">Zone climatique</Label>
-                <div className="p-2 bg-muted rounded-md text-sm h-10 flex items-center">
-                  <span className="font-medium text-blue-600">
-                    {climateZone || 'Non définie'}
-                  </span>
-                  {climateZone && (
-                    <span className="text-muted-foreground ml-2">(déterminée automatiquement)</span>
-                  )}
-                </div>
               </div>
             </div>
 
