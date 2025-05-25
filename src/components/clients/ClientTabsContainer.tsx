@@ -7,7 +7,6 @@ import { Card } from "@/components/ui/card";
 import BillingTab from "./BillingTab";
 import DocumentsTab from "./documents/DocumentsTab";
 import ProjectCalculation from "../calculations/ProjectCalculation";
-import ClientDetailsHeader from "./ClientDetailsHeader";
 
 interface ClientTabsContainerProps {
   client: any;
@@ -35,40 +34,8 @@ export const ClientTabsContainer = ({
     // Logic to save calculation
   };
 
-  // Mock document stats for the header
-  const documentStats = {
-    total: 8,
-    generated: 5,
-    missing: 3,
-    error: 0
-  };
-
-  const handleViewMissingDocs = () => {
-    setCurrentTab("documents");
-  };
-
-  const handleDocumentGenerated = (documentId: string) => {
-    console.log('Document généré:', documentId);
-  };
-
-  const handleClientUpdated = () => {
-    console.log('Client mis à jour');
-  };
-
   return (
     <div className="space-y-6">
-      {/* Barre d'en-tête du client */}
-      <ClientDetailsHeader 
-        client={client}
-        clientId={clientId}
-        clientName={client?.name || "Client"}
-        onBack={onBack}
-        documentStats={documentStats}
-        onViewMissingDocs={handleViewMissingDocs}
-        onDocumentGenerated={handleDocumentGenerated}
-        onClientUpdated={handleClientUpdated}
-      />
-
       {/* Onglets */}
       <Card>
         <Tabs defaultValue="calculations" onValueChange={setCurrentTab}>

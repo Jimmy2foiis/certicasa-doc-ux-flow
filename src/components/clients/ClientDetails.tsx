@@ -5,6 +5,7 @@ import { useSavedCalculations } from "@/hooks/useSavedCalculations";
 import ClientInfoSidebar from "./sidebar/ClientInfoSidebar";
 import { ClientTabsContainer } from "./ClientTabsContainer";
 import ProjectCalculationView from "./ProjectCalculationView";
+import ClientDetailsHeader from "./ClientDetailsHeader";
 
 interface ClientDetailsProps {
   clientId: string;
@@ -54,6 +55,26 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
     setRoofArea(value);
   };
 
+  // Mock document stats for the header
+  const documentStats = {
+    total: 8,
+    generated: 5,
+    missing: 3,
+    error: 0
+  };
+
+  const handleViewMissingDocs = () => {
+    // Logic to switch to documents tab
+  };
+
+  const handleDocumentGenerated = (documentId: string) => {
+    console.log('Document généré:', documentId);
+  };
+
+  const handleClientUpdated = () => {
+    console.log('Client mis à jour');
+  };
+
   if (!client) {
     return <div>Client non trouvé</div>;
   }
@@ -75,6 +96,18 @@ const ClientDetails = ({ clientId, onBack }: ClientDetailsProps) => {
 
   return (
     <div className="space-y-6">
+      {/* Barre d'en-tête du client */}
+      <ClientDetailsHeader 
+        client={client}
+        clientId={clientId}
+        clientName={client?.name || "Client"}
+        onBack={onBack}
+        documentStats={documentStats}
+        onViewMissingDocs={handleViewMissingDocs}
+        onDocumentGenerated={handleDocumentGenerated}
+        onClientUpdated={handleClientUpdated}
+      />
+      
       <ClientInfoSidebar 
         client={client} 
         onSurfaceAreaChange={handleSurfaceAreaChange}
