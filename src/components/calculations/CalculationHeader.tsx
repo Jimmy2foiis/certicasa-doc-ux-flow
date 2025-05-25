@@ -17,11 +17,8 @@ interface CalculationHeaderProps {
     phone?: string;
     email?: string;
   };
-  onSurfaceAreaChange?: (value: string) => void;
-  onRoofAreaChange?: (value: string) => void;
   floorType?: string;
-  onFloorTypeChange?: (value: string) => void;
-  onClimateZoneChange?: (value: string) => void;
+  climateZone?: string;
 }
 
 const CalculationHeader = ({ 
@@ -31,24 +28,17 @@ const CalculationHeader = ({
   clientAddress,
   projectName,
   clientData,
-  onSurfaceAreaChange,
-  onRoofAreaChange,
   floorType = "Bois",
-  onFloorTypeChange,
-  onClimateZoneChange
+  climateZone = "C3"
 }: CalculationHeaderProps) => {
   return (
     <div>
-      {/* Section Informations Projet */}
+      {/* Section Informations Projet - en lecture seule, valeurs venant de la sidebar */}
       <ProjectInfoSection 
         surfaceArea={calculationData.surfaceArea}
         roofArea={calculationData.roofArea}
-        climateZone={calculationData.climateZone}
+        climateZone={climateZone}
         floorType={floorType}
-        onSurfaceAreaChange={onSurfaceAreaChange}
-        onRoofAreaChange={onRoofAreaChange}
-        onFloorTypeChange={onFloorTypeChange}
-        onClimateZoneChange={onClimateZoneChange}
       />
       
       {/* Header du calcul */}

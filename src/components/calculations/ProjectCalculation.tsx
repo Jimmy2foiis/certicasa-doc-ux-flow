@@ -109,40 +109,25 @@ const ProjectCalculation = ({
     floorType: floorType
   });
 
+  // Synchroniser les valeurs depuis les props vers le state interne
+  useEffect(() => {
+    setSurfaceArea(surfaceArea);
+  }, [surfaceArea, setSurfaceArea]);
+
+  useEffect(() => {
+    setRoofArea(roofArea);
+  }, [roofArea, setRoofArea]);
+
+  useEffect(() => {
+    setClimateZone(effectiveClimateZone);
+  }, [effectiveClimateZone, setClimateZone]);
+
   const handleDeleteBeforeLayer = (id: string) => {
     setBeforeLayers(beforeLayers.filter(l => l.id !== id));
   };
 
   const handleDeleteAfterLayer = (id: string) => {
     setAfterLayers(afterLayers.filter(l => l.id !== id));
-  };
-
-  // Gestionnaires pour la synchronisation des surfaces - simplifiés pour éviter les boucles
-  const handleSurfaceAreaChangeInternal = (value: string) => {
-    setSurfaceArea(value);
-    if (onSurfaceAreaChange) {
-      onSurfaceAreaChange(value);
-    }
-  };
-
-  const handleRoofAreaChangeInternal = (value: string) => {
-    setRoofArea(value);
-    if (onRoofAreaChange) {
-      onRoofAreaChange(value);
-    }
-  };
-
-  const handleFloorTypeChangeInternal = (value: string) => {
-    if (onFloorTypeChange) {
-      onFloorTypeChange(value);
-    }
-  };
-
-  const handleClimateZoneChangeInternal = (value: string) => {
-    setClimateZone(value);
-    if (onClimateZoneChange) {
-      onClimateZoneChange(value);
-    }
   };
 
   // Prepare client data with fallbacks
@@ -172,11 +157,8 @@ const ProjectCalculation = ({
             clientAddress={clientAddress}
             projectName={projectName}
             clientData={preparedClientData}
-            onSurfaceAreaChange={handleSurfaceAreaChangeInternal}
-            onRoofAreaChange={handleRoofAreaChangeInternal}
             floorType={floorType}
-            onFloorTypeChange={handleFloorTypeChangeInternal}
-            onClimateZoneChange={handleClimateZoneChangeInternal}
+            climateZone={effectiveClimateZone}
           />
           <CalculationContent 
             calculationData={calculationData}

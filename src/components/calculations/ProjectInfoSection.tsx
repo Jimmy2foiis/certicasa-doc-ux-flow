@@ -2,8 +2,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ProjectInfoSectionProps {
   isolationType?: string;
@@ -11,10 +9,6 @@ interface ProjectInfoSectionProps {
   climateZone?: string;
   surfaceArea: string;
   roofArea: string;
-  onSurfaceAreaChange?: (value: string) => void;
-  onRoofAreaChange?: (value: string) => void;
-  onFloorTypeChange?: (value: string) => void;
-  onClimateZoneChange?: (value: string) => void;
 }
 
 const ProjectInfoSection = ({
@@ -22,33 +16,8 @@ const ProjectInfoSection = ({
   floorType = "Bois",
   climateZone = "C",
   surfaceArea,
-  roofArea,
-  onSurfaceAreaChange,
-  onRoofAreaChange,
-  onFloorTypeChange,
-  onClimateZoneChange
+  roofArea
 }: ProjectInfoSectionProps) => {
-  const floorTypeOptions = [
-    { value: "Béton", label: "🪨 Béton (Hormigón)" },
-    { value: "Bois", label: "🪵 Bois (Madera)" },
-    { value: "Céramique", label: "🧱 Céramique (Cerámico/Bovedilla)" }
-  ];
-
-  const climateZoneOptions = [
-    { value: "A3", label: "A3" },
-    { value: "A4", label: "A4" },
-    { value: "B3", label: "B3" },
-    { value: "B4", label: "B4" },
-    { value: "C1", label: "C1" },
-    { value: "C2", label: "C2" },
-    { value: "C3", label: "C3" },
-    { value: "C4", label: "C4" },
-    { value: "D1", label: "D1" },
-    { value: "D2", label: "D2" },
-    { value: "D3", label: "D3" },
-    { value: "E1", label: "E1" }
-  ];
-
   return (
     <Card className="mb-4">
       <CardHeader className="pb-2">
@@ -65,53 +34,33 @@ const ProjectInfoSection = ({
           {/* Type de plancher */}
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 mb-1">Type de plancher</span>
-            <Select value={floorType} onValueChange={onFloorTypeChange}>
-              <SelectTrigger className="h-8 text-sm">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {floorTypeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Badge variant="outline" className="w-fit text-xs">
+              {floorType}
+            </Badge>
           </div>
           
           {/* Zone climatique */}
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 mb-1">Zone climatique</span>
-            {onClimateZoneChange ? (
-              <Select value={climateZone} onValueChange={onClimateZoneChange}>
-                <SelectTrigger className="h-8 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {climateZoneOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <Badge variant="outline" className="w-fit text-xs">
-                {climateZone}
-              </Badge>
-            )}
+            <Badge variant="outline" className="w-fit text-xs">
+              {climateZone}
+            </Badge>
           </div>
           
           {/* Superficie des combles */}
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 mb-1">Superficie des combles (m²)</span>
-            <Input type="number" value={surfaceArea} onChange={e => onSurfaceAreaChange?.(e.target.value)} className="h-8 text-sm" />
+            <Badge variant="secondary" className="w-fit text-xs">
+              {surfaceArea} m²
+            </Badge>
           </div>
           
           {/* Superficie de la toiture */}
           <div className="flex flex-col">
             <span className="text-sm text-gray-500 mb-1">Superficie de la toiture (m²)</span>
-            <Input type="number" value={roofArea} onChange={e => onRoofAreaChange?.(e.target.value)} className="h-8 text-sm" />
+            <Badge variant="secondary" className="w-fit text-xs">
+              {roofArea} m²
+            </Badge>
           </div>
         </div>
       </CardContent>
