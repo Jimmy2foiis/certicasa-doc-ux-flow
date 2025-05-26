@@ -8,6 +8,15 @@ interface CalculationsTabProps {
   clientName?: string;
   clientAddress?: string;
   climateZone?: string;
+  // Nouvelles props pour la géolocalisation
+  geolocatedClimateZone?: string;
+  climateData?: {
+    confidence?: number;
+    method?: string;
+    referenceCity?: string;
+    distance?: number;
+    description?: string;
+  };
   savedCalculations?: Array<{
     id: string;
     projectId: string;
@@ -27,7 +36,9 @@ const CalculationsTab = ({
   clientId, 
   clientName = "Client",
   clientAddress = "",
-  climateZone, // Utiliser la vraie zone climatique passée en prop
+  climateZone,
+  geolocatedClimateZone,
+  climateData,
   savedCalculations = [],
   onOpenCalculation, 
   onCreateNewCalculation 
@@ -36,6 +47,12 @@ const CalculationsTab = ({
   const { emitCalculationSaved } = useCalculationEventEmitter();
 
   const calculations = Array.isArray(savedCalculations) ? savedCalculations : [];
+
+  // Utiliser la zone géolocalisée en priorité
+  const effectiveClimateZone = geolocatedClimateZone || climateZone || "C3";
+
+  console.log('🌍 CalculationsTab - Zone géolocalisée:', geolocatedClimateZone);
+  console.log('🌍 CalculationsTab - Zone effective utilisée:', effectiveClimateZone);
 
   const handleSave = (calculationData: any) => {
     try {
@@ -91,8 +108,14 @@ const CalculationsTab = ({
         clientName={clientName}
         clientAddress={clientAddress}
         onSave={handleSave}
-        clientClimateZone={climateZone || "C3"} // Utiliser la vraie zone climatique avec fallback
+        clientClimateZone={effectiveClimateZone}
+        clientClimateConfidence={climateData?.confidence}
+        clientClimateMethod={climateData?.method}
+        clientClimateReferenceCity={climateData?.referenceCity}
+        clientClimateDistance={climateData?.distance}
+        clientClimateDescription={climateData?.description}
         projectName={`Calcul thermique pour ${clientName}`}
+        geolocatedClimateZone={geolocatedClimateZone}
       />
     </div>
   );

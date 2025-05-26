@@ -1,4 +1,3 @@
-
 import { useCadastralData } from "@/hooks/useCadastralData";
 import { useCalculationState } from "@/hooks/useCalculationState";
 import { useState, useEffect } from "react";
@@ -10,6 +9,7 @@ interface UseProjectCalculationStateProps {
   surfaceArea?: string;
   roofArea?: string;
   floorType?: string;
+  geolocatedClimateZone?: string;
 }
 
 export const useProjectCalculationState = ({
@@ -18,13 +18,14 @@ export const useProjectCalculationState = ({
   clientClimateZone,
   surfaceArea = "70",
   roofArea = "85",
-  floorType = "Bois"
+  floorType = "Bois",
+  geolocatedClimateZone
 }: UseProjectCalculationStateProps) => {
   // États locaux pour les surfaces
   const [localSurfaceArea, setLocalSurfaceArea] = useState(surfaceArea);
   const [localRoofArea, setLocalRoofArea] = useState(roofArea);
   const [localFloorType, setLocalFloorType] = useState(floorType);
-  const [localClimateZone, setLocalClimateZone] = useState(clientClimateZone || "C3");
+  const [localClimateZone, setLocalClimateZone] = useState(geolocatedClimateZone || clientClimateZone || "C3");
 
   // Synchroniser avec les props
   useEffect(() => {
@@ -39,6 +40,16 @@ export const useProjectCalculationState = ({
     setLocalFloorType(floorType);
   }, [floorType]);
 
+  // Priorité à la zone géolocalisée
+  useEffect(() => {
+    if (geolocatedClimateZone) {
+      console.log('🌍 useProjectCalculationState - Zone géolocalisée reçue:', geolocatedClimateZone);
+      setLocalClimateZone(geolocatedClimateZone);
+    } else if (clientClimateZone) {
+      setLocalClimateZone(clientClimateZone);
+    }
+  }, [geolocatedClimateZone, clientClimateZone]);
+
   // Get climate zone from cadastral data (for demo purposes)
   const { climateZone: fetchedClimateZone } = useCadastralData(clientId ? `Client ID ${clientId}` : "123 Demo Street");
   
@@ -49,35 +60,32 @@ export const useProjectCalculationState = ({
       roofArea: localRoofArea,
       climateZone: localClimateZone
     },
-    clientClimateZone: localClimateZone,
-    floorType: localFloorType
+    clientClimateZone: clientClimateZone,
+    floorType: localFloorType,
+    geolocatedClimateZone: geolocatedClimateZone
   });
 
   // Gestionnaires pour propager les changements avec synchronisation immédiate
   const handleSurfaceAreaChange = (value: string) => {
     console.log('📊 useProjectCalculationState - Surface combles mise à jour:', value, '-> Synchronisation calculs');
     setLocalSurfaceArea(value);
-    // Synchronisation immédiate avec le système de calcul
     calculationState.setSurfaceArea(value);
   };
 
   const handleRoofAreaChange = (value: string) => {
     console.log('📊 useProjectCalculationState - Surface toiture mise à jour:', value, '-> Synchronisation calculs');
     setLocalRoofArea(value);
-    // Synchronisation immédiate avec le système de calcul
     calculationState.setRoofArea(value);
   };
 
   const handleFloorTypeChange = (value: string) => {
     console.log('📊 useProjectCalculationState - Type plancher mis à jour:', value, '-> Synchronisation matériaux');
     setLocalFloorType(value);
-    // Le changement de type de plancher est géré par useLayerManagement
   };
 
   const handleClimateZoneChange = (value: string) => {
     console.log('📊 useProjectCalculationState - Zone climatique mise à jour:', value);
     setLocalClimateZone(value);
-    // Le changement de zone climatique est géré par le système de calcul
   };
 
   return {

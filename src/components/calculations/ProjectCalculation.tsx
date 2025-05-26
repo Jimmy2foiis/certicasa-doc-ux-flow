@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useProjectCalculationState } from "@/hooks/useProjectCalculationState";
 import ProjectCalculationLayout from "./ProjectCalculationLayout";
@@ -25,6 +24,7 @@ interface ProjectCalculationProps {
   onRoofAreaChange?: (value: string) => void;
   onFloorTypeChange?: (value: string) => void;
   onClimateZoneChange?: (value: string) => void;
+  geolocatedClimateZone?: string;
 }
 
 const ProjectCalculation = ({
@@ -47,13 +47,14 @@ const ProjectCalculation = ({
   onSurfaceAreaChange,
   onRoofAreaChange,
   onFloorTypeChange,
-  onClimateZoneChange
+  onClimateZoneChange,
+  geolocatedClimateZone
 }: ProjectCalculationProps) => {
   // États locaux pour les surfaces
   const [currentSurfaceArea, setCurrentSurfaceArea] = useState(surfaceArea);
   const [currentRoofArea, setCurrentRoofArea] = useState(roofArea);
   const [currentFloorType, setCurrentFloorType] = useState(floorType);
-  const [currentClimateZone, setCurrentClimateZone] = useState(clientClimateZone);
+  const [currentClimateZone, setCurrentClimateZone] = useState(geolocatedClimateZone || clientClimateZone);
 
   // Synchroniser avec les props
   useEffect(() => {
@@ -68,9 +69,15 @@ const ProjectCalculation = ({
     setCurrentFloorType(floorType);
   }, [floorType]);
 
+  // Priorité à la zone géolocalisée
   useEffect(() => {
-    setCurrentClimateZone(clientClimateZone);
-  }, [clientClimateZone]);
+    if (geolocatedClimateZone) {
+      console.log('🌍 ProjectCalculation - Zone géolocalisée reçue:', geolocatedClimateZone);
+      setCurrentClimateZone(geolocatedClimateZone);
+    } else {
+      setCurrentClimateZone(clientClimateZone);
+    }
+  }, [geolocatedClimateZone, clientClimateZone]);
 
   const calculationState = useProjectCalculationState({
     clientId,
@@ -80,10 +87,11 @@ const ProjectCalculation = ({
       roofArea: currentRoofArea,
       climateZone: currentClimateZone
     },
-    clientClimateZone: currentClimateZone,
+    clientClimateZone: clientClimateZone,
     surfaceArea: currentSurfaceArea,
     roofArea: currentRoofArea,
-    floorType: currentFloorType
+    floorType: currentFloorType,
+    geolocatedClimateZone: geolocatedClimateZone
   });
 
   // Gestionnaires combinés pour propager les changements
@@ -170,6 +178,11 @@ const ProjectCalculation = ({
         onRoofAreaChange={handleRoofAreaChangeInternal}
         onFloorTypeChange={handleFloorTypeChangeInternal}
         onClimateZoneChange={handleClimateZoneChangeInternal}
+        climateConfidence={clientClimateConfidence}
+        climateMethod={clientClimateMethod}
+        climateReferenceCity={clientClimateReferenceCity}
+        climateDistance={clientClimateDistance}
+        climateDescription={clientClimateDescription}
       />
 
       {/* Module de Calcul */}

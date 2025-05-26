@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { useLayerManagement, Layer } from "./useLayerManagement";
 import { useThermalCalculations } from "./useThermalCalculations";
@@ -33,12 +34,15 @@ interface UseCalculationStateProps {
   savedData?: any;
   clientClimateZone?: string;
   floorType?: string;
+  // Nouvelle prop pour la zone géolocalisée
+  geolocatedClimateZone?: string;
 }
 
 export const useCalculationState = ({ 
   savedData, 
   clientClimateZone,
-  floorType 
+  floorType,
+  geolocatedClimateZone
 }: UseCalculationStateProps) => {
   
   // États pour les données de base
@@ -86,21 +90,27 @@ export const useCalculationState = ({
       
       if (savedData.climateZone) {
         setClimateZone(savedData.climateZone);
+      } else if (geolocatedClimateZone) {
+        console.log('🌍 Utilisation zone géolocalisée:', geolocatedClimateZone);
+        setClimateZone(geolocatedClimateZone);
       } else if (clientClimateZone) {
         setClimateZone(clientClimateZone);
       }
+    } else if (geolocatedClimateZone) {
+      console.log('🌍 Zone géolocalisée prioritaire:', geolocatedClimateZone);
+      setClimateZone(geolocatedClimateZone);
     } else if (clientClimateZone) {
       setClimateZone(clientClimateZone);
     }
-  }, [savedData, clientClimateZone]);
+  }, [savedData, clientClimateZone, geolocatedClimateZone]);
 
-  // Synchroniser avec la zone climatique du client quand elle change
+  // Synchroniser avec la zone géolocalisée quand elle change
   useEffect(() => {
-    if (clientClimateZone && clientClimateZone !== climateZone) {
-      console.log('🌡️ Synchronisation zone climatique:', climateZone, '->', clientClimateZone);
-      setClimateZone(clientClimateZone);
+    if (geolocatedClimateZone && geolocatedClimateZone !== climateZone) {
+      console.log('🌍 Synchronisation zone géolocalisée:', climateZone, '->', geolocatedClimateZone);
+      setClimateZone(geolocatedClimateZone);
     }
-  }, [clientClimateZone]);
+  }, [geolocatedClimateZone]);
 
   const calculationData: CalculationData = useMemo(() => ({
     beforeLayers: layerManagement.beforeLayers,
