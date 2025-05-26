@@ -4,7 +4,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-
 interface ProjectInfoSectionProps {
   isolationType?: string;
   floorType?: string;
@@ -22,7 +21,6 @@ interface ProjectInfoSectionProps {
   climateDistance?: number;
   climateDescription?: string;
 }
-
 const ProjectInfoSection = ({
   isolationType = "Combles",
   floorType = "Bois",
@@ -48,21 +46,21 @@ const ProjectInfoSection = ({
   useEffect(() => {
     setLocalSurfaceArea(surfaceArea);
   }, [surfaceArea]);
-
   useEffect(() => {
     setLocalRoofArea(roofArea);
   }, [roofArea]);
-
   useEffect(() => {
     setLocalFloorType(floorType);
   }, [floorType]);
-
   useEffect(() => {
     console.log('🌡️ ProjectInfoSection - Zone climatique reçue:', climateZone);
-    console.log('🌡️ ProjectInfoSection - Géolocalisation:', { climateMethod, climateReferenceCity, climateConfidence });
+    console.log('🌡️ ProjectInfoSection - Géolocalisation:', {
+      climateMethod,
+      climateReferenceCity,
+      climateConfidence
+    });
     setLocalClimateZone(climateZone);
   }, [climateZone, climateMethod, climateReferenceCity, climateConfidence]);
-
   const handleSurfaceAreaChange = (value: string) => {
     console.log('📊 ProjectInfoSection - Surface combles changée:', value, '-> Propagation immédiate');
     setLocalSurfaceArea(value);
@@ -70,7 +68,6 @@ const ProjectInfoSection = ({
       onSurfaceAreaChange(value);
     }
   };
-
   const handleRoofAreaChange = (value: string) => {
     console.log('📊 ProjectInfoSection - Surface toiture changée:', value, '-> Propagation immédiate');
     setLocalRoofArea(value);
@@ -78,7 +75,6 @@ const ProjectInfoSection = ({
       onRoofAreaChange(value);
     }
   };
-
   const handleFloorTypeChange = (value: string) => {
     console.log('📊 ProjectInfoSection - Type plancher changé:', value, '-> Propagation immédiate');
     setLocalFloorType(value);
@@ -86,7 +82,6 @@ const ProjectInfoSection = ({
       onFloorTypeChange(value);
     }
   };
-
   const handleClimateZoneChange = (value: string) => {
     console.log('🌡️ ProjectInfoSection - Zone climatique changée manuellement:', value, '-> Propagation vers parent');
     setLocalClimateZone(value);
@@ -94,69 +89,80 @@ const ProjectInfoSection = ({
       onClimateZoneChange(value);
     }
   };
-
-  const floorTypeOptions = [
-    { value: "Béton", label: "🪨 Béton" },
-    { value: "Bois", label: "🪵 Bois" },
-    { value: "Céramique", label: "🧱 Céramique" }
-  ];
-
-  const climateZoneOptions = [
-    { value: "A3", label: "A3" },
-    { value: "A4", label: "A4" },
-    { value: "B3", label: "B3" },
-    { value: "B4", label: "B4" },
-    { value: "C1", label: "C1" },
-    { value: "C2", label: "C2" },
-    { value: "C3", label: "C3" },
-    { value: "C4", label: "C4" },
-    { value: "D1", label: "D1" },
-    { value: "D2", label: "D2" },
-    { value: "D3", label: "D3" },
-    { value: "E1", label: "E1" }
-  ];
-
+  const floorTypeOptions = [{
+    value: "Béton",
+    label: "🪨 Béton"
+  }, {
+    value: "Bois",
+    label: "🪵 Bois"
+  }, {
+    value: "Céramique",
+    label: "🧱 Céramique"
+  }];
+  const climateZoneOptions = [{
+    value: "A3",
+    label: "A3"
+  }, {
+    value: "A4",
+    label: "A4"
+  }, {
+    value: "B3",
+    label: "B3"
+  }, {
+    value: "B4",
+    label: "B4"
+  }, {
+    value: "C1",
+    label: "C1"
+  }, {
+    value: "C2",
+    label: "C2"
+  }, {
+    value: "C3",
+    label: "C3"
+  }, {
+    value: "C4",
+    label: "C4"
+  }, {
+    value: "D1",
+    label: "D1"
+  }, {
+    value: "D2",
+    label: "D2"
+  }, {
+    value: "D3",
+    label: "D3"
+  }, {
+    value: "E1",
+    label: "E1"
+  }];
   const renderClimateZoneWithGeolocation = () => {
-    return (
-      <div className="space-y-2">
-        <label className="block text-sm text-gray-500 mb-2">Zone climatique CTE</label>
+    return <div className="space-y-2">
+        
         <Select value={localClimateZone} onValueChange={handleClimateZoneChange}>
           <SelectTrigger className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {climateZoneOptions.map(option => (
-              <SelectItem key={option.value} value={option.value}>
+            {climateZoneOptions.map(option => <SelectItem key={option.value} value={option.value}>
                 {option.label}
-              </SelectItem>
-            ))}
+              </SelectItem>)}
           </SelectContent>
         </Select>
         
         {/* Informations de géolocalisation */}
-        {climateMethod && climateReferenceCity && (
-          <div className="text-xs text-green-600 bg-green-50 p-2 rounded border border-green-200">
+        {climateMethod && climateReferenceCity && <div className="text-xs text-green-600 bg-green-50 p-2 rounded border border-green-200">
             <div className="flex items-center gap-1 mb-1">
               <span className="font-medium">📍 Déterminé automatiquement</span>
-              {climateConfidence && (
-                <span className="ml-auto font-semibold">{climateConfidence}%</span>
-              )}
+              {climateConfidence && <span className="ml-auto font-semibold">{climateConfidence}%</span>}
             </div>
             <div>Ville référence: {climateReferenceCity}</div>
-            {climateDistance && (
-              <div>Distance: {climateDistance}km</div>
-            )}
-            {climateDescription && (
-              <div className="mt-1 text-xs text-gray-600">{climateDescription}</div>
-            )}
-          </div>
-        )}
-      </div>
-    );
+            {climateDistance && <div>Distance: {climateDistance}km</div>}
+            {climateDescription && <div className="mt-1 text-xs text-gray-600">{climateDescription}</div>}
+          </div>}
+      </div>;
   };
-
-  return (
-    <Card className="mb-4">
+  return <Card className="mb-4">
       <CardContent className="pt-6">
         {/* Section Données Techniques */}
         <div className="mb-6">
@@ -172,11 +178,9 @@ const ProjectInfoSection = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {floorTypeOptions.map(option => (
-                      <SelectItem key={option.value} value={option.value}>
+                    {floorTypeOptions.map(option => <SelectItem key={option.value} value={option.value}>
                         {option.label}
-                      </SelectItem>
-                    ))}
+                      </SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
@@ -190,32 +194,16 @@ const ProjectInfoSection = ({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Surface combles (m²)</label>
-                <Input 
-                  type="number" 
-                  value={localSurfaceArea} 
-                  onChange={(e) => handleSurfaceAreaChange(e.target.value)}
-                  onBlur={(e) => handleSurfaceAreaChange(e.target.value)}
-                  className="w-full" 
-                  placeholder="Surface des combles"
-                />
+                <Input type="number" value={localSurfaceArea} onChange={e => handleSurfaceAreaChange(e.target.value)} onBlur={e => handleSurfaceAreaChange(e.target.value)} className="w-full" placeholder="Surface des combles" />
               </div>
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Surface toiture (m²)</label>
-                <Input 
-                  type="number" 
-                  value={localRoofArea} 
-                  onChange={(e) => handleRoofAreaChange(e.target.value)}
-                  onBlur={(e) => handleRoofAreaChange(e.target.value)}
-                  className="w-full" 
-                  placeholder="Surface de la toiture"
-                />
+                <Input type="number" value={localRoofArea} onChange={e => handleRoofAreaChange(e.target.value)} onBlur={e => handleRoofAreaChange(e.target.value)} className="w-full" placeholder="Surface de la toiture" />
               </div>
             </div>
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ProjectInfoSection;
