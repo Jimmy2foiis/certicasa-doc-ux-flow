@@ -113,7 +113,7 @@ const LotsManagement = () => {
           <DialogTrigger asChild>
             <Button className="bg-green-600 hover:bg-green-700">
               <Plus className="mr-2 h-4 w-4" />
-              Nouveau Lot
+              Créer un lot
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-[425px]">
@@ -126,9 +126,9 @@ const LotsManagement = () => {
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="name" className="text-right">
-                  Nom
+                  Nom du lot
                 </Label>
-                <Input id="name" className="col-span-3" />
+                <Input id="name" className="col-span-3" placeholder="ex: Lot Madrid Centre" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="delegataire" className="text-right">
@@ -147,7 +147,7 @@ const LotsManagement = () => {
               </div>
             </div>
             <DialogFooter>
-              <Button type="submit">Créer lot</Button>
+              <Button type="submit" className="bg-green-600 hover:bg-green-700">Créer le lot</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

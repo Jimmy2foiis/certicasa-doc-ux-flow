@@ -88,9 +88,7 @@ const ClientsList = ({
           selectedCount={selectedClients.length} 
           onClearSelection={clearSelection}
           selectedClientIds={selectedClients}
-          onCreateBatch={() => handleCreateBatch(selectedClients)}
-          onAddToExistingBatch={() => handleAddToExistingBatch(selectedClients)}
-          onDownloadZip={() => handleDownloadZip(selectedClients)}
+          onBatchCreated={refreshClients}
         />
       )}
 
