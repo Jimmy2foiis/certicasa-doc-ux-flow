@@ -137,10 +137,10 @@ const ProjectInfoSection = ({
     label: "E1"
   }];
   const renderClimateZoneWithGeolocation = () => {
-    return <div className="space-y-2">
+    return <div className="space-y-3">
         
         <Select value={localClimateZone} onValueChange={handleClimateZoneChange}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="w-full h-12 text-base">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -151,14 +151,14 @@ const ProjectInfoSection = ({
         </Select>
         
         {/* Informations de géolocalisation */}
-        {climateMethod && climateReferenceCity && <div className="text-xs text-green-600 bg-green-50 p-2 rounded border border-green-200">
-            <div className="flex items-center gap-1 mb-1">
+        {climateMethod && climateReferenceCity && <div className="text-sm text-green-600 bg-green-50 p-3 rounded border border-green-200">
+            <div className="flex items-center gap-1 mb-2">
               <span className="font-medium">📍 Déterminé automatiquement</span>
               {climateConfidence && <span className="ml-auto font-semibold">{climateConfidence}%</span>}
             </div>
             <div>Ville référence: {climateReferenceCity}</div>
             {climateDistance && <div>Distance: {climateDistance}km</div>}
-            {climateDescription && <div className="mt-1 text-xs text-gray-600">{climateDescription}</div>}
+            {climateDescription && <div className="mt-2 text-sm text-gray-600">{climateDescription}</div>}
           </div>}
       </div>;
   };
@@ -168,9 +168,9 @@ const ProjectInfoSection = ({
         <div className="mb-6">
           <h3 className="text-lg font-semibold mb-4">Données Techniques</h3>
           
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Ligne 1: Type de plancher et Zone climatique CTE avec géolocalisation */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Type de plancher</label>
                 <Select value={localFloorType} onValueChange={handleFloorTypeChange}>
@@ -185,7 +185,10 @@ const ProjectInfoSection = ({
                 </Select>
               </div>
               
-              
+              <div className="lg:col-span-1">
+                <label className="block text-sm text-gray-500 mb-2">Zone climatique CTE</label>
+                {renderClimateZoneWithGeolocation()}
+              </div>
             </div>
 
             {/* Ligne 2: Surface combles et Surface toiture */}
