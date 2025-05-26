@@ -160,7 +160,7 @@ const ProjectCalculation = ({
 
   return (
     <div className="space-y-6">
-      {/* Section Informations Projet */}
+      {/* Section Informations Projet - SEULE VERSION FONCTIONNELLE */}
       <ProjectInfoSection
         surfaceArea={currentSurfaceArea}
         roofArea={currentRoofArea}
