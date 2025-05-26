@@ -78,8 +78,8 @@ const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsV
   
   if (!client) return null;
 
-  // S'assurer qu'on a toujours un clientId valide
-  const effectiveClientId = client.beetoolToken || clientId;
+  // S'assurer qu'on a toujours un clientId valide (chaîne non-vide)
+  const effectiveClientId = client.beetoolToken || clientId || 'unknown';
 
   if (showCalculations) {
     return (
