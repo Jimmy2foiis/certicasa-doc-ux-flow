@@ -51,17 +51,19 @@ const ThermalEconomySection = ({
   onClimateZoneChange
 }: ThermalEconomySectionProps) => {
   
-  // 🔴 DIAGNOSTIC COMPLET - TOUTES LES VALEURS D'ENTRÉE
-  console.log('🔴 DIAGNOSTIC ThermalEconomySection - VALEURS D\'ENTRÉE:');
-  console.log('  📊 surfaceArea:', surfaceArea);
-  console.log('  📊 uValueBefore:', uValueBefore);
-  console.log('  📊 uValueAfter:', uValueAfter);
-  console.log('  🌍 climateZone (prop):', climateZone);
-  console.log('  🏗️ projectType:', projectType);
-  console.log('  ℹ️ climateConfidence:', climateConfidence);
-  console.log('  ℹ️ climateMethod:', climateMethod);
-  console.log('  ℹ️ climateReferenceCity:', climateReferenceCity);
-  console.log('  ℹ️ climateDistance:', climateDistance);
+  // 🚨 DEBUG CRITIQUE - ARRIVÉE DANS ThermalEconomySection
+  console.error('🚨 ThermalEconomySection - ARRIVÉE zone (prop):', climateZone);
+  console.error('🚨 ThermalEconomySection - Zone par défaut utilisée?', climateZone === "C3" ? "OUI - PROBLÈME!" : "NON - OK");
+  console.error('🚨 ThermalEconomySection - Toutes les props:', {
+    surfaceArea,
+    uValueBefore,
+    uValueAfter,
+    climateZone,
+    climateConfidence,
+    climateMethod,
+    climateReferenceCity,
+    climateDistance
+  });
 
   const {
     cherryEnabled,
@@ -88,44 +90,32 @@ const ThermalEconomySection = ({
     onClimateZoneChange
   });
 
-  // 🔴 DIAGNOSTIC COMPLET - VALEURS DU HOOK
-  console.log('🔴 DIAGNOSTIC useThermalEconomyCalculations - VALEURS DE SORTIE:');
-  console.log('  🌍 selectedClimateZone:', selectedClimateZone);
-  console.log('  📈 gCoefficient:', gCoefficient);
-  console.log('  👥 delegate:', delegate);
-  console.log('  🍒 cherryEnabled:', cherryEnabled);
-  console.log('  💰 annualSavings:', annualSavings);
-  console.log('  💰 projectPrice:', projectPrice);
-  console.log('  💰 pricePerSqm:', pricePerSqm);
-  console.log('  💰 cherryPricePerSqm:', cherryPricePerSqm);
-  console.log('  💰 totalProjectPrice:', totalProjectPrice);
+  // 🚨 DEBUG - Vérifier si le coefficient G est correct
+  console.error('🚨 ThermalEconomySection - Coefficient G utilisé:', gCoefficient);
+  console.error('🚨 ThermalEconomySection - Coefficient G pour', selectedClimateZone, ':', climateZoneCoefficients[selectedClimateZone]);
+  console.error('🚨 ThermalEconomySection - Coefficient G pour D2 (attendu):', climateZoneCoefficients["D2"]);
 
   // 🔄 SYNCHRONISATION DIRECTE avec la géolocalisation
   useEffect(() => {
-    console.log('🔄 SYNCHRONISATION - climateZone changé:', climateZone);
+    console.error('🔄 ThermalEconomySection useEffect - climateZone changé:', climateZone);
     // Si on reçoit une zone de ClimateZoneDisplay, on l'utilise
     if (climateZone) {
+      console.error('🔄 ThermalEconomySection - Synchronisation avec zone reçue:', climateZone);
       setSelectedClimateZone(climateZone);
-      console.log('🔄 Zone Thermique synchronisée:', climateZone);
     }
   }, [climateZone, setSelectedClimateZone]);
 
   // Gestionnaire pour le nouveau composant de zone thermique
   const handleThermalZoneUpdate = (zone: string, coefficient: number) => {
-    console.log(`📊 Mise à jour calculs avec Zone ${zone}, G=${coefficient}`);
+    console.error(`🚨 ThermalEconomySection - Mise à jour calculs avec Zone ${zone}, G=${coefficient}`);
     handleClimateZoneChange(zone);
     
     // Propager vers le parent (StatusBanner, etc.)
     if (onClimateZoneChange) {
+      console.error('🚨 ThermalEconomySection - TRANSMISSION vers parent:', zone);
       onClimateZoneChange(zone);
     }
   };
-
-  // 🔴 DIAGNOSTIC FINAL - CALCULS UTILISÉS
-  console.log('🔴 DIAGNOSTIC FINAL - CALCULS UTILISÉS:');
-  console.log('  📐 Formule CAE: Surface × (UBefore - UAfter) × G');
-  console.log('  📐 Calcul détaillé:', `${surfaceArea} × (${uValueBefore} - ${uValueAfter}) × ${gCoefficient} = ${annualSavings}`);
-  console.log('  📐 Delta U:', uValueBefore - uValueAfter);
 
   return (
     <Card className="mt-6">

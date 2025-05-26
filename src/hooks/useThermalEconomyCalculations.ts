@@ -27,25 +27,27 @@ export const useThermalEconomyCalculations = ({
   const [delegate, setDelegate] = useState<"Eiffage" | "GreenFlex">("Eiffage");
   const [selectedClimateZone, setSelectedClimateZone] = useState(climateZone);
 
-  // 🔴 DIAGNOSTIC HOOK - VALEURS D'ENTRÉE
-  console.log('🔴 DIAGNOSTIC useThermalEconomyCalculations - INPUTS:');
-  console.log('  📊 surfaceArea:', surfaceArea);
-  console.log('  📊 uValueBefore:', uValueBefore);
-  console.log('  📊 uValueAfter:', uValueAfter);
-  console.log('  🌍 climateZone (prop):', climateZone);
-  console.log('  🌍 selectedClimateZone (state):', selectedClimateZone);
+  // 🚨 DEBUG HOOK - ENTRÉE
+  console.error('🚨 useThermalEconomyCalculations - Zone reçue (prop):', climateZone);
+  console.error('🚨 useThermalEconomyCalculations - selectedClimateZone (state):', selectedClimateZone);
+  console.error('🚨 useThermalEconomyCalculations - Zone par défaut utilisée?', climateZone === "C3" ? "OUI - PROBLÈME!" : "NON - OK");
 
   // Synchronisation avec la zone climatique reçue
   useEffect(() => {
-    console.log('🔄 HOOK useEffect - climateZone changé:', climateZone);
+    console.error('🚨 useThermalEconomyCalculations useEffect - climateZone changé:', climateZone);
     if (climateZone && climateZone !== selectedClimateZone) {
-      console.log('🔄 HOOK - Mise à jour selectedClimateZone:', climateZone);
+      console.error('🚨 useThermalEconomyCalculations - Mise à jour selectedClimateZone:', climateZone);
       setSelectedClimateZone(climateZone);
     }
   }, [climateZone]);
 
   // Get coefficient G based on selected climate zone
   const gCoefficient = climateZoneCoefficients[selectedClimateZone] || 46;
+  
+  // 🚨 DEBUG - Vérification coefficient
+  console.error('🚨 useThermalEconomyCalculations - Coefficient G calculé:', gCoefficient);
+  console.error('🚨 useThermalEconomyCalculations - Pour zone:', selectedClimateZone);
+  console.error('🚨 useThermalEconomyCalculations - Si c\'était D2, G serait:', climateZoneCoefficients["D2"]);
   
   // Helper function to get coefficient for any zone
   const getCoefficient = (zone: string) => climateZoneCoefficients[zone] || 46;
@@ -70,22 +72,18 @@ export const useThermalEconomyCalculations = ({
   const totalPricePerSqm = pricePerSqm + cherryPricePerSqm;
   const totalProjectPrice = projectPrice + cherryProjectPrice;
 
-  // 🔴 DIAGNOSTIC HOOK - CALCULS INTERMÉDIAIRES
-  console.log('🔴 DIAGNOSTIC useThermalEconomyCalculations - CALCULS:');
-  console.log('  📈 gCoefficient (pour zone', selectedClimateZone, '):', gCoefficient);
-  console.log('  👥 delegate:', delegate, '- multiplier:', multiplier);
-  console.log('  📐 Delta U:', uValueBefore - uValueAfter);
-  console.log('  📐 annualSavings calcul:', `${surfaceArea} × ${uValueBefore - uValueAfter} × ${gCoefficient} = ${annualSavings}`);
-  console.log('  💰 projectPrice calcul:', `${annualSavings} × ${multiplier} = ${projectPrice}`);
-  console.log('  💰 pricePerSqm calcul:', `${projectPrice} / ${surfaceArea} = ${pricePerSqm}`);
+  // 🚨 DEBUG - CALCULS FINAUX
+  console.error('🚨 useThermalEconomyCalculations - CALCUL FINAL:');
+  console.error(`🚨 CAE = ${surfaceArea} × (${uValueBefore} - ${uValueAfter}) × ${gCoefficient} = ${annualSavings}`);
+  console.error('🚨 Si zone était D2 (G=60), CAE serait:', surfaceArea * (uValueBefore - uValueAfter) * 60);
 
   const handleClimateZoneChange = (zone: string) => {
-    console.log('🔄 HOOK handleClimateZoneChange appelé avec:', zone);
+    console.error('🚨 useThermalEconomyCalculations handleClimateZoneChange appelé avec:', zone);
     setSelectedClimateZone(zone);
     
     // Propager le changement vers le parent
     if (onClimateZoneChange) {
-      console.log('🔄 HOOK - Propagation vers parent:', zone);
+      console.error('🚨 useThermalEconomyCalculations - Propagation vers parent:', zone);
       onClimateZoneChange(zone);
     }
   };

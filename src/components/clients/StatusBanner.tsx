@@ -52,8 +52,12 @@ const StatusBanner = ({
     distance?: number;
     description?: string;
   }) => {
-    console.log('🌍 Zone climatique déterminée automatiquement:', climateInfo);
+    console.error('🚨 StatusBanner - RÉCEPTION zone automatique:', climateInfo.zone);
+    console.error('🚨 StatusBanner - Données complètes:', climateInfo);
+    
     setClimateZone(climateInfo.zone);
+    console.error('🚨 StatusBanner - STOCKAGE zone dans state:', climateInfo.zone);
+    
     setClimateData({
       confidence: climateInfo.confidence,
       method: climateInfo.method,
@@ -64,6 +68,7 @@ const StatusBanner = ({
 
     // Propager le changement vers le parent (pour synchroniser avec ThermalEconomySection)
     if (onClimateZoneChange) {
+      console.error('🚨 StatusBanner - TRANSMISSION vers parent:', climateInfo.zone);
       onClimateZoneChange(
         climateInfo.zone,
         climateInfo.confidence,
@@ -72,18 +77,25 @@ const StatusBanner = ({
         climateInfo.distance,
         climateInfo.description
       );
+    } else {
+      console.error('🚨 StatusBanner - ERREUR: onClimateZoneChange est undefined !');
     }
   };
 
   const handleManualClimateZoneChange = (zone: string) => {
-    console.log('🌍 Zone climatique changée manuellement:', zone);
+    console.error('🚨 StatusBanner - RÉCEPTION zone manuelle:', zone);
     setClimateZone(zone);
+    console.error('🚨 StatusBanner - STOCKAGE zone manuelle dans state:', zone);
+    
     // Réinitialiser les données automatiques quand on change manuellement
     setClimateData({});
 
     // Propager le changement vers le parent
     if (onClimateZoneChange) {
+      console.error('🚨 StatusBanner - TRANSMISSION zone manuelle vers parent:', zone);
       onClimateZoneChange(zone);
+    } else {
+      console.error('🚨 StatusBanner - ERREUR: onClimateZoneChange est undefined pour zone manuelle !');
     }
   };
 

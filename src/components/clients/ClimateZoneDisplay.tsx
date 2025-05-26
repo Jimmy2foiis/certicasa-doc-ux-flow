@@ -61,9 +61,29 @@ const ClimateZoneDisplay = ({
   const confidenceIcon = getConfidenceIcon(confidence);
   const zoneBadgeVariant = getZoneBadgeColor(climateZone);
 
+  // 🚨 DEBUG: Tracer quand la zone climatique change automatiquement
+  useEffect(() => {
+    if (climateZone && method) {
+      console.error('🚨 ClimateZoneDisplay - Zone déterminée automatiquement:', climateZone);
+      console.error('🚨 ClimateZoneDisplay - Confiance:', confidence, '% - Méthode:', method);
+      console.error('🚨 ClimateZoneDisplay - Ville référence:', referenceCity);
+      
+      if (onZoneChange) {
+        console.error('🚨 ClimateZoneDisplay - ÉMISSION vers parent:', climateZone);
+        onZoneChange(climateZone);
+      } else {
+        console.error('🚨 ClimateZoneDisplay - ERREUR: onZoneChange est undefined !');
+      }
+    }
+  }, [climateZone, method, confidence, referenceCity, onZoneChange]);
+
   const handleZoneChange = (zone: string) => {
+    console.error('🚨 ClimateZoneDisplay - Changement manuel vers:', zone);
     if (onZoneChange) {
+      console.error('🚨 ClimateZoneDisplay - ÉMISSION changement manuel:', zone);
       onZoneChange(zone);
+    } else {
+      console.error('🚨 ClimateZoneDisplay - ERREUR: onZoneChange est undefined pour changement manuel !');
     }
   };
 
