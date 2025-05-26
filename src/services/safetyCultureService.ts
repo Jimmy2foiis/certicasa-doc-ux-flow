@@ -1,76 +1,105 @@
 
 import type { SafetyCultureAudit, SafetyCulturePhoto, SafetyCultureConfig } from '@/types/safetyCulture';
-import { RealSafetyCultureService } from './api/realSafetyCultureService';
 
 class SafetyCultureServiceClass {
   private config: SafetyCultureConfig = {
     apiKey: '',
-    baseUrl: 'https://certicasa.mitain.com/api/safety-culture'
+    baseUrl: 'https://api.safetyculture.io'
   };
+
+  private getApiKey(): string {
+    // Récupérer la clé API depuis le localStorage ou les paramètres
+    const apiKey = localStorage.getItem('safetyCulture_apiKey');
+    if (!apiKey) {
+      throw new Error('Clé API SafetyCulture non configurée. Veuillez la configurer dans les paramètres.');
+    }
+    return apiKey;
+  }
+
+  private async makeRequest<T>(endpoint: string): Promise<T> {
+    const apiKey = this.getApiKey();
+    
+    const response = await fetch(`${this.config.baseUrl}${endpoint}`, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`SafetyCulture API Error: ${response.status} ${response.statusText}`);
+    }
+
+    return response.json();
+  }
 
   async getAudits(): Promise<SafetyCultureAudit[]> {
     try {
-      const inspections = await RealSafetyCultureService.getInspections(50);
+      const response = await this.makeRequest<{
+        count: number;
+        audits: SafetyCultureAudit[];
+      }>('/audits/v1/audits?limit=50&order=desc');
       
-      // Convertir les inspections en format SafetyCultureAudit
-      return inspections.map(inspection => ({
-        id: inspection.id,
-        title: inspection.title,
-        created_at: inspection.created_at,
-        modified_at: inspection.modified_at,
-        template_id: inspection.template_id,
-        template_name: inspection.template_name,
-        audit_owner: inspection.audit_owner,
-        site: inspection.site
-      }));
-      
+      return response.audits || [];
     } catch (error) {
-      console.error('Erreur lors de la récupération des audits depuis l\'API réelle:', error);
+      console.error('Erreur lors de la récupération des audits:', error);
       
-      // Fallback vers les données de démo en cas d'erreur
+      // Données de démo si l'API n'est pas disponible
       return this.getDemoAudits();
     }
   }
 
   async getAuditPhotos(auditId: string): Promise<SafetyCulturePhoto[]> {
     try {
-      const answers = await RealSafetyCultureService.getInspectionAnswers(auditId);
+      const response = await this.makeRequest<{
+        audit: {
+          items: Array<{
+            id: string;
+            type: string;
+            responses?: {
+              image?: {
+                image_id: string;
+                file_name: string;
+                url: string;
+                thumbnail_url: string;
+              };
+            };
+            media?: SafetyCulturePhoto[];
+          }>;
+        };
+      }>(`/audits/v1/audits/${auditId}`);
+
       const photos: SafetyCulturePhoto[] = [];
       
-      // Extraire les photos depuis les réponses
-      answers.forEach(answer => {
-        if (answer.media_tokens && answer.media_tokens.length > 0) {
-          answer.media_tokens.forEach(token => {
-            photos.push({
-              id: `${answer.id}_${token}`,
-              url: RealSafetyCultureService.getMediaDownloadUrl(answer.id, token),
-              thumbnail_url: RealSafetyCultureService.getMediaDownloadUrl(answer.id, token),
-              title: `Photo - Question ${answer.question_id}`,
-              caption: `Photo de l'inspection`,
-              created_at: new Date().toISOString(),
-              modified_at: new Date().toISOString(),
-              file_size: 0,
-              content_type: 'image/jpeg',
-              width: 400,
-              height: 300,
-              item_id: answer.id,
-              question_id: answer.question_id
-            });
+      // Parcourir les items pour extraire les photos
+      response.audit.items.forEach(item => {
+        // Photos dans les réponses
+        if (item.responses?.image) {
+          const imageResponse = item.responses.image;
+          photos.push({
+            id: imageResponse.image_id,
+            url: imageResponse.url,
+            thumbnail_url: imageResponse.thumbnail_url,
+            title: imageResponse.file_name,
+            created_at: new Date().toISOString(),
+            modified_at: new Date().toISOString(),
+            file_size: 0,
+            content_type: 'image/jpeg',
+            item_id: item.id
           });
+        }
+        
+        // Photos dans les médias
+        if (item.media && Array.isArray(item.media)) {
+          photos.push(...item.media);
         }
       });
 
-      if (photos.length === 0) {
-        console.warn(`Aucune photo trouvée pour l'inspection ${auditId}`);
-        return this.getDemoPhotos();
-      }
-
       return photos;
-      
     } catch (error) {
-      console.error('Erreur lors de la récupération des photos depuis l\'API réelle:', error);
+      console.error('Erreur lors de la récupération des photos:', error);
       
-      // Fallback vers les données de démo
+      // Données de démo si l'API n'est pas disponible
       return this.getDemoPhotos();
     }
   }
@@ -94,14 +123,29 @@ class SafetyCultureServiceClass {
           id: 'site-1',
           name: 'Chantier Valencia de Don Juan'
         }
+      },
+      {
+        id: 'demo-audit-2',
+        title: 'Contrôle final - Appartement Durand',
+        created_at: '2024-01-20T09:15:00Z',
+        modified_at: '2024-01-20T10:30:00Z',
+        template_id: 'template-final',
+        template_name: 'Contrôle final travaux',
+        audit_owner: {
+          id: 'user-2',
+          firstname: 'Marie',
+          lastname: 'Lambert',
+          email: 'marie.lambert@example.com'
+        }
       }
     ];
   }
 
   private getDemoPhotos(): SafetyCulturePhoto[] {
+    // Générer des photos de démo
     const demoPhotos: SafetyCulturePhoto[] = [];
     
-    for (let i = 1; i <= 6; i++) {
+    for (let i = 1; i <= 12; i++) {
       demoPhotos.push({
         id: `demo-photo-${i}`,
         url: `https://picsum.photos/400/300?random=${i}`,

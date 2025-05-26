@@ -1,11 +1,11 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Client } from "@/services/api/types";
 import StatusBanner from "./StatusBanner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ClientForm } from "./ClientForm";
-import { FileText, Mail, Phone, Save, RefreshCw } from "lucide-react";
+import { FileText, Mail, Phone } from "lucide-react";
 
 interface ClientDetailsHeaderProps {
   client: Client | null;
@@ -34,8 +34,6 @@ const ClientDetailsHeader = ({
   onClientUpdated = () => {}
 }: ClientDetailsHeaderProps) => {
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
 
   // Handler pour générer un document
   const handleGenerateDocument = () => {
@@ -62,36 +60,6 @@ const ClientDetailsHeader = ({
     onClientUpdated();
   };
 
-  // Handler pour enregistrer
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      console.log("Enregistrement des données client:", clientId);
-      // Simuler une sauvegarde
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log("Données sauvegardées avec succès");
-    } catch (error) {
-      console.error("Erreur lors de la sauvegarde:", error);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  // Handler pour synchroniser
-  const handleSync = async () => {
-    setIsSyncing(true);
-    try {
-      console.log("Synchronisation des données client:", clientId);
-      // Simuler une synchronisation
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log("Synchronisation terminée");
-    } catch (error) {
-      console.error("Erreur lors de la synchronisation:", error);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
   return (
     <>
       <div className="space-y-2">
@@ -109,36 +77,14 @@ const ClientDetailsHeader = ({
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {/* Badge Enregistrer */}
-            <Badge 
-              variant="outline"
-              className="bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 cursor-pointer px-3 py-1.5 flex items-center gap-2"
-              onClick={handleSave}
-            >
-              <Save className={`h-4 w-4 ${isSaving ? 'animate-pulse' : ''}`} />
-              {isSaving ? 'Enregistrement...' : 'Enregistrer'}
-            </Badge>
-
-            {/* Badge Sync */}
-            <Badge 
-              variant="outline"
-              className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 cursor-pointer px-3 py-1.5 flex items-center gap-2"
-              onClick={handleSync}
-            >
-              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
-              {isSyncing ? 'Sync...' : 'Sync'}
-            </Badge>
-
-            <Button 
-              variant="default" 
-              className="bg-green-600 hover:bg-green-700"
-              onClick={handleGenerateDocument}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Générer un document
-            </Button>
-          </div>
+          <Button 
+            variant="default" 
+            className="bg-green-600 hover:bg-green-700"
+            onClick={handleGenerateDocument}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Générer un document
+          </Button>
         </div>
         
         {/* Intégration du bandeau de statut */}
