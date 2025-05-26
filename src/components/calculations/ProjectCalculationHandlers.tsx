@@ -1,4 +1,3 @@
-
 import { Layer } from "@/hooks/useLayerManagement";
 
 interface ProjectCalculationHandlersProps {
@@ -28,14 +27,14 @@ export const useProjectCalculationHandlers = ({
 }: ProjectCalculationHandlersProps) => {
   const handleDeleteBeforeLayer = (id: string) => {
     const newBeforeLayers = beforeLayers.filter(l => l.id !== id);
-    setBeforeLayers(newBeforeLayers);
-    console.log('🗑️ Suppression couche AVANT:', id, '-> Nouvelles couches:', newBeforeLayers.length);
+    setBeforeLayers([...newBeforeLayers]); // Force nouveau tableau
+    console.log('🗑️ Suppression couche AVANT - FORCE RECALCUL:', id, '-> Nouvelles couches:', newBeforeLayers.length);
   };
 
   const handleDeleteAfterLayer = (id: string) => {
     const newAfterLayers = afterLayers.filter(l => l.id !== id);
-    setAfterLayers(newAfterLayers);
-    console.log('🗑️ Suppression couche APRÈS:', id, '-> Nouvelles couches:', newAfterLayers.length);
+    setAfterLayers([...newAfterLayers]); // Force nouveau tableau
+    console.log('🗑️ Suppression couche APRÈS - FORCE RECALCUL:', id, '-> Nouvelles couches:', newAfterLayers.length);
   };
 
   // Gestionnaire de changement de zone climatique unifié et correct
@@ -62,31 +61,37 @@ export const useProjectCalculationHandlers = ({
     addLayer(type, defaultMaterial);
   };
 
-  // Améliorer la mise à jour des couches pour forcer le recalcul
+  // Améliorer la mise à jour des couches pour forcer le recalcul OBLIGATOIREMENT
   const handleUpdateLayer = (id: string, field: string, updatedLayer: any) => {
-    console.log(`🔧 Mise à jour couche ID ${id}:`, updatedLayer);
+    console.log(`🔧 Mise à jour couche ID ${id} - FORCE RECALCUL ABSOLU:`, updatedLayer);
     
     // Déterminer si c'est une couche "before" ou "after"
     const isBeforeLayer = beforeLayers.some(l => l.id === id);
     const isAfterLayer = afterLayers.some(l => l.id === id);
     
     if (isBeforeLayer) {
-      console.log('📊 Mise à jour couche AVANT - forcer recalcul');
+      console.log('📊 Mise à jour couche AVANT - FORCE RECALCUL TOTAL');
+      
+      // Mettre à jour via useLayerManagement
       updateLayer("before", updatedLayer);
       
-      // Forcer la mise à jour des calculs en créant un nouvel array
+      // FORCER ABSOLUMENT la mise à jour en créant un nouveau tableau avec timestamp
+      const timestamp = Date.now();
       const updatedBeforeLayers = beforeLayers.map(layer => 
-        layer.id === id ? { ...updatedLayer } : layer
+        layer.id === id ? { ...updatedLayer, _updateId: timestamp } : { ...layer, _updateId: timestamp }
       );
       setBeforeLayers([...updatedBeforeLayers]);
       
     } else if (isAfterLayer) {
-      console.log('📊 Mise à jour couche APRÈS - forcer recalcul');
+      console.log('📊 Mise à jour couche APRÈS - FORCE RECALCUL TOTAL');
+      
+      // Mettre à jour via useLayerManagement
       updateLayer("after", updatedLayer);
       
-      // Forcer la mise à jour des calculs en créant un nouvel array
+      // FORCER ABSOLUMENT la mise à jour en créant un nouveau tableau avec timestamp
+      const timestamp = Date.now();
       const updatedAfterLayers = afterLayers.map(layer => 
-        layer.id === id ? { ...updatedLayer } : layer
+        layer.id === id ? { ...updatedLayer, _updateId: timestamp } : { ...layer, _updateId: timestamp }
       );
       setAfterLayers([...updatedAfterLayers]);
     }

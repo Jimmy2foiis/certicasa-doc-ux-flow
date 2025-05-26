@@ -136,30 +136,43 @@ export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorT
   };
 
   const copyBeforeToAfter = () => {
-    console.log('📋 Copie couches AVANT vers APRÈS - forcer recalcul');
-    const copiedLayers = beforeLayers.map(layer => ({ ...layer }));
-    setAfterLayers(copiedLayers);
-    console.log('📊 Couches copiées:', copiedLayers.length, 'couches');
+    console.log('📋 Copie couches AVANT vers APRÈS - forcer recalcul COMPLET');
+    
+    // Créer une copie complètement nouvelle avec des IDs uniques
+    const copiedLayers = beforeLayers.map(layer => ({ 
+      ...layer, 
+      id: `${layer.id}_copied_${Date.now()}_${Math.random().toString(36).substr(2, 9)}` 
+    }));
+    
+    setAfterLayers([...copiedLayers]);
+    
+    // Forcer également la mise à jour des couches AVANT pour débloquer les calculs
+    setBeforeLayers(prev => [...prev]);
+    
+    console.log('📊 Couches copiées et recalculs forcés:', copiedLayers.length, 'couches');
+    console.log('🔄 Forçage recalcul section AVANT également');
   };
 
   const updateLayer = (layerSet: "before" | "after", updatedLayer: Layer) => {
-    console.log(`✏️ Mise à jour couche ${layerSet}:`, updatedLayer);
+    console.log(`✏️ Mise à jour couche ${layerSet} - FORCER RECALCUL:`, updatedLayer);
     
     if (layerSet === "before") {
       setBeforeLayers(prev => {
         const newLayers = prev.map((layer) => 
           layer.id === updatedLayer.id ? { ...updatedLayer } : layer
         );
-        console.log('📊 Couches AVANT mises à jour:', newLayers.length);
-        return newLayers;
+        console.log('📊 Couches AVANT mises à jour - FORCE RECALCUL:', newLayers.length);
+        // Retourner un nouveau tableau pour forcer le recalcul
+        return [...newLayers];
       });
     } else {
       setAfterLayers(prev => {
         const newLayers = prev.map((layer) => 
           layer.id === updatedLayer.id ? { ...updatedLayer } : layer
         );
-        console.log('📊 Couches APRÈS mises à jour:', newLayers.length);
-        return newLayers;
+        console.log('📊 Couches APRÈS mises à jour - FORCE RECALCUL:', newLayers.length);
+        // Retourner un nouveau tableau pour forcer le recalcul
+        return [...newLayers];
       });
     }
   };
