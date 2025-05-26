@@ -1,11 +1,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useThermalEconomyCalculations } from "@/hooks/useThermalEconomyCalculations";
-import { ThermalZoneSync } from "../thermal/ThermalZoneSync";
 import DelegateSelector from "./thermal-economy/DelegateSelector";
 import CalculationsDisplay from "./thermal-economy/CalculationsDisplay";
 import CherryOption from "./thermal-economy/CherryOption";
-import { useEffect } from "react";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 // Climate zone coefficients mapping
 export const climateZoneCoefficients: Record<string, number> = {
@@ -51,10 +51,10 @@ const ThermalEconomySection = ({
   onClimateZoneChange
 }: ThermalEconomySectionProps) => {
   
-  // 🚨 DEBUG CRITIQUE - ARRIVÉE DANS ThermalEconomySection
-  console.error('🚨 ThermalEconomySection - ARRIVÉE zone (prop):', climateZone);
-  console.error('🚨 ThermalEconomySection - Zone par défaut utilisée?', climateZone === "C3" ? "OUI - PROBLÈME!" : "NON - OK");
-  console.error('🚨 ThermalEconomySection - Toutes les props:', {
+  // 🔴 DEBUG - Vérifier la zone reçue
+  console.error('🔴 ZONE REÇUE DANS THERMAL:', climateZone);
+  console.error('🔴 DEVRAIT ÊTRE D2, PAS C3 !');
+  console.error('🔴 Toutes les props:', {
     surfaceArea,
     uValueBefore,
     uValueAfter,
@@ -70,8 +70,6 @@ const ThermalEconomySection = ({
     setCherryEnabled,
     delegate,
     setDelegate,
-    selectedClimateZone,
-    setSelectedClimateZone,
     gCoefficient,
     getCoefficient,
     annualSavings,
@@ -80,8 +78,7 @@ const ThermalEconomySection = ({
     cherryPricePerSqm,
     cherryProjectPrice,
     totalPricePerSqm,
-    totalProjectPrice,
-    handleClimateZoneChange
+    totalProjectPrice
   } = useThermalEconomyCalculations({
     surfaceArea,
     uValueBefore,
@@ -90,32 +87,9 @@ const ThermalEconomySection = ({
     onClimateZoneChange
   });
 
-  // 🚨 DEBUG - Vérifier si le coefficient G est correct
-  console.error('🚨 ThermalEconomySection - Coefficient G utilisé:', gCoefficient);
-  console.error('🚨 ThermalEconomySection - Coefficient G pour', selectedClimateZone, ':', climateZoneCoefficients[selectedClimateZone]);
-  console.error('🚨 ThermalEconomySection - Coefficient G pour D2 (attendu):', climateZoneCoefficients["D2"]);
-
-  // 🔄 SYNCHRONISATION DIRECTE avec la géolocalisation
-  useEffect(() => {
-    console.error('🔄 ThermalEconomySection useEffect - climateZone changé:', climateZone);
-    // Si on reçoit une zone de ClimateZoneDisplay, on l'utilise
-    if (climateZone) {
-      console.error('🔄 ThermalEconomySection - Synchronisation avec zone reçue:', climateZone);
-      setSelectedClimateZone(climateZone);
-    }
-  }, [climateZone, setSelectedClimateZone]);
-
-  // Gestionnaire pour le nouveau composant de zone thermique
-  const handleThermalZoneUpdate = (zone: string, coefficient: number) => {
-    console.error(`🚨 ThermalEconomySection - Mise à jour calculs avec Zone ${zone}, G=${coefficient}`);
-    handleClimateZoneChange(zone);
-    
-    // Propager vers le parent (StatusBanner, etc.)
-    if (onClimateZoneChange) {
-      console.error('🚨 ThermalEconomySection - TRANSMISSION vers parent:', zone);
-      onClimateZoneChange(zone);
-    }
-  };
+  // 🔴 DEBUG - Vérifier les calculs
+  console.error('🔴 COEFFICIENT G UTILISÉ:', gCoefficient);
+  console.error('🔴 CALCUL CAE:', `${surfaceArea} × (${uValueBefore} - ${uValueAfter}) × ${gCoefficient} = ${annualSavings}`);
 
   return (
     <Card className="mt-6">
@@ -126,10 +100,53 @@ const ThermalEconomySection = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ThermalZoneSync
-            geolocatedZone={climateZone}
-            onCoefficientChange={handleThermalZoneUpdate}
-          />
+          {/* NOUVEAU SÉLECTEUR SIMPLE */}
+          <div className="space-y-2">
+            <Label>Zone Thermique (G: {climateZoneCoefficients[climateZone] || '?'})</Label>
+            <Select 
+              value={climateZone} 
+              onValueChange={(newZone) => {
+                console.error('🎯 Zone changée:', newZone, '→ G:', climateZoneCoefficients[newZone]);
+                // Propager le changement vers le parent
+                if (onClimateZoneChange) {
+                  console.error('🎯 TRANSMISSION vers parent:', newZone);
+                  onClimateZoneChange(newZone);
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue>
+                  {climateZone} - Coefficient {climateZoneCoefficients[climateZone]}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent className="bg-white border shadow-lg z-50">
+                {Object.entries(climateZoneCoefficients).map(([zone, coef]) => (
+                  <SelectItem key={zone} value={zone}>
+                    {zone} - G={coef}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {/* Afficher si synchronisé */}
+            {climateZone && (
+              <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
+                ✅ Zone active: {climateZone} (G={climateZoneCoefficients[climateZone]})
+                <br />
+                → CAE = {surfaceArea} × {(uValueBefore - uValueAfter).toFixed(2)} × {climateZoneCoefficients[climateZone]}
+              </div>
+            )}
+
+            {/* Info géolocalisation si disponible */}
+            {climateMethod && climateReferenceCity && (
+              <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                📍 Déterminé automatiquement: {climateReferenceCity}
+                {climateDistance && ` (${climateDistance}km)`}
+                <br />
+                Confiance: {climateConfidence}%
+              </div>
+            )}
+          </div>
           
           <DelegateSelector
             delegate={delegate}
