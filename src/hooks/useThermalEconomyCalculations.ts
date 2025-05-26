@@ -38,8 +38,10 @@ export const useThermalEconomyCalculations = ({
   console.error('🔴 useThermalEconomyCalculations - Pour zone:', climateZone);
   if (climateZone === "D2") {
     console.error('🔴 PARFAIT! Zone D2 détectée avec G=60');
+  } else if (climateZone === "E1") {
+    console.error('🔴 PARFAIT! Zone E1 détectée avec G=74');
   } else {
-    console.error('🔴 PROBLÈME! Zone devrait être D2, pas', climateZone);
+    console.error('🔴 INFO: Zone détectée:', climateZone, 'avec G=', gCoefficient);
   }
   
   // Helper function to get coefficient for any zone
@@ -67,10 +69,8 @@ export const useThermalEconomyCalculations = ({
 
   // 🔴 DEBUG - CALCULS FINAUX
   console.error('🔴 useThermalEconomyCalculations - CALCUL FINAL:');
-  console.error(`🔴 CAE = ${surfaceArea} × (${uValueBefore} - ${uValueAfter}) × ${gCoefficient} = ${annualSavings}`);
-  if (climateZone !== "D2") {
-    console.error('🔴 Si zone était D2 (G=60), CAE serait:', surfaceArea * (uValueBefore - uValueAfter) * 60);
-  }
+  console.error(`🔴 CAE = ${surfaceArea} × (${uValueBefore.toFixed(3)} - ${uValueAfter.toFixed(3)}) × ${gCoefficient} = ${annualSavings.toFixed(1)}`);
+  console.error('🔴 Prix projet:', projectPrice.toFixed(2), '€');
 
   return {
     cherryEnabled,
