@@ -64,22 +64,6 @@ const CadastralFormFields = ({
           </div>
         </div>
       </div>
-
-      {/* Ligne UTM */}
-      <div className="grid grid-cols-3 gap-3 mt-3">
-        <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Coordonnées UTM 30</label>
-          <Input 
-            value={addressData.utm} 
-            onChange={(e) => onInputChange('utm', e.target.value)}
-            placeholder="UTM" 
-            className="text-sm h-8" 
-            readOnly={loadingCadastral}
-          />
-        </div>
-        <div></div>
-        <div></div>
-      </div>
     </>
   );
 };

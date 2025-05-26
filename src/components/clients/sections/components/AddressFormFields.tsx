@@ -11,11 +11,13 @@ interface AddressFormFieldsProps {
     city: string;
     province: string;
     community: string;
+    utm: string;
   };
   onAddressChange: (address: string) => void;
   onCoordinatesChange: (coords: { lat: number; lng: number }) => void;
   onAddressComponentsChange: (components: AddressComponents) => void;
   onInputChange: (field: string, value: string) => void;
+  loadingCadastral?: boolean;
 }
 
 const AddressFormFields = ({
@@ -23,7 +25,8 @@ const AddressFormFields = ({
   onAddressChange,
   onCoordinatesChange,
   onAddressComponentsChange,
-  onInputChange
+  onInputChange,
+  loadingCadastral
 }: AddressFormFieldsProps) => {
   return (
     <>
@@ -58,7 +61,7 @@ const AddressFormFields = ({
         </div>
       </div>
 
-      {/* Ligne 2: Province, Communauté autonome */}
+      {/* Ligne 2: Province, Communauté autonome, UTM */}
       <div className="grid grid-cols-3 gap-3 mb-3">
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">Province</label>
@@ -78,7 +81,16 @@ const AddressFormFields = ({
             className="text-sm h-8" 
           />
         </div>
-        <div></div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Coordonnées UTM 30</label>
+          <Input 
+            value={addressData.utm} 
+            onChange={(e) => onInputChange('utm', e.target.value)}
+            placeholder="UTM" 
+            className="text-sm h-8" 
+            readOnly={loadingCadastral}
+          />
+        </div>
       </div>
     </>
   );

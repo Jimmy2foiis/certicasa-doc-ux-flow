@@ -50,12 +50,14 @@ const AddressFormSection = ({ client, onClimateZoneChange }: AddressFormSectionP
           postalCode: addressData.postalCode,
           city: addressData.city,
           province: addressData.province,
-          community: addressData.community
+          community: addressData.community,
+          utm: addressData.utm
         }}
         onAddressChange={handleAddressSelected}
         onCoordinatesChange={handleCoordinatesSelected}
         onAddressComponentsChange={handleAddressComponentsSelected}
         onInputChange={handleInputChange}
+        loadingCadastral={loadingCadastral}
       />
 
       <CadastralFormFields
