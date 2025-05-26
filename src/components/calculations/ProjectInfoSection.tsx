@@ -47,25 +47,28 @@ const ProjectInfoSection = ({
   }, [floorType]);
 
   const handleSurfaceAreaChange = (value: string) => {
-    console.log('📊 ProjectInfoSection - Surface combles changée:', value);
+    console.log('📊 ProjectInfoSection - Surface combles changée:', value, '-> Propagation immédiate');
     setLocalSurfaceArea(value);
     if (onSurfaceAreaChange) {
+      // Propagation immédiate pour synchroniser avec les calculs
       onSurfaceAreaChange(value);
     }
   };
 
   const handleRoofAreaChange = (value: string) => {
-    console.log('📊 ProjectInfoSection - Surface toiture changée:', value);
+    console.log('📊 ProjectInfoSection - Surface toiture changée:', value, '-> Propagation immédiate');
     setLocalRoofArea(value);
     if (onRoofAreaChange) {
+      // Propagation immédiate pour synchroniser avec les calculs
       onRoofAreaChange(value);
     }
   };
 
   const handleFloorTypeChange = (value: string) => {
-    console.log('📊 ProjectInfoSection - Type plancher changé:', value);
+    console.log('📊 ProjectInfoSection - Type plancher changé:', value, '-> Propagation immédiate');
     setLocalFloorType(value);
     if (onFloorTypeChange) {
+      // Propagation immédiate pour synchroniser avec les matériaux
       onFloorTypeChange(value);
     }
   };
@@ -110,7 +113,8 @@ const ProjectInfoSection = ({
                 <Input 
                   type="number" 
                   value={localSurfaceArea} 
-                  onChange={(e) => handleSurfaceAreaChange(e.target.value)} 
+                  onChange={(e) => handleSurfaceAreaChange(e.target.value)}
+                  onBlur={(e) => handleSurfaceAreaChange(e.target.value)}
                   className="w-full" 
                   placeholder="Surface des combles"
                 />
@@ -120,7 +124,8 @@ const ProjectInfoSection = ({
                 <Input 
                   type="number" 
                   value={localRoofArea} 
-                  onChange={(e) => handleRoofAreaChange(e.target.value)} 
+                  onChange={(e) => handleRoofAreaChange(e.target.value)}
+                  onBlur={(e) => handleRoofAreaChange(e.target.value)}
                   className="w-full" 
                   placeholder="Surface de la toiture"
                 />
