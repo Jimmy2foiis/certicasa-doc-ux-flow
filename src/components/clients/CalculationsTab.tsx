@@ -7,6 +7,7 @@ interface CalculationsTabProps {
   clientId: string;
   clientName?: string;
   clientAddress?: string;
+  climateZone?: string;
   savedCalculations?: Array<{
     id: string;
     projectId: string;
@@ -26,6 +27,7 @@ const CalculationsTab = ({
   clientId, 
   clientName = "Client",
   clientAddress = "",
+  climateZone, // Utiliser la vraie zone climatique passée en prop
   savedCalculations = [],
   onOpenCalculation, 
   onCreateNewCalculation 
@@ -89,7 +91,7 @@ const CalculationsTab = ({
         clientName={clientName}
         clientAddress={clientAddress}
         onSave={handleSave}
-        clientClimateZone="B3"
+        clientClimateZone={climateZone || "C3"} // Utiliser la vraie zone climatique avec fallback
         projectName={`Calcul thermique pour ${clientName}`}
       />
     </div>
