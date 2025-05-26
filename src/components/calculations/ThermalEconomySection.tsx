@@ -1,11 +1,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useThermalEconomyCalculations } from "@/hooks/useThermalEconomyCalculations";
-import ThermalZoneSelector from "./thermal-economy/ThermalZoneSelector";
+import SyncedThermalZone from "../thermal/SyncedThermalZone";
 import DelegateSelector from "./thermal-economy/DelegateSelector";
 import CalculationsDisplay from "./thermal-economy/CalculationsDisplay";
 import CherryOption from "./thermal-economy/CherryOption";
-import { useEffect } from "react";
 
 // Climate zone coefficients mapping
 export const climateZoneCoefficients: Record<string, number> = {
@@ -74,22 +73,9 @@ const ThermalEconomySection = ({
     onClimateZoneChange
   });
 
-  // Synchronisation bidirectionnelle avec la zone climatique externe
-  useEffect(() => {
-    console.log('🔄 ThermalEconomySection - Synchronisation:', {
-      climateZone,
-      selectedClimateZone
-    });
-    
-    if (climateZone && climateZone !== selectedClimateZone) {
-      console.log('🔄 Mise à jour de la zone interne vers:', climateZone);
-      handleClimateZoneChange(climateZone);
-    }
-  }, [climateZone, selectedClimateZone, handleClimateZoneChange]);
-
-  // Gestionnaire pour propager les changements vers l'extérieur
-  const handleInternalZoneChange = (zone: string) => {
-    console.log('🔄 ThermalEconomySection - Propagation vers parent:', zone);
+  // Gestionnaire pour le nouveau composant de zone thermique
+  const handleThermalZoneUpdate = (zone: string, coefficient: number) => {
+    console.log('🔄 ThermalEconomySection - Mise à jour zone thermique:', { zone, coefficient });
     handleClimateZoneChange(zone);
     
     // Propager vers le parent (StatusBanner, etc.)
@@ -107,15 +93,9 @@ const ThermalEconomySection = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ThermalZoneSelector
-            selectedClimateZone={selectedClimateZone}
-            onClimateZoneChange={handleInternalZoneChange}
-            getCoefficient={getCoefficient}
-            climateConfidence={climateConfidence}
-            climateMethod={climateMethod}
-            climateReferenceCity={climateReferenceCity}
-            climateDistance={climateDistance}
-            climateDescription={climateDescription}
+          <SyncedThermalZone
+            geoZone={climateZone}
+            onUpdateCalcs={handleThermalZoneUpdate}
           />
           
           <DelegateSelector
