@@ -24,12 +24,25 @@ export const useThermalEconomyCalculations = ({
   const [cherryEnabled, setCherryEnabled] = useState(false);
   const [delegate, setDelegate] = useState<"Eiffage" | "GreenFlex">("Eiffage");
 
-  console.log('🔥 Hook calculs - Zone reçue:', climateZone);
+  // 🚨 DEBUG TRÈS DÉTAILLÉ HOOK
+  console.error('🚨 useThermalEconomyCalculations - PARAMETRES:');
+  console.error('🚨 climateZone param type:', typeof climateZone);
+  console.error('🚨 climateZone param value:', climateZone);
+  console.error('🚨 climateZone param length:', climateZone?.length);
+  console.error('🚨 climateZone param chars:', climateZone?.split('').map((c, i) => `[${i}]=${c}`));
+  console.error('🚨 climateZone === "D2":', climateZone === "D2");
+  console.error('🚨 climateZone in coefficients:', climateZone in climateZoneCoefficients);
+  console.error('🚨 Raw lookup result:', climateZoneCoefficients[climateZone]);
+  console.error('🚨 All coefficient keys:', Object.keys(climateZoneCoefficients));
   
   // Obtenir le coefficient G directement
   const gCoefficient = climateZoneCoefficients[climateZone] || 46;
   
-  console.log('🔥 Hook calculs - Coefficient G:', gCoefficient);
+  console.error('🚨 Final gCoefficient:', gCoefficient);
+  console.error('🚨 surfaceArea:', surfaceArea);
+  console.error('🚨 uValueBefore:', uValueBefore);
+  console.error('🚨 uValueAfter:', uValueAfter);
+  console.error('🚨 delta U:', uValueBefore - uValueAfter);
   
   // Get multiplier based on delegate
   const multiplier = delegateMultipliers[delegate];
@@ -37,8 +50,7 @@ export const useThermalEconomyCalculations = ({
   // Calculate annual savings in kWh/year
   const annualSavings = surfaceArea * (uValueBefore - uValueAfter) * gCoefficient;
   
-  console.log('🔥 Hook calculs - CAE:', annualSavings);
-  console.log(`🔥 Formule: ${surfaceArea} × (${uValueBefore.toFixed(3)} - ${uValueAfter.toFixed(3)}) × ${gCoefficient} = ${annualSavings.toFixed(1)}`);
+  console.error('🚨 Calcul CAE:', surfaceArea, '×', (uValueBefore - uValueAfter), '×', gCoefficient, '=', annualSavings);
   
   // Calculate project price in EUR
   const projectPrice = annualSavings * multiplier;

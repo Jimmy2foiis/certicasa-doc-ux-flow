@@ -51,8 +51,16 @@ const ThermalEconomySection = ({
   onClimateZoneChange
 }: ThermalEconomySectionProps) => {
   
-  console.log('🎯 ThermalEconomySection - Zone reçue:', climateZone);
-  console.log('🎯 ThermalEconomySection - Coefficient G:', climateZoneCoefficients[climateZone]);
+  // 🚨 DEBUG TRÈS DÉTAILLÉ
+  console.error('🚨 ThermalEconomySection - PROPS REÇUES:');
+  console.error('🚨 climateZone type:', typeof climateZone);
+  console.error('🚨 climateZone value:', climateZone);
+  console.error('🚨 climateZone length:', climateZone?.length);
+  console.error('🚨 climateZone chars:', climateZone?.split('').map((c, i) => `[${i}]=${c}`));
+  console.error('🚨 climateZone === "D2":', climateZone === "D2");
+  console.error('🚨 climateZone in coefficients:', climateZone in climateZoneCoefficients);
+  console.error('🚨 coefficient trouvé:', climateZoneCoefficients[climateZone || ""]);
+  console.error('🚨 onClimateZoneChange function:', typeof onClimateZoneChange);
 
   const {
     cherryEnabled,
@@ -71,13 +79,17 @@ const ThermalEconomySection = ({
     surfaceArea,
     uValueBefore,
     uValueAfter,
-    climateZone
+    climateZone: climateZone || "C3"
   });
 
   const handleClimateZoneChange = (zone: string) => {
-    console.log('🎯 Changement zone thermique:', zone);
+    console.error('🚨 ThermalEconomySection - Changement manuel vers:', zone);
+    console.error('🚨 onClimateZoneChange disponible:', !!onClimateZoneChange);
     if (onClimateZoneChange) {
+      console.error('🚨 Appel onClimateZoneChange avec:', zone);
       onClimateZoneChange(zone);
+    } else {
+      console.error('🚨 ERREUR: onClimateZoneChange non défini!');
     }
   };
 
@@ -90,16 +102,16 @@ const ThermalEconomySection = ({
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* ZONE THERMIQUE - simplifié */}
+          {/* ZONE THERMIQUE - avec debug */}
           <div className="space-y-2">
-            <Label>Zone Thermique (G: {climateZoneCoefficients[climateZone] || '?'})</Label>
+            <Label>Zone Thermique (G: {climateZoneCoefficients[climateZone || ""] || '?'})</Label>
             <Select 
               value={climateZone}
               onValueChange={handleClimateZoneChange}
             >
               <SelectTrigger>
                 <SelectValue>
-                  {climateZone} - Coefficient {climateZoneCoefficients[climateZone]}
+                  {climateZone} - Coefficient {climateZoneCoefficients[climateZone || ""]}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-white border shadow-lg z-50">
@@ -111,9 +123,13 @@ const ThermalEconomySection = ({
               </SelectContent>
             </Select>
             
-            {/* Debug simplifié */}
-            <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-              🔍 Zone active: "{climateZone}" | CAE = {surfaceArea} × {(uValueBefore - uValueAfter).toFixed(2)} × {climateZoneCoefficients[climateZone]} = {annualSavings.toFixed(1)} kWh/an
+            {/* Debug très détaillé */}
+            <div className="text-xs text-red-600 bg-red-50 p-2 rounded border-2 border-red-200">
+              🚨 DEBUG ZONE:<br/>
+              Reçue: "{climateZone}" (len: {climateZone?.length})<br/>
+              Type: {typeof climateZone}<br/>
+              Coefficient: {climateZoneCoefficients[climateZone || ""] || 'NON TROUVÉ'}<br/>
+              CAE = {surfaceArea} × {(uValueBefore - uValueAfter).toFixed(2)} × {climateZoneCoefficients[climateZone || ""] || '?'} = {annualSavings.toFixed(1)} kWh/an
             </div>
 
             {/* Info géolocalisation si disponible */}
