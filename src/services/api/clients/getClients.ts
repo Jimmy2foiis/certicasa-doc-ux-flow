@@ -1,59 +1,32 @@
 
 /**
- * Service for retrieving client data
+ * Service for retrieving client data from real APIs
  */
 import { httpClient } from '../httpClient';
 import { Client } from '../types';
 import { mapProspectToClient } from '../mappers/clientMapper';
-import { fetchExternalProspects } from '../externalApiService';
 
 /**
- * Fetches all clients from both the external API and internal API
+ * Fetches all clients from the internal API only
+ * Note: Beetool API requires individual tokens, so we only use internal API for listing
  */
 export const getClients = async (): Promise<Client[]> => {
   try {
-    console.log('Chargement des clients depuis les APIs...');
+    console.log('Chargement des clients depuis l\'API interne...');
     
-    // Récupérer les clients depuis l'API externe
-    let externalClients: Client[] = [];
-    try {
-      externalClients = await fetchExternalProspects();
-      console.log(`${externalClients.length} clients récupérés depuis l'API externe`);
-    } catch (externalError) {
-      console.warn('Erreur lors de la récupération depuis l\'API externe, continuons avec l\'API interne seulement:', externalError);
+    // Récupérer les clients depuis l'API interne uniquement
+    const response = await httpClient.get<any[]>('/prospects/');
+    
+    if (!response.success || !response.data) {
+      console.warn('Aucune donnée reçue de l\'API interne');
+      return [];
     }
     
-    // Récupérer les clients depuis l'API interne
-    let internalClients: Client[] = [];
-    try {
-      const response = await httpClient.get<any[]>('/prospects/');
-      
-      if (response.success && response.data) {
-        // Map API data to Client model
-        internalClients = response.data.map(mapProspectToClient);
-        console.log(`${internalClients.length} clients récupérés depuis l'API interne`);
-      }
-    } catch (internalError) {
-      console.warn('Erreur lors de la récupération depuis l\'API interne:', internalError);
-    }
+    // Map API data to Client model
+    const clients = response.data.map(mapProspectToClient);
+    console.log(`${clients.length} clients récupérés depuis l'API interne`);
     
-    // Combiner les deux sources en évitant les doublons
-    const allClients = [...externalClients];
-    
-    // Ajouter les clients internes qui ne sont pas déjà présents
-    internalClients.forEach(internalClient => {
-      const exists = externalClients.some(extClient => 
-        extClient.id === internalClient.id || 
-        (extClient.email && internalClient.email && extClient.email === internalClient.email)
-      );
-      
-      if (!exists) {
-        allClients.push(internalClient);
-      }
-    });
-    
-    console.log(`Total: ${allClients.length} clients disponibles`);
-    return allClients;
+    return clients;
     
   } catch (error) {
     console.error("Erreur lors de la récupération des clients:", error);
