@@ -133,68 +133,6 @@ const ThermalEconomySection = ({
         <CardTitle className="text-lg font-semibold">
           Économie Thermique Annuelle
         </CardTitle>
-        
-        {/* 🚨 PANNEAU DE DEBUG - VALEURS CRITIQUES */}
-        <div className="my-4 p-4 bg-red-50 dark:bg-red-950 border-2 border-red-500 rounded-lg">
-          <h3 className="font-bold text-red-700 dark:text-red-300 mb-3">
-            🚨 DEBUG ThermalEconomySection - VALEURS EN TEMPS RÉEL
-          </h3>
-          
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            {/* Zones */}
-            <div className="p-2 bg-white dark:bg-gray-900 rounded">
-              <div className="font-semibold text-red-600">ZONES:</div>
-              <div>Zone reçue (prop): <span className="font-mono font-bold">{climateZone || 'AUCUNE'}</span></div>
-              <div>Zone sélectionnée: <span className="font-mono font-bold">{selectedClimateZone || 'AUCUNE'}</span></div>
-              <div>Synchronisées: <span className="font-bold">{climateZone === selectedClimateZone ? '✅ OUI' : '❌ NON'}</span></div>
-            </div>
-            
-            {/* Coefficient G */}
-            <div className="p-2 bg-white dark:bg-gray-900 rounded">
-              <div className="font-semibold text-red-600">COEFFICIENT G:</div>
-              <div>G actuel: <span className="font-mono font-bold text-lg">{gCoefficient}</span></div>
-              <div>G de {selectedClimateZone}: <span className="font-mono font-bold">{climateZoneCoefficients[selectedClimateZone] || 'ERREUR'}</span></div>
-              <div>Correct: <span className="font-bold">{gCoefficient === climateZoneCoefficients[selectedClimateZone] ? '✅ OUI' : '❌ NON'}</span></div>
-            </div>
-            
-            {/* Valeurs U */}
-            <div className="p-2 bg-white dark:bg-gray-900 rounded">
-              <div className="font-semibold text-red-600">VALEURS U:</div>
-              <div>U avant: <span className="font-mono font-bold">{uValueBefore}</span> W/m²·K</div>
-              <div>U après: <span className="font-mono font-bold">{uValueAfter}</span> W/m²·K</div>
-              <div>Delta U: <span className="font-mono font-bold">{(uValueBefore - uValueAfter).toFixed(3)}</span></div>
-            </div>
-            
-            {/* Calculs */}
-            <div className="p-2 bg-white dark:bg-gray-900 rounded">
-              <div className="font-semibold text-red-600">CALCULS:</div>
-              <div>Surface: <span className="font-mono font-bold">{surfaceArea}</span> m²</div>
-              <div>CAE calculé: <span className="font-mono font-bold">{annualSavings}</span> kWh/an</div>
-              <div>Prix/m²: <span className="font-mono font-bold">{pricePerSqm}</span> €</div>
-            </div>
-          </div>
-          
-          {/* Formule détaillée */}
-          <div className="mt-3 p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded">
-            <div className="font-semibold">📐 FORMULE DÉTAILLÉE:</div>
-            <div className="font-mono text-sm">
-              CAE = {surfaceArea} × ({uValueBefore} - {uValueAfter}) × {gCoefficient}
-            </div>
-            <div className="font-mono text-sm">
-              CAE = {surfaceArea} × {(uValueBefore - uValueAfter).toFixed(3)} × {gCoefficient} = <span className="font-bold text-lg">{annualSavings}</span> kWh/an
-            </div>
-          </div>
-          
-          {/* État de synchronisation */}
-          <div className="mt-3 p-2 bg-blue-100 dark:bg-blue-900/20 rounded">
-            <div className="font-semibold">🔄 SYNCHRONISATION:</div>
-            <div className="text-sm">
-              {climateZone === selectedClimateZone 
-                ? '✅ Les zones sont synchronisées' 
-                : `❌ DÉSYNCHRONISÉ: Reçu "${climateZone}" mais utilise "${selectedClimateZone}"`}
-            </div>
-          </div>
-        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
