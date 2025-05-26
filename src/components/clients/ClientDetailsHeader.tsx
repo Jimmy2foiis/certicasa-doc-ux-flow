@@ -1,11 +1,12 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Client } from "@/services/api/types";
 import StatusBanner from "./StatusBanner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ClientForm } from "./ClientForm";
-import { FileText, Mail, Phone } from "lucide-react";
+import { FileText, Mail, Phone, RefreshCw, Save } from "lucide-react";
 
 interface ClientDetailsHeaderProps {
   client: Client | null;
@@ -60,6 +61,18 @@ const ClientDetailsHeader = ({
     onClientUpdated();
   };
 
+  // Handler pour synchroniser
+  const handleSync = () => {
+    console.log("Sync data for client:", clientId);
+    // Logique de synchronisation
+  };
+
+  // Handler pour enregistrer
+  const handleSave = () => {
+    console.log("Save data for client:", clientId);
+    // Logique de sauvegarde
+  };
+
   return (
     <>
       <div className="space-y-2">
@@ -77,14 +90,32 @@ const ClientDetailsHeader = ({
               </div>
             </div>
           </div>
-          <Button 
-            variant="default" 
-            className="bg-green-600 hover:bg-green-700"
-            onClick={handleGenerateDocument}
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Générer un document
-          </Button>
+          <div className="flex items-center gap-3">
+            <Badge 
+              variant="outline" 
+              className="cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-colors"
+              onClick={handleSync}
+            >
+              <RefreshCw className="h-3 w-3 mr-1" />
+              Sync
+            </Badge>
+            <Badge 
+              variant="outline" 
+              className="cursor-pointer hover:bg-green-50 hover:border-green-300 transition-colors"
+              onClick={handleSave}
+            >
+              <Save className="h-3 w-3 mr-1" />
+              Enregistrer
+            </Badge>
+            <Button 
+              variant="default" 
+              className="bg-green-600 hover:bg-green-700"
+              onClick={handleGenerateDocument}
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Générer un document
+            </Button>
+          </div>
         </div>
         
         {/* Intégration du bandeau de statut */}
