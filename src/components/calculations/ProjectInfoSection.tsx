@@ -167,7 +167,7 @@ const ProjectInfoSection = ({
               
               <div className="lg:col-span-1">
                 <label className="block text-sm text-gray-500 mb-2">Rapport de chantier</label>
-                <Button onClick={handleSafetyCultureReport} disabled={isLoadingReport} variant="default" className="h- bg-[#8B5CF6] text-white hover:bg-[#7C3AED] border-[#8B5CF6]">
+                <Button onClick={handleSafetyCultureReport} disabled={isLoadingReport} variant="default" className="h- text-black border-[#00000] rounded-md bg-violet-200 hover:bg-violet-100">
                   <File className="mr-2 h-4 w-4" />
                   {isLoadingReport ? "Chargement..." : "Consulter le rapport SafetyCulture"}
                 </Button>
