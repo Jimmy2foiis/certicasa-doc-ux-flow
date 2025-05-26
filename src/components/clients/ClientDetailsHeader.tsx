@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -5,7 +6,7 @@ import { Client } from "@/services/api/types";
 import StatusBanner from "./StatusBanner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ClientForm } from "./ClientForm";
-import { FileText, Mail, Phone, Save, RefreshCw } from "lucide-react";
+import { FileText, Mail, Phone, Save, Sync } from "lucide-react";
 
 interface ClientDetailsHeaderProps {
   client: Client | null;
@@ -126,7 +127,7 @@ const ClientDetailsHeader = ({
               className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100 cursor-pointer px-3 py-1.5 flex items-center gap-2"
               onClick={handleSync}
             >
-              <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+              <Sync className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
               {isSyncing ? 'Sync...' : 'Sync'}
             </Badge>
 

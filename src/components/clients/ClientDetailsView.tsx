@@ -78,14 +78,11 @@ const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsV
   
   if (!client) return null;
 
-  // S'assurer qu'on a toujours un clientId valide (chaîne non-vide)
-  const effectiveClientId = client.beetoolToken || clientId || 'unknown';
-
   if (showCalculations) {
     return (
       <CalculationHandler 
         client={{...client, climateZone}} 
-        clientId={effectiveClientId}
+        clientId={clientId}
         currentProjectId={currentProjectId}
         savedCalculations={savedCalculations}
         onBack={() => setShowCalculations(false)}
@@ -97,7 +94,7 @@ const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsV
     <div className="space-y-6">
       <ClientDetailsHeader 
         onBack={onBack} 
-        clientId={effectiveClientId}
+        clientId={clientId} 
         clientName={client.name}
         client={client}
         onDocumentGenerated={handleDocumentGenerated}
@@ -105,7 +102,7 @@ const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsV
       />
 
       <ClientDetailsTabs 
-        clientId={effectiveClientId}
+        clientId={clientId}
         clientAddress={clientAddress}
         client={client}
         utmCoordinates={utmCoordinates}

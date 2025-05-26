@@ -12,9 +12,6 @@ import { formatDate } from '../utils/dateUtils';
 export const mapProspectToClient = (prospect: any): Client => {
   return {
     id: prospect.id?.toString() || '',
-    beetoolToken: prospect.beetoolToken || '',
-    prenom: prospect.prenom || '',
-    nom: prospect.nom || '',
     name: prospect.prenom ? `${prospect.prenom} ${prospect.nom || ''}`.trim() : (prospect.nom || 'Client sans nom'),
     email: prospect.email || '',
     phone: prospect.tel || prospect.telephone || '',
@@ -33,19 +30,7 @@ export const mapProspectToClient = (prospect: any): Client => {
     floorType: prospect.type_plancher || 'Bois',
     installationDate: prospect.date_pose || formatDate(new Date(Date.now() - Math.floor(Math.random() * 90 * 24 * 60 * 60 * 1000))),
     lotNumber: prospect.numero_lot || null,
-    depositStatus: prospect.statut_depot || 'Non déposé',
-    sexe: prospect.sexe,
-    adresse: prospect.adresse,
-    codePostal: prospect.codePostal,
-    ville: prospect.ville,
-    pays: prospect.pays,
-    tel: prospect.tel,
-    cadastralReference: prospect.cadastralReference,
-    utm30: prospect.utm30,
-    safetyCultureAuditId: prospect.safetyCultureAuditId,
-    geoPosition: prospect.geoPosition,
-    createdAt: prospect.createdAt,
-    updatedAt: prospect.updatedAt
+    depositStatus: prospect.statut_depot || 'Non déposé'
   };
 };
 

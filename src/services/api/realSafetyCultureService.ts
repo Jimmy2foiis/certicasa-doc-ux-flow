@@ -1,6 +1,6 @@
 
 /**
- * Service pour la vraie API SafetyCulture via votre backend
+ * Service pour la vraie API SafetyCulture
  */
 
 interface SafetyCultureInspection {
@@ -40,35 +40,7 @@ const SAFETYCULTURE_BASE_URL = 'https://certicasa.mitain.com/api/safety-culture'
 
 export class RealSafetyCultureService {
   /**
-   * Récupère une inspection spécifique par son ID
-   */
-  static async getInspection(safetyCultureAuditId: string): Promise<SafetyCultureInspection | null> {
-    try {
-      const response = await fetch(`${SAFETYCULTURE_BASE_URL}/inspections/${safetyCultureAuditId}`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          console.warn(`Inspection ${safetyCultureAuditId} non trouvée`);
-          return null;
-        }
-        throw new Error(`Erreur HTTP: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Erreur lors de la récupération de l\'inspection:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Récupère la liste des inspections (fonction existante conservée)
+   * Récupère la liste des inspections
    */
   static async getInspections(limit: number = 50): Promise<SafetyCultureInspection[]> {
     try {

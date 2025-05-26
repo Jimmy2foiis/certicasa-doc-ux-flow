@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useMemo } from "react";
-import { getClients, getClientsByTokens, Client } from "@/services/api";
+import { getClients, Client } from "@/services/api";
 import { useToast } from "@/components/ui/use-toast";
 
 export interface ClientFilters {
@@ -19,7 +19,6 @@ export const useClients = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [knownTokens, setKnownTokens] = useState<string[]>([]);
   const [filters, setFilters] = useState<ClientFilters>({
     search: "",
     status: null,
@@ -31,64 +30,33 @@ export const useClients = () => {
     community: null
   });
 
-  // Fonction pour ajouter un beetoolToken à la liste des tokens connus
-  const addKnownToken = (token: string) => {
-    setKnownTokens(prev => {
-      if (!prev.includes(token)) {
-        const newTokens = [...prev, token];
-        localStorage.setItem('knownBeetoolTokens', JSON.stringify(newTokens));
-        return newTokens;
-      }
-      return prev;
-    });
-  };
-
-  // Charger les tokens connus depuis le localStorage au démarrage
-  useEffect(() => {
-    const savedTokens = localStorage.getItem('knownBeetoolTokens');
-    if (savedTokens) {
-      try {
-        setKnownTokens(JSON.parse(savedTokens));
-      } catch (error) {
-        console.error('Erreur lors du chargement des tokens sauvegardés:', error);
-      }
-    }
-  }, []);
-
   const loadClients = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Essayer d'abord l'endpoint global (qui retournera probablement une liste vide)
-      let data = await getClients();
-      
-      // Si pas de données et qu'on a des tokens connus, les charger individuellement
-      if (data.length === 0 && knownTokens.length > 0) {
-        console.log('Chargement des clients via les tokens connus:', knownTokens);
-        data = await getClientsByTokens(knownTokens);
-      }
+      const data = await getClients();
       
       if (data.length === 0) {
-        setError("Aucun prospect trouvé. Utilisez l'option 'Nouveau Client' pour ajouter des prospects.");
+        setError("Aucune donnée client disponible");
         toast({
-          title: "Aucun prospect",
-          description: "Aucun prospect trouvé. Ajoutez-en un avec le bouton 'Nouveau Client'.",
-          variant: "default",
+          title: "Aucune donnée",
+          description: "Aucun client trouvé dans l'API",
+          variant: "destructive",
         });
       } else {
         setClients(data);
         toast({
-          title: "Prospects chargés",
-          description: `${data.length} prospect(s) récupéré(s) depuis l'API`,
+          title: "Clients chargés",
+          description: `${data.length} client(s) récupéré(s) depuis l'API`,
         });
       }
     } catch (error) {
       console.error("Erreur lors du chargement des clients:", error);
-      setError("Erreur lors de la connexion à l'API. Vérifiez votre connexion.");
+      setError("Erreur lors du chargement des clients");
       toast({
-        title: "Erreur de connexion",
-        description: "Impossible de se connecter à l'API. Vérifiez votre connexion internet.",
+        title: "Erreur de chargement",
+        description: "Impossible de charger les clients depuis l'API",
         variant: "destructive",
       });
     } finally {
@@ -98,7 +66,7 @@ export const useClients = () => {
 
   useEffect(() => {
     loadClients();
-  }, [knownTokens]);
+  }, []);
 
   // Filtrer les clients selon les critères
   const filteredClients = useMemo(() => {
@@ -109,9 +77,7 @@ export const useClients = () => {
         const matchesSearch = 
           (client.name?.toLowerCase().includes(searchTermLower)) ||
           (client.email?.toLowerCase().includes(searchTermLower)) ||
-          (client.beetoolToken?.toLowerCase().includes(searchTermLower)) ||
-          (client.tel?.includes(searchTermLower)) ||
-          (client.phone?.includes(searchTermLower));
+          (client.nif?.toLowerCase().includes(searchTermLower));
         
         if (!matchesSearch) return false;
       }
@@ -136,7 +102,6 @@ export const useClients = () => {
     setFilters,
     loading,
     error,
-    refreshClients: loadClients,
-    addKnownToken // Exposer cette fonction pour ajouter de nouveaux tokens
+    refreshClients: loadClients
   };
 };

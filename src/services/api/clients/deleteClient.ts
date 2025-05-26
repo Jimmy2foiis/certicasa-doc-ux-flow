@@ -1,28 +1,26 @@
 
 /**
- * Service pour supprimer des clients avec l'API réelle
+ * Service for deleting clients using Beetool API
  */
-import { RealApiService } from '../realApiService';
+import { httpClient } from '../httpClient';
+import { BeetoolService } from '../beetoolService';
 
 /**
- * Supprime un client avec votre API réelle
+ * Deletes a client using Beetool API if ID looks like a token
  */
-export const deleteClientRecord = async (beetoolToken: string): Promise<boolean> => {
+export const deleteClientRecord = async (clientId: string): Promise<boolean> => {
   try {
-    console.log(`Suppression du prospect avec beetoolToken: ${beetoolToken}`);
-    
-    const success = await RealApiService.deleteProspect(beetoolToken);
-    
-    if (success) {
-      console.log(`Prospect ${beetoolToken} supprimé avec succès`);
-    } else {
-      console.error(`Erreur lors de la suppression du prospect ${beetoolToken}`);
+    // Si l'ID ressemble à un token Beetool, utiliser l'API Beetool
+    if (clientId.length > 10) {
+      return await BeetoolService.deleteProspect(clientId);
     }
-    
-    return success;
+
+    // Fallback vers l'API interne
+    const response = await httpClient.delete<any>(`/prospects/${clientId}/`);
+    return response.success;
     
   } catch (error) {
-    console.error(`Erreur lors de la suppression du client ${beetoolToken}:`, error);
+    console.error(`Erreur lors de la suppression du client ${clientId}:`, error);
     return false;
   }
 };
