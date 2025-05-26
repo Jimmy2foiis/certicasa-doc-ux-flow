@@ -180,7 +180,7 @@ const BillingTab = ({
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Receipt className="h-5 w-5" />
-            Facturation CEE
+            Facturation CAE
             {loading && <Badge variant="outline">Chargement...</Badge>}
           </div>
           
@@ -188,14 +188,14 @@ const BillingTab = ({
               <DialogTrigger asChild>
                 <Button className="bg-green-600 hover:bg-green-700">
                   <Calculator className="h-4 w-4 mr-2" />
-                  Générer Facturation CEE
+                  Générer Facturation CAE
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle className="flex items-center gap-2">
                     <Calculator className="h-5 w-5" />
-                    Système de Facturation Automatique CEE
+                    Système de Facturation Automatique CAE
                   </DialogTitle>
                 </DialogHeader>
                 <AutomaticBillingGenerator calculationData={calculationData} clientData={clientData} />
@@ -206,7 +206,7 @@ const BillingTab = ({
             </Button>}
         </CardTitle>
         <CardDescription>
-          Génération automatique des factures et notes de crédit selon les calculs CEE
+          Génération automatique des factures et notes de crédit selon les calculs CAE
           {savedCalculations && savedCalculations.length > 0 && <span className="text-green-600 font-medium">
               {" "} • {savedCalculations.length} calcul(s) disponible(s)
             </span>}
@@ -249,10 +249,11 @@ const BillingTab = ({
                         Surface: {doc.surface}m² • Montant: {doc.amount}€ • CAE: {doc.caeKwh?.toLocaleString()} kWh/an
                       </p>}
                     <p className="text-xs text-gray-400">
-                      {doc.type === "invoice" ? "Facture avec calcul CEE automatique" : "Note de crédit pour transfert ITP"}
+                      {doc.type === "invoice" ? "Facture avec calcul CAE automatique" : "Note de crédit pour transfert ITP"}
                     </p>
                   </div>
                 </div>
+                
                 <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
                   <div className="mb-2 sm:mb-0 sm:mr-2">
                     {getStatusBadge(doc.status)}
@@ -285,7 +286,7 @@ const BillingTab = ({
         {/* Process information */}
         <Alert>
           <AlertDescription>
-            <strong>Processus de facturation CEE :</strong><br />
+            <strong>Processus de facturation CAE :</strong><br />
             1. Les calculs thermiques sont récupérés automatiquement depuis l'onglet "Calculs"<br />
             2. Les CAE sont calculés selon la formule : FP × (Ui - Uf) × Surface × G(zone)<br />
             3. La facture est générée avec matériel (7€/m²) + main d'œuvre ajustée<br />
