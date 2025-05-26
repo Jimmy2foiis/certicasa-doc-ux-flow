@@ -83,9 +83,17 @@ export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorT
     console.log('➕ Ajout couche:', layerSet, newLayer);
 
     if (layerSet === "before") {
-      setBeforeLayers(prev => [...prev, newLayer]);
+      setBeforeLayers(prev => {
+        const newLayers = [...prev, newLayer];
+        console.log('📊 Nouvelles couches AVANT après ajout:', newLayers.length);
+        return newLayers;
+      });
     } else {
-      setAfterLayers(prev => [...prev, newLayer]);
+      setAfterLayers(prev => {
+        const newLayers = [...prev, newLayer];
+        console.log('📊 Nouvelles couches APRÈS après ajout:', newLayers.length);
+        return newLayers;
+      });
     }
   };
 
@@ -103,7 +111,11 @@ export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorT
         isNew: true,
       };
       console.log('➕ Ajout SOUFL\'R 47:', newSouflr);
-      setAfterLayers(prev => [...prev, newSouflr]);
+      setAfterLayers(prev => {
+        const newLayers = [...prev, newSouflr];
+        console.log('📊 Nouvelles couches APRÈS après ajout SOUFL\'R 47:', newLayers.length);
+        return newLayers;
+      });
     } else {
       // Fallback au matériau par défaut si le produit n'est pas trouvé
       const fallbackSouflr: Layer = {
@@ -115,30 +127,40 @@ export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorT
         isNew: true,
       };
       console.log('➕ Ajout SOUFL\'R 47 (fallback):', fallbackSouflr);
-      setAfterLayers(prev => [...prev, fallbackSouflr]);
+      setAfterLayers(prev => {
+        const newLayers = [...prev, fallbackSouflr];
+        console.log('📊 Nouvelles couches APRÈS après ajout SOUFL\'R 47 (fallback):', newLayers.length);
+        return newLayers;
+      });
     }
   };
 
   const copyBeforeToAfter = () => {
-    console.log('📋 Copie couches AVANT vers APRÈS');
-    setAfterLayers([...beforeLayers]);
+    console.log('📋 Copie couches AVANT vers APRÈS - forcer recalcul');
+    const copiedLayers = beforeLayers.map(layer => ({ ...layer }));
+    setAfterLayers(copiedLayers);
+    console.log('📊 Couches copiées:', copiedLayers.length, 'couches');
   };
 
   const updateLayer = (layerSet: "before" | "after", updatedLayer: Layer) => {
     console.log(`✏️ Mise à jour couche ${layerSet}:`, updatedLayer);
     
     if (layerSet === "before") {
-      setBeforeLayers(prev => 
-        prev.map((layer) => 
+      setBeforeLayers(prev => {
+        const newLayers = prev.map((layer) => 
           layer.id === updatedLayer.id ? { ...updatedLayer } : layer
-        )
-      );
+        );
+        console.log('📊 Couches AVANT mises à jour:', newLayers.length);
+        return newLayers;
+      });
     } else {
-      setAfterLayers(prev => 
-        prev.map((layer) => 
+      setAfterLayers(prev => {
+        const newLayers = prev.map((layer) => 
           layer.id === updatedLayer.id ? { ...updatedLayer } : layer
-        )
-      );
+        );
+        console.log('📊 Couches APRÈS mises à jour:', newLayers.length);
+        return newLayers;
+      });
     }
   };
 

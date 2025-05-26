@@ -27,11 +27,15 @@ export const useProjectCalculationHandlers = ({
   onClimateZoneChange
 }: ProjectCalculationHandlersProps) => {
   const handleDeleteBeforeLayer = (id: string) => {
-    setBeforeLayers(beforeLayers.filter(l => l.id !== id));
+    const newBeforeLayers = beforeLayers.filter(l => l.id !== id);
+    setBeforeLayers(newBeforeLayers);
+    console.log('🗑️ Suppression couche AVANT:', id, '-> Nouvelles couches:', newBeforeLayers.length);
   };
 
   const handleDeleteAfterLayer = (id: string) => {
-    setAfterLayers(afterLayers.filter(l => l.id !== id));
+    const newAfterLayers = afterLayers.filter(l => l.id !== id);
+    setAfterLayers(newAfterLayers);
+    console.log('🗑️ Suppression couche APRÈS:', id, '-> Nouvelles couches:', newAfterLayers.length);
   };
 
   // Gestionnaire de changement de zone climatique unifié et correct
@@ -58,7 +62,7 @@ export const useProjectCalculationHandlers = ({
     addLayer(type, defaultMaterial);
   };
 
-  // Simplifier la mise à jour des couches - utiliser directement updateLayer
+  // Améliorer la mise à jour des couches pour forcer le recalcul
   const handleUpdateLayer = (id: string, field: string, updatedLayer: any) => {
     console.log(`🔧 Mise à jour couche ID ${id}:`, updatedLayer);
     
@@ -67,9 +71,24 @@ export const useProjectCalculationHandlers = ({
     const isAfterLayer = afterLayers.some(l => l.id === id);
     
     if (isBeforeLayer) {
+      console.log('📊 Mise à jour couche AVANT - forcer recalcul');
       updateLayer("before", updatedLayer);
+      
+      // Forcer la mise à jour des calculs en créant un nouvel array
+      const updatedBeforeLayers = beforeLayers.map(layer => 
+        layer.id === id ? { ...updatedLayer } : layer
+      );
+      setBeforeLayers([...updatedBeforeLayers]);
+      
     } else if (isAfterLayer) {
+      console.log('📊 Mise à jour couche APRÈS - forcer recalcul');
       updateLayer("after", updatedLayer);
+      
+      // Forcer la mise à jour des calculs en créant un nouvel array
+      const updatedAfterLayers = afterLayers.map(layer => 
+        layer.id === id ? { ...updatedLayer } : layer
+      );
+      setAfterLayers([...updatedAfterLayers]);
     }
   };
 
