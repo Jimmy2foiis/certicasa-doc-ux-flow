@@ -36,27 +36,16 @@ const StatusBanner = ({
   onEditClient,
   onClimateZoneChange
 }: StatusBannerProps) => {
-
-  // 🚨 DEBUG ENTRÉE StatusBanner
-  console.error('🚨 StatusBanner - client.climateZone ENTRÉE:', client?.climateZone);
-  console.error('🚨 StatusBanner - client.climateZone type:', typeof client?.climateZone);
-  console.error('🚨 StatusBanner - client.climateZone length:', client?.climateZone?.length);
-
+  
   // Utiliser le hook centralisé
   const { climateZone, climateData, updateClimateZone, updateZoneOnly } = useClimateZoneManagement({
     initialZone: client?.climateZone,
     onZoneChange: (zone) => {
-      console.error('🚨 StatusBanner - Hook onZoneChange appelé avec:', zone);
       if (onClimateZoneChange) {
         onClimateZoneChange(zone);
       }
     }
   });
-
-  // 🚨 DEBUG SORTIE StatusBanner
-  console.error('🚨 StatusBanner - climateZone HOOK SORTIE:', climateZone);
-  console.error('🚨 StatusBanner - climateZone HOOK type:', typeof climateZone);
-  console.error('🚨 StatusBanner - climateZone HOOK length:', climateZone?.length);
 
   const handleClimateZoneChange = (climateInfo: {
     zone: string;
@@ -66,14 +55,12 @@ const StatusBanner = ({
     distance?: number;
     description?: string;
   }) => {
-    console.error('🚨 StatusBanner - Zone automatique reçue:', climateInfo.zone);
+    console.log('🚨 StatusBanner - Zone automatique reçue:', climateInfo.zone);
     updateClimateZone(climateInfo);
   };
 
   const handleManualClimateZoneChange = (zone: string) => {
-    console.error('🚨 StatusBanner - Zone manuelle reçue:', zone);
-    console.error('🚨 StatusBanner - Zone manuelle type:', typeof zone);
-    console.error('🚨 StatusBanner - Zone manuelle length:', zone?.length);
+    console.log('🚨 StatusBanner - Zone manuelle reçue:', zone);
     updateZoneOnly(zone);
   };
 

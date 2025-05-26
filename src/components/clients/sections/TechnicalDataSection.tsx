@@ -21,18 +21,8 @@ const TechnicalDataSection = ({
   onClimateZoneChange 
 }: TechnicalDataSectionProps) => {
 
-  // 🚨 DEBUG TechnicalDataSection
-  console.error('🚨 TechnicalDataSection - climateZone REÇUE:', climateZone);
-  console.error('🚨 TechnicalDataSection - climateZone type:', typeof climateZone);
-  console.error('🚨 TechnicalDataSection - climateZone length:', climateZone?.length);
-
   const handleZoneChange = (zone: string) => {
-    console.error('🚨 TechnicalDataSection - handleZoneChange zone:', zone);
-    console.error('🚨 TechnicalDataSection - handleZoneChange type:', typeof zone);
-    console.error('🚨 TechnicalDataSection - handleZoneChange length:', zone?.length);
-    
     if (onClimateZoneChange) {
-      console.error('🚨 TechnicalDataSection - Appel onClimateZoneChange avec:', zone);
       onClimateZoneChange(zone);
     }
   };
