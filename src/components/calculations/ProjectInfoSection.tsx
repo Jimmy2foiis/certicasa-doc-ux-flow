@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { File } from "lucide-react";
 import { SafetyCultureService } from "@/services/safetyCultureService";
 import { useToast } from "@/components/ui/use-toast";
-
 interface ProjectInfoSectionProps {
   isolationType?: string;
   floorType?: string;
@@ -28,7 +26,6 @@ interface ProjectInfoSectionProps {
   climateDistance?: number;
   climateDescription?: string;
 }
-
 const ProjectInfoSection = ({
   isolationType = "Combles",
   floorType = "Bois",
@@ -51,8 +48,9 @@ const ProjectInfoSection = ({
   const [localFloorType, setLocalFloorType] = useState(floorType);
   const [localClimateZone, setLocalClimateZone] = useState(climateZone);
   const [isLoadingReport, setIsLoadingReport] = useState(false);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   useEffect(() => {
     setLocalSurfaceArea(surfaceArea);
   }, [surfaceArea]);
@@ -71,7 +69,6 @@ const ProjectInfoSection = ({
     });
     setLocalClimateZone(climateZone);
   }, [climateZone, climateMethod, climateReferenceCity, climateConfidence]);
-
   const handleSurfaceAreaChange = (value: string) => {
     console.log('📊 ProjectInfoSection - Surface combles changée:', value, '-> Propagation immédiate');
     setLocalSurfaceArea(value);
@@ -100,7 +97,6 @@ const ProjectInfoSection = ({
       onClimateZoneChange(value);
     }
   };
-
   const handleSafetyCultureReport = async () => {
     if (!clientId) {
       toast({
@@ -110,11 +106,9 @@ const ProjectInfoSection = ({
       });
       return;
     }
-
     setIsLoadingReport(true);
     try {
       const reportUrl = await SafetyCultureService.getSafetyCultureReportURL(clientId);
-      
       if (reportUrl) {
         window.open(reportUrl, '_blank');
         toast({
@@ -138,24 +132,17 @@ const ProjectInfoSection = ({
       setIsLoadingReport(false);
     }
   };
-
-  const floorTypeOptions = [
-    {
-      value: "Béton",
-      label: "🪨 Béton"
-    },
-    {
-      value: "Bois", 
-      label: "🪵 Bois"
-    },
-    {
-      value: "Céramique",
-      label: "🧱 Céramique"
-    }
-  ];
-
-  return (
-    <Card className="mb-4">
+  const floorTypeOptions = [{
+    value: "Béton",
+    label: "🪨 Béton"
+  }, {
+    value: "Bois",
+    label: "🪵 Bois"
+  }, {
+    value: "Céramique",
+    label: "🧱 Céramique"
+  }];
+  return <Card className="mb-4">
       <CardContent className="pt-6">
         {/* Section Données Techniques */}
         <div className="mb-6">
@@ -171,23 +158,16 @@ const ProjectInfoSection = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {floorTypeOptions.map(option => (
-                      <SelectItem key={option.value} value={option.value}>
+                    {floorTypeOptions.map(option => <SelectItem key={option.value} value={option.value}>
                         {option.label}
-                      </SelectItem>
-                    ))}
+                      </SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               
               <div className="lg:col-span-1">
                 <label className="block text-sm text-gray-500 mb-2">Rapport de chantier</label>
-                <Button
-                  onClick={handleSafetyCultureReport}
-                  disabled={isLoadingReport}
-                  className="w-full"
-                  variant="default"
-                >
+                <Button onClick={handleSafetyCultureReport} disabled={isLoadingReport} variant="default" className="h- bg-[#8B5CF6] text-white hover:bg-[#7C3AED] border-[#8B5CF6]">
                   <File className="mr-2 h-4 w-4" />
                   {isLoadingReport ? "Chargement..." : "Consulter le rapport SafetyCulture"}
                 </Button>
@@ -198,32 +178,16 @@ const ProjectInfoSection = ({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Surface combles (m²)</label>
-                <Input
-                  type="number"
-                  value={localSurfaceArea}
-                  onChange={(e) => handleSurfaceAreaChange(e.target.value)}
-                  onBlur={(e) => handleSurfaceAreaChange(e.target.value)}
-                  className="w-full"
-                  placeholder="Surface des combles"
-                />
+                <Input type="number" value={localSurfaceArea} onChange={e => handleSurfaceAreaChange(e.target.value)} onBlur={e => handleSurfaceAreaChange(e.target.value)} className="w-full" placeholder="Surface des combles" />
               </div>
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Surface toiture (m²)</label>
-                <Input
-                  type="number"
-                  value={localRoofArea}
-                  onChange={(e) => handleRoofAreaChange(e.target.value)}
-                  onBlur={(e) => handleRoofAreaChange(e.target.value)}
-                  className="w-full"
-                  placeholder="Surface de la toiture"
-                />
+                <Input type="number" value={localRoofArea} onChange={e => handleRoofAreaChange(e.target.value)} onBlur={e => handleRoofAreaChange(e.target.value)} className="w-full" placeholder="Surface de la toiture" />
               </div>
             </div>
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ProjectInfoSection;
