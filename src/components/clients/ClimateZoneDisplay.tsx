@@ -14,6 +14,7 @@ interface ClimateZoneDisplayProps {
   description?: string;
   onZoneChange?: (zone: string) => void;
   editable?: boolean;
+  compact?: boolean;
 }
 
 const CLIMATE_ZONES = ['A3', 'A4', 'B3', 'B4', 'C1', 'C2', 'C3', 'C4', 'D1', 'D2', 'D3', 'E1'];
@@ -54,7 +55,8 @@ const ClimateZoneDisplay = ({
   distance,
   description,
   onZoneChange,
-  editable = true
+  editable = true,
+  compact = false
 }: ClimateZoneDisplayProps) => {
 
   const confidenceColor = getConfidenceColor(confidence);
@@ -87,6 +89,35 @@ const ClimateZoneDisplay = ({
     }
   };
 
+  // Version compacte pour s'adapter aux autres champs
+  if (compact) {
+    return (
+      <div className="h-full">
+        {editable ? (
+          <Select value={climateZone || ''} onValueChange={handleZoneChange}>
+            <SelectTrigger className="h-8 text-sm">
+              <SelectValue placeholder="Zone" />
+            </SelectTrigger>
+            <SelectContent>
+              {CLIMATE_ZONES.map((zone) => (
+                <SelectItem key={zone} value={zone}>
+                  {zone}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="h-8 flex items-center">
+            <Badge variant={zoneBadgeVariant} className="px-2 py-1 text-xs">
+              {climateZone || 'Non définie'}
+            </Badge>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Version complète originale
   return (
     <div className="space-y-3 p-3 border rounded-lg bg-blue-50 border-blue-200">
       <div className="flex items-center gap-2">

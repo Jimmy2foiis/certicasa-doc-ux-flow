@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { MapPin } from "lucide-react";
 import AddressSearch from "@/components/clients/AddressSearch";
+import ClimateZoneDisplay from "@/components/clients/ClimateZoneDisplay";
 import { AddressComponents } from "@/types/googleMaps";
 import { useClientCadastralData } from "@/hooks/useClientCadastralData";
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
@@ -38,12 +40,14 @@ const AddressFormSection = ({ client, onClimateZoneChange }: AddressFormSectionP
   });
 
   const [gpsCoordinates, setGpsCoordinates] = useState<GeoCoordinates | undefined>();
+  const [climateZone, setClimateZone] = useState(client?.climateZone || "");
+  const [climateData, setClimateData] = useState<any>(null);
 
   // Utiliser le hook pour les données cadastrales
   const {
     utmCoordinates,
     cadastralReference,
-    climateZone,
+    climateZone: detectedClimateZone,
     apiSource,
     loadingCadastral,
     refreshCadastralData
@@ -94,14 +98,25 @@ const AddressFormSection = ({ client, onClimateZoneChange }: AddressFormSectionP
 
     // Transmettre les données de zone climatique au parent
     if (components.climateZone && onClimateZoneChange) {
-      onClimateZoneChange({
+      const climateInfo = {
         zone: components.climateZone,
         confidence: components.climateConfidence,
         method: components.climateMethod,
         referenceCity: components.climateReference,
         distance: components.climateDistance,
         description: components.climateDescription
-      });
+      };
+      
+      setClimateZone(components.climateZone);
+      setClimateData(climateInfo);
+      onClimateZoneChange(climateInfo);
+    }
+  };
+
+  const handleClimateZoneChange = (zone: string) => {
+    setClimateZone(zone);
+    if (onClimateZoneChange) {
+      onClimateZoneChange({ zone });
     }
   };
 
@@ -176,7 +191,7 @@ const AddressFormSection = ({ client, onClimateZoneChange }: AddressFormSectionP
         </div>
       </div>
 
-      {/* Ligne 3: Géolocalisation, Référence Cadastrale, cellule vide */}
+      {/* Ligne 3: Géolocalisation, Référence Cadastrale, Zone Climatique */}
       <div className="grid grid-cols-3 gap-3">
         <div>
           <Input 
@@ -195,7 +210,20 @@ const AddressFormSection = ({ client, onClimateZoneChange }: AddressFormSectionP
             readOnly={loadingCadastral}
           />
         </div>
-        <div></div>
+        <div>
+          <div className="h-8">
+            <ClimateZoneDisplay
+              climateZone={climateZone}
+              confidence={climateData?.confidence}
+              method={climateData?.method}
+              referenceCity={climateData?.referenceCity}
+              distance={climateData?.distance}
+              description={climateData?.description}
+              onZoneChange={handleClimateZoneChange}
+              editable={true}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
