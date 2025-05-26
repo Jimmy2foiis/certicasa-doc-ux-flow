@@ -53,7 +53,9 @@ export const useCalculationState = ({
   });
 
   const thermalSettings = useThermalResistanceSettings({
-    savedData
+    savedData,
+    surfaceArea,
+    roofArea
   });
 
   const thermalCalculations = useThermalCalculations({
