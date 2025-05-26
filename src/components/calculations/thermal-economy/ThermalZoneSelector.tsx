@@ -2,6 +2,7 @@
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { CheckCircle2, Thermometer } from "lucide-react";
+import { useEffect } from "react";
 
 interface ThermalZoneSelectorProps {
   selectedClimateZone: string;
@@ -40,6 +41,11 @@ const ThermalZoneSelector = ({
   climateDescription
 }: ThermalZoneSelectorProps) => {
 
+  // Log pour déboguer la synchronisation
+  useEffect(() => {
+    console.log('🌡️ ThermalZoneSelector - Zone reçue:', selectedClimateZone);
+  }, [selectedClimateZone]);
+
   const renderConfidenceIndicator = () => {
     if (climateConfidence && climateMethod) {
       return (
@@ -74,6 +80,7 @@ const ThermalZoneSelector = ({
   };
 
   const handleZoneChange = (zone: string) => {
+    console.log('🌡️ ThermalZoneSelector - Changement manuel vers:', zone);
     onClimateZoneChange(zone);
   };
 

@@ -74,11 +74,29 @@ const ThermalEconomySection = ({
     onClimateZoneChange
   });
 
+  // Synchronisation bidirectionnelle avec la zone climatique externe
   useEffect(() => {
+    console.log('🔄 ThermalEconomySection - Synchronisation:', {
+      climateZone,
+      selectedClimateZone
+    });
+    
     if (climateZone && climateZone !== selectedClimateZone) {
+      console.log('🔄 Mise à jour de la zone interne vers:', climateZone);
       handleClimateZoneChange(climateZone);
     }
   }, [climateZone, selectedClimateZone, handleClimateZoneChange]);
+
+  // Gestionnaire pour propager les changements vers l'extérieur
+  const handleInternalZoneChange = (zone: string) => {
+    console.log('🔄 ThermalEconomySection - Propagation vers parent:', zone);
+    handleClimateZoneChange(zone);
+    
+    // Propager vers le parent (StatusBanner, etc.)
+    if (onClimateZoneChange) {
+      onClimateZoneChange(zone);
+    }
+  };
 
   return (
     <Card className="mt-6">
@@ -91,7 +109,7 @@ const ThermalEconomySection = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <ThermalZoneSelector
             selectedClimateZone={selectedClimateZone}
-            onClimateZoneChange={handleClimateZoneChange}
+            onClimateZoneChange={handleInternalZoneChange}
             getCoefficient={getCoefficient}
             climateConfidence={climateConfidence}
             climateMethod={climateMethod}
