@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useThermalEconomyCalculations } from "@/hooks/useThermalEconomyCalculations";
-import ClimateZoneSelector from "./thermal-economy/ClimateZoneSelector";
+import ThermalZoneSelector from "./thermal-economy/ThermalZoneSelector";
 import DelegateSelector from "./thermal-economy/DelegateSelector";
 import CalculationsDisplay from "./thermal-economy/CalculationsDisplay";
 import CherryOption from "./thermal-economy/CherryOption";
@@ -51,15 +51,6 @@ const ThermalEconomySection = ({
   onClimateZoneChange
 }: ThermalEconomySectionProps) => {
   
-  // 🐛 DEBUG: Tracer la réception de la zone climatique
-  console.log('🌍 ThermalEconomySection - zone reçue:', climateZone);
-  console.log('🌍 ThermalEconomySection - props complètes:', {
-    climateZone,
-    climateConfidence,
-    climateMethod,
-    climateReferenceCity
-  });
-
   const {
     cherryEnabled,
     setCherryEnabled,
@@ -83,30 +74,22 @@ const ThermalEconomySection = ({
     onClimateZoneChange
   });
 
-  // 🛠️ FORCER la synchronisation quand la zone change
   useEffect(() => {
-    console.log('🔧 ThermalEconomy - Mise à jour zone forcée:', climateZone);
     if (climateZone && climateZone !== selectedClimateZone) {
-      console.log('🔄 ThermalEconomy - Synchronisation zone:', climateZone, '->', selectedClimateZone);
       handleClimateZoneChange(climateZone);
     }
   }, [climateZone, selectedClimateZone, handleClimateZoneChange]);
-
-  // 🐛 DEBUG: Afficher la zone sélectionnée dans le hook
-  console.log('🎯 ThermalEconomySection - zone sélectionnée dans le hook:', selectedClimateZone);
 
   return (
     <Card className="mt-6">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold">
-          Économie Thermique Annuelle 
-          {/* 🐛 DEBUG: Afficher la zone dans le titre pour vérifier */}
-          <span className="text-sm text-gray-500 ml-2">(Zone: {selectedClimateZone})</span>
+          Économie Thermique Annuelle
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <ClimateZoneSelector
+          <ThermalZoneSelector
             selectedClimateZone={selectedClimateZone}
             onClimateZoneChange={handleClimateZoneChange}
             getCoefficient={getCoefficient}
