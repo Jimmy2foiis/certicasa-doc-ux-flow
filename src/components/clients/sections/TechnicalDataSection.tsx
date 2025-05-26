@@ -22,13 +22,6 @@ const TechnicalDataSection = ({
       onClimateZoneChange(zone);
     }
   };
-  return <div className="border-b pb-4">
-      
-      
-      {/* Zone Climatique CTE */}
-      <div className="mb-3">
-        <ClimateZoneDisplay climateZone={climateZone} confidence={climateData?.confidence} method={climateData?.method} referenceCity={climateData?.referenceCity} distance={climateData?.distance} description={climateData?.description} onZoneChange={handleZoneChange} editable={true} />
-      </div>
-    </div>;
+  return;
 };
 export default TechnicalDataSection;
