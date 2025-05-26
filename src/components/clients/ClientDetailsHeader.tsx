@@ -6,7 +6,6 @@ import StatusBanner from "./StatusBanner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ClientForm } from "./ClientForm";
 import { FileText, Mail, Phone, RefreshCw, Save } from "lucide-react";
-
 interface ClientDetailsHeaderProps {
   client: Client | null;
   clientId: string;
@@ -22,11 +21,10 @@ interface ClientDetailsHeaderProps {
   onDocumentGenerated?: (documentId: string) => void;
   onClientUpdated?: () => void;
 }
-
-const ClientDetailsHeader = ({ 
-  client, 
-  clientId, 
-  clientName, 
+const ClientDetailsHeader = ({
+  client,
+  clientId,
+  clientName,
   onBack,
   documentStats,
   onViewMissingDocs = () => {},
@@ -47,7 +45,6 @@ const ClientDetailsHeader = ({
     // Prévenir le comportement par défaut et la propagation
     e.preventDefault();
     e.stopPropagation();
-    
     console.log("Edit client:", clientId);
     // Ouvrir le dialogue d'édition plutôt que d'utiliser un autre mécanisme qui provoquerait un rechargement
     setShowEditDialog(true);
@@ -71,9 +68,7 @@ const ClientDetailsHeader = ({
     console.log("Save data for client:", clientId);
     // Logique de sauvegarde
   };
-
-  return (
-    <>
+  return <>
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -90,40 +85,20 @@ const ClientDetailsHeader = ({
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Badge 
-              variant="outline" 
-              className="cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-colors"
-              onClick={handleSync}
-            >
+            <Badge variant="outline" className="cursor-pointer hover:bg-blue-50 hover:border-blue-300 transition-colors" onClick={handleSync}>
               <RefreshCw className="h-3 w-3 mr-1" />
               Sync
             </Badge>
-            <Button 
-              variant="default" 
-              className="bg-green-600 hover:bg-green-700"
-              onClick={handleSave}
-            >
+            <Button variant="default" className="bg-green-600 hover:bg-green-700" onClick={handleSave}>
               <Save className="h-4 w-4 mr-2" />
               Enregistrer
             </Button>
-            <Button 
-              variant="default" 
-              className="bg-green-600 hover:bg-green-700"
-              onClick={handleGenerateDocument}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Générer un document
-            </Button>
+            
           </div>
         </div>
         
         {/* Intégration du bandeau de statut */}
-        <StatusBanner 
-          client={client}
-          documentStats={documentStats}
-          onViewMissingDocs={onViewMissingDocs}
-          onEditClient={handleEditClient}
-        />
+        <StatusBanner client={client} documentStats={documentStats} onViewMissingDocs={onViewMissingDocs} onEditClient={handleEditClient} />
       </div>
 
       {/* Dialogue d'édition du client */}
@@ -132,16 +107,9 @@ const ClientDetailsHeader = ({
           <DialogHeader>
             <DialogTitle>Modifier les informations client</DialogTitle>
           </DialogHeader>
-          <ClientForm 
-            clientId={clientId} 
-            initialData={client || undefined}
-            onSuccess={handleEditComplete} 
-            onCancel={() => setShowEditDialog(false)}
-          />
+          <ClientForm clientId={clientId} initialData={client || undefined} onSuccess={handleEditComplete} onCancel={() => setShowEditDialog(false)} />
         </DialogContent>
       </Dialog>
-    </>
-  );
+    </>;
 };
-
 export default ClientDetailsHeader;
