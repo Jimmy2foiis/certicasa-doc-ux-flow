@@ -1,7 +1,7 @@
 
 import Sidebar from "@/components/layout/Sidebar";
 import GlobalTabNavigation from "@/components/layout/GlobalTabNavigation";
-import { Dashboard } from "@/components/dashboard/Dashboard";
+import Dashboard from "@/components/dashboard/Dashboard";
 
 const Index = () => {
   return (
