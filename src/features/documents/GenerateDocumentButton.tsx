@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -42,7 +43,7 @@ const GenerateDocumentButton = ({
       <Button
         variant={variant}
         size={size}
-        className={`${fullWidth ? 'w-full' : ''}`}
+        className={`${fullWidth ? 'w-full' : ''} bg-green-600 hover:bg-green-700`}
         onClick={() => setIsModalOpen(true)}
       >
         <FileText className="mr-2 h-5 w-5" />
