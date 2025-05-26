@@ -75,6 +75,7 @@ export const useThermalEconomyCalculations = ({
     delegate,
     setDelegate,
     selectedClimateZone,
+    setSelectedClimateZone,
     gCoefficient,
     getCoefficient,
     annualSavings,

@@ -5,6 +5,7 @@ import { ThermalZoneSync } from "../thermal/ThermalZoneSync";
 import DelegateSelector from "./thermal-economy/DelegateSelector";
 import CalculationsDisplay from "./thermal-economy/CalculationsDisplay";
 import CherryOption from "./thermal-economy/CherryOption";
+import { useEffect } from "react";
 
 // Climate zone coefficients mapping
 export const climateZoneCoefficients: Record<string, number> = {
@@ -50,12 +51,16 @@ const ThermalEconomySection = ({
   onClimateZoneChange
 }: ThermalEconomySectionProps) => {
   
+  // Debug: vérifier que la zone arrive bien
+  console.log('Zone reçue de ClimateZoneDisplay:', climateZone);
+
   const {
     cherryEnabled,
     setCherryEnabled,
     delegate,
     setDelegate,
     selectedClimateZone,
+    setSelectedClimateZone,
     getCoefficient,
     annualSavings,
     projectPrice,
@@ -72,6 +77,15 @@ const ThermalEconomySection = ({
     climateZone,
     onClimateZoneChange
   });
+
+  // 🔄 SYNCHRONISATION DIRECTE avec la géolocalisation
+  useEffect(() => {
+    // Si on reçoit une zone de ClimateZoneDisplay, on l'utilise
+    if (climateZone) {
+      setSelectedClimateZone(climateZone);
+      console.log('🔄 Zone Thermique synchronisée:', climateZone);
+    }
+  }, [climateZone, setSelectedClimateZone]);
 
   // Gestionnaire pour le nouveau composant de zone thermique
   const handleThermalZoneUpdate = (zone: string, coefficient: number) => {
