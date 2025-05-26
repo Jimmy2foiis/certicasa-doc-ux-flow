@@ -57,11 +57,28 @@ const StatusBanner = ({
   }) => {
     console.log('🚨 StatusBanner - Zone automatique reçue:', climateInfo);
     updateClimateZone(climateInfo);
+    
+    // Propager immédiatement la nouvelle zone vers les composants enfants
+    if (onClimateZoneChange) {
+      onClimateZoneChange(
+        climateInfo.zone,
+        climateInfo.confidence,
+        climateInfo.method,
+        climateInfo.referenceCity,
+        climateInfo.distance,
+        climateInfo.description
+      );
+    }
   };
 
   const handleManualClimateZoneChange = (zone: string) => {
     console.log('🚨 StatusBanner - Zone manuelle reçue:', zone);
     setZoneOnly(zone);
+    
+    // Propager immédiatement la zone manuelle vers les composants enfants
+    if (onClimateZoneChange) {
+      onClimateZoneChange(zone);
+    }
   };
 
   return (

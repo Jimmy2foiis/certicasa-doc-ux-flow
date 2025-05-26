@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { useLayerManagement, Layer } from "./useLayerManagement";
 import { useThermalCalculations } from "./useThermalCalculations";
@@ -32,15 +31,14 @@ export interface CalculationData {
 
 interface UseCalculationStateProps {
   savedData?: any;
-  clientClimateZone?: string;
+  realClimateZone?: string;
   floorType?: string;
-  // Nouvelle prop pour la zone géolocalisée
   geolocatedClimateZone?: string;
 }
 
 export const useCalculationState = ({ 
   savedData, 
-  clientClimateZone,
+  realClimateZone,
   floorType,
   geolocatedClimateZone
 }: UseCalculationStateProps) => {
@@ -48,7 +46,7 @@ export const useCalculationState = ({
   // États pour les données de base
   const [surfaceArea, setSurfaceArea] = useState("70");
   const [roofArea, setRoofArea] = useState("85");
-  const [climateZone, setClimateZone] = useState(clientClimateZone || "C3");
+  const [climateZone, setClimateZone] = useState("C3");
 
   const layerManagement = useLayerManagement({
     savedBeforeLayers: savedData?.beforeLayers,
@@ -93,16 +91,16 @@ export const useCalculationState = ({
       } else if (geolocatedClimateZone) {
         console.log('🌍 Utilisation zone géolocalisée:', geolocatedClimateZone);
         setClimateZone(geolocatedClimateZone);
-      } else if (clientClimateZone) {
-        setClimateZone(clientClimateZone);
+      } else if (realClimateZone) {
+        setClimateZone(realClimateZone);
       }
     } else if (geolocatedClimateZone) {
       console.log('🌍 Zone géolocalisée prioritaire:', geolocatedClimateZone);
       setClimateZone(geolocatedClimateZone);
-    } else if (clientClimateZone) {
-      setClimateZone(clientClimateZone);
+    } else if (realClimateZone) {
+      setClimateZone(realClimateZone);
     }
-  }, [savedData, clientClimateZone, geolocatedClimateZone]);
+  }, [savedData, realClimateZone, geolocatedClimateZone]);
 
   // Synchroniser avec la zone géolocalisée quand elle change
   useEffect(() => {

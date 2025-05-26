@@ -1,3 +1,4 @@
+
 import { useCadastralData } from "@/hooks/useCadastralData";
 import { useCalculationState } from "@/hooks/useCalculationState";
 import { useState, useEffect } from "react";
@@ -5,7 +6,7 @@ import { useState, useEffect } from "react";
 interface UseProjectCalculationStateProps {
   clientId?: string;
   savedData?: any;
-  clientClimateZone?: string;
+  realClimateZone?: string;
   surfaceArea?: string;
   roofArea?: string;
   floorType?: string;
@@ -15,7 +16,7 @@ interface UseProjectCalculationStateProps {
 export const useProjectCalculationState = ({
   clientId,
   savedData,
-  clientClimateZone,
+  realClimateZone,
   surfaceArea = "70",
   roofArea = "85",
   floorType = "Bois",
@@ -25,7 +26,7 @@ export const useProjectCalculationState = ({
   const [localSurfaceArea, setLocalSurfaceArea] = useState(surfaceArea);
   const [localRoofArea, setLocalRoofArea] = useState(roofArea);
   const [localFloorType, setLocalFloorType] = useState(floorType);
-  const [localClimateZone, setLocalClimateZone] = useState(geolocatedClimateZone || clientClimateZone || "C3");
+  const [localClimateZone, setLocalClimateZone] = useState(geolocatedClimateZone || realClimateZone || "C3");
 
   // Synchroniser avec les props
   useEffect(() => {
@@ -40,15 +41,15 @@ export const useProjectCalculationState = ({
     setLocalFloorType(floorType);
   }, [floorType]);
 
-  // Priorité à la zone géolocalisée
+  // Priorité à la zone géolocalisée puis à la zone réelle
   useEffect(() => {
     if (geolocatedClimateZone) {
       console.log('🌍 useProjectCalculationState - Zone géolocalisée reçue:', geolocatedClimateZone);
       setLocalClimateZone(geolocatedClimateZone);
-    } else if (clientClimateZone) {
-      setLocalClimateZone(clientClimateZone);
+    } else if (realClimateZone) {
+      setLocalClimateZone(realClimateZone);
     }
-  }, [geolocatedClimateZone, clientClimateZone]);
+  }, [geolocatedClimateZone, realClimateZone]);
 
   // Get climate zone from cadastral data (for demo purposes)
   const { climateZone: fetchedClimateZone } = useCadastralData(clientId ? `Client ID ${clientId}` : "123 Demo Street");
@@ -60,7 +61,7 @@ export const useProjectCalculationState = ({
       roofArea: localRoofArea,
       climateZone: localClimateZone
     },
-    clientClimateZone: clientClimateZone,
+    realClimateZone: realClimateZone,
     floorType: localFloorType,
     geolocatedClimateZone: geolocatedClimateZone
   });

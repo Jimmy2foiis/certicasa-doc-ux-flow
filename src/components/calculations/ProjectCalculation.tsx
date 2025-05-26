@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useProjectCalculationState } from "@/hooks/useProjectCalculationState";
 import ProjectCalculationLayout from "./ProjectCalculationLayout";
@@ -8,7 +9,7 @@ interface ProjectCalculationProps {
   projectId?: string | null;
   savedData?: any;
   onSave?: (calculationData: any) => void;
-  clientClimateZone?: string;
+  realClimateZone?: string;
   clientClimateConfidence?: number;
   clientClimateMethod?: string;
   clientClimateReferenceCity?: string;
@@ -32,7 +33,7 @@ const ProjectCalculation = ({
   projectId,
   savedData,
   onSave,
-  clientClimateZone = "C3",
+  realClimateZone = "C3",
   clientClimateConfidence,
   clientClimateMethod,
   clientClimateReferenceCity,
@@ -54,7 +55,7 @@ const ProjectCalculation = ({
   const [currentSurfaceArea, setCurrentSurfaceArea] = useState(surfaceArea);
   const [currentRoofArea, setCurrentRoofArea] = useState(roofArea);
   const [currentFloorType, setCurrentFloorType] = useState(floorType);
-  const [currentClimateZone, setCurrentClimateZone] = useState(geolocatedClimateZone || clientClimateZone);
+  const [currentClimateZone, setCurrentClimateZone] = useState(geolocatedClimateZone || realClimateZone);
 
   // Synchroniser avec les props
   useEffect(() => {
@@ -69,15 +70,15 @@ const ProjectCalculation = ({
     setCurrentFloorType(floorType);
   }, [floorType]);
 
-  // Priorité à la zone géolocalisée
+  // Priorité à la zone géolocalisée puis à la zone réelle
   useEffect(() => {
     if (geolocatedClimateZone) {
       console.log('🌍 ProjectCalculation - Zone géolocalisée reçue:', geolocatedClimateZone);
       setCurrentClimateZone(geolocatedClimateZone);
     } else {
-      setCurrentClimateZone(clientClimateZone);
+      setCurrentClimateZone(realClimateZone);
     }
-  }, [geolocatedClimateZone, clientClimateZone]);
+  }, [geolocatedClimateZone, realClimateZone]);
 
   const calculationState = useProjectCalculationState({
     clientId,
@@ -87,7 +88,7 @@ const ProjectCalculation = ({
       roofArea: currentRoofArea,
       climateZone: currentClimateZone
     },
-    clientClimateZone: clientClimateZone,
+    realClimateZone: realClimateZone,
     surfaceArea: currentSurfaceArea,
     roofArea: currentRoofArea,
     floorType: currentFloorType,

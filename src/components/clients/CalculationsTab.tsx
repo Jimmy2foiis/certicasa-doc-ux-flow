@@ -7,8 +7,7 @@ interface CalculationsTabProps {
   clientId: string;
   clientName?: string;
   clientAddress?: string;
-  climateZone?: string;
-  // Nouvelles props pour la géolocalisation
+  // Zone géolocalisée réelle
   geolocatedClimateZone?: string;
   climateData?: {
     confidence?: number;
@@ -36,7 +35,6 @@ const CalculationsTab = ({
   clientId, 
   clientName = "Client",
   clientAddress = "",
-  climateZone,
   geolocatedClimateZone,
   climateData,
   savedCalculations = [],
@@ -48,8 +46,8 @@ const CalculationsTab = ({
 
   const calculations = Array.isArray(savedCalculations) ? savedCalculations : [];
 
-  // Utiliser la zone géolocalisée en priorité
-  const effectiveClimateZone = geolocatedClimateZone || climateZone || "C3";
+  // Utiliser uniquement la zone géolocalisée, par défaut C3 si pas disponible
+  const effectiveClimateZone = geolocatedClimateZone || "C3";
 
   console.log('🌍 CalculationsTab - Zone géolocalisée:', geolocatedClimateZone);
   console.log('🌍 CalculationsTab - Zone effective utilisée:', effectiveClimateZone);
@@ -108,7 +106,7 @@ const CalculationsTab = ({
         clientName={clientName}
         clientAddress={clientAddress}
         onSave={handleSave}
-        clientClimateZone={effectiveClimateZone}
+        realClimateZone={effectiveClimateZone}
         clientClimateConfidence={climateData?.confidence}
         clientClimateMethod={climateData?.method}
         clientClimateReferenceCity={climateData?.referenceCity}
