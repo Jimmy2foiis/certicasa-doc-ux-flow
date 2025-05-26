@@ -1,4 +1,3 @@
-
 import { CatastroData } from '../catastroTypes';
 import { OVC_COORDENADAS_URL, OVC_CALLEJERO_DNPLOC_URL } from './catastroEndpoints';
 import { parseAddress } from './addressParser';
@@ -34,8 +33,46 @@ const interpretCatastroError = (data: any): string | null => {
 };
 
 /**
+ * Fonction pour créer des données cadastrales approximatives basées sur les coordonnées
+ */
+const createFallbackCadastralData = (latitude: number, longitude: number): CatastroData => {
+  // Calculer les coordonnées UTM approximatives
+  const zone = 30; // Espagne utilise principalement UTM zone 30N
+  const utmX = Math.round((longitude + 3) * 100000 + 500000);
+  const utmY = Math.round(latitude * 110000);
+  
+  // Déterminer la zone climatique approximative basée sur les coordonnées
+  let climateZone = '';
+  
+  // Nord/Nord-ouest (zones C1, C2)
+  if (latitude > 42.0) {
+    climateZone = longitude < -6.0 ? 'C1' : 'C2';
+  }
+  // Centre/Nord-est (zones D1, D2, D3)  
+  else if (latitude > 40.0) {
+    if (longitude < -4.0) climateZone = 'D3';
+    else if (longitude < 0) climateZone = 'D2';
+    else climateZone = 'D1';
+  }
+  // Centre/Sud (zones A3, A4, B3, B4)
+  else {
+    if (longitude < -6.0) climateZone = latitude > 38.0 ? 'C4' : 'A4';
+    else if (longitude < -3.0) climateZone = latitude > 38.0 ? 'B4' : 'A4';  
+    else climateZone = latitude > 38.0 ? 'B3' : 'A3';
+  }
+
+  return {
+    cadastralReference: '', // Ne peut pas être calculé sans l'API
+    utmCoordinates: `X: ${utmX}, Y: ${utmY} (Zone ${zone}N)`,
+    climateZone,
+    apiSource: 'FALLBACK',
+    error: 'API Catastro non disponible - Données approximatives calculées'
+  };
+};
+
+/**
  * Fonction améliorée pour obtenir des données cadastrales par coordonnées
- * Inclut un fallback vers la recherche par proximité en cas d'échec
+ * Inclut un système de fallback robuste en cas d'erreur CORS
  */
 export const getCadastralDataByCoordinatesREST = async (
   latitude: number,
@@ -58,27 +95,28 @@ export const getCadastralDataByCoordinatesREST = async (
       throw new Error("Latitude hors des limites de l'Espagne");
     }
 
-    // Création de l'URL avec paramètres (selon la documentation officielle)
+    // Création de l'URL avec paramètres
     const url = new URL(OVC_COORDENADAS_URL);
-    url.searchParams.append('SRS', 'EPSG:4326'); // WGS84 comme dans la documentation
+    url.searchParams.append('SRS', 'EPSG:4326');
     url.searchParams.append('Coordenada_X', longitude.toString().replace(',', '.'));
     url.searchParams.append('Coordenada_Y', latitude.toString().replace(',', '.'));
 
-    console.log(`Appel API REST Catastro par coordonnées: ${url.toString()}`);
+    console.log(`Tentative d'appel API REST Catastro: ${url.toString()}`);
 
-    // Appel à l'API avec timeout optimisé
+    // Tentative d'appel à l'API avec gestion d'erreur CORS
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 8000); // Timeout réduit
 
     try {
       const response = await fetch(url.toString(), {
         signal: controller.signal,
+        mode: 'cors',
         headers: {
           Accept: 'application/json',
           'User-Agent': 'CertiCasaDoc/1.0',
-          'Cache-Control': 'no-cache'
         },
       });
+      
       clearTimeout(timeoutId);
 
       if (!response.ok) {
@@ -86,50 +124,30 @@ export const getCadastralDataByCoordinatesREST = async (
       }
 
       const data = await response.json();
-      console.log('Réponse API Catastro (brute):', data);
+      console.log('Réponse API Catastro reçue:', data);
 
       // Vérifier les codes d'erreur spécifiques de l'API Catastro
       const catastroError = interpretCatastroError(data);
       if (catastroError) {
         console.warn(`Erreur Catastro détectée: ${catastroError}`);
-        
-        // Si l'erreur est "coordonnées hors du champ" ou "pas d'info cadastrale", 
-        // essayer la recherche par proximité
-        if (catastroError.includes('77') || catastroError.includes('78')) {
-          console.log('Tentative de recherche par proximité...');
-          const proximityResult = await getBestCadastralDataByProximity(latitude, longitude);
-          
-          if (proximityResult.cadastralReference) {
-            console.log('✓ Référence cadastrale trouvée par proximité');
-            return proximityResult;
-          }
-        }
-        
         throw new Error(catastroError);
       }
 
       // Parser la réponse JSON normale
       const result = parseCoordinatesResponse(data);
 
-      // Validation du résultat
-      if (!result.cadastralReference && !result.utmCoordinates) {
-        console.log('Aucun résultat direct, tentative de recherche par proximité...');
-        const proximityResult = await getBestCadastralDataByProximity(latitude, longitude);
-        
-        if (proximityResult.cadastralReference) {
-          console.log('✓ Référence cadastrale trouvée par proximité');
-          return proximityResult;
-        }
+      // Si pas de référence cadastrale, créer des données de fallback
+      if (!result.cadastralReference) {
+        const fallbackData = createFallbackCadastralData(latitude, longitude);
+        return {
+          ...fallbackData,
+          utmCoordinates: result.utmCoordinates || fallbackData.utmCoordinates,
+          climateZone: result.climateZone || fallbackData.climateZone,
+          apiSource: 'PARTIAL'
+        };
       }
 
-      // Logging des résultats
-      if (result.cadastralReference) {
-        console.log(`✓ Référence cadastrale obtenue: ${result.cadastralReference}`);
-      }
-      if (result.climateZone) {
-        console.log(`✓ Zone climatique obtenue: ${result.climateZone}`);
-      }
-
+      console.log(`✓ Référence cadastrale obtenue: ${result.cadastralReference}`);
       return {
         ...result,
         apiSource: 'REST'
@@ -138,28 +156,28 @@ export const getCadastralDataByCoordinatesREST = async (
     } catch (fetchError) {
       clearTimeout(timeoutId);
       
-      if ((fetchError as Error).name === 'AbortError') {
-        // En cas de timeout, essayer directement la recherche par proximité
-        console.log('Timeout, tentative de recherche par proximité...');
-        const proximityResult = await getBestCadastralDataByProximity(latitude, longitude);
-        
-        if (proximityResult.cadastralReference) {
-          console.log('✓ Référence cadastrale trouvée par proximité après timeout');
-          return proximityResult;
-        }
-        
-        throw new Error("La requête a dépassé le délai d'attente");
+      // Gestion spécifique des erreurs CORS et réseau
+      if (fetchError instanceof TypeError && fetchError.message.includes('fetch')) {
+        console.warn('Erreur CORS ou réseau détectée - Utilisation du fallback');
+        return createFallbackCadastralData(latitude, longitude);
       }
+      
+      if ((fetchError as Error).name === 'AbortError') {
+        console.warn('Timeout de la requête - Utilisation du fallback');
+        return createFallbackCadastralData(latitude, longitude);
+      }
+      
       throw fetchError;
     }
 
   } catch (error) {
     console.error('Erreur lors de la récupération des données cadastrales REST:', error);
+    
+    // En cas d'erreur, retourner des données de fallback calculées
+    const fallbackData = createFallbackCadastralData(latitude, longitude);
+    
     return {
-      cadastralReference: '',
-      utmCoordinates: '',
-      climateZone: '',
-      apiSource: 'REST',
+      ...fallbackData,
       error: error instanceof Error ? error.message : 'Erreur inconnue',
     };
   }

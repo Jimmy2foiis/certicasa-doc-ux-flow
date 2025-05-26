@@ -1,5 +1,5 @@
 
-import { MapPinned, FileSpreadsheet, MapPin, Navigation, RefreshCcw, Globe, AlertCircle } from "lucide-react";
+import { MapPinned, FileSpreadsheet, MapPin, Navigation, RefreshCcw, Globe, AlertCircle, Wifi, WifiOff } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -27,27 +27,61 @@ const CadastralInfo = ({
 }: CadastralInfoProps) => {
   const [showDebugInfo, setShowDebugInfo] = useState(false);
   
-  // Fonction pour ajuster légèrement les coordonnées GPS (pour contourner les problèmes de frontière de parcelle)
-  const handleAdjustCoordinates = () => {
-    if (!gpsCoordinates || !onRefresh) return;
+  // Déterminer le statut de l'API et le badge approprié
+  const getApiStatusBadge = () => {
+    if (!apiSource) return null;
     
-    // Créer un petit offset aléatoire (entre -0.00001 et 0.00001, soit environ 1m)
-    const latOffset = (Math.random() - 0.5) * 0.00002;
-    const lngOffset = (Math.random() - 0.5) * 0.00002;
-    
-    // Appliquer l'offset aux coordonnées actuelles
-    const adjustedCoordinates = {
-      lat: gpsCoordinates.lat + latOffset,
-      lng: gpsCoordinates.lng + lngOffset
-    };
-    
-    console.log("Coordonnées ajustées:", adjustedCoordinates);
-    
-    // Simuler un clic sur un point légèrement différent
-    if (typeof onRefresh === 'function') {
-      // onRefresh devrait être mis à jour pour accepter des coordonnées en paramètre
-      // Pour le moment, on utilise juste le rafraîchissement normal
-      onRefresh();
+    switch (apiSource) {
+      case 'REST':
+        return <Badge variant="default" className="text-xs bg-green-100 text-green-800"><Wifi className="h-3 w-3 mr-1" />API OK</Badge>;
+      case 'PROXIMITY':
+        return <Badge variant="secondary" className="text-xs bg-blue-100 text-blue-800"><Navigation className="h-3 w-3 mr-1" />Proximité</Badge>;
+      case 'FALLBACK':
+        return <Badge variant="outline" className="text-xs bg-orange-100 text-orange-800"><WifiOff className="h-3 w-3 mr-1" />Mode hors ligne</Badge>;
+      case 'PARTIAL':
+        return <Badge variant="outline" className="text-xs bg-yellow-100 text-yellow-800"><AlertCircle className="h-3 w-3 mr-1" />Données partielles</Badge>;
+      default:
+        return <Badge variant="outline" className="text-xs">{apiSource}</Badge>;
+    }
+  };
+
+  // Afficher un message d'information selon le statut
+  const getStatusMessage = () => {
+    if (!apiSource) return null;
+
+    switch (apiSource) {
+      case 'FALLBACK':
+        return (
+          <Alert variant="default" className="mt-2 bg-orange-50 border-orange-200">
+            <WifiOff className="h-4 w-4" />
+            <AlertTitle className="text-sm">Mode hors ligne activé</AlertTitle>
+            <AlertDescription className="text-xs">
+              L'API du Catastro espagnol n'est pas accessible. Les coordonnées UTM et la zone climatique ont été calculées approximativement.
+            </AlertDescription>
+          </Alert>
+        );
+      case 'PARTIAL':
+        return (
+          <Alert variant="default" className="mt-2 bg-yellow-50 border-yellow-200">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle className="text-sm">Données partielles</AlertTitle>
+            <AlertDescription className="text-xs">
+              Certaines informations ont été obtenues du Catastro, d'autres ont été calculées approximativement.
+            </AlertDescription>
+          </Alert>
+        );
+      case 'PROXIMITY':
+        return (
+          <Alert variant="default" className="mt-2 bg-blue-50 border-blue-200">
+            <Navigation className="h-4 w-4" />
+            <AlertTitle className="text-sm">Recherche par proximité</AlertTitle>
+            <AlertDescription className="text-xs">
+              Référence cadastrale trouvée par recherche de proximité.
+            </AlertDescription>
+          </Alert>
+        );
+      default:
+        return null;
     }
   };
 
@@ -56,11 +90,7 @@ const CadastralInfo = ({
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-sm">
           Données Cadastrales
-          {apiSource && (
-            <Badge variant="outline" className="ml-2 text-xs">
-              API {apiSource}
-            </Badge>
-          )}
+          {getApiStatusBadge()}
         </h3>
         <div className="flex items-center space-x-1">
           <TooltipProvider>
@@ -119,23 +149,9 @@ const CadastralInfo = ({
       <div className="flex">
         <Navigation className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
         <div>
-          <p className="font-medium text-sm">Géolocalisation:</p>
+          <p className="font-medium text-sm">Coordonnées UTM:</p>
           {loadingCadastral ? (
-            <span className="text-gray-500">Obtention des coordonnées GPS...</span>
-          ) : utmCoordinates ? (
-            <span className="text-xs text-green-600">Localisé avec précision GPS</span>
-          ) : (
-            <span className="text-amber-600 text-sm">Coordonnées non disponibles</span>
-          )}
-        </div>
-      </div>
-      
-      <div className="flex">
-        <MapPinned className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
-        <div>
-          <p className="font-medium text-sm">UTM30:</p>
-          {loadingCadastral ? (
-            <span className="text-gray-500">Conversion des coordonnées...</span>
+            <span className="text-gray-500">Calcul des coordonnées UTM...</span>
           ) : utmCoordinates ? (
             <span className="text-xs font-mono">{utmCoordinates}</span>
           ) : (
@@ -153,7 +169,7 @@ const CadastralInfo = ({
           ) : cadastralReference ? (
             <span className="font-mono text-green-700 font-semibold">{cadastralReference}</span>
           ) : (
-            <span className="text-amber-600 text-sm">Non disponible</span>
+            <span className="text-amber-600 text-sm">Non disponible via API</span>
           )}
         </div>
       </div>
@@ -165,39 +181,15 @@ const CadastralInfo = ({
           {loadingCadastral ? (
             <span className="text-gray-500">Détermination de la zone climatique...</span>
           ) : climateZone ? (
-            <span>{climateZone}</span>
+            <span className="font-semibold text-blue-700">{climateZone}</span>
           ) : (
             <span className="text-amber-600 text-sm">Non disponible</span>
           )}
         </div>
       </div>
-      
-      {/* Afficher des informations supplémentaires si pas de référence cadastrale */}
-      {!loadingCadastral && !cadastralReference && gpsCoordinates && (
-        <Alert variant={utmCoordinates ? "default" : "destructive"} className="mt-2">
-          <AlertDescription className="text-xs space-y-1">
-            <p>
-              {utmCoordinates ? 
-                "Coordonnées GPS obtenues mais le Catastro n'a pas trouvé de référence cadastrale. Le bien pourrait ne pas être enregistré ou être hors du territoire espagnol." :
-                "Impossible d'obtenir les coordonnées GPS. Vérifiez que l'adresse est complète et en Espagne."
-              }
-            </p>
-            <div className="flex flex-wrap gap-2 mt-1">
-              {onRefresh && (
-                <Button variant="outline" size="sm" className="h-6 text-xs" onClick={onRefresh}>
-                  <RefreshCcw className="h-3 w-3 mr-1" /> Réessayer
-                </Button>
-              )}
-              
-              {gpsCoordinates && onRefresh && (
-                <Button variant="outline" size="sm" className="h-6 text-xs" onClick={handleAdjustCoordinates}>
-                  <MapPin className="h-3 w-3 mr-1" /> Ajuster le point GPS
-                </Button>
-              )}
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
+
+      {/* Message de statut selon la source de données */}
+      {getStatusMessage()}
       
       {/* Informations de debugging conditionnelles */}
       {showDebugInfo && (
@@ -205,7 +197,7 @@ const CadastralInfo = ({
           <AlertTitle className="text-xs font-semibold">Informations de diagnostic</AlertTitle>
           <AlertDescription className="text-xs space-y-1">
             <p>
-              API: <span className="font-mono">{apiSource || "Non spécifié"}</span>
+              API Source: <span className="font-mono">{apiSource || "Non spécifié"}</span>
             </p>
             <p>
               GPS: <span className="font-mono">{gpsCoordinates ? `${gpsCoordinates.lat.toFixed(6)}, ${gpsCoordinates.lng.toFixed(6)}` : "Non disponibles"}</span>
@@ -219,7 +211,12 @@ const CadastralInfo = ({
             <p>
               Zone: <span className="font-mono">{climateZone || "Non disponible"}</span>
             </p>
-            <p className="text-gray-500 italic">Consultez la console du navigateur pour plus d'informations de débogage.</p>
+            <p className="text-gray-500 italic">
+              {apiSource === 'FALLBACK' ? 
+                "Mode hors ligne : Les données UTM et zone climatique sont calculées localement." :
+                "Consultez la console du navigateur pour plus d'informations de débogage."
+              }
+            </p>
           </AlertDescription>
         </Alert>
       )}
