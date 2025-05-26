@@ -1,7 +1,5 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useThermalEconomyCalculations } from "@/hooks/useThermalEconomyCalculations";
-import SyncedThermalZone from "../thermal/SyncedThermalZone";
 import DelegateSelector from "./thermal-economy/DelegateSelector";
 import CalculationsDisplay from "./thermal-economy/CalculationsDisplay";
 import CherryOption from "./thermal-economy/CherryOption";
@@ -73,17 +71,6 @@ const ThermalEconomySection = ({
     onClimateZoneChange
   });
 
-  // Gestionnaire pour le nouveau composant de zone thermique
-  const handleThermalZoneUpdate = (zone: string, coefficient: number) => {
-    console.log('🔄 ThermalEconomySection - Mise à jour zone thermique:', { zone, coefficient });
-    handleClimateZoneChange(zone);
-    
-    // Propager vers le parent (StatusBanner, etc.)
-    if (onClimateZoneChange) {
-      onClimateZoneChange(zone);
-    }
-  };
-
   return (
     <Card className="mt-6">
       <CardHeader className="pb-2">
@@ -92,12 +79,7 @@ const ThermalEconomySection = ({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <SyncedThermalZone
-            geoZone={climateZone}
-            onUpdateCalcs={handleThermalZoneUpdate}
-          />
-          
+        <div className="grid grid-cols-1 gap-4">
           <DelegateSelector
             delegate={delegate}
             onDelegateChange={setDelegate}
