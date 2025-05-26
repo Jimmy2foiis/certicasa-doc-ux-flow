@@ -2,7 +2,6 @@
 import React from "react";
 import ProjectStatusSection from "./sections/ProjectStatusSection";
 import AddressFormSection from "./sections/AddressFormSection";
-import TechnicalDataSection from "./sections/TechnicalDataSection";
 import TeamBadgesSection from "./sections/TeamBadgesSection";
 import { useSimpleClimateZone } from "@/hooks/useSimpleClimateZone";
 
@@ -92,12 +91,6 @@ const StatusBanner = ({
         <AddressFormSection 
           client={client} 
           onClimateZoneChange={handleClimateZoneChange}
-        />
-
-        <TechnicalDataSection
-          climateZone={climateZone}
-          climateData={climateData}
-          onClimateZoneChange={handleManualClimateZoneChange}
         />
 
         <TeamBadgesSection />
