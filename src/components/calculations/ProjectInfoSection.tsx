@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +15,12 @@ interface ProjectInfoSectionProps {
   onRoofAreaChange?: (value: string) => void;
   onFloorTypeChange?: (value: string) => void;
   onClimateZoneChange?: (value: string) => void;
+  // Nouvelles props pour la géolocalisation
+  climateConfidence?: number;
+  climateMethod?: string;
+  climateReferenceCity?: string;
+  climateDistance?: number;
+  climateDescription?: string;
 }
 
 const ProjectInfoSection = ({
@@ -27,7 +32,12 @@ const ProjectInfoSection = ({
   onSurfaceAreaChange,
   onRoofAreaChange,
   onFloorTypeChange,
-  onClimateZoneChange
+  onClimateZoneChange,
+  climateConfidence,
+  climateMethod,
+  climateReferenceCity,
+  climateDistance,
+  climateDescription
 }: ProjectInfoSectionProps) => {
   const [localSurfaceArea, setLocalSurfaceArea] = useState(surfaceArea);
   const [localRoofArea, setLocalRoofArea] = useState(roofArea);
@@ -49,8 +59,9 @@ const ProjectInfoSection = ({
 
   useEffect(() => {
     console.log('🌡️ ProjectInfoSection - Zone climatique reçue:', climateZone);
+    console.log('🌡️ ProjectInfoSection - Géolocalisation:', { climateMethod, climateReferenceCity, climateConfidence });
     setLocalClimateZone(climateZone);
-  }, [climateZone]);
+  }, [climateZone, climateMethod, climateReferenceCity, climateConfidence]);
 
   const handleSurfaceAreaChange = (value: string) => {
     console.log('📊 ProjectInfoSection - Surface combles changée:', value, '-> Propagation immédiate');
@@ -77,7 +88,7 @@ const ProjectInfoSection = ({
   };
 
   const handleClimateZoneChange = (value: string) => {
-    console.log('🌡️ ProjectInfoSection - Zone climatique changée:', value, '-> Propagation vers ThermalEconomySection');
+    console.log('🌡️ ProjectInfoSection - Zone climatique changée manuellement:', value, '-> Propagation vers parent');
     setLocalClimateZone(value);
     if (onClimateZoneChange) {
       onClimateZoneChange(value);
@@ -105,6 +116,45 @@ const ProjectInfoSection = ({
     { value: "E1", label: "E1" }
   ];
 
+  const renderClimateZoneWithGeolocation = () => {
+    return (
+      <div className="space-y-2">
+        <label className="block text-sm text-gray-500 mb-2">Zone climatique CTE</label>
+        <Select value={localClimateZone} onValueChange={handleClimateZoneChange}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {climateZoneOptions.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        
+        {/* Informations de géolocalisation */}
+        {climateMethod && climateReferenceCity && (
+          <div className="text-xs text-green-600 bg-green-50 p-2 rounded border border-green-200">
+            <div className="flex items-center gap-1 mb-1">
+              <span className="font-medium">📍 Déterminé automatiquement</span>
+              {climateConfidence && (
+                <span className="ml-auto font-semibold">{climateConfidence}%</span>
+              )}
+            </div>
+            <div>Ville référence: {climateReferenceCity}</div>
+            {climateDistance && (
+              <div>Distance: {climateDistance}km</div>
+            )}
+            {climateDescription && (
+              <div className="mt-1 text-xs text-gray-600">{climateDescription}</div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   return (
     <Card className="mb-4">
       <CardContent className="pt-6">
@@ -113,7 +163,7 @@ const ProjectInfoSection = ({
           <h3 className="text-lg font-semibold mb-4">Données Techniques</h3>
           
           <div className="space-y-4">
-            {/* Ligne 1: Type de plancher et Zone climatique CTE */}
+            {/* Ligne 1: Type de plancher et Zone climatique CTE avec géolocalisation */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Type de plancher</label>
@@ -132,19 +182,7 @@ const ProjectInfoSection = ({
               </div>
               
               <div>
-                <label className="block text-sm text-gray-500 mb-2">Zone climatique CTE</label>
-                <Select value={localClimateZone} onValueChange={handleClimateZoneChange}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {climateZoneOptions.map(option => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {renderClimateZoneWithGeolocation()}
               </div>
             </div>
 
