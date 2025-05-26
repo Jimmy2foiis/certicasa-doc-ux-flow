@@ -27,9 +27,19 @@ export const useThermalEconomyCalculations = ({
   const [delegate, setDelegate] = useState<"Eiffage" | "GreenFlex">("Eiffage");
   const [selectedClimateZone, setSelectedClimateZone] = useState(climateZone);
 
+  // 🔴 DIAGNOSTIC HOOK - VALEURS D'ENTRÉE
+  console.log('🔴 DIAGNOSTIC useThermalEconomyCalculations - INPUTS:');
+  console.log('  📊 surfaceArea:', surfaceArea);
+  console.log('  📊 uValueBefore:', uValueBefore);
+  console.log('  📊 uValueAfter:', uValueAfter);
+  console.log('  🌍 climateZone (prop):', climateZone);
+  console.log('  🌍 selectedClimateZone (state):', selectedClimateZone);
+
   // Synchronisation avec la zone climatique reçue
   useEffect(() => {
+    console.log('🔄 HOOK useEffect - climateZone changé:', climateZone);
     if (climateZone && climateZone !== selectedClimateZone) {
+      console.log('🔄 HOOK - Mise à jour selectedClimateZone:', climateZone);
       setSelectedClimateZone(climateZone);
     }
   }, [climateZone]);
@@ -60,11 +70,22 @@ export const useThermalEconomyCalculations = ({
   const totalPricePerSqm = pricePerSqm + cherryPricePerSqm;
   const totalProjectPrice = projectPrice + cherryProjectPrice;
 
+  // 🔴 DIAGNOSTIC HOOK - CALCULS INTERMÉDIAIRES
+  console.log('🔴 DIAGNOSTIC useThermalEconomyCalculations - CALCULS:');
+  console.log('  📈 gCoefficient (pour zone', selectedClimateZone, '):', gCoefficient);
+  console.log('  👥 delegate:', delegate, '- multiplier:', multiplier);
+  console.log('  📐 Delta U:', uValueBefore - uValueAfter);
+  console.log('  📐 annualSavings calcul:', `${surfaceArea} × ${uValueBefore - uValueAfter} × ${gCoefficient} = ${annualSavings}`);
+  console.log('  💰 projectPrice calcul:', `${annualSavings} × ${multiplier} = ${projectPrice}`);
+  console.log('  💰 pricePerSqm calcul:', `${projectPrice} / ${surfaceArea} = ${pricePerSqm}`);
+
   const handleClimateZoneChange = (zone: string) => {
+    console.log('🔄 HOOK handleClimateZoneChange appelé avec:', zone);
     setSelectedClimateZone(zone);
     
     // Propager le changement vers le parent
     if (onClimateZoneChange) {
+      console.log('🔄 HOOK - Propagation vers parent:', zone);
       onClimateZoneChange(zone);
     }
   };

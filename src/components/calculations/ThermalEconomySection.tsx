@@ -51,8 +51,17 @@ const ThermalEconomySection = ({
   onClimateZoneChange
 }: ThermalEconomySectionProps) => {
   
-  // Debug: vérifier que la zone arrive bien
-  console.log('Zone reçue de ClimateZoneDisplay:', climateZone);
+  // 🔴 DIAGNOSTIC COMPLET - TOUTES LES VALEURS D'ENTRÉE
+  console.log('🔴 DIAGNOSTIC ThermalEconomySection - VALEURS D\'ENTRÉE:');
+  console.log('  📊 surfaceArea:', surfaceArea);
+  console.log('  📊 uValueBefore:', uValueBefore);
+  console.log('  📊 uValueAfter:', uValueAfter);
+  console.log('  🌍 climateZone (prop):', climateZone);
+  console.log('  🏗️ projectType:', projectType);
+  console.log('  ℹ️ climateConfidence:', climateConfidence);
+  console.log('  ℹ️ climateMethod:', climateMethod);
+  console.log('  ℹ️ climateReferenceCity:', climateReferenceCity);
+  console.log('  ℹ️ climateDistance:', climateDistance);
 
   const {
     cherryEnabled,
@@ -61,6 +70,7 @@ const ThermalEconomySection = ({
     setDelegate,
     selectedClimateZone,
     setSelectedClimateZone,
+    gCoefficient,
     getCoefficient,
     annualSavings,
     projectPrice,
@@ -78,8 +88,21 @@ const ThermalEconomySection = ({
     onClimateZoneChange
   });
 
+  // 🔴 DIAGNOSTIC COMPLET - VALEURS DU HOOK
+  console.log('🔴 DIAGNOSTIC useThermalEconomyCalculations - VALEURS DE SORTIE:');
+  console.log('  🌍 selectedClimateZone:', selectedClimateZone);
+  console.log('  📈 gCoefficient:', gCoefficient);
+  console.log('  👥 delegate:', delegate);
+  console.log('  🍒 cherryEnabled:', cherryEnabled);
+  console.log('  💰 annualSavings:', annualSavings);
+  console.log('  💰 projectPrice:', projectPrice);
+  console.log('  💰 pricePerSqm:', pricePerSqm);
+  console.log('  💰 cherryPricePerSqm:', cherryPricePerSqm);
+  console.log('  💰 totalProjectPrice:', totalProjectPrice);
+
   // 🔄 SYNCHRONISATION DIRECTE avec la géolocalisation
   useEffect(() => {
+    console.log('🔄 SYNCHRONISATION - climateZone changé:', climateZone);
     // Si on reçoit une zone de ClimateZoneDisplay, on l'utilise
     if (climateZone) {
       setSelectedClimateZone(climateZone);
@@ -97,6 +120,12 @@ const ThermalEconomySection = ({
       onClimateZoneChange(zone);
     }
   };
+
+  // 🔴 DIAGNOSTIC FINAL - CALCULS UTILISÉS
+  console.log('🔴 DIAGNOSTIC FINAL - CALCULS UTILISÉS:');
+  console.log('  📐 Formule CAE: Surface × (UBefore - UAfter) × G');
+  console.log('  📐 Calcul détaillé:', `${surfaceArea} × (${uValueBefore} - ${uValueAfter}) × ${gCoefficient} = ${annualSavings}`);
+  console.log('  📐 Delta U:', uValueBefore - uValueAfter);
 
   return (
     <Card className="mt-6">
