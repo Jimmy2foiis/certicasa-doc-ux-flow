@@ -26,23 +26,17 @@ export const useThermalEconomyCalculations = ({
   const [cherryEnabled, setCherryEnabled] = useState(false);
   const [delegate, setDelegate] = useState<"Eiffage" | "GreenFlex">("Eiffage");
 
-  // 🔴 DEBUG HOOK - Vérifier la zone reçue
-  console.error('🔴 useThermalEconomyCalculations - Zone reçue:', climateZone);
-  console.error('🔴 useThermalEconomyCalculations - Zone par défaut utilisée?', climateZone === "C3" ? "OUI - PROBLÈME!" : "NON - OK");
+  // 🚨 DEBUG HOOK - Analyser EXACTEMENT ce qui arrive
+  console.error('🚨 useThermalEconomyCalculations - ANALYSE:');
+  console.error('🚨 climateZone reçu:', climateZone, 'Type:', typeof climateZone);
+  console.error('🚨 climateZone.length:', climateZone?.length);
+  console.error('🚨 Valide?', climateZone in climateZoneCoefficients);
 
-  // Utiliser DIRECTEMENT la zone reçue, pas d'état local
+  // Utiliser DIRECTEMENT la zone reçue
   const gCoefficient = climateZoneCoefficients[climateZone] || 46;
   
-  // 🔴 DEBUG - Vérification coefficient
-  console.error('🔴 useThermalEconomyCalculations - Coefficient G calculé:', gCoefficient);
-  console.error('🔴 useThermalEconomyCalculations - Pour zone:', climateZone);
-  if (climateZone === "D2") {
-    console.error('🔴 PARFAIT! Zone D2 détectée avec G=60');
-  } else if (climateZone === "E1") {
-    console.error('🔴 PARFAIT! Zone E1 détectée avec G=74');
-  } else {
-    console.error('🔴 INFO: Zone détectée:', climateZone, 'avec G=', gCoefficient);
-  }
+  console.error('🚨 useThermalEconomyCalculations - Coefficient G final:', gCoefficient);
+  console.error('🚨 useThermalEconomyCalculations - Pour zone:', climateZone);
   
   // Helper function to get coefficient for any zone
   const getCoefficient = (zone: string) => climateZoneCoefficients[zone] || 46;
@@ -67,10 +61,9 @@ export const useThermalEconomyCalculations = ({
   const totalPricePerSqm = pricePerSqm + cherryPricePerSqm;
   const totalProjectPrice = projectPrice + cherryProjectPrice;
 
-  // 🔴 DEBUG - CALCULS FINAUX
-  console.error('🔴 useThermalEconomyCalculations - CALCUL FINAL:');
-  console.error(`🔴 CAE = ${surfaceArea} × (${uValueBefore.toFixed(3)} - ${uValueAfter.toFixed(3)}) × ${gCoefficient} = ${annualSavings.toFixed(1)}`);
-  console.error('🔴 Prix projet:', projectPrice.toFixed(2), '€');
+  console.error('🚨 useThermalEconomyCalculations - CALCUL FINAL:');
+  console.error(`🚨 CAE = ${surfaceArea} × (${uValueBefore.toFixed(3)} - ${uValueAfter.toFixed(3)}) × ${gCoefficient} = ${annualSavings.toFixed(1)}`);
+  console.error('🚨 Prix projet:', projectPrice.toFixed(2), '€');
 
   return {
     cherryEnabled,

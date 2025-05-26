@@ -52,24 +52,33 @@ const ThermalEconomySection = ({
   onClimateZoneChange
 }: ThermalEconomySectionProps) => {
   
-  // État local pour la zone sélectionnée dans le sélecteur
+  // 🚨 DEBUG - Analyser EXACTEMENT ce qui arrive
+  console.error('🚨 ThermalEconomySection - ANALYSE COMPLÈTE:');
+  console.error('🚨 climateZone reçu:', climateZone, 'Type:', typeof climateZone);
+  console.error('🚨 climateZone.length:', climateZone?.length);
+  console.error('🚨 Caractères individuels:', climateZone?.split(''));
+  console.error('🚨 onClimateZoneChange disponible?', !!onClimateZoneChange);
+  
+  // État local pour permettre la sélection manuelle
   const [selectedClimateZone, setSelectedClimateZone] = useState<string>("");
 
-  // 🔄 Synchronisation automatique avec ClimateZoneDisplay
+  // Synchronisation automatique avec la zone reçue
   useEffect(() => {
-    if (climateZone && !selectedClimateZone) {
+    console.error('🔄 useEffect - climateZone changé:', climateZone);
+    
+    if (climateZone && climateZone.length >= 2) {
+      console.error('✅ Zone valide détectée, synchronisation:', climateZone);
       setSelectedClimateZone(climateZone);
-      console.log('✅ Zone thermique pré-remplie automatiquement avec:', climateZone);
+    } else {
+      console.error('❌ Zone invalide ou incomplète:', climateZone);
     }
-  }, [climateZone, selectedClimateZone]);
+  }, [climateZone]);
 
   // Zone effective utilisée pour les calculs
-  const effectiveClimateZone = selectedClimateZone || climateZone;
-
-  // 🔴 DEBUG - Vérifier la synchronisation
-  console.error('🔴 THERMAL SYNC - Zone reçue (ClimateZoneDisplay):', climateZone);
-  console.error('🔴 THERMAL SYNC - Zone sélectionnée (sélecteur):', selectedClimateZone);
-  console.error('🔴 THERMAL SYNC - Zone effective (calculs):', effectiveClimateZone);
+  const effectiveClimateZone = selectedClimateZone || climateZone || "C3";
+  
+  console.error('🎯 Zone effective pour calculs:', effectiveClimateZone);
+  console.error('🎯 Coefficient G:', climateZoneCoefficients[effectiveClimateZone]);
 
   const {
     cherryEnabled,
@@ -93,18 +102,21 @@ const ThermalEconomySection = ({
     onClimateZoneChange
   });
 
-  // 🔴 DEBUG - Vérifier les calculs avec la zone effective
-  console.error('🔴 CALCUL THERMAL - Coefficient G utilisé:', gCoefficient);
+  console.error('🔴 CALCUL THERMAL - Zone utilisée pour calculs:', effectiveClimateZone);
+  console.error('🔴 CALCUL THERMAL - Coefficient G calculé:', gCoefficient);
   console.error('🔴 CALCUL THERMAL - CAE calculé:', annualSavings);
   console.error(`🔴 CALCUL THERMAL - Formule: ${surfaceArea} × (${uValueBefore.toFixed(3)} - ${uValueAfter.toFixed(3)}) × ${gCoefficient} = ${annualSavings.toFixed(1)}`);
 
   const handleClimateZoneChange = (zone: string) => {
-    console.log('🎯 Changement manuel de zone thermique:', zone);
+    console.error('🎯 Changement manuel de zone thermique vers:', zone);
     setSelectedClimateZone(zone);
     
-    // Propager le changement vers le parent
+    // Propager vers le parent
     if (onClimateZoneChange) {
+      console.error('🚀 Propagation vers parent:', zone);
       onClimateZoneChange(zone);
+    } else {
+      console.error('❌ Pas de onClimateZoneChange défini!');
     }
   };
 
@@ -121,7 +133,7 @@ const ThermalEconomySection = ({
           <div className="space-y-2">
             <Label>Zone Thermique (G: {climateZoneCoefficients[effectiveClimateZone] || '?'})</Label>
             <Select 
-              value={selectedClimateZone || climateZone || ""}
+              value={effectiveClimateZone}
               onValueChange={handleClimateZoneChange}
             >
               <SelectTrigger>
@@ -138,18 +150,16 @@ const ThermalEconomySection = ({
               </SelectContent>
             </Select>
             
-            {/* Indicateur de synchronisation */}
-            {effectiveClimateZone && (
-              <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
-                ✅ Zone active: {effectiveClimateZone} (G={climateZoneCoefficients[effectiveClimateZone]})
-                <br />
-                → CAE = {surfaceArea} × {(uValueBefore - uValueAfter).toFixed(2)} × {climateZoneCoefficients[effectiveClimateZone]} = {annualSavings.toFixed(1)} kWh/an
-              </div>
-            )}
+            {/* Indicateur de synchronisation avec DEBUG */}
+            <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+              🔍 DEBUG: Zone reçue = "{climateZone}" | Zone effective = "{effectiveClimateZone}"
+              <br />
+              ✅ CAE = {surfaceArea} × {(uValueBefore - uValueAfter).toFixed(2)} × {climateZoneCoefficients[effectiveClimateZone]} = {annualSavings.toFixed(1)} kWh/an
+            </div>
 
             {/* Info géolocalisation si disponible */}
             {climateMethod && climateReferenceCity && (
-              <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+              <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
                 📍 Déterminé automatiquement: {climateReferenceCity}
                 {climateDistance && ` (${climateDistance}km)`}
                 <br />
