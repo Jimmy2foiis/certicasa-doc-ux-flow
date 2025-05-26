@@ -4,7 +4,7 @@ import ProjectStatusSection from "./sections/ProjectStatusSection";
 import AddressFormSection from "./sections/AddressFormSection";
 import TechnicalDataSection from "./sections/TechnicalDataSection";
 import TeamBadgesSection from "./sections/TeamBadgesSection";
-import { useClimateZoneManagement } from "@/hooks/useClimateZoneManagement";
+import { useSimpleClimateZone } from "@/hooks/useSimpleClimateZone";
 
 interface StatusBannerProps {
   client?: {
@@ -37,10 +37,10 @@ const StatusBanner = ({
   onClimateZoneChange
 }: StatusBannerProps) => {
   
-  // Utiliser le hook centralisé
-  const { climateZone, climateData, updateClimateZone, updateZoneOnly } = useClimateZoneManagement({
-    initialZone: client?.climateZone,
+  const { climateZone, climateData, updateClimateZone, setZoneOnly } = useSimpleClimateZone({
+    initialZone: client?.climateZone || "C3",
     onZoneChange: (zone) => {
+      console.log('🚨 StatusBanner - Propagation zone vers parent:', zone);
       if (onClimateZoneChange) {
         onClimateZoneChange(zone);
       }
@@ -55,39 +55,34 @@ const StatusBanner = ({
     distance?: number;
     description?: string;
   }) => {
-    console.log('🚨 StatusBanner - Zone automatique reçue:', climateInfo.zone);
+    console.log('🚨 StatusBanner - Zone automatique reçue:', climateInfo);
     updateClimateZone(climateInfo);
   };
 
   const handleManualClimateZoneChange = (zone: string) => {
     console.log('🚨 StatusBanner - Zone manuelle reçue:', zone);
-    updateZoneOnly(zone);
+    setZoneOnly(zone);
   };
 
   return (
     <div className="space-y-4">
-      {/* Barre d'informations principale */}
       <ProjectStatusSection 
         documentStats={documentStats}
         onViewMissingDocs={onViewMissingDocs}
       />
 
-      {/* Bloc blanc avec les informations détaillées */}
       <div className="bg-white border rounded-lg p-4 space-y-4">
-        {/* Section Adresse complète */}
         <AddressFormSection 
           client={client} 
           onClimateZoneChange={handleClimateZoneChange}
         />
 
-        {/* Section Données techniques avec Zone Climatique */}
         <TechnicalDataSection
           climateZone={climateZone}
           climateData={climateData}
           onClimateZoneChange={handleManualClimateZoneChange}
         />
 
-        {/* Badges équipe avec icônes */}
         <TeamBadgesSection />
       </div>
     </div>

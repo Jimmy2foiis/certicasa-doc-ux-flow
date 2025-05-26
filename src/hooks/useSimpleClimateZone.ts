@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 
 interface ClimateZoneData {
   zone: string;
@@ -10,29 +10,20 @@ interface ClimateZoneData {
   description?: string;
 }
 
-interface UseClimateZoneManagementProps {
+interface UseSimpleClimateZoneProps {
   initialZone?: string;
   onZoneChange?: (zone: string) => void;
 }
 
-export const useClimateZoneManagement = ({
+export const useSimpleClimateZone = ({
   initialZone = "C3",
   onZoneChange
-}: UseClimateZoneManagementProps) => {
+}: UseSimpleClimateZoneProps = {}) => {
   const [climateZone, setClimateZone] = useState<string>(initialZone);
   const [climateData, setClimateData] = useState<Omit<ClimateZoneData, 'zone'>>({});
 
-  // Synchroniser avec la zone initiale quand elle change
-  useEffect(() => {
-    if (initialZone && initialZone !== climateZone) {
-      console.log('🌍 Synchronisation zone climatique:', initialZone);
-      setClimateZone(initialZone);
-    }
-  }, [initialZone]);
-
-  // Mettre à jour la zone climatique avec données automatiques
   const updateClimateZone = useCallback((zoneData: ClimateZoneData) => {
-    console.log('🌍 Mise à jour zone climatique complète:', zoneData);
+    console.log('🌍 Zone mise à jour avec données:', zoneData);
     setClimateZone(zoneData.zone);
     setClimateData({
       confidence: zoneData.confidence,
@@ -42,21 +33,16 @@ export const useClimateZoneManagement = ({
       description: zoneData.description
     });
     
-    // Propager vers le parent
     if (onZoneChange) {
       onZoneChange(zoneData.zone);
     }
   }, [onZoneChange]);
 
-  // Mettre à jour seulement la zone (changement manuel)
-  const updateZoneOnly = useCallback((zone: string) => {
-    console.log('🌍 Changement manuel zone climatique:', zone);
+  const setZoneOnly = useCallback((zone: string) => {
+    console.log('🌍 Zone changée manuellement:', zone);
     setClimateZone(zone);
-    
-    // Réinitialiser les données automatiques
     setClimateData({});
     
-    // Propager vers le parent
     if (onZoneChange) {
       onZoneChange(zone);
     }
@@ -66,6 +52,6 @@ export const useClimateZoneManagement = ({
     climateZone,
     climateData,
     updateClimateZone,
-    updateZoneOnly
+    setZoneOnly
   };
 };
