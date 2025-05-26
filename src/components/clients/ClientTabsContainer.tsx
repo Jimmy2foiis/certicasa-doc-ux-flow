@@ -103,13 +103,6 @@ export const ClientTabsContainer = ({
               clientName={client?.name}
               clientAddress={client?.address}
               projectName={`Calcul thermique pour ${client?.name}`}
-              clientData={{
-                name: client?.name || '',
-                address: client?.address || '',
-                nif: client?.nif || '',
-                phone: client?.phone || '',
-                email: client?.email || ''
-              }}
               surfaceArea={surfaceArea}
               roofArea={roofArea}
               floorType={floorType}

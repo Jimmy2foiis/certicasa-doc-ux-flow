@@ -79,14 +79,26 @@ export const useProjectCalculationState = ({
     handleFloorTypeChange,
     handleClimateZoneChange,
     
-    // Accès direct aux setters pour les surfaces
+    // Exposer toutes les propriétés du calculationState sans duplication
+    beforeLayers: calculationState.beforeLayers,
+    afterLayers: calculationState.afterLayers,
+    setBeforeLayers: calculationState.setBeforeLayers,
+    setAfterLayers: calculationState.setAfterLayers,
+    addLayer: calculationState.addLayer,
+    updateLayer: calculationState.updateLayer,
+    copyBeforeToAfter: calculationState.copyBeforeToAfter,
+    handleAddLayer: calculationState.handleAddLayer,
+    handleUpdateLayer: calculationState.handleUpdateLayer,
+    handleDeleteBeforeLayer: calculationState.handleDeleteBeforeLayer,
+    handleDeleteAfterLayer: calculationState.handleDeleteAfterLayer,
+    handleAddSouflr47: calculationState.handleAddSouflr47,
+    addSouflr47: calculationState.addSouflr47,
+    thermalSettings: calculationState.thermalSettings,
     setSurfaceArea: calculationState.setSurfaceArea,
     setRoofArea: calculationState.setRoofArea,
+    setClimateZone: calculationState.setClimateZone,
     
-    // Exposer toutes les propriétés du calculationState
-    ...calculationState,
-    
-    // Exposer les setters manquants des paramètres thermiques
+    // Exposer les setters des paramètres thermiques
     setVentilationBefore: calculationState.thermalSettings?.setVentilationBefore,
     setVentilationAfter: calculationState.thermalSettings?.setVentilationAfter,
     setRsiBefore: calculationState.thermalSettings?.setRsiBefore,
@@ -95,6 +107,5 @@ export const useProjectCalculationState = ({
     setRseAfter: calculationState.thermalSettings?.setRseAfter,
     setRatioBefore: calculationState.thermalSettings?.setRatioBefore,
     setRatioAfter: calculationState.thermalSettings?.setRatioAfter,
-    copyBeforeToAfter: calculationState.thermalSettings?.copyBeforeToAfter,
   };
 };
