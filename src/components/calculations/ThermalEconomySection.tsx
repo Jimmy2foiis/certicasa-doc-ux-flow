@@ -1,13 +1,10 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useThermalEconomyCalculations } from "@/hooks/useThermalEconomyCalculations";
 import { ThermalZoneSync } from "../thermal/ThermalZoneSync";
 import DelegateSelector from "./thermal-economy/DelegateSelector";
 import CalculationsDisplay from "./thermal-economy/CalculationsDisplay";
 import CherryOption from "./thermal-economy/CherryOption";
-import { useEffect } from "react";
 
 // Climate zone coefficients mapping
 export const climateZoneCoefficients: Record<string, number> = {
@@ -76,14 +73,6 @@ const ThermalEconomySection = ({
     onClimateZoneChange
   });
 
-  // Synchronisation automatique avec la zone géolocalisée
-  useEffect(() => {
-    if (climateZone && climateZone !== selectedClimateZone) {
-      console.log(`🔄 Synchronisation automatique: ${climateZone}`);
-      handleClimateZoneChange(climateZone);
-    }
-  }, [climateZone, selectedClimateZone, handleClimateZoneChange]);
-
   // Gestionnaire pour le nouveau composant de zone thermique
   const handleThermalZoneUpdate = (zone: string, coefficient: number) => {
     console.log(`📊 Mise à jour calculs avec Zone ${zone}, G=${coefficient}`);
@@ -109,41 +98,6 @@ const ThermalEconomySection = ({
             onCoefficientChange={handleThermalZoneUpdate}
           />
           
-          <DelegateSelector
-            delegate={delegate}
-            onDelegateChange={setDelegate}
-          />
-        </div>
-
-        {/* Nouveau sélecteur simple Zone Thermique + Sujet délégataire */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Zone Thermique - NOUVEAU */}
-          <div className="space-y-2">
-            <Label>Zone Thermique</Label>
-            <Select 
-              value={selectedClimateZone} 
-              onValueChange={handleClimateZoneChange}
-            >
-              <SelectTrigger className="bg-white">
-                <SelectValue placeholder="Sélectionner">
-                  {selectedClimateZone && (
-                    <span>
-                      {selectedClimateZone} (G: {climateZoneCoefficients[selectedClimateZone]})
-                    </span>
-                  )}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="bg-white border shadow-lg z-50">
-                {Object.entries(climateZoneCoefficients).map(([zone, coef]) => (
-                  <SelectItem key={zone} value={zone}>
-                    {zone} - Coefficient {coef}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Sujet délégataire */}
           <DelegateSelector
             delegate={delegate}
             onDelegateChange={setDelegate}
