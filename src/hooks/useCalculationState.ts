@@ -1,8 +1,8 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { useLayerManagement, Layer } from "./useLayerManagement";
 import { useThermalCalculations } from "./useThermalCalculations";
 import { useThermalResistanceSettings } from "./useThermalResistanceSettings";
+import { VentilationType } from "@/utils/calculationUtils";
 
 export interface CalculationData {
   beforeLayers: Layer[];
@@ -15,7 +15,6 @@ export interface CalculationData {
   uValueAfter: number;
   improvementPercent: number;
   projectType: string;
-  // Ajouter toutes les propriétés manquantes
   totalRBefore: number;
   totalRAfter: number;
   bCoefficientBefore: number;
@@ -24,8 +23,8 @@ export interface CalculationData {
   rseBefore: string;
   rsiAfter: string;
   rseAfter: string;
-  ventilationBefore: any;
-  ventilationAfter: any;
+  ventilationBefore: VentilationType;
+  ventilationAfter: VentilationType;
   ratioBefore: number;
   ratioAfter: number;
 }
@@ -54,16 +53,14 @@ export const useCalculationState = ({
   });
 
   const thermalSettings = useThermalResistanceSettings({
-    savedData,
-    surfaceArea,
-    roofArea
+    savedData
   });
 
   const thermalCalculations = useThermalCalculations({
     beforeLayers: layerManagement.beforeLayers,
     afterLayers: layerManagement.afterLayers,
-    ventilationBefore: thermalSettings.ventilationBefore || "caso1",
-    ventilationAfter: thermalSettings.ventilationAfter || "caso1",
+    ventilationBefore: (thermalSettings.ventilationBefore || "caso1") as VentilationType,
+    ventilationAfter: (thermalSettings.ventilationAfter || "caso1") as VentilationType,
     ratioBefore: thermalSettings.ratioBefore,
     ratioAfter: thermalSettings.ratioAfter,
     rsiBefore: thermalSettings.rsiBefore,
@@ -114,7 +111,6 @@ export const useCalculationState = ({
     uValueAfter: thermalCalculations.uValueAfter,
     improvementPercent: thermalCalculations.improvementPercent,
     projectType: "RES010",
-    // Ajouter toutes les propriétés calculées
     totalRBefore: thermalCalculations.totalRBefore,
     totalRAfter: thermalCalculations.totalRAfter,
     bCoefficientBefore: thermalCalculations.bCoefficientBefore,
@@ -123,8 +119,8 @@ export const useCalculationState = ({
     rseBefore: thermalSettings.rseBefore,
     rsiAfter: thermalSettings.rsiAfter,
     rseAfter: thermalSettings.rseAfter,
-    ventilationBefore: thermalSettings.ventilationBefore || "caso1",
-    ventilationAfter: thermalSettings.ventilationAfter || "caso1",
+    ventilationBefore: (thermalSettings.ventilationBefore || "caso1") as VentilationType,
+    ventilationAfter: (thermalSettings.ventilationAfter || "caso1") as VentilationType,
     ratioBefore: thermalSettings.ratioBefore,
     ratioAfter: thermalSettings.ratioAfter
   }), [
