@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -6,7 +5,7 @@ import { Client } from "@/services/api/types";
 import StatusBanner from "./StatusBanner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ClientForm } from "./ClientForm";
-import { FileText, Mail, Phone, Save, Sync } from "lucide-react";
+import { FileText, Mail, Phone, Save, sync as Sync } from "lucide-react";
 
 interface ClientDetailsHeaderProps {
   client: Client | null;
