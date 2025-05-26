@@ -1,13 +1,10 @@
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-
 const SecurityTab = () => {
-  return (
-    <Card>
+  return <Card>
       <CardHeader>
         <CardTitle>Sécurité du compte</CardTitle>
         <CardDescription>
@@ -30,7 +27,7 @@ const SecurityTab = () => {
               <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
               <Input id="confirm-password" type="password" />
             </div>
-            <Button className="mt-2">Mettre à jour le mot de passe</Button>
+            <Button className="bg-green-600 hover:bg-green-700">Mettre à jour le mot de passe</Button>
           </div>
           
           <div className="pt-4 border-t">
@@ -56,8 +53,6 @@ const SecurityTab = () => {
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default SecurityTab;

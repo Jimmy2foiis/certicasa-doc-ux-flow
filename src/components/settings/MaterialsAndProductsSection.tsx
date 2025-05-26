@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,9 +10,10 @@ import { Material, Product, MATERIAL_CATEGORIES } from '@/types/materials';
 import { useToast } from '@/hooks/use-toast';
 import MaterialDialog from './MaterialDialog';
 import ProductDialog from './ProductDialog';
-
 const MaterialsAndProductsSection = () => {
-  const { toast } = useToast();
+  const {
+    toast
+  } = useToast();
   const {
     materials,
     products,
@@ -25,20 +25,16 @@ const MaterialsAndProductsSection = () => {
     updateProduct,
     deleteProduct
   } = useMaterialsAndProducts();
-
   const [materialDialogOpen, setMaterialDialogOpen] = useState(false);
   const [productDialogOpen, setProductDialogOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | undefined>();
   const [editingProduct, setEditingProduct] = useState<Product | undefined>();
-
   const getCategoryLabel = (categoryId: string) => {
     return MATERIAL_CATEGORIES.find(cat => cat.id === categoryId)?.label || categoryId;
   };
-
   const getMaterialName = (materialId: string) => {
     return materials.find(m => m.id === materialId)?.name || 'Matériau introuvable';
   };
-
   const handleMaterialSave = (materialData: Omit<Material, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (editingMaterial) {
       updateMaterial(editingMaterial.id, materialData);
@@ -55,7 +51,6 @@ const MaterialsAndProductsSection = () => {
     }
     setEditingMaterial(undefined);
   };
-
   const handleProductSave = (productData: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>) => {
     if (editingProduct) {
       updateProduct(editingProduct.id, productData);
@@ -72,7 +67,6 @@ const MaterialsAndProductsSection = () => {
     }
     setEditingProduct(undefined);
   };
-
   const handleDeleteMaterial = (material: Material) => {
     // Vérifier si le matériau est utilisé par des produits
     const usedByProducts = products.filter(p => p.baseMaterialId === material.id);
@@ -84,14 +78,12 @@ const MaterialsAndProductsSection = () => {
       });
       return;
     }
-
     deleteMaterial(material.id);
     toast({
       title: 'Matériau supprimé',
       description: 'Le matériau a été supprimé avec succès.'
     });
   };
-
   const handleDeleteProduct = (product: Product) => {
     deleteProduct(product.id);
     toast({
@@ -99,13 +91,10 @@ const MaterialsAndProductsSection = () => {
       description: 'Le produit a été supprimé avec succès.'
     });
   };
-
   if (loading) {
     return <div>Chargement...</div>;
   }
-
-  return (
-    <Card>
+  return <Card>
       <CardHeader>
         <CardTitle>Gestion des Matériaux et Produits</CardTitle>
       </CardHeader>
@@ -119,7 +108,7 @@ const MaterialsAndProductsSection = () => {
           <TabsContent value="materials" className="space-y-4">
             <div className="flex justify-between items-center">
               <h3 className="text-lg font-medium">Matériaux de base</h3>
-              <Button onClick={() => setMaterialDialogOpen(true)}>
+              <Button onClick={() => setMaterialDialogOpen(true)} className="bg-green-600 hover:bg-green-700">
                 <Plus className="h-4 w-4 mr-2" />
                 Ajouter un matériau
               </Button>
@@ -136,39 +125,29 @@ const MaterialsAndProductsSection = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {materials.map((material) => (
-                  <TableRow key={material.id}>
+                {materials.map(material => <TableRow key={material.id}>
                     <TableCell className="font-medium">{material.name}</TableCell>
                     <TableCell>{getCategoryLabel(material.category)}</TableCell>
                     <TableCell>{material.lambda}</TableCell>
-                    <TableCell>
-                      <Badge variant={material.isActive ? 'default' : 'secondary'}>
+                    <TableCell className="">
+                      <Badge variant={material.isActive ? 'default' : 'secondary'} className="bg-green-600 hover:bg-green-700">
                         {material.isActive ? 'Actif' : 'Inactif'}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setEditingMaterial(material);
-                            setMaterialDialogOpen(true);
-                          }}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => {
+                      setEditingMaterial(material);
+                      setMaterialDialogOpen(true);
+                    }}>
                           <Settings className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteMaterial(material)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => handleDeleteMaterial(material)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
-                  </TableRow>
-                ))}
+                  </TableRow>)}
               </TableBody>
             </Table>
           </TabsContent>
@@ -196,91 +175,60 @@ const MaterialsAndProductsSection = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.id}>
+                {products.map(product => <TableRow key={product.id}>
                     <TableCell className="font-medium">{product.name}</TableCell>
                     <TableCell>{product.manufacturer}</TableCell>
                     <TableCell>{getMaterialName(product.baseMaterialId)}</TableCell>
                     <TableCell>{product.lambda}</TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
-                        {product.thicknessOptions && product.thicknessOptions.length > 0 ? (
-                          <>
-                            {product.thicknessOptions.slice(0, 3).map(option => (
-                              <Badge key={option.thickness} variant="outline" className="text-xs">
+                        {product.thicknessOptions && product.thicknessOptions.length > 0 ? <>
+                            {product.thicknessOptions.slice(0, 3).map(option => <Badge key={option.thickness} variant="outline" className="text-xs">
                                 {option.thickness}mm
-                              </Badge>
-                            ))}
-                            {product.thicknessOptions.length > 3 && (
-                              <Badge variant="outline" className="text-xs">
+                              </Badge>)}
+                            {product.thicknessOptions.length > 3 && <Badge variant="outline" className="text-xs">
                                 +{product.thicknessOptions.length - 3}
-                              </Badge>
-                            )}
-                          </>
-                        ) : (
-                          <span className="text-sm text-gray-500">Aucune épaisseur définie</span>
-                        )}
+                              </Badge>}
+                          </> : <span className="text-sm text-gray-500">Aucune épaisseur définie</span>}
                       </div>
                     </TableCell>
                     <TableCell>
                       {product.pricePerM2 ? `${product.pricePerM2}€` : '-'}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={product.isActive ? 'default' : 'secondary'}>
+                      <Badge variant={product.isActive ? 'default' : 'secondary'} className="bg-green-600 hover:bg-green-700">
                         {product.isActive ? 'Actif' : 'Inactif'}
                       </Badge>
                     </TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setEditingProduct(product);
-                            setProductDialogOpen(true);
-                          }}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => {
+                      setEditingProduct(product);
+                      setProductDialogOpen(true);
+                    }}>
                           <Settings className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteProduct(product)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => handleDeleteProduct(product)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
-                  </TableRow>
-                ))}
+                  </TableRow>)}
               </TableBody>
             </Table>
           </TabsContent>
         </Tabs>
 
-        <MaterialDialog
-          isOpen={materialDialogOpen}
-          onClose={() => {
-            setMaterialDialogOpen(false);
-            setEditingMaterial(undefined);
-          }}
-          onSave={handleMaterialSave}
-          material={editingMaterial}
-        />
+        <MaterialDialog isOpen={materialDialogOpen} onClose={() => {
+        setMaterialDialogOpen(false);
+        setEditingMaterial(undefined);
+      }} onSave={handleMaterialSave} material={editingMaterial} />
 
-        <ProductDialog
-          isOpen={productDialogOpen}
-          onClose={() => {
-            setProductDialogOpen(false);
-            setEditingProduct(undefined);
-          }}
-          onSave={handleProductSave}
-          product={editingProduct}
-          materials={materials}
-        />
+        <ProductDialog isOpen={productDialogOpen} onClose={() => {
+        setProductDialogOpen(false);
+        setEditingProduct(undefined);
+      }} onSave={handleProductSave} product={editingProduct} materials={materials} />
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default MaterialsAndProductsSection;

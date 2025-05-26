@@ -1,10 +1,7 @@
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
-
 const NotificationsTab = () => {
-  return (
-    <Card>
+  return <Card>
       <CardHeader>
         <CardTitle>Préférences de notifications</CardTitle>
         <CardDescription>
@@ -20,7 +17,7 @@ const NotificationsTab = () => {
                 Recevoir des emails pour les mises à jour importantes
               </p>
             </div>
-            <Switch defaultChecked />
+            <Switch defaultChecked className="bg-green-600 hover:bg-green-700" />
           </div>
           
           <div className="flex items-center justify-between">
@@ -30,7 +27,7 @@ const NotificationsTab = () => {
                 Notifications lorsqu'un produit est en stock faible
               </p>
             </div>
-            <Switch defaultChecked />
+            <Switch defaultChecked className="bg-green-600 hover:bg-green-700" />
           </div>
           
           <div className="flex items-center justify-between">
@@ -40,7 +37,7 @@ const NotificationsTab = () => {
                 Notifications lorsque le statut d'un lot change
               </p>
             </div>
-            <Switch defaultChecked />
+            <Switch defaultChecked className="bg-green-600 hover:bg-green-700" />
           </div>
           
           <div className="flex items-center justify-between">
@@ -50,12 +47,10 @@ const NotificationsTab = () => {
                 Recevoir un résumé hebdomadaire des activités
               </p>
             </div>
-            <Switch />
+            <Switch className="" />
           </div>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default NotificationsTab;

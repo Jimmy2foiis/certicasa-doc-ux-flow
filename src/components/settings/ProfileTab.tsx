@@ -1,12 +1,9 @@
-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
 const ProfileTab = () => {
-  return (
-    <Card>
+  return <Card>
       <CardHeader>
         <CardTitle>Profil Utilisateur</CardTitle>
         <CardDescription>
@@ -33,11 +30,9 @@ const ProfileTab = () => {
           </div>
         </div>
         <div className="flex justify-end">
-          <Button>Enregistrer</Button>
+          <Button className="bg-green-600 hover:bg-green-700">Enregistrer</Button>
         </div>
       </CardContent>
-    </Card>
-  );
+    </Card>;
 };
-
 export default ProfileTab;
