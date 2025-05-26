@@ -123,16 +123,39 @@ export const useCalculationState = ({
 
   return {
     calculationData,
+    
+    // Couches et gestion des couches
+    beforeLayers: layerManagement.beforeLayers,
+    afterLayers: layerManagement.afterLayers,
+    setBeforeLayers: layerManagement.setBeforeLayers,
+    setAfterLayers: layerManagement.setAfterLayers,
+    addLayer: layerManagement.addLayer,
+    updateLayer: layerManagement.updateLayer,
+    copyBeforeToAfter: layerManagement.copyBeforeToAfter,
+    
     // Gestionnaires d'événements
     handleAddLayer,
     handleUpdateLayer,
     handleDeleteBeforeLayer,
     handleDeleteAfterLayer,
     handleAddSouflr47,
-    // Paramètres thermiques
-    thermalSettings,
+    addSouflr47: handleAddSouflr47,
+    
+    // Paramètres thermiques complets
+    thermalSettings: {
+      ...thermalSettings,
+      setVentilationBefore: projectSettings.setVentilationBefore,
+      setVentilationAfter: projectSettings.setVentilationAfter,
+    },
+    
     // Accès direct aux setters pour les surfaces
     setSurfaceArea: projectSettings.setSurfaceArea,
     setRoofArea: projectSettings.setRoofArea,
+    
+    // Setters climat (pour compatibilité)
+    setClimateZone: (zone: string) => {
+      console.log('🌡️ Zone climatique changée:', zone);
+      // Zone climatique gérée au niveau parent
+    },
   };
 };

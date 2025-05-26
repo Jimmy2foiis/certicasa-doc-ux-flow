@@ -91,10 +91,6 @@ const CalculationsTab = ({
         onSave={handleSave}
         clientClimateZone="B3"
         projectName={`Calcul thermique pour ${clientName}`}
-        clientData={{
-          name: clientName,
-          address: clientAddress
-        }}
       />
     </div>
   );

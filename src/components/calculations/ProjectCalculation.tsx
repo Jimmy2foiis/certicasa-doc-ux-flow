@@ -72,19 +72,7 @@ const ProjectCalculation = ({
     setCurrentClimateZone(clientClimateZone);
   }, [clientClimateZone]);
 
-  const {
-    calculationData,
-    handleAddLayer,
-    handleUpdateLayer,
-    handleDeleteBeforeLayer,
-    handleDeleteAfterLayer,
-    handleAddSouflr47,
-    thermalSettings,
-    handleSurfaceAreaChange: internalSurfaceChange,
-    handleRoofAreaChange: internalRoofChange,
-    handleFloorTypeChange: internalFloorChange,
-    handleClimateZoneChange: internalClimateChange
-  } = useProjectCalculationState({
+  const calculationState = useProjectCalculationState({
     clientId,
     savedData: {
       ...savedData,
@@ -102,7 +90,7 @@ const ProjectCalculation = ({
   const handleSurfaceAreaChangeInternal = (value: string) => {
     console.log('🏠 ProjectCalculation - Surface combles changée:', value);
     setCurrentSurfaceArea(value);
-    internalSurfaceChange(value);
+    calculationState.handleSurfaceAreaChange(value);
     if (onSurfaceAreaChange) {
       onSurfaceAreaChange(value);
     }
@@ -111,7 +99,7 @@ const ProjectCalculation = ({
   const handleRoofAreaChangeInternal = (value: string) => {
     console.log('🏠 ProjectCalculation - Surface toiture changée:', value);
     setCurrentRoofArea(value);
-    internalRoofChange(value);
+    calculationState.handleRoofAreaChange(value);
     if (onRoofAreaChange) {
       onRoofAreaChange(value);
     }
@@ -120,7 +108,7 @@ const ProjectCalculation = ({
   const handleFloorTypeChangeInternal = (value: string) => {
     console.log('🏠 ProjectCalculation - Type plancher changé:', value);
     setCurrentFloorType(value);
-    internalFloorChange(value);
+    calculationState.handleFloorTypeChange(value);
     if (onFloorTypeChange) {
       onFloorTypeChange(value);
     }
@@ -129,7 +117,7 @@ const ProjectCalculation = ({
   const handleClimateZoneChangeInternal = (value: string) => {
     console.log('🌡️ ProjectCalculation - Zone climatique changée:', value);
     setCurrentClimateZone(value);
-    internalClimateChange(value);
+    calculationState.handleClimateZoneChange(value);
     if (onClimateZoneChange) {
       onClimateZoneChange(value);
     }
@@ -141,11 +129,11 @@ const ProjectCalculation = ({
   };
 
   const handlers = {
-    handleAddLayer,
-    handleUpdateLayer,
-    handleDeleteBeforeLayer,
-    handleDeleteAfterLayer,
-    handleAddSouflr47,
+    handleAddLayer: calculationState.handleAddLayer,
+    handleUpdateLayer: calculationState.handleUpdateLayer,
+    handleDeleteBeforeLayer: calculationState.handleDeleteBeforeLayer,
+    handleDeleteAfterLayer: calculationState.handleDeleteAfterLayer,
+    handleAddSouflr47: calculationState.handleAddSouflr47,
     handleClimateZoneChange: handleClimateZoneChangeInternal,
   };
 
@@ -155,6 +143,19 @@ const ProjectCalculation = ({
     clientClimateReferenceCity,
     clientClimateDistance,
     clientClimateDescription,
+  };
+
+  // Construire l'objet thermalSettings avec toutes les propriétés nécessaires
+  const thermalSettings = {
+    setRsiBefore: calculationState.setRsiBefore,
+    setRseBefore: calculationState.setRseBefore,
+    setRsiAfter: calculationState.setRsiAfter,
+    setRseAfter: calculationState.setRseAfter,
+    setVentilationBefore: calculationState.setVentilationBefore,
+    setVentilationAfter: calculationState.setVentilationAfter,
+    setRatioBefore: calculationState.setRatioBefore,
+    setRatioAfter: calculationState.setRatioAfter,
+    copyBeforeToAfter: calculationState.copyBeforeToAfter,
   };
 
   return (
@@ -173,7 +174,7 @@ const ProjectCalculation = ({
 
       {/* Module de Calcul */}
       <ProjectCalculationLayout
-        calculationData={calculationData}
+        calculationData={calculationState.calculationData}
         climateZone={currentClimateZone}
         floorType={currentFloorType}
         clientName={clientName}

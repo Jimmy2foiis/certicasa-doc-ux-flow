@@ -66,11 +66,35 @@ export const useProjectCalculationState = ({
   };
 
   return {
-    ...calculationState,
+    // Données de calcul
+    calculationData: calculationState.calculationData,
+    
+    // Climat
     fetchedClimateZone,
+    climateZone: localClimateZone,
+    
+    // Gestionnaires d'événements pour les surfaces
     handleSurfaceAreaChange,
     handleRoofAreaChange,
     handleFloorTypeChange,
-    handleClimateZoneChange
+    handleClimateZoneChange,
+    
+    // Accès direct aux setters pour les surfaces
+    setSurfaceArea: calculationState.setSurfaceArea,
+    setRoofArea: calculationState.setRoofArea,
+    
+    // Exposer toutes les propriétés du calculationState
+    ...calculationState,
+    
+    // Exposer les setters manquants des paramètres thermiques
+    setVentilationBefore: calculationState.thermalSettings?.setVentilationBefore,
+    setVentilationAfter: calculationState.thermalSettings?.setVentilationAfter,
+    setRsiBefore: calculationState.thermalSettings?.setRsiBefore,
+    setRseBefore: calculationState.thermalSettings?.setRseBefore,
+    setRsiAfter: calculationState.thermalSettings?.setRsiAfter,
+    setRseAfter: calculationState.thermalSettings?.setRseAfter,
+    setRatioBefore: calculationState.thermalSettings?.setRatioBefore,
+    setRatioAfter: calculationState.thermalSettings?.setRatioAfter,
+    copyBeforeToAfter: calculationState.thermalSettings?.copyBeforeToAfter,
   };
 };
