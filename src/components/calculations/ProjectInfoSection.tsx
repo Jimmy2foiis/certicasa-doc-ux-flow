@@ -33,7 +33,21 @@ const ProjectInfoSection = ({
   const [localRoofArea, setLocalRoofArea] = useState(roofArea);
   const [localFloorType, setLocalFloorType] = useState(floorType);
 
+  // Synchroniser avec les props
+  useEffect(() => {
+    setLocalSurfaceArea(surfaceArea);
+  }, [surfaceArea]);
+
+  useEffect(() => {
+    setLocalRoofArea(roofArea);
+  }, [roofArea]);
+
+  useEffect(() => {
+    setLocalFloorType(floorType);
+  }, [floorType]);
+
   const handleSurfaceAreaChange = (value: string) => {
+    console.log('📊 ProjectInfoSection - Surface combles changée:', value);
     setLocalSurfaceArea(value);
     if (onSurfaceAreaChange) {
       onSurfaceAreaChange(value);
@@ -41,6 +55,7 @@ const ProjectInfoSection = ({
   };
 
   const handleRoofAreaChange = (value: string) => {
+    console.log('📊 ProjectInfoSection - Surface toiture changée:', value);
     setLocalRoofArea(value);
     if (onRoofAreaChange) {
       onRoofAreaChange(value);
@@ -48,6 +63,7 @@ const ProjectInfoSection = ({
   };
 
   const handleFloorTypeChange = (value: string) => {
+    console.log('📊 ProjectInfoSection - Type plancher changé:', value);
     setLocalFloorType(value);
     if (onFloorTypeChange) {
       onFloorTypeChange(value);
@@ -96,6 +112,7 @@ const ProjectInfoSection = ({
                   value={localSurfaceArea} 
                   onChange={(e) => handleSurfaceAreaChange(e.target.value)} 
                   className="w-full" 
+                  placeholder="Surface des combles"
                 />
               </div>
               <div>
@@ -105,6 +122,7 @@ const ProjectInfoSection = ({
                   value={localRoofArea} 
                   onChange={(e) => handleRoofAreaChange(e.target.value)} 
                   className="w-full" 
+                  placeholder="Surface de la toiture"
                 />
               </div>
             </div>

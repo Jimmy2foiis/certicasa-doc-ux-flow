@@ -25,37 +25,67 @@ interface UseLayerManagementProps {
 export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorType }: UseLayerManagementProps) => {
   const [beforeLayers, setBeforeLayers] = useState<Layer[]>(initialLayers);
   const [afterLayers, setAfterLayers] = useState<Layer[]>([...initialLayers]);
+  const [lastFloorType, setLastFloorType] = useState<string | undefined>(floorType);
   const { products } = useMaterialsAndProducts();
 
+  // Gérer les données sauvegardées
   useEffect(() => {
-    if (savedBeforeLayers) setBeforeLayers(savedBeforeLayers);
-    if (savedAfterLayers) setAfterLayers(savedAfterLayers);
-    else if (!savedBeforeLayers) setAfterLayers([...beforeLayers]);
+    if (savedBeforeLayers && savedBeforeLayers.length > 0) {
+      console.log('🔄 Chargement couches AVANT sauvegardées:', savedBeforeLayers);
+      setBeforeLayers(savedBeforeLayers);
+    }
+    if (savedAfterLayers && savedAfterLayers.length > 0) {
+      console.log('🔄 Chargement couches APRÈS sauvegardées:', savedAfterLayers);
+      setAfterLayers(savedAfterLayers);
+    } else if (savedBeforeLayers && savedBeforeLayers.length > 0) {
+      setAfterLayers([...savedBeforeLayers]);
+    }
   }, [savedBeforeLayers, savedAfterLayers]);
 
-  // Logique de pré-remplissage selon le type de plancher
+  // Gérer les changements de type de plancher
   useEffect(() => {
-    if (floorType && !savedBeforeLayers && !savedAfterLayers) {
-      const preset = getFloorTypePreset(floorType);
-      if (preset) {
-        console.log(`Pré-remplissage automatique pour plancher: ${floorType}`);
-        setBeforeLayers(preset.beforeLayers.map(layer => ({ ...layer, id: `${layer.id}_${Date.now()}` })));
-        setAfterLayers(preset.afterLayers.map(layer => ({ ...layer, id: `${layer.id}_${Date.now()}` })));
+    if (floorType && floorType !== lastFloorType) {
+      console.log('🏗️ Type de plancher changé:', lastFloorType, '->', floorType);
+      
+      // Ne pas pré-remplir si on a déjà des données sauvegardées
+      if (!savedBeforeLayers || savedBeforeLayers.length === 0) {
+        const preset = getFloorTypePreset(floorType);
+        if (preset) {
+          console.log(`✅ Pré-remplissage automatique pour plancher: ${floorType}`, preset);
+          const timestamp = Date.now();
+          
+          const newBeforeLayers = preset.beforeLayers.map((layer, index) => ({ 
+            ...layer, 
+            id: `${layer.id}_${timestamp}_${index}` 
+          }));
+          
+          const newAfterLayers = preset.afterLayers.map((layer, index) => ({ 
+            ...layer, 
+            id: `${layer.id}_${timestamp}_${index}` 
+          }));
+          
+          setBeforeLayers(newBeforeLayers);
+          setAfterLayers(newAfterLayers);
+        }
       }
+      
+      setLastFloorType(floorType);
     }
-  }, [floorType, savedBeforeLayers, savedAfterLayers]);
+  }, [floorType, lastFloorType, savedBeforeLayers]);
 
   const addLayer = (layerSet: "before" | "after", material: Material) => {
     const newLayer = {
       ...material,
-      id: Date.now().toString(),
+      id: `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       isNew: true,
     };
 
+    console.log('➕ Ajout couche:', layerSet, newLayer);
+
     if (layerSet === "before") {
-      setBeforeLayers([...beforeLayers, newLayer]);
+      setBeforeLayers(prev => [...prev, newLayer]);
     } else {
-      setAfterLayers([...afterLayers, newLayer]);
+      setAfterLayers(prev => [...prev, newLayer]);
     }
   };
 
@@ -65,35 +95,37 @@ export const useLayerManagement = ({ savedBeforeLayers, savedAfterLayers, floorT
     
     if (souflr47Product) {
       const newSouflr: Layer = {
-        id: Date.now().toString(),
+        id: `souflr47_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         name: souflr47Product.name,
         thickness: souflr47Product.defaultThickness || 335,
         lambda: souflr47Product.lambda,
         r: souflr47Product.defaultR || 7.00,
         isNew: true,
       };
-      setAfterLayers([...afterLayers, newSouflr]);
+      console.log('➕ Ajout SOUFL\'R 47:', newSouflr);
+      setAfterLayers(prev => [...prev, newSouflr]);
     } else {
       // Fallback au matériau par défaut si le produit n'est pas trouvé
       const fallbackSouflr: Layer = {
-        id: Date.now().toString(),
+        id: `souflr47_fallback_${Date.now()}`,
         name: "SOUFL'R 47",
         thickness: 259,
         lambda: 0.047,
         r: 5.51,
         isNew: true,
       };
-      setAfterLayers([...afterLayers, fallbackSouflr]);
+      console.log('➕ Ajout SOUFL\'R 47 (fallback):', fallbackSouflr);
+      setAfterLayers(prev => [...prev, fallbackSouflr]);
     }
   };
 
   const copyBeforeToAfter = () => {
+    console.log('📋 Copie couches AVANT vers APRÈS');
     setAfterLayers([...beforeLayers]);
   };
 
-  // 🔧 FIX: Simplifier updateLayer pour éviter les objets imbriqués
   const updateLayer = (layerSet: "before" | "after", updatedLayer: Layer) => {
-    console.log(`✅ Mise à jour couche ${layerSet}:`, updatedLayer);
+    console.log(`✏️ Mise à jour couche ${layerSet}:`, updatedLayer);
     
     if (layerSet === "before") {
       setBeforeLayers(prev => 
