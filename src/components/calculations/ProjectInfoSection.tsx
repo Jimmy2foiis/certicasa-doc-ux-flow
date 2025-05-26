@@ -3,13 +3,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { File } from "lucide-react";
+import { SafetyCultureService } from "@/services/safetyCultureService";
+import { useToast } from "@/components/ui/use-toast";
+
 interface ProjectInfoSectionProps {
   isolationType?: string;
   floorType?: string;
   climateZone?: string;
   surfaceArea: string;
   roofArea: string;
+  clientId?: string; // Ajouté pour identifier le projet
   onSurfaceAreaChange?: (value: string) => void;
   onRoofAreaChange?: (value: string) => void;
   onFloorTypeChange?: (value: string) => void;
@@ -21,12 +27,14 @@ interface ProjectInfoSectionProps {
   climateDistance?: number;
   climateDescription?: string;
 }
+
 const ProjectInfoSection = ({
   isolationType = "Combles",
   floorType = "Bois",
   climateZone = "C3",
   surfaceArea,
   roofArea,
+  clientId,
   onSurfaceAreaChange,
   onRoofAreaChange,
   onFloorTypeChange,
@@ -41,8 +49,9 @@ const ProjectInfoSection = ({
   const [localRoofArea, setLocalRoofArea] = useState(roofArea);
   const [localFloorType, setLocalFloorType] = useState(floorType);
   const [localClimateZone, setLocalClimateZone] = useState(climateZone);
+  const [isLoadingReport, setIsLoadingReport] = useState(false);
+  const { toast } = useToast();
 
-  // Synchroniser avec les props
   useEffect(() => {
     setLocalSurfaceArea(surfaceArea);
   }, [surfaceArea]);
@@ -61,6 +70,7 @@ const ProjectInfoSection = ({
     });
     setLocalClimateZone(climateZone);
   }, [climateZone, climateMethod, climateReferenceCity, climateConfidence]);
+
   const handleSurfaceAreaChange = (value: string) => {
     console.log('📊 ProjectInfoSection - Surface combles changée:', value, '-> Propagation immédiate');
     setLocalSurfaceArea(value);
@@ -89,6 +99,45 @@ const ProjectInfoSection = ({
       onClimateZoneChange(value);
     }
   };
+
+  const handleSafetyCultureReport = async () => {
+    if (!clientId) {
+      toast({
+        title: "Erreur",
+        description: "ID du projet non disponible",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsLoadingReport(true);
+    try {
+      const reportUrl = await SafetyCultureService.getSafetyCultureReportURL(clientId);
+      
+      if (reportUrl) {
+        window.open(reportUrl, '_blank');
+        toast({
+          title: "Rapport ouvert",
+          description: "Le rapport SafetyCulture s'ouvre dans un nouvel onglet"
+        });
+      } else {
+        toast({
+          title: "Rapport non disponible",
+          description: "Le rapport SafetyCulture n'est pas encore disponible pour ce projet"
+        });
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'ouverture du rapport:', error);
+      toast({
+        title: "Erreur",
+        description: "Impossible d'accéder au rapport SafetyCulture",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoadingReport(false);
+    }
+  };
+
   const floorTypeOptions = [{
     value: "Béton",
     label: "🪨 Béton"
@@ -99,69 +148,7 @@ const ProjectInfoSection = ({
     value: "Céramique",
     label: "🧱 Céramique"
   }];
-  const climateZoneOptions = [{
-    value: "A3",
-    label: "A3"
-  }, {
-    value: "A4",
-    label: "A4"
-  }, {
-    value: "B3",
-    label: "B3"
-  }, {
-    value: "B4",
-    label: "B4"
-  }, {
-    value: "C1",
-    label: "C1"
-  }, {
-    value: "C2",
-    label: "C2"
-  }, {
-    value: "C3",
-    label: "C3"
-  }, {
-    value: "C4",
-    label: "C4"
-  }, {
-    value: "D1",
-    label: "D1"
-  }, {
-    value: "D2",
-    label: "D2"
-  }, {
-    value: "D3",
-    label: "D3"
-  }, {
-    value: "E1",
-    label: "E1"
-  }];
-  const renderClimateZoneWithGeolocation = () => {
-    return <div className="space-y-3">
-        
-        <Select value={localClimateZone} onValueChange={handleClimateZoneChange}>
-          <SelectTrigger className="w-full h-12 text-base">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {climateZoneOptions.map(option => <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>)}
-          </SelectContent>
-        </Select>
-        
-        {/* Informations de géolocalisation */}
-        {climateMethod && climateReferenceCity && <div className="text-sm text-green-600 bg-green-50 p-3 rounded border border-green-200">
-            <div className="flex items-center gap-1 mb-2">
-              <span className="font-medium">📍 Déterminé automatiquement</span>
-              {climateConfidence && <span className="ml-auto font-semibold">{climateConfidence}%</span>}
-            </div>
-            <div>Ville référence: {climateReferenceCity}</div>
-            {climateDistance && <div>Distance: {climateDistance}km</div>}
-            {climateDescription && <div className="mt-2 text-sm text-gray-600">{climateDescription}</div>}
-          </div>}
-      </div>;
-  };
+
   return <Card className="mb-4">
       <CardContent className="pt-6">
         {/* Section Données Techniques */}
@@ -169,7 +156,7 @@ const ProjectInfoSection = ({
           <h3 className="text-lg font-semibold mb-4">Données Techniques</h3>
           
           <div className="space-y-6">
-            {/* Ligne 1: Type de plancher et Zone climatique CTE avec géolocalisation */}
+            {/* Ligne 1: Type de plancher et Bouton SafetyCulture */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Type de plancher</label>
@@ -186,8 +173,16 @@ const ProjectInfoSection = ({
               </div>
               
               <div className="lg:col-span-1">
-                <label className="block text-sm text-gray-500 mb-2">Zone climatique CTE</label>
-                {renderClimateZoneWithGeolocation()}
+                <label className="block text-sm text-gray-500 mb-2">Rapport de chantier</label>
+                <Button
+                  onClick={handleSafetyCultureReport}
+                  disabled={isLoadingReport}
+                  className="w-full h-12 text-base bg-blue-600 hover:bg-blue-700 text-white"
+                  variant="default"
+                >
+                  <File className="mr-2 h-4 w-4" />
+                  {isLoadingReport ? "Chargement..." : "Consulter le rapport SafetyCulture"}
+                </Button>
               </div>
             </div>
 

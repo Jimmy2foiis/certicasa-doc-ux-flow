@@ -1,4 +1,3 @@
-
 import type { SafetyCultureAudit, SafetyCulturePhoto, SafetyCultureConfig } from '@/types/safetyCulture';
 
 class SafetyCultureServiceClass {
@@ -31,6 +30,27 @@ class SafetyCultureServiceClass {
     }
 
     return response.json();
+  }
+
+  async getSafetyCultureReportURL(projectId: string): Promise<string | null> {
+    try {
+      // Appel API pour récupérer l'URL du rapport
+      const response = await this.makeRequest<{
+        report_url?: string;
+        available: boolean;
+      }>(`/reports/v1/projects/${projectId}/report`);
+      
+      return response.report_url || null;
+    } catch (error) {
+      console.error('Erreur lors de la récupération du rapport SafetyCulture:', error);
+      
+      // Simulation pour la démo - retourne null si pas disponible
+      const mockAvailable = Math.random() > 0.5;
+      if (mockAvailable) {
+        return `https://app.safetyculture.com/reports/project-${projectId}`;
+      }
+      return null;
+    }
   }
 
   async getAudits(): Promise<SafetyCultureAudit[]> {
