@@ -1,9 +1,10 @@
 
-import React, { useState } from "react";
+import React from "react";
 import ProjectStatusSection from "./sections/ProjectStatusSection";
 import AddressFormSection from "./sections/AddressFormSection";
 import TechnicalDataSection from "./sections/TechnicalDataSection";
 import TeamBadgesSection from "./sections/TeamBadgesSection";
+import { useClimateZoneManagement } from "@/hooks/useClimateZoneManagement";
 
 interface StatusBannerProps {
   client?: {
@@ -35,14 +36,16 @@ const StatusBanner = ({
   onEditClient,
   onClimateZoneChange
 }: StatusBannerProps) => {
-  const [climateZone, setClimateZone] = useState(client?.climateZone || "");
-  const [climateData, setClimateData] = useState<{
-    confidence?: number;
-    method?: string;
-    referenceCity?: string;
-    distance?: number;
-    description?: string;
-  }>({});
+  
+  // Utiliser le hook centralisé
+  const { climateZone, climateData, updateClimateZone, updateZoneOnly } = useClimateZoneManagement({
+    initialZone: client?.climateZone,
+    onZoneChange: (zone) => {
+      if (onClimateZoneChange) {
+        onClimateZoneChange(zone);
+      }
+    }
+  });
 
   const handleClimateZoneChange = (climateInfo: {
     zone: string;
@@ -52,56 +55,18 @@ const StatusBanner = ({
     distance?: number;
     description?: string;
   }) => {
-    console.error('🚨 StatusBanner - RÉCEPTION zone automatique:', climateInfo.zone);
-    console.error('🚨 StatusBanner - Données complètes:', climateInfo);
-    
-    setClimateZone(climateInfo.zone);
-    console.error('🚨 StatusBanner - STOCKAGE zone dans state:', climateInfo.zone);
-    
-    setClimateData({
-      confidence: climateInfo.confidence,
-      method: climateInfo.method,
-      referenceCity: climateInfo.referenceCity,
-      distance: climateInfo.distance,
-      description: climateInfo.description
-    });
-
-    // Propager le changement vers le parent (pour synchroniser avec ThermalEconomySection)
-    if (onClimateZoneChange) {
-      console.error('🚨 StatusBanner - TRANSMISSION vers parent:', climateInfo.zone);
-      onClimateZoneChange(
-        climateInfo.zone,
-        climateInfo.confidence,
-        climateInfo.method,
-        climateInfo.referenceCity,
-        climateInfo.distance,
-        climateInfo.description
-      );
-    } else {
-      console.error('🚨 StatusBanner - ERREUR: onClimateZoneChange est undefined !');
-    }
+    console.log('🚨 StatusBanner - Zone automatique reçue:', climateInfo.zone);
+    updateClimateZone(climateInfo);
   };
 
   const handleManualClimateZoneChange = (zone: string) => {
-    console.error('🚨 StatusBanner - RÉCEPTION zone manuelle:', zone);
-    setClimateZone(zone);
-    console.error('🚨 StatusBanner - STOCKAGE zone manuelle dans state:', zone);
-    
-    // Réinitialiser les données automatiques quand on change manuellement
-    setClimateData({});
-
-    // Propager le changement vers le parent
-    if (onClimateZoneChange) {
-      console.error('🚨 StatusBanner - TRANSMISSION zone manuelle vers parent:', zone);
-      onClimateZoneChange(zone);
-    } else {
-      console.error('🚨 StatusBanner - ERREUR: onClimateZoneChange est undefined pour zone manuelle !');
-    }
+    console.log('🚨 StatusBanner - Zone manuelle reçue:', zone);
+    updateZoneOnly(zone);
   };
 
   return (
     <div className="space-y-4">
-      {/* Barre d'informations principale - maintenant dans la zone grise */}
+      {/* Barre d'informations principale */}
       <ProjectStatusSection 
         documentStats={documentStats}
         onViewMissingDocs={onViewMissingDocs}

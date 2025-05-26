@@ -12,40 +12,33 @@ interface UseThermalEconomyCalculationsProps {
   surfaceArea: number;
   uValueBefore: number;
   uValueAfter: number;
-  climateZone?: string;
-  onClimateZoneChange?: (zone: string) => void;
+  climateZone: string;
 }
 
 export const useThermalEconomyCalculations = ({
   surfaceArea,
   uValueBefore,
   uValueAfter,
-  climateZone = "C3",
-  onClimateZoneChange
+  climateZone
 }: UseThermalEconomyCalculationsProps) => {
   const [cherryEnabled, setCherryEnabled] = useState(false);
   const [delegate, setDelegate] = useState<"Eiffage" | "GreenFlex">("Eiffage");
 
-  // 🚨 DEBUG HOOK - Analyser EXACTEMENT ce qui arrive
-  console.error('🚨 useThermalEconomyCalculations - ANALYSE:');
-  console.error('🚨 climateZone reçu:', climateZone, 'Type:', typeof climateZone);
-  console.error('🚨 climateZone.length:', climateZone?.length);
-  console.error('🚨 Valide?', climateZone in climateZoneCoefficients);
-
-  // Utiliser DIRECTEMENT la zone reçue
+  console.log('🔥 Hook calculs - Zone reçue:', climateZone);
+  
+  // Obtenir le coefficient G directement
   const gCoefficient = climateZoneCoefficients[climateZone] || 46;
   
-  console.error('🚨 useThermalEconomyCalculations - Coefficient G final:', gCoefficient);
-  console.error('🚨 useThermalEconomyCalculations - Pour zone:', climateZone);
-  
-  // Helper function to get coefficient for any zone
-  const getCoefficient = (zone: string) => climateZoneCoefficients[zone] || 46;
+  console.log('🔥 Hook calculs - Coefficient G:', gCoefficient);
   
   // Get multiplier based on delegate
   const multiplier = delegateMultipliers[delegate];
   
   // Calculate annual savings in kWh/year
   const annualSavings = surfaceArea * (uValueBefore - uValueAfter) * gCoefficient;
+  
+  console.log('🔥 Hook calculs - CAE:', annualSavings);
+  console.log(`🔥 Formule: ${surfaceArea} × (${uValueBefore.toFixed(3)} - ${uValueAfter.toFixed(3)}) × ${gCoefficient} = ${annualSavings.toFixed(1)}`);
   
   // Calculate project price in EUR
   const projectPrice = annualSavings * multiplier;
@@ -61,17 +54,12 @@ export const useThermalEconomyCalculations = ({
   const totalPricePerSqm = pricePerSqm + cherryPricePerSqm;
   const totalProjectPrice = projectPrice + cherryProjectPrice;
 
-  console.error('🚨 useThermalEconomyCalculations - CALCUL FINAL:');
-  console.error(`🚨 CAE = ${surfaceArea} × (${uValueBefore.toFixed(3)} - ${uValueAfter.toFixed(3)}) × ${gCoefficient} = ${annualSavings.toFixed(1)}`);
-  console.error('🚨 Prix projet:', projectPrice.toFixed(2), '€');
-
   return {
     cherryEnabled,
     setCherryEnabled,
     delegate,
     setDelegate,
     gCoefficient,
-    getCoefficient,
     annualSavings,
     projectPrice,
     pricePerSqm,
