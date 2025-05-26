@@ -26,24 +26,10 @@ const CadastralFormFields = ({
 }: CadastralFormFieldsProps) => {
   return (
     <>
-      {/* Ligne UTM */}
-      <div className="grid grid-cols-3 gap-3 mb-3">
-        <div>
-          <Input 
-            value={addressData.utm} 
-            onChange={(e) => onInputChange('utm', e.target.value)}
-            placeholder="UTM" 
-            className="text-sm h-8" 
-            readOnly={loadingCadastral}
-          />
-        </div>
-        <div></div>
-        <div></div>
-      </div>
-
       {/* Ligne 3: Géolocalisation, Référence Cadastrale, Zone Climatique */}
       <div className="grid grid-cols-3 gap-3">
         <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Coordonnées GPS</label>
           <Input 
             value={addressData.coordinates} 
             onChange={(e) => onInputChange('coordinates', e.target.value)}
@@ -52,6 +38,7 @@ const CadastralFormFields = ({
           />
         </div>
         <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Référence Cadastrale</label>
           <Input 
             value={addressData.cadastralReference} 
             onChange={(e) => onInputChange('cadastralReference', e.target.value)}
@@ -61,6 +48,7 @@ const CadastralFormFields = ({
           />
         </div>
         <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Zone climatique</label>
           <div className="h-8">
             <ClimateZoneDisplay
               climateZone={climateZone}
@@ -75,6 +63,22 @@ const CadastralFormFields = ({
             />
           </div>
         </div>
+      </div>
+
+      {/* Ligne UTM */}
+      <div className="grid grid-cols-3 gap-3 mt-3">
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Coordonnées UTM 30</label>
+          <Input 
+            value={addressData.utm} 
+            onChange={(e) => onInputChange('utm', e.target.value)}
+            placeholder="UTM" 
+            className="text-sm h-8" 
+            readOnly={loadingCadastral}
+          />
+        </div>
+        <div></div>
+        <div></div>
       </div>
     </>
   );

@@ -30,6 +30,7 @@ const AddressFormFields = ({
       {/* Ligne 1: Rue, Code postal, Ville */}
       <div className="grid grid-cols-3 gap-3 mb-3">
         <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Rue</label>
           <AddressSearch
             initialAddress={addressData.street}
             onAddressChange={(address) => onInputChange('street', address)}
@@ -38,6 +39,7 @@ const AddressFormFields = ({
           />
         </div>
         <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Code postal</label>
           <Input 
             value={addressData.postalCode} 
             onChange={(e) => onInputChange('postalCode', e.target.value)}
@@ -46,6 +48,7 @@ const AddressFormFields = ({
           />
         </div>
         <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Ville</label>
           <Input 
             value={addressData.city} 
             onChange={(e) => onInputChange('city', e.target.value)}
@@ -58,6 +61,7 @@ const AddressFormFields = ({
       {/* Ligne 2: Province, Communauté autonome */}
       <div className="grid grid-cols-3 gap-3 mb-3">
         <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Province</label>
           <Input 
             value={addressData.province} 
             onChange={(e) => onInputChange('province', e.target.value)}
@@ -66,6 +70,7 @@ const AddressFormFields = ({
           />
         </div>
         <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">Communauté autonome</label>
           <Input 
             value={addressData.community} 
             onChange={(e) => onInputChange('community', e.target.value)}
