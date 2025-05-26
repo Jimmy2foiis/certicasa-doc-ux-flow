@@ -32,6 +32,7 @@ const ProjectInfoSection = ({
   const [localSurfaceArea, setLocalSurfaceArea] = useState(surfaceArea);
   const [localRoofArea, setLocalRoofArea] = useState(roofArea);
   const [localFloorType, setLocalFloorType] = useState(floorType);
+  const [localClimateZone, setLocalClimateZone] = useState(climateZone);
 
   // Synchroniser avec les props
   useEffect(() => {
@@ -46,11 +47,15 @@ const ProjectInfoSection = ({
     setLocalFloorType(floorType);
   }, [floorType]);
 
+  useEffect(() => {
+    console.log('🌡️ ProjectInfoSection - Zone climatique reçue:', climateZone);
+    setLocalClimateZone(climateZone);
+  }, [climateZone]);
+
   const handleSurfaceAreaChange = (value: string) => {
     console.log('📊 ProjectInfoSection - Surface combles changée:', value, '-> Propagation immédiate');
     setLocalSurfaceArea(value);
     if (onSurfaceAreaChange) {
-      // Propagation immédiate pour synchroniser avec les calculs
       onSurfaceAreaChange(value);
     }
   };
@@ -59,7 +64,6 @@ const ProjectInfoSection = ({
     console.log('📊 ProjectInfoSection - Surface toiture changée:', value, '-> Propagation immédiate');
     setLocalRoofArea(value);
     if (onRoofAreaChange) {
-      // Propagation immédiate pour synchroniser avec les calculs
       onRoofAreaChange(value);
     }
   };
@@ -68,8 +72,15 @@ const ProjectInfoSection = ({
     console.log('📊 ProjectInfoSection - Type plancher changé:', value, '-> Propagation immédiate');
     setLocalFloorType(value);
     if (onFloorTypeChange) {
-      // Propagation immédiate pour synchroniser avec les matériaux
       onFloorTypeChange(value);
+    }
+  };
+
+  const handleClimateZoneChange = (value: string) => {
+    console.log('🌡️ ProjectInfoSection - Zone climatique changée:', value, '-> Propagation vers ThermalEconomySection');
+    setLocalClimateZone(value);
+    if (onClimateZoneChange) {
+      onClimateZoneChange(value);
     }
   };
 
@@ -77,6 +88,21 @@ const ProjectInfoSection = ({
     { value: "Béton", label: "🪨 Béton" },
     { value: "Bois", label: "🪵 Bois" },
     { value: "Céramique", label: "🧱 Céramique" }
+  ];
+
+  const climateZoneOptions = [
+    { value: "A3", label: "A3" },
+    { value: "A4", label: "A4" },
+    { value: "B3", label: "B3" },
+    { value: "B4", label: "B4" },
+    { value: "C1", label: "C1" },
+    { value: "C2", label: "C2" },
+    { value: "C3", label: "C3" },
+    { value: "C4", label: "C4" },
+    { value: "D1", label: "D1" },
+    { value: "D2", label: "D2" },
+    { value: "D3", label: "D3" },
+    { value: "E1", label: "E1" }
   ];
 
   return (
@@ -87,8 +113,8 @@ const ProjectInfoSection = ({
           <h3 className="text-lg font-semibold mb-4">Données Techniques</h3>
           
           <div className="space-y-4">
-            {/* Ligne 1: Type de plancher seulement */}
-            <div className="grid grid-cols-1 gap-3">
+            {/* Ligne 1: Type de plancher et Zone climatique CTE */}
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Type de plancher</label>
                 <Select value={localFloorType} onValueChange={handleFloorTypeChange}>
@@ -104,9 +130,25 @@ const ProjectInfoSection = ({
                   </SelectContent>
                 </Select>
               </div>
+              
+              <div>
+                <label className="block text-sm text-gray-500 mb-2">Zone climatique CTE</label>
+                <Select value={localClimateZone} onValueChange={handleClimateZoneChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {climateZoneOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            {/* Ligne 2: Surface combles et Surface toiture (2 colonnes) */}
+            {/* Ligne 2: Surface combles et Surface toiture */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Surface combles (m²)</label>

@@ -6,6 +6,7 @@ import CalculationsDisplay from "./thermal-economy/CalculationsDisplay";
 import CherryOption from "./thermal-economy/CherryOption";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useEffect } from "react";
 
 export const climateZoneCoefficients: Record<string, number> = {
   "A3": 25,
@@ -50,8 +51,19 @@ const ThermalEconomySection = ({
   onClimateZoneChange
 }: ThermalEconomySectionProps) => {
   
+  // Assurer que la zone climatique est valide
+  const validClimateZone = climateZone && climateZoneCoefficients[climateZone] ? climateZone : "C3";
+  
   console.log('🌡️ ThermalEconomySection - Zone reçue:', climateZone);
-  console.log('🌡️ ThermalEconomySection - Coefficient:', climateZoneCoefficients[climateZone]);
+  console.log('🌡️ ThermalEconomySection - Zone validée:', validClimateZone);
+  console.log('🌡️ ThermalEconomySection - Coefficient:', climateZoneCoefficients[validClimateZone]);
+
+  // Synchroniser automatiquement avec la zone du parent
+  useEffect(() => {
+    if (climateZone && climateZone !== validClimateZone) {
+      console.log('🔄 ThermalEconomySection - Synchronisation automatique vers zone valide:', validClimateZone);
+    }
+  }, [climateZone, validClimateZone]);
 
   const {
     cherryEnabled,
@@ -70,7 +82,7 @@ const ThermalEconomySection = ({
     surfaceArea,
     uValueBefore,
     uValueAfter,
-    climateZone
+    climateZone: validClimateZone
   });
 
   const handleClimateZoneChange = (zone: string) => {
@@ -92,12 +104,12 @@ const ThermalEconomySection = ({
           <div className="space-y-2">
             <Label>Zone Thermique (G: {gCoefficient})</Label>
             <Select 
-              value={climateZone}
+              value={validClimateZone}
               onValueChange={handleClimateZoneChange}
             >
               <SelectTrigger>
                 <SelectValue>
-                  {climateZone} - Coefficient {gCoefficient}
+                  {validClimateZone} - Coefficient {gCoefficient}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent className="bg-white border shadow-lg z-50">
