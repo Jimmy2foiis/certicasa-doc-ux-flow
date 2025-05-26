@@ -1,7 +1,6 @@
 
 import { CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import CalculationActionsWithBilling from "./CalculationActionsWithBilling";
-import ProjectInfoSection from "./ProjectInfoSection";
 import { CalculationData } from "@/hooks/useCalculationState";
 
 interface CalculationHeaderProps {
@@ -32,15 +31,7 @@ const CalculationHeader = ({
   climateZone = "C3"
 }: CalculationHeaderProps) => {
   return (
-    <div>
-      {/* 3️⃣ Section Informations Projet - reçoit zoneClimatique */}
-      <ProjectInfoSection 
-        surfaceArea={calculationData.surfaceArea}
-        roofArea={calculationData.roofArea}
-        climateZone={climateZone}
-        floorType={floorType}
-      />
-      
+    <div>      
       {/* Header du calcul */}
       <CardHeader className="pb-2 flex flex-row items-center justify-between">
         <div>
