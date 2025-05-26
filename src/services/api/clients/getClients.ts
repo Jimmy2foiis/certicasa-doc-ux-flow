@@ -1,35 +1,49 @@
 
 /**
- * Service for retrieving client data from real APIs
+ * Service pour récupérer la liste des clients depuis l'API réelle
  */
-import { httpClient } from '../httpClient';
 import { Client } from '../types';
-import { mapProspectToClient } from '../mappers/clientMapper';
+import { RealApiService } from '../realApiService';
 
 /**
- * Fetches all clients from the internal API only
- * Note: Beetool API requires individual tokens, so we only use internal API for listing
+ * Note: L'API ne fournit pas d'endpoint pour lister tous les prospects.
+ * Cette fonction retourne une liste vide pour l'instant.
+ * Vous devrez soit :
+ * 1. Créer un endpoint GET /api/prospects pour lister tous les prospects
+ * 2. Ou maintenir une liste des beetoolTokens localement
  */
 export const getClients = async (): Promise<Client[]> => {
   try {
-    console.log('Chargement des clients depuis l\'API interne...');
+    console.log('Note: Aucun endpoint disponible pour lister tous les prospects');
+    console.log('Utilisez getClientById avec un beetoolToken spécifique');
     
-    // Récupérer les clients depuis l'API interne uniquement
-    const response = await httpClient.get<any[]>('/prospects/');
-    
-    if (!response.success || !response.data) {
-      console.warn('Aucune donnée reçue de l\'API interne');
-      return [];
-    }
-    
-    // Map API data to Client model
-    const clients = response.data.map(mapProspectToClient);
-    console.log(`${clients.length} clients récupérés depuis l'API interne`);
-    
-    return clients;
+    // Pour l'instant, retourner une liste vide
+    // Vous pouvez stocker les beetoolTokens connus et les interroger individuellement
+    return [];
     
   } catch (error) {
     console.error("Erreur lors de la récupération des clients:", error);
+    return [];
+  }
+};
+
+/**
+ * Fonction utilitaire pour récupérer plusieurs clients par leurs beetoolTokens
+ */
+export const getClientsByTokens = async (beetoolTokens: string[]): Promise<Client[]> => {
+  try {
+    const clients: Client[] = [];
+    
+    for (const token of beetoolTokens) {
+      const client = await RealApiService.getProspect(token);
+      if (client) {
+        clients.push(client);
+      }
+    }
+    
+    return clients;
+  } catch (error) {
+    console.error("Erreur lors de la récupération des clients par tokens:", error);
     return [];
   }
 };

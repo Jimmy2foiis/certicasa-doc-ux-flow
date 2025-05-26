@@ -1,5 +1,6 @@
+
 /**
- * Types communs pour l'API
+ * Types pour l'API réelle
  */
 
 // Type générique pour les réponses de l'API
@@ -9,19 +10,37 @@ export interface ApiResponse<T = any> {
   message?: string;
 }
 
-// Type pour les prospects/clients
+// Type pour les prospects depuis votre API réelle
 export interface Client {
   id?: string;
-  name: string;
+  beetoolToken: string; // Identifiant unique
+  prenom: string;
+  nom: string;
+  sexe?: string;
+  adresse?: string;
+  codePostal?: string;
+  ville?: string;
+  pays?: string;
+  tel?: string;
   email?: string;
-  phone?: string;
-  address?: string;
+  cadastralReference?: string;
+  utm30?: string;
+  safetyCultureAuditId?: string;
+  geoPosition?: string;
+  status?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  
+  // Champs calculés pour la compatibilité avec l'interface existante
+  name?: string; // Combinaison de prenom + nom
+  phone?: string; // Alias pour tel
+  address?: string; // Alias pour adresse
+  
+  // Champs hérités pour la compatibilité (optionnels)
   nif?: string;
   type?: string;
-  status?: string;
   projects?: number;
   created_at?: string;
-  // Nouveaux champs pour la vue améliorée
   postalCode?: string;
   ficheType?: string;
   climateZone?: string;
@@ -31,12 +50,10 @@ export interface Client {
   installationDate?: string;
   lotNumber?: string | null;
   depositStatus?: string;
-  community?: string; // Champ pour la communauté autonome
-  // Nouveaux champs pour l'équipe projet
+  community?: string;
   teleprospector?: string;
   confirmer?: string;
   installationTeam?: string;
-  // Nouveaux champs pour le suivi du dossier
   delegate?: string;
   depositDate?: string;
   entryChannel?: string;
@@ -108,4 +125,24 @@ export interface Batch {
   client_count: number;
   created_at: string;
   submitted_at?: string;
+}
+
+// Type pour SafetyCulture
+export interface SafetyCultureInspection {
+  id: string;
+  title: string;
+  created_at: string;
+  modified_at: string;
+  template_id: string;
+  template_name: string;
+  audit_owner: {
+    id: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+  };
+  site?: {
+    id: string;
+    name: string;
+  };
 }
