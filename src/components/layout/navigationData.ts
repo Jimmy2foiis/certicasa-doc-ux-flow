@@ -4,7 +4,6 @@ import {
   Users,
   Coins,
   Package,
-  Calculator,
   FileText,
   Settings,
   HelpCircle,
@@ -37,11 +36,6 @@ export const navigationLinks: NavLink[] = [
     title: "Dépôt de Lots",
     url: "/lots",
     icon: Package,
-  },
-  {
-    title: "Calculettes",
-    url: "/calculations",
-    icon: Calculator,
   },
   {
     title: "Templates",

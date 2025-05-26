@@ -13,7 +13,6 @@ const GlobalTabNavigation = () => {
     if (path.startsWith('/clients')) return 'clients';
     if (path.startsWith('/finances')) return 'finances';
     if (path.startsWith('/lots')) return 'lots';
-    if (path.startsWith('/calculations')) return 'calculettes';
     if (path.startsWith('/documents')) return 'templates';
     return 'dashboard';
   };
@@ -31,9 +30,6 @@ const GlobalTabNavigation = () => {
         break;
       case 'lots':
         navigate('/lots');
-        break;
-      case 'calculettes':
-        navigate('/calculations');
         break;
       case 'templates':
         navigate('/documents');
@@ -72,12 +68,6 @@ const GlobalTabNavigation = () => {
               className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-green-600 data-[state=active]:text-green-700 rounded-none px-6 h-12"
             >
               Dépôt de Lots
-            </TabsTrigger>
-            <TabsTrigger 
-              value="calculettes"
-              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-green-600 data-[state=active]:text-green-700 rounded-none px-6 h-12"
-            >
-              Calculettes
             </TabsTrigger>
             <TabsTrigger 
               value="templates"
