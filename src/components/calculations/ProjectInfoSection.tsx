@@ -185,9 +185,7 @@ const ProjectInfoSection = ({
                 </Select>
               </div>
               
-              <div>
-                {renderClimateZoneWithGeolocation()}
-              </div>
+              
             </div>
 
             {/* Ligne 2: Surface combles et Surface toiture */}
