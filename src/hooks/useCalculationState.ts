@@ -1,210 +1,138 @@
-import { useLayerManagement, Layer } from "./useLayerManagement";
-import { useProjectSettings } from "./useProjectSettings";
-import { useThermalResistanceSettings } from "./useThermalResistanceSettings";
-import { useThermalCalculations } from "./useThermalCalculations";
-import { Material } from "@/data/materials";
-import { VentilationType } from "@/utils/calculationUtils";
-import { useState, useEffect } from "react";
 
-export interface CalculationStateProps {
-  savedData?: any;
-  clientClimateZone?: string;
-  floorType?: string;
-}
+import { useState, useEffect } from "react";
+import { useLayerManagement } from "./useLayerManagement";
+import { useThermalResistanceSettings } from "./useThermalResistanceSettings";
+import { useProjectSettings } from "./useProjectSettings";
+import { useThermalCalculations } from "./useThermalCalculations";
 
 export interface CalculationData {
-  beforeLayers: Layer[];
-  afterLayers: Layer[];
   projectType: string;
   surfaceArea: string;
   roofArea: string;
-  ventilationBefore: VentilationType;
-  ventilationAfter: VentilationType;
+  climateZone: string;
+  beforeLayers: any[];
+  afterLayers: any[];
+  totalRBefore: number;
+  totalRAfter: number;
+  uValueBefore: number;
+  uValueAfter: number;
+  improvementPercent: number;
+  meetsRequirements: boolean;
+  bCoefficientBefore: number;
+  bCoefficientAfter: number;
+  ventilationBefore: any;
+  ventilationAfter: any;
   ratioBefore: number;
   ratioAfter: number;
   rsiBefore: string;
   rseBefore: string;
   rsiAfter: string;
   rseAfter: string;
-  totalRBefore: number;
-  upValueBefore: number;
-  uValueBefore: number;
-  totalRAfter: number;
-  upValueAfter: number;
-  uValueAfter: number;
-  improvementPercent: number;
-  climateZone: string;
-  bCoefficientBefore: number;
-  bCoefficientAfter: number;
-  meetsRequirements: boolean;
 }
 
-export type { Layer };
+interface UseCalculationStateProps {
+  savedData?: any;
+  clientClimateZone?: string;
+  floorType?: string;
+}
 
-export const useCalculationState = ({ savedData, clientClimateZone, floorType }: CalculationStateProps) => {
-  // Climate zone state
-  const [climateZone, setClimateZone] = useState(clientClimateZone || "C3");
-
-  // Update climate zone when clientClimateZone changes
-  useEffect(() => {
-    if (clientClimateZone) {
-      setClimateZone(clientClimateZone);
-    }
-  }, [clientClimateZone]);
-
-  // Layer management
-  const {
-    beforeLayers,
-    setBeforeLayers,
-    afterLayers,
-    setAfterLayers,
-    addLayer,
-    addSouflr47,
-    copyBeforeToAfter: copyLayersBeforeToAfter,
-    updateLayer,
-  } = useLayerManagement({
+export const useCalculationState = ({
+  savedData,
+  clientClimateZone = "C3",
+  floorType = "Bois"
+}: UseCalculationStateProps) => {
+  // Gestion des paramètres du projet
+  const projectSettings = useProjectSettings({ savedData });
+  
+  // Gestion des couches avec le type de plancher
+  const layerManagement = useLayerManagement({
     savedBeforeLayers: savedData?.beforeLayers,
     savedAfterLayers: savedData?.afterLayers,
     floorType: floorType
   });
 
-  // Project settings
-  const {
-    projectType,
-    setProjectType,
-    surfaceArea,
-    setSurfaceArea,
-    roofArea,
-    setRoofArea,
-    ventilationBefore,
-    setVentilationBefore,
-    ventilationAfter,
-    setVentilationAfter,
-  } = useProjectSettings({ savedData });
-
-  // Thermal resistance settings
-  const {
-    ratioBefore,
-    setRatioBefore,
-    ratioAfter,
-    setRatioAfter,
-    rsiBefore,
-    setRsiBefore,
-    rseBefore,
-    setRseBefore,
-    rsiAfter,
-    setRsiAfter,
-    rseAfter,
-    setRseAfter,
-    copyBeforeToAfter: copyThermalBeforeToAfter,
-  } = useThermalResistanceSettings({
+  // Gestion des paramètres de résistance thermique avec les surfaces
+  const thermalSettings = useThermalResistanceSettings({
     savedData,
-    surfaceArea,
-    roofArea,
+    surfaceArea: projectSettings.surfaceArea,
+    roofArea: projectSettings.roofArea
   });
 
-  // Thermal calculations
-  const {
-    bCoefficientBefore,
-    bCoefficientAfter,
-    totalRBefore,
-    upValueBefore,
-    uValueBefore,
-    totalRAfter,
-    upValueAfter,
-    uValueAfter,
-    improvementPercent,
-    meetsRequirements,
-  } = useThermalCalculations({
-    beforeLayers,
-    afterLayers,
-    ventilationBefore,
-    ventilationAfter,
-    ratioBefore,
-    ratioAfter,
-    rsiBefore,
-    rseBefore,
-    rsiAfter,
-    rseAfter,
+  // Calculs thermiques
+  const thermalCalculations = useThermalCalculations({
+    beforeLayers: layerManagement.beforeLayers,
+    afterLayers: layerManagement.afterLayers,
+    ventilationBefore: projectSettings.ventilationBefore,
+    ventilationAfter: projectSettings.ventilationAfter,
+    ratioBefore: thermalSettings.ratioBefore,
+    ratioAfter: thermalSettings.ratioAfter,
+    rsiBefore: thermalSettings.rsiBefore,
+    rseBefore: thermalSettings.rseBefore,
+    rsiAfter: thermalSettings.rsiAfter,
+    rseAfter: thermalSettings.rseAfter,
   });
 
-  // Combined copy function
-  const copyBeforeToAfter = () => {
-    copyLayersBeforeToAfter();
-    copyThermalBeforeToAfter();
+  const calculationData: CalculationData = {
+    projectType: projectSettings.projectType,
+    surfaceArea: projectSettings.surfaceArea,
+    roofArea: projectSettings.roofArea,
+    climateZone: clientClimateZone,
+    beforeLayers: layerManagement.beforeLayers,
+    afterLayers: layerManagement.afterLayers,
+    ventilationBefore: projectSettings.ventilationBefore,
+    ventilationAfter: projectSettings.ventilationAfter,
+    ratioBefore: thermalSettings.ratioBefore,
+    ratioAfter: thermalSettings.ratioAfter,
+    rsiBefore: thermalSettings.rsiBefore,
+    rseBefore: thermalSettings.rseBefore,
+    rsiAfter: thermalSettings.rsiAfter,
+    rseAfter: thermalSettings.rseAfter,
+    ...thermalCalculations,
   };
 
-  // Calculer tous les paramètres requis pour l'export Excel
-  const calculationData: CalculationData = {
-    projectType,
-    surfaceArea,
-    roofArea,
-    ventilationBefore,
-    ventilationAfter,
-    ratioBefore,
-    ratioAfter,
-    rsiBefore,
-    rseBefore,
-    rsiAfter,
-    rseAfter,
-    beforeLayers,
-    afterLayers,
-    totalRBefore,
-    upValueBefore,
-    uValueBefore,
-    totalRAfter,
-    upValueAfter,
-    uValueAfter,
-    improvementPercent,
-    climateZone: climateZone,
-    bCoefficientBefore,
-    bCoefficientAfter,
-    meetsRequirements,
+  // Gestionnaires d'événements
+  const handleAddLayer = (type: "before" | "after") => {
+    console.log(`➕ Ajout couche ${type}`);
+    // Cette fonction sera gérée par le composant parent
+  };
+
+  const handleUpdateLayer = (id: string, field: string, value: any) => {
+    console.log(`✏️ Mise à jour couche ${id}:`, { field, value });
+    if (field === "layer") {
+      layerManagement.updateLayer("before", value);
+      layerManagement.updateLayer("after", value);
+    }
+  };
+
+  const handleDeleteBeforeLayer = (id: string) => {
+    console.log(`🗑️ Suppression couche AVANT: ${id}`);
+    const newLayers = layerManagement.beforeLayers.filter(layer => layer.id !== id);
+    layerManagement.setBeforeLayers(newLayers);
+  };
+
+  const handleDeleteAfterLayer = (id: string) => {
+    console.log(`🗑️ Suppression couche APRÈS: ${id}`);
+    const newLayers = layerManagement.afterLayers.filter(layer => layer.id !== id);
+    layerManagement.setAfterLayers(newLayers);
+  };
+
+  const handleAddSouflr47 = () => {
+    console.log('➕ Ajout SOUFL\'R 47');
+    layerManagement.addSouflr47();
   };
 
   return {
-    beforeLayers,
-    setBeforeLayers,
-    afterLayers,
-    setAfterLayers,
-    projectType,
-    setProjectType,
-    surfaceArea,
-    setSurfaceArea,
-    roofArea,
-    setRoofArea,
-    ventilationBefore,
-    setVentilationBefore,
-    ventilationAfter,
-    setVentilationAfter,
-    ratioBefore,
-    setRatioBefore,
-    ratioAfter,
-    setRatioAfter,
-    rsiBefore,
-    setRsiBefore,
-    rseBefore,
-    setRseBefore,
-    rsiAfter,
-    setRsiAfter,
-    rseAfter,
-    setRseAfter,
-    totalRBefore,
-    upValueBefore,
-    uValueBefore,
-    totalRAfter,
-    upValueAfter,
-    uValueAfter,
-    improvementPercent,
-    bCoefficientBefore,
-    bCoefficientAfter,
-    meetsRequirements,
-    addLayer,
-    addSouflr47,
-    copyBeforeToAfter,
-    updateLayer,
     calculationData,
-    climateZone,
-    setClimateZone,
+    // Gestionnaires d'événements
+    handleAddLayer,
+    handleUpdateLayer,
+    handleDeleteBeforeLayer,
+    handleDeleteAfterLayer,
+    handleAddSouflr47,
+    // Paramètres thermiques
+    thermalSettings,
+    // Accès direct aux setters pour les surfaces
+    setSurfaceArea: projectSettings.setSurfaceArea,
+    setRoofArea: projectSettings.setRoofArea,
   };
 };
