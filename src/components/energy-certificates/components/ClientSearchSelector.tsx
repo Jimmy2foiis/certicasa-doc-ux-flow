@@ -14,7 +14,7 @@ interface ClientSearchSelectorProps {
 const ClientSearchSelector = ({ selectedClient, onClientSelect }: ClientSearchSelectorProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showResults, setShowResults] = useState(false);
-  const { data: clients = [] } = useClients();
+  const { clients = [] } = useClients();
 
   const filteredClients = clients.filter(client =>
     client.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
