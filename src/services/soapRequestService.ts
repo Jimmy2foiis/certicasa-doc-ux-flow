@@ -13,20 +13,17 @@
  */
 export const createCoordinatesSoapEnvelope = (lat: number, lng: number): string => {
   return `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cat="http://catastro.meh.es/">
-      <soapenv:Header/>
-      <soapenv:Body>
-        <cat:Consulta_RCCOOR_DGC>
-          <cat:coor>
-            <cat:coord>
-              <cat:latitud>${lat}</cat:latitud>
-              <cat:longitud>${lng}</cat:longitud>
-            </cat:coord>
-          </cat:coor>
-        </cat:Consulta_RCCOOR_DGC>
-      </soapenv:Body>
-    </soapenv:Envelope>
-  `;
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+                  xmlns:cat="http://www.catastro.hacienda.gob.es/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <cat:Consulta_RCCOOR>
+         <cat:SRS>EPSG:4326</cat:SRS>
+         <cat:Coordenada_X>${lng}</cat:Coordenada_X>
+         <cat:Coordenada_Y>${lat}</cat:Coordenada_Y>
+      </cat:Consulta_RCCOOR>
+   </soapenv:Body>
+</soapenv:Envelope>`;
 };
 
 /**
@@ -36,17 +33,17 @@ export const createCoordinatesSoapEnvelope = (lat: number, lng: number): string 
  */
 export const createReferenceSearchSoapEnvelope = (refCad: string): string => {
   return `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cat="http://catastro.meh.es/">
-      <soapenv:Header/>
-      <soapenv:Body>
-        <cat:Consulta_DNP>
-          <cat:Consulta_DNP>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+                  xmlns:cat="http://www.catastro.hacienda.gob.es/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <cat:Consulta_DNP>
+         <cat:Consulta_DNP>
             <cat:RC>${refCad}</cat:RC>
-          </cat:Consulta_DNP>
-        </cat:Consulta_DNP>
-      </soapenv:Body>
-    </soapenv:Envelope>
-  `;
+         </cat:Consulta_DNP>
+      </cat:Consulta_DNP>
+   </soapenv:Body>
+</soapenv:Envelope>`;
 };
 
 /**
@@ -64,77 +61,19 @@ export const createAddressSearchSoapEnvelope = (
   number: string
 ): string => {
   return `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cat="http://catastro.meh.es/">
-      <soapenv:Header/>
-      <soapenv:Body>
-        <cat:Consulta_DNPLOC>
-          <cat:Consulta_DNPLOC>
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" 
+                  xmlns:cat="http://www.catastro.hacienda.gob.es/">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <cat:Consulta_DNPLOC>
+         <cat:Consulta_DNPLOC>
             <cat:Provincia>${province}</cat:Provincia>
             <cat:Municipio>${municipality}</cat:Municipio>
             <cat:Sigla>CL</cat:Sigla>
             <cat:Calle>${street}</cat:Calle>
             <cat:Numero>${number}</cat:Numero>
-          </cat:Consulta_DNPLOC>
-        </cat:Consulta_DNPLOC>
-      </soapenv:Body>
-    </soapenv:Envelope>
-  `;
-};
-
-/**
- * Génère une enveloppe SOAP pour obtenir des informations complètes sur une parcelle
- * @param refCad Référence cadastrale
- * @returns Chaîne XML formatée pour l'API Catastro
- */
-export const createParcelDataSoapEnvelope = (refCad: string): string => {
-  return `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cat="http://catastro.meh.es/">
-      <soapenv:Header/>
-      <soapenv:Body>
-        <cat:Consulta_DNPRC>
-          <cat:Consulta_DNPRC>
-            <cat:RC>${refCad}</cat:RC>
-          </cat:Consulta_DNPRC>
-        </cat:Consulta_DNPRC>
-      </soapenv:Body>
-    </soapenv:Envelope>
-  `;
-};
-
-/**
- * Génère une enveloppe SOAP pour obtenir la liste des municipalités d'une province
- * @param province Nom de la province (ex: "MADRID")
- * @returns Chaîne XML formatée pour l'API Catastro
- */
-export const createMunicipalitiesSoapEnvelope = (province: string): string => {
-  return `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cat="http://catastro.meh.es/">
-      <soapenv:Header/>
-      <soapenv:Body>
-        <cat:ConsultaMunicipio>
-          <cat:Provincia>${province}</cat:Provincia>
-        </cat:ConsultaMunicipio>
-      </soapenv:Body>
-    </soapenv:Envelope>
-  `;
-};
-
-/**
- * Génère une enveloppe SOAP pour obtenir la liste des rues d'une municipalité
- * @param province Nom de la province (ex: "MADRID")
- * @param municipality Nom de la municipalité (ex: "MADRID")
- * @returns Chaîne XML formatée pour l'API Catastro
- */
-export const createStreetsSoapEnvelope = (province: string, municipality: string): string => {
-  return `
-    <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:cat="http://catastro.meh.es/">
-      <soapenv:Header/>
-      <soapenv:Body>
-        <cat:ConsultaVia>
-          <cat:Provincia>${province}</cat:Provincia>
-          <cat:Municipio>${municipality}</cat:Municipio>
-        </cat:ConsultaVia>
-      </soapenv:Body>
-    </soapenv:Envelope>
-  `;
+         </cat:Consulta_DNPLOC>
+      </cat:Consulta_DNPLOC>
+   </soapenv:Body>
+</soapenv:Envelope>`;
 };

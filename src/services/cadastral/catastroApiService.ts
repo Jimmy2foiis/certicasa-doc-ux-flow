@@ -2,9 +2,10 @@ import { CatastroData } from '../catastroTypes';
 import { OVC_COORDENADAS_URL, OVC_CALLEJERO_DNPLOC_URL } from './catastroEndpoints';
 import { parseAddress } from './addressParser';
 import { parseCoordinatesResponse, parseAddressResponse } from './catastroResponseParser';
+import { getCadastralDataByCoordinatesSOAP } from './catastroSoapService';
 
 /**
- * Fonction pour obtenir des données cadastrales par coordonnées
+ * Fonction pour obtenir des données cadastrales par coordonnées avec fallback SOAP
  */
 export const getCadastralDataByCoordinatesREST = async (
   latitude: number,
@@ -16,35 +17,14 @@ export const getCadastralDataByCoordinatesREST = async (
       throw new Error('Coordonnées invalides ou manquantes');
     }
 
+    console.log(`Tentative REST API Catastro: lat=${latitude}, lng=${longitude}`);
+
     // Création de l'URL avec paramètres
     const url = new URL(OVC_COORDENADAS_URL);
-
-    // Important: Les paramètres doivent être strings et utiliser le format exact attendu par l'API
-    // SRS est le système de référence spatial (EPSG:4326 = WGS84)
     url.searchParams.append('SRS', 'EPSG:4326');
 
-    // CORRECTION: S'assurer que les valeurs décimales utilisent le point comme séparateur et sont correctement formatées
-    // Important: inverser latitude et longitude selon l'API Catastro
     const longitudeStr = longitude.toString().replace(',', '.').trim();
     const latitudeStr = latitude.toString().replace(',', '.').trim();
-
-    // Vérifications de sécurité supplémentaires
-    if (
-      !longitudeStr ||
-      longitudeStr === 'undefined' ||
-      longitudeStr === 'null' ||
-      longitudeStr === 'NaN'
-    ) {
-      throw new Error('La coordonnée X (longitude) est manquante ou invalide');
-    }
-    if (
-      !latitudeStr ||
-      latitudeStr === 'undefined' ||
-      latitudeStr === 'null' ||
-      latitudeStr === 'NaN'
-    ) {
-      throw new Error('La coordonnée Y (latitude) est manquante ou invalide');
-    }
 
     // Validation des limites de coordonnées pour l'Espagne
     const longitudeNum = parseFloat(longitudeStr);
@@ -57,17 +37,14 @@ export const getCadastralDataByCoordinatesREST = async (
       throw new Error("Latitude hors des limites de l'Espagne");
     }
 
-    // Ajouter les paramètres à l'URL
     url.searchParams.append('Coordenada_X', longitudeStr);
     url.searchParams.append('Coordenada_Y', latitudeStr);
 
-    // Logs pour le débogage
-    console.log(`Appel API REST Catastro par coordonnées: ${url.toString()}`);
-    console.log(`Paramètres envoyés: X=${longitudeStr}, Y=${latitudeStr}`);
+    console.log(`Appel API REST Catastro: ${url.toString()}`);
 
-    // Appel à l'API avec un timeout
+    // Appel à l'API REST avec timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     try {
       const response = await fetch(url.toString(), {
@@ -79,49 +56,50 @@ export const getCadastralDataByCoordinatesREST = async (
       });
       clearTimeout(timeoutId);
 
-      // Vérifier le code de statut
       if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
+        throw new Error(`Erreur HTTP REST: ${response.status}`);
       }
 
-      // Parser la réponse JSON
       const data = await response.json();
-      console.log('Réponse API Catastro (brute):', data);
+      console.log('✓ Réponse API REST reçue:', data);
 
-      // Parser et retourner les données cadastrales
       const result = parseCoordinatesResponse(data);
-
-      // Logging final des résultats
+      
       if (result.cadastralReference) {
-        console.log(`✓ Référence cadastrale obtenue: ${result.cadastralReference}`);
+        console.log(`✓ REST réussi - Référence: ${result.cadastralReference}`);
+        return result;
       } else {
-        console.log(`✗ Pas de référence cadastrale trouvée dans la réponse`);
-        // Log supplémentaire pour le débogage
-        console.log('Structure complète de la réponse Catastro:', JSON.stringify(data, null, 2));
+        console.log('⚠ REST sans référence cadastrale, tentative SOAP...');
+        // Fallback vers SOAP si pas de référence cadastrale
+        return await getCadastralDataByCoordinatesSOAP(latitude, longitude);
       }
 
-      if (result.climateZone) {
-        console.log(`✓ Zone climatique obtenue: ${result.climateZone}`);
-      }
-
-      return result;
     } catch (fetchError) {
       clearTimeout(timeoutId);
-      // Gérer les erreurs spécifiques au fetch
-      if ((fetchError as Error).name === 'AbortError') {
-        throw new Error("La requête a dépassé le délai d'attente");
-      }
-      throw fetchError;
+      console.log('✗ REST échoué, tentative SOAP...', fetchError);
+      
+      // Fallback vers SOAP en cas d'erreur REST
+      return await getCadastralDataByCoordinatesSOAP(latitude, longitude);
     }
+
   } catch (error) {
-    console.error('Erreur lors de la récupération des données cadastrales REST:', error);
-    return {
-      cadastralReference: '',
-      utmCoordinates: '',
-      climateZone: '',
-      apiSource: 'REST',
-      error: error instanceof Error ? error.message : 'Erreur inconnue',
-    };
+    console.error('Erreur validation coordonnées:', error);
+    
+    // En dernier recours, essayer quand même SOAP
+    try {
+      console.log('Tentative SOAP malgré l\'erreur de validation...');
+      return await getCadastralDataByCoordinatesSOAP(latitude, longitude);
+    } catch (soapError) {
+      console.error('SOAP également échoué:', soapError);
+      
+      return {
+        cadastralReference: '',
+        utmCoordinates: '',
+        climateZone: '',
+        apiSource: 'REST+SOAP_FAILED',
+        error: `REST et SOAP échoués: ${error instanceof Error ? error.message : 'Erreur inconnue'}`
+      };
+    }
   }
 };
 

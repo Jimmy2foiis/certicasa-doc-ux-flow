@@ -1,4 +1,3 @@
-
 import { MapPinned, FileSpreadsheet, MapPin, Navigation, RefreshCcw, Globe, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +25,27 @@ const CadastralInfo = ({
   onRefresh
 }: CadastralInfoProps) => {
   const [showDebugInfo, setShowDebugInfo] = useState(false);
+  
+  // Fonction pour obtenir le badge de statut API approprié
+  const getApiStatusBadge = (source?: string) => {
+    if (!source) return null;
+    
+    const badgeProps = {
+      'REST': { variant: 'default' as const, label: 'REST', color: 'text-green-600' },
+      'SOAP': { variant: 'secondary' as const, label: 'SOAP', color: 'text-blue-600' },
+      'REST+SOAP_FAILED': { variant: 'destructive' as const, label: 'API FAILED', color: 'text-red-600' },
+      'FALLBACK': { variant: 'outline' as const, label: 'FALLBACK', color: 'text-orange-600' }
+    };
+    
+    const config = badgeProps[source as keyof typeof badgeProps] || 
+                   { variant: 'outline' as const, label: source, color: 'text-gray-600' };
+    
+    return (
+      <Badge variant={config.variant} className="ml-2 text-xs">
+        {config.label}
+      </Badge>
+    );
+  };
   
   // Fonction pour ajuster légèrement les coordonnées GPS (pour contourner les problèmes de frontière de parcelle)
   const handleAdjustCoordinates = () => {
@@ -56,11 +76,7 @@ const CadastralInfo = ({
       <div className="flex items-center justify-between">
         <h3 className="font-semibold text-sm">
           Données Cadastrales
-          {apiSource && (
-            <Badge variant="outline" className="ml-2 text-xs">
-              API {apiSource}
-            </Badge>
-          )}
+          {getApiStatusBadge(apiSource)}
         </h3>
         <div className="flex items-center space-x-1">
           <TooltipProvider>
@@ -171,6 +187,19 @@ const CadastralInfo = ({
           )}
         </div>
       </div>
+      
+      {/* API Status Information */}
+      {apiSource && (
+        <Alert variant="default" className="mt-2 bg-blue-50 border-blue-200">
+          <AlertDescription className="text-xs">
+            <strong>Méthode API utilisée :</strong>
+            {apiSource === 'REST' && ' API REST (rapide, format JSON)'}
+            {apiSource === 'SOAP' && ' API SOAP (fallback, format XML)'}
+            {apiSource === 'REST+SOAP_FAILED' && ' Échec des deux APIs (REST et SOAP)'}
+            {apiSource === 'FALLBACK' && ' Calcul local approximatif'}
+          </AlertDescription>
+        </Alert>
+      )}
       
       {/* Afficher des informations supplémentaires si pas de référence cadastrale */}
       {!loadingCadastral && !cadastralReference && gpsCoordinates && (
