@@ -11,6 +11,7 @@ const GlobalTabNavigation = () => {
     const path = location.pathname;
     if (path === '/') return 'dashboard';
     if (path.startsWith('/clients')) return 'clients';
+    if (path.startsWith('/certificats-energetiques')) return 'certificates';
     if (path.startsWith('/finances')) return 'finances';
     if (path.startsWith('/lots')) return 'lots';
     if (path.startsWith('/documents')) return 'templates';
@@ -24,6 +25,9 @@ const GlobalTabNavigation = () => {
         break;
       case 'clients':
         navigate('/clients');
+        break;
+      case 'certificates':
+        navigate('/certificats-energetiques/envoi');
         break;
       case 'finances':
         navigate('/finances');
@@ -56,6 +60,12 @@ const GlobalTabNavigation = () => {
               className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-green-600 data-[state=active]:text-green-700 rounded-none px-6 h-12"
             >
               Clients
+            </TabsTrigger>
+            <TabsTrigger 
+              value="certificates"
+              className="data-[state=active]:bg-transparent data-[state=active]:border-b-2 data-[state=active]:border-green-600 data-[state=active]:text-green-700 rounded-none px-6 h-12"
+            >
+              Certificat Energetique
             </TabsTrigger>
             <TabsTrigger 
               value="finances"

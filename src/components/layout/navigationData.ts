@@ -7,6 +7,7 @@ import {
   FileText,
   Settings,
   HelpCircle,
+  Zap,
   LucideIcon,
 } from "lucide-react";
 
@@ -26,6 +27,11 @@ export const navigationLinks: NavLink[] = [
     title: "Clients",
     url: "/clients",
     icon: Users,
+  },
+  {
+    title: "Certificat Energetique",
+    url: "/certificats-energetiques/envoi",
+    icon: Zap,
   },
   {
     title: "Finances",

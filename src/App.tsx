@@ -20,6 +20,7 @@ import Help from "./pages/Help";
 import ProjectsList from "./pages/ProjectsList";
 import ProjectDetails from "./pages/ProjectDetails";
 import Finances from "./pages/Finances";
+import EnergyCertificates from "./pages/EnergyCertificates";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
             <Route path="/settings" element={<Settings />} />
             <Route path="/clients" element={<Clients />} />
             <Route path="/clients/list" element={<ClientsList />} />
+            <Route path="/certificats-energetiques/*" element={<EnergyCertificates />} />
             <Route path="/documents" element={<Documents />} />
             <Route path="/workflow/*" element={<Workflow />} />
             <Route path="/billing" element={<Billing />} />
