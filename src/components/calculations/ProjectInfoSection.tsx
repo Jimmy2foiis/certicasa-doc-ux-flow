@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { File } from "lucide-react";
+import { FileText } from "lucide-react";
 import { SafetyCultureService } from "@/services/safetyCultureService";
 import { useToast } from "@/components/ui/use-toast";
 interface ProjectInfoSectionProps {
@@ -167,8 +167,14 @@ const ProjectInfoSection = ({
               
               <div className="lg:col-span-1">
                 <label className="block text-sm text-gray-500 mb-2">Rapport de chantier</label>
-                <Button onClick={handleSafetyCultureReport} disabled={isLoadingReport} variant="default" className="h- text-black border-[#00000] rounded-md bg-purple-50">
-                  <File className="mr-2 h-4 w-4" />
+                <Button 
+                  onClick={handleSafetyCultureReport} 
+                  disabled={isLoadingReport} 
+                  variant="outline" 
+                  size="sm"
+                  className="w-full flex items-center gap-2"
+                >
+                  <FileText className="h-4 w-4" />
                   {isLoadingReport ? "Chargement..." : "Consulter le rapport SafetyCulture"}
                 </Button>
               </div>
