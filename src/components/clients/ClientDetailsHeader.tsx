@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -99,14 +98,14 @@ const ClientDetailsHeader = ({
               <RefreshCw className="h-3 w-3 mr-1" />
               Sync
             </Badge>
-            <Badge 
-              variant="outline" 
-              className="cursor-pointer hover:bg-green-50 hover:border-green-300 transition-colors"
+            <Button 
+              variant="default" 
+              className="bg-green-600 hover:bg-green-700"
               onClick={handleSave}
             >
-              <Save className="h-3 w-3 mr-1" />
+              <Save className="h-4 w-4 mr-2" />
               Enregistrer
-            </Badge>
+            </Button>
             <Button 
               variant="default" 
               className="bg-green-600 hover:bg-green-700"
