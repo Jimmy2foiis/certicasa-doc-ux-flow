@@ -15,5 +15,8 @@ export * from './calculationService';
 export * from './documentService';
 export * from './batchService';
 
+// Re-export des fonctions spécifiques pour les clients
+export { getClientsByTokens } from './clients/getClients';
+
 // Ré-export du client HTTP pour les cas particuliers
 export { httpClient } from './httpClient';
