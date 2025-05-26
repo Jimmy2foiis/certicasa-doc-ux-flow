@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { useLayerManagement, Layer } from "./useLayerManagement";
 import { useThermalCalculations } from "./useThermalCalculations";
@@ -14,6 +15,19 @@ export interface CalculationData {
   uValueAfter: number;
   improvementPercent: number;
   projectType: string;
+  // Ajouter toutes les propriétés manquantes
+  totalRBefore: number;
+  totalRAfter: number;
+  bCoefficientBefore: number;
+  bCoefficientAfter: number;
+  rsiBefore: string;
+  rseBefore: string;
+  rsiAfter: string;
+  rseAfter: string;
+  ventilationBefore: any;
+  ventilationAfter: any;
+  ratioBefore: number;
+  ratioAfter: number;
 }
 
 interface UseCalculationStateProps {
@@ -24,14 +38,14 @@ interface UseCalculationStateProps {
 
 export const useCalculationState = ({ 
   savedData, 
-  clientClimateZone, // Utiliser la vraie zone climatique du client
+  clientClimateZone,
   floorType 
 }: UseCalculationStateProps) => {
   
   // États pour les données de base
   const [surfaceArea, setSurfaceArea] = useState("70");
   const [roofArea, setRoofArea] = useState("85");
-  const [climateZone, setClimateZone] = useState(clientClimateZone || "C3"); // Utiliser la vraie zone
+  const [climateZone, setClimateZone] = useState(clientClimateZone || "C3");
 
   const layerManagement = useLayerManagement({
     savedBeforeLayers: savedData?.beforeLayers,
@@ -39,19 +53,23 @@ export const useCalculationState = ({
     floorType
   });
 
+  const thermalSettings = useThermalResistanceSettings({
+    savedData,
+    surfaceArea,
+    roofArea
+  });
+
   const thermalCalculations = useThermalCalculations({
     beforeLayers: layerManagement.beforeLayers,
     afterLayers: layerManagement.afterLayers,
-    surfaceArea,
-    roofArea,
-    climateZone
-  });
-
-  const thermalSettings = useThermalResistanceSettings({
-    beforeLayers: layerManagement.beforeLayers,
-    afterLayers: layerManagement.afterLayers,
-    onBeforeLayersChange: layerManagement.setBeforeLayers,
-    onAfterLayersChange: layerManagement.setAfterLayers
+    ventilationBefore: thermalSettings.ventilationBefore || "caso1",
+    ventilationAfter: thermalSettings.ventilationAfter || "caso1",
+    ratioBefore: thermalSettings.ratioBefore,
+    ratioAfter: thermalSettings.ratioAfter,
+    rsiBefore: thermalSettings.rsiBefore,
+    rseBefore: thermalSettings.rseBefore,
+    rsiAfter: thermalSettings.rsiAfter,
+    rseAfter: thermalSettings.rseAfter
   });
 
   // Charger les données sauvegardées
@@ -70,11 +88,9 @@ export const useCalculationState = ({
       if (savedData.climateZone) {
         setClimateZone(savedData.climateZone);
       } else if (clientClimateZone) {
-        // Si pas de zone sauvegardée, utiliser la zone climatique du client
         setClimateZone(clientClimateZone);
       }
     } else if (clientClimateZone) {
-      // Si pas de données sauvegardées, utiliser la zone climatique du client
       setClimateZone(clientClimateZone);
     }
   }, [savedData, clientClimateZone]);
@@ -97,7 +113,20 @@ export const useCalculationState = ({
     uValueBefore: thermalCalculations.uValueBefore,
     uValueAfter: thermalCalculations.uValueAfter,
     improvementPercent: thermalCalculations.improvementPercent,
-    projectType: "RES010"
+    projectType: "RES010",
+    // Ajouter toutes les propriétés calculées
+    totalRBefore: thermalCalculations.totalRBefore,
+    totalRAfter: thermalCalculations.totalRAfter,
+    bCoefficientBefore: thermalCalculations.bCoefficientBefore,
+    bCoefficientAfter: thermalCalculations.bCoefficientAfter,
+    rsiBefore: thermalSettings.rsiBefore,
+    rseBefore: thermalSettings.rseBefore,
+    rsiAfter: thermalSettings.rsiAfter,
+    rseAfter: thermalSettings.rseAfter,
+    ventilationBefore: thermalSettings.ventilationBefore || "caso1",
+    ventilationAfter: thermalSettings.ventilationAfter || "caso1",
+    ratioBefore: thermalSettings.ratioBefore,
+    ratioAfter: thermalSettings.ratioAfter
   }), [
     layerManagement.beforeLayers,
     layerManagement.afterLayers,
@@ -105,9 +134,7 @@ export const useCalculationState = ({
     surfaceArea,
     roofArea,
     climateZone,
-    thermalCalculations.uValueBefore,
-    thermalCalculations.uValueAfter,
-    thermalCalculations.improvementPercent
+    thermalCalculations
   ]);
 
   const handleAddLayer = (type: "before" | "after") => {

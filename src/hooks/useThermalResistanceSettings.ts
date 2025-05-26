@@ -19,6 +19,9 @@ export const useThermalResistanceSettings = ({
   const [rseBefore, setRseBefore] = useState("0.10");
   const [rsiAfter, setRsiAfter] = useState("0.10");
   const [rseAfter, setRseAfter] = useState("0.10");
+  // Ajouter les propriétés de ventilation manquantes
+  const [ventilationBefore, setVentilationBefore] = useState("caso1");
+  const [ventilationAfter, setVentilationAfter] = useState("caso1");
 
   // Charger les données sauvegardées une seule fois
   useEffect(() => {
@@ -28,7 +31,8 @@ export const useThermalResistanceSettings = ({
       if (savedData.rseBefore) setRseBefore(savedData.rseBefore);
       if (savedData.rsiAfter) setRsiAfter(savedData.rsiAfter);
       if (savedData.rseAfter) setRseAfter(savedData.rseAfter);
-      // Ne pas charger les ratios sauvegardés car ils doivent être recalculés
+      if (savedData.ventilationBefore) setVentilationBefore(savedData.ventilationBefore);
+      if (savedData.ventilationAfter) setVentilationAfter(savedData.ventilationAfter);
     }
   }, [savedData]);
 
@@ -57,6 +61,7 @@ export const useThermalResistanceSettings = ({
     setRatioAfter(ratioBefore);
     setRsiAfter(rsiBefore);
     setRseAfter(rseBefore);
+    setVentilationAfter(ventilationBefore);
   };
 
   return {
@@ -72,6 +77,10 @@ export const useThermalResistanceSettings = ({
     setRsiAfter,
     rseAfter,
     setRseAfter,
+    ventilationBefore,
+    setVentilationBefore,
+    ventilationAfter,
+    setVentilationAfter,
     copyBeforeToAfter,
   };
 };
