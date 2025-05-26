@@ -24,15 +24,26 @@ export function ThermalZoneSync({
   const [selectedZone, setSelectedZone] = useState<string>('');
   const [isSynced, setIsSynced] = useState(true);
 
-  // 🔄 SYNCHRONISATION AUTOMATIQUE
+  // 🔄 SYNCHRONISATION AUTOMATIQUE - Correction du problème
   useEffect(() => {
-    if (geolocatedZone && geolocatedZone !== selectedZone) {
-      console.log(`🔄 Synchronisation: ${geolocatedZone} → Coef G: ${THERMAL_COEFFICIENTS[geolocatedZone as keyof typeof THERMAL_COEFFICIENTS]}`);
+    console.log('🔄 ThermalZoneSync - geolocatedZone reçue:', geolocatedZone);
+    console.log('🔄 ThermalZoneSync - selectedZone actuelle:', selectedZone);
+    
+    if (geolocatedZone && geolocatedZone in THERMAL_COEFFICIENTS) {
+      const coefficient = THERMAL_COEFFICIENTS[geolocatedZone as keyof typeof THERMAL_COEFFICIENTS];
+      console.log(`🔄 Synchronisation: ${geolocatedZone} → Coef G: ${coefficient}`);
+      
       setSelectedZone(geolocatedZone);
       setIsSynced(true);
-      onCoefficientChange(geolocatedZone, THERMAL_COEFFICIENTS[geolocatedZone as keyof typeof THERMAL_COEFFICIENTS]);
+      onCoefficientChange(geolocatedZone, coefficient);
+    } else if (geolocatedZone && !selectedZone) {
+      // Si la zone géolocalisée n'est pas dans notre table, utiliser C3 par défaut
+      console.log('🔄 Zone non reconnue, utilisation de C3 par défaut');
+      setSelectedZone('C3');
+      setIsSynced(false);
+      onCoefficientChange('C3', THERMAL_COEFFICIENTS.C3);
     }
-  }, [geolocatedZone, selectedZone, onCoefficientChange]);
+  }, [geolocatedZone, onCoefficientChange]);
 
   const handleManualChange = (newZone: string) => {
     console.log(`🎯 Changement manuel: ${newZone} → Coef G: ${THERMAL_COEFFICIENTS[newZone as keyof typeof THERMAL_COEFFICIENTS]}`);
