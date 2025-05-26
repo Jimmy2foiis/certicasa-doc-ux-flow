@@ -99,7 +99,8 @@ export const ClientTabsContainer = ({
             <ProjectCalculation 
               clientId={clientId}
               onSave={handleSave}
-              clientClimateZone={climateZone || client?.climateZone || "C3"}
+              realClimateZone={climateZone || client?.climateZone || "C3"}
+              geolocatedClimateZone={climateZone}
               clientName={client?.name}
               clientAddress={client?.address}
               projectName={`Calcul thermique pour ${client?.name}`}

@@ -8,7 +8,8 @@ interface ProjectCalculationContainerProps {
   projectId?: string | null;
   savedData?: any;
   onSave?: (calculationData: any) => void;
-  clientClimateZone?: string;
+  realClimateZone?: string;
+  geolocatedClimateZone?: string;
   clientClimateConfidence?: number;
   clientClimateMethod?: string;
   clientClimateReferenceCity?: string;
@@ -39,7 +40,8 @@ const ProjectCalculationContainer = ({
   projectId, 
   savedData, 
   onSave,
-  clientClimateZone,
+  realClimateZone,
+  geolocatedClimateZone,
   clientClimateConfidence,
   clientClimateMethod,
   clientClimateReferenceCity,
@@ -61,10 +63,11 @@ const ProjectCalculationContainer = ({
   const calculationState = useProjectCalculationState({
     clientId,
     savedData,
-    clientClimateZone,
+    realClimateZone,
     surfaceArea,
     roofArea,
-    floorType
+    floorType,
+    geolocatedClimateZone
   });
 
   const handlers = useProjectCalculationHandlers({
