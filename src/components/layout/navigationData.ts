@@ -3,6 +3,7 @@ import {
   Home,
   Users,
   Coins,
+  Package,
   Calculator,
   FileText,
   Settings,
@@ -31,6 +32,11 @@ export const navigationLinks: NavLink[] = [
     title: "Finances",
     url: "/finances",
     icon: Coins,
+  },
+  {
+    title: "Dépôt de Lots",
+    url: "/lots",
+    icon: Package,
   },
   {
     title: "Calculettes",
