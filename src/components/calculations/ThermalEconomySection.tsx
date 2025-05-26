@@ -1,10 +1,10 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useThermalEconomyCalculations } from "@/hooks/useThermalEconomyCalculations";
 import { ThermalZoneSync } from "../thermal/ThermalZoneSync";
 import DelegateSelector from "./thermal-economy/DelegateSelector";
 import CalculationsDisplay from "./thermal-economy/CalculationsDisplay";
 import CherryOption from "./thermal-economy/CherryOption";
+import SimpleThermalZoneSelector from "./thermal-economy/SimpleThermalZoneSelector";
 
 // Climate zone coefficients mapping
 export const climateZoneCoefficients: Record<string, number> = {
@@ -101,6 +101,15 @@ const ThermalEconomySection = ({
           <DelegateSelector
             delegate={delegate}
             onDelegateChange={setDelegate}
+          />
+        </div>
+
+        {/* Nouveau sélecteur simple qui se pré-remplit */}
+        <div className="mt-4">
+          <SimpleThermalZoneSelector
+            value={selectedClimateZone}
+            onChange={handleClimateZoneChange}
+            geolocatedZone={climateZone}
           />
         </div>
         
