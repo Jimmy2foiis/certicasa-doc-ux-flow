@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -138,18 +139,23 @@ const ProjectInfoSection = ({
     }
   };
 
-  const floorTypeOptions = [{
-    value: "Béton",
-    label: "🪨 Béton"
-  }, {
-    value: "Bois",
-    label: "🪵 Bois"
-  }, {
-    value: "Céramique",
-    label: "🧱 Céramique"
-  }];
+  const floorTypeOptions = [
+    {
+      value: "Béton",
+      label: "🪨 Béton"
+    },
+    {
+      value: "Bois", 
+      label: "🪵 Bois"
+    },
+    {
+      value: "Céramique",
+      label: "🧱 Céramique"
+    }
+  ];
 
-  return <Card className="mb-4">
+  return (
+    <Card className="mb-4">
       <CardContent className="pt-6">
         {/* Section Données Techniques */}
         <div className="mb-6">
@@ -165,9 +171,11 @@ const ProjectInfoSection = ({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {floorTypeOptions.map(option => <SelectItem key={option.value} value={option.value}>
+                    {floorTypeOptions.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
                         {option.label}
-                      </SelectItem>)}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -177,7 +185,7 @@ const ProjectInfoSection = ({
                 <Button
                   onClick={handleSafetyCultureReport}
                   disabled={isLoadingReport}
-                  className="w-full h-12 text-base bg-blue-600 hover:bg-blue-700 text-white"
+                  className="w-full"
                   variant="default"
                 >
                   <File className="mr-2 h-4 w-4" />
@@ -190,16 +198,32 @@ const ProjectInfoSection = ({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Surface combles (m²)</label>
-                <Input type="number" value={localSurfaceArea} onChange={e => handleSurfaceAreaChange(e.target.value)} onBlur={e => handleSurfaceAreaChange(e.target.value)} className="w-full" placeholder="Surface des combles" />
+                <Input
+                  type="number"
+                  value={localSurfaceArea}
+                  onChange={(e) => handleSurfaceAreaChange(e.target.value)}
+                  onBlur={(e) => handleSurfaceAreaChange(e.target.value)}
+                  className="w-full"
+                  placeholder="Surface des combles"
+                />
               </div>
               <div>
                 <label className="block text-sm text-gray-500 mb-2">Surface toiture (m²)</label>
-                <Input type="number" value={localRoofArea} onChange={e => handleRoofAreaChange(e.target.value)} onBlur={e => handleRoofAreaChange(e.target.value)} className="w-full" placeholder="Surface de la toiture" />
+                <Input
+                  type="number"
+                  value={localRoofArea}
+                  onChange={(e) => handleRoofAreaChange(e.target.value)}
+                  onBlur={(e) => handleRoofAreaChange(e.target.value)}
+                  className="w-full"
+                  placeholder="Surface de la toiture"
+                />
               </div>
             </div>
           </div>
         </div>
       </CardContent>
-    </Card>;
+    </Card>
+  );
 };
+
 export default ProjectInfoSection;
