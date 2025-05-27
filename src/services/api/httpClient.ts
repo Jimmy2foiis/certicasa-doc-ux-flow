@@ -1,127 +1,109 @@
 
 /**
- * HTTP client using native fetch API
+ * Client HTTP pour les appels API
  */
-import { API_BASE_URL, DEFAULT_FETCH_OPTIONS, API_TIMEOUT } from './config';
+import { API_BASE_URL, API_TIMEOUT, DEFAULT_FETCH_OPTIONS } from './config';
+import { ApiResponse } from './types';
 
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
-  message?: string;
-  status?: number;
-}
+// Fonction pour gérer les timeouts des requêtes fetch
+const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = API_TIMEOUT): Promise<Response> => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  
+  const response = await fetch(url, {
+    ...options,
+    signal: controller.signal
+  });
+  
+  clearTimeout(id);
+  return response;
+};
 
-/**
- * HTTP client class using native fetch
- */
-class HttpClient {
-  private baseURL: string;
-  private defaultOptions: RequestInit;
-
-  constructor(baseURL: string = API_BASE_URL) {
-    this.baseURL = baseURL;
-    this.defaultOptions = DEFAULT_FETCH_OPTIONS;
-  }
-
-  /**
-   * Make a fetch request with timeout and error handling
-   */
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
-
+// Client HTTP générique
+export const httpClient = {
+  async get<T>(endpoint: string, customOptions: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
-      const url = endpoint.startsWith('http') ? endpoint : `${this.baseURL}${endpoint}`;
+      const url = `${API_BASE_URL}${endpoint}`;
+      const options = { ...DEFAULT_FETCH_OPTIONS, ...customOptions, method: 'GET' };
       
-      const response = await fetch(url, {
-        ...this.defaultOptions,
-        ...options,
-        headers: {
-          ...this.defaultOptions.headers,
-          ...options.headers,
-        },
-        signal: controller.signal,
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!response.ok) {
-        const errorMessage = `HTTP ${response.status}: ${response.statusText}`;
-        return {
-          success: false,
-          error: errorMessage,
-          message: errorMessage,
-          status: response.status,
-        };
-      }
-
+      const response = await fetchWithTimeout(url, options);
       const data = await response.json();
-      return {
-        success: true,
-        data,
-        status: response.status,
-      };
-    } catch (error: any) {
-      clearTimeout(timeoutId);
       
-      let errorMessage = 'Network error';
-      if (error.name === 'AbortError') {
-        errorMessage = 'Request timeout';
-      } else if (error.message) {
-        errorMessage = error.message;
+      if (!response.ok) {
+        throw new Error(data.message || `Erreur HTTP: ${response.status}`);
       }
-
-      return {
-        success: false,
-        error: errorMessage,
-        message: errorMessage,
+      
+      return data;
+    } catch (error) {
+      console.error(`Erreur GET ${endpoint}:`, error);
+      return { success: false, data: null, message: error instanceof Error ? error.message : 'Erreur inconnue' };
+    }
+  },
+  
+  async post<T>(endpoint: string, body: any, customOptions: RequestInit = {}): Promise<ApiResponse<T>> {
+    try {
+      const url = `${API_BASE_URL}${endpoint}`;
+      const options = {
+        ...DEFAULT_FETCH_OPTIONS,
+        ...customOptions,
+        method: 'POST',
+        body: JSON.stringify(body)
       };
+      
+      const response = await fetchWithTimeout(url, options);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || `Erreur HTTP: ${response.status}`);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error(`Erreur POST ${endpoint}:`, error);
+      return { success: false, data: null, message: error instanceof Error ? error.message : 'Erreur inconnue' };
+    }
+  },
+  
+  async patch<T>(endpoint: string, body: any, customOptions: RequestInit = {}): Promise<ApiResponse<T>> {
+    try {
+      const url = `${API_BASE_URL}${endpoint}`;
+      const options = {
+        ...DEFAULT_FETCH_OPTIONS,
+        ...customOptions,
+        method: 'PATCH',
+        body: JSON.stringify(body)
+      };
+      
+      const response = await fetchWithTimeout(url, options);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || `Erreur HTTP: ${response.status}`);
+      }
+      
+      return data;
+    } catch (error) {
+      console.error(`Erreur PATCH ${endpoint}:`, error);
+      return { success: false, data: null, message: error instanceof Error ? error.message : 'Erreur inconnue' };
+    }
+  },
+  
+  async delete<T>(endpoint: string, customOptions: RequestInit = {}): Promise<ApiResponse<T>> {
+    try {
+      const url = `${API_BASE_URL}${endpoint}`;
+      const options = { ...DEFAULT_FETCH_OPTIONS, ...customOptions, method: 'DELETE' };
+      
+      const response = await fetchWithTimeout(url, options);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `Erreur HTTP: ${response.status}`);
+      }
+      
+      return { success: true, data: null };
+    } catch (error) {
+      console.error(`Erreur DELETE ${endpoint}:`, error);
+      return { success: false, data: null, message: error instanceof Error ? error.message : 'Erreur inconnue' };
     }
   }
-
-  /**
-   * GET request
-   */
-  async get<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: 'GET',
-    });
-  }
-
-  /**
-   * POST request
-   */
-  async post<T>(endpoint: string, data?: any, options: RequestInit = {}): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: 'POST',
-      body: data ? JSON.stringify(data) : undefined,
-    });
-  }
-
-  /**
-   * PATCH request
-   */
-  async patch<T>(endpoint: string, data?: any, options: RequestInit = {}): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: 'PATCH',
-      body: data ? JSON.stringify(data) : undefined,
-    });
-  }
-
-  /**
-   * DELETE request
-   */
-  async delete<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-    return this.request<T>(endpoint, {
-      ...options,
-      method: 'DELETE',
-    });
-  }
-}
-
-// Export singleton instance
-export const httpClient = new HttpClient();
+};

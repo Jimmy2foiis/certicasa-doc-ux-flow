@@ -17,7 +17,7 @@ export const updateClientRecord = async (clientId: string, clientData: Partial<C
     const response = await httpClient.patch<any>(`/prospects/${clientId}/`, requestData);
     
     if (!response.success || !response.data) {
-      console.error(`Erreur lors de la mise à jour du client ${clientId}:`, response.error || response.message);
+      console.error(`Erreur lors de la mise à jour du client ${clientId}:`, response.message);
       return null;
     }
     
