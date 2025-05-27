@@ -1,4 +1,3 @@
-
 import { GoogleMapsCoordinates } from "@/types/googleMaps";
 import { GOOGLE_MAPS_API_KEY } from "@/config/googleMapsConfig";
 import proj4 from 'proj4';
@@ -24,8 +23,8 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000;
 // Définir les systèmes de coordonnées pour proj4
 // WGS84 (GPS coordinates)
 const WGS84 = 'EPSG:4326';
-// UTM Zone 30N (ETRS89 / UTM zone 30N) - système utilisé en Espagne
-const UTM30N = '+proj=utm +zone=30 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs';
+// UTM Zone 30T (ETRS89 / UTM zone 30T) - système utilisé en Espagne pour cette zone
+const UTM30T = '+proj=utm +zone=30 +datum=WGS84 +units=m +no_defs';
 
 /**
  * Get coordinates from a given address using Google Maps Geocoding API
@@ -117,7 +116,7 @@ export const getAddressFromCoordinates = async (coordinates: GeoCoordinates): Pr
 };
 
 /**
- * Convert GPS coordinates (latitude/longitude) to UTM 30N format using proj4
+ * Convert GPS coordinates (latitude/longitude) to UTM 30T format using proj4
  * Returns a formatted string representation of UTM coordinates
  * @param latitude - The latitude in decimal degrees
  * @param longitude - The longitude in decimal degrees
@@ -131,9 +130,10 @@ export const getFormattedUTMCoordinates = (latitude: number, longitude: number):
     }
     
     console.log(`Conversion UTM pour les coordonnées GPS: ${latitude}, ${longitude}`);
+    console.log(`Ordre envoyé à proj4: [longitude=${longitude}, latitude=${latitude}]`);
     
-    // Convertir les coordonnées WGS84 (GPS) vers UTM 30N
-    const utmCoords = proj4(WGS84, UTM30N, [longitude, latitude]);
+    // IMPORTANT: proj4 attend [longitude, latitude] et non [latitude, longitude]
+    const utmCoords = proj4(WGS84, UTM30T, [longitude, latitude]);
     
     if (!utmCoords || utmCoords.length < 2) {
       console.error("Échec de la conversion UTM");
@@ -143,7 +143,7 @@ export const getFormattedUTMCoordinates = (latitude: number, longitude: number):
     const easting = Math.round(utmCoords[0] * 1000) / 1000; // Arrondir à 3 décimales
     const northing = Math.round(utmCoords[1] * 1000) / 1000;
     
-    const result = `UTM 30N E: ${easting} N: ${northing}`;
+    const result = `UTM 30T E: ${easting} N: ${northing}`;
     console.log(`Coordonnées UTM calculées: ${result}`);
     
     return result;
