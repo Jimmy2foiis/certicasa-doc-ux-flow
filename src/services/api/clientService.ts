@@ -1,7 +1,6 @@
-
 /**
  * Service for client management via external REST API
- * URL: https://certicasa.mitain.com/api/prospects/
+ * URL: https://cert.mitain.com/api/prospects/
  */
 
 // Re-export client CRUD operations

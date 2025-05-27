@@ -39,13 +39,13 @@ Pré-requis : Node.js ≥ 18, npm ≥ 9.
 
 | Nom                 | Description                  | Exemple                            |
 | ------------------- | ---------------------------- | ---------------------------------- |
-| `VITE_API_BASE_URL` | URL de l'API REST principale | `https://certicasa.mitain.com/api` |
+| `VITE_API_BASE_URL` | URL de l'API REST principale | `https://cert.mitain.com/api` |
 | `VITE_MAPS_API_KEY` | Clé Google Maps JS           | `AIza...`                          |
 
 Créez un fichier `.env.local` (non versionné) :
 
 ```ini
-VITE_API_BASE_URL=https://certicasa.mitain.com/api
+VITE_API_BASE_URL=https://cert.mitain.com/api
 VITE_MAPS_API_KEY=<your-google-maps-key>
 ```
 
