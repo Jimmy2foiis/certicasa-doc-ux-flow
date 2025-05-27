@@ -1,3 +1,4 @@
+
 /**
  * Client HTTP pour les appels API avec debug amélioré
  */
@@ -41,10 +42,16 @@ const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout 
 export const httpClient = {
   async get<T>(endpoint: string, customOptions: RequestInit = {}): Promise<ApiResponse<T>> {
     const url = `${API_BASE_URL}${endpoint}`;
-    const headers = {
-      ...DEFAULT_FETCH_OPTIONS.headers,
-      ...(customOptions.headers || {}),
-      ...getAuthHeader(),
+    
+    // Construire les headers de manière sûre pour TypeScript
+    const customHeaders = (customOptions.headers as Record<string, string>) || {};
+    const authHeaders = getAuthHeader();
+    const defaultHeaders = DEFAULT_FETCH_OPTIONS.headers as Record<string, string>;
+    
+    const headers: Record<string, string> = {
+      ...defaultHeaders,
+      ...customHeaders,
+      ...authHeaders,
     };
     
     const options: RequestInit = {
@@ -130,14 +137,22 @@ export const httpClient = {
   async post<T>(endpoint: string, body: any, customOptions: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
       const url = `${API_BASE_URL}${endpoint}`;
+      
+      // Construire les headers de manière sûre pour TypeScript
+      const customHeaders = (customOptions.headers as Record<string, string>) || {};
+      const authHeaders = getAuthHeader();
+      const defaultHeaders = DEFAULT_FETCH_OPTIONS.headers as Record<string, string>;
+      
+      const headers: Record<string, string> = {
+        ...defaultHeaders,
+        ...customHeaders,
+        ...authHeaders,
+      };
+      
       const options: RequestInit = {
         ...DEFAULT_FETCH_OPTIONS,
         ...customOptions,
-        headers: {
-          ...DEFAULT_FETCH_OPTIONS.headers,
-          ...(customOptions.headers || {}),
-          ...getAuthHeader(),
-        },
+        headers,
         method: 'POST',
         body: JSON.stringify(body),
       };
@@ -159,14 +174,22 @@ export const httpClient = {
   async patch<T>(endpoint: string, body: any, customOptions: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
       const url = `${API_BASE_URL}${endpoint}`;
+      
+      // Construire les headers de manière sûre pour TypeScript
+      const customHeaders = (customOptions.headers as Record<string, string>) || {};
+      const authHeaders = getAuthHeader();
+      const defaultHeaders = DEFAULT_FETCH_OPTIONS.headers as Record<string, string>;
+      
+      const headers: Record<string, string> = {
+        ...defaultHeaders,
+        ...customHeaders,
+        ...authHeaders,
+      };
+      
       const options: RequestInit = {
         ...DEFAULT_FETCH_OPTIONS,
         ...customOptions,
-        headers: {
-          ...DEFAULT_FETCH_OPTIONS.headers,
-          ...(customOptions.headers || {}),
-          ...getAuthHeader(),
-        },
+        headers,
         method: 'PATCH',
         body: JSON.stringify(body),
       };
@@ -188,14 +211,22 @@ export const httpClient = {
   async delete<T>(endpoint: string, customOptions: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
       const url = `${API_BASE_URL}${endpoint}`;
+      
+      // Construire les headers de manière sûre pour TypeScript
+      const customHeaders = (customOptions.headers as Record<string, string>) || {};
+      const authHeaders = getAuthHeader();
+      const defaultHeaders = DEFAULT_FETCH_OPTIONS.headers as Record<string, string>;
+      
+      const headers: Record<string, string> = {
+        ...defaultHeaders,
+        ...customHeaders,
+        ...authHeaders,
+      };
+      
       const options: RequestInit = {
         ...DEFAULT_FETCH_OPTIONS,
         ...customOptions,
-        headers: {
-          ...DEFAULT_FETCH_OPTIONS.headers,
-          ...(customOptions.headers || {}),
-          ...getAuthHeader(),
-        },
+        headers,
         method: 'DELETE',
       };
       
