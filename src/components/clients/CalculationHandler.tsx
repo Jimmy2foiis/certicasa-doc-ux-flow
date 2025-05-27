@@ -1,7 +1,10 @@
+
 import React, { useState } from "react";
 import CalculationHeader from "@/components/calculations/CalculationHeader";
 import CalculationContent from "@/components/calculations/CalculationContent";
 import CalculationActions from "@/components/calculations/CalculationActions";
+import { useCalculationState } from "@/hooks/useCalculationState";
+import { useLayerManagement } from "@/hooks/useLayerManagement";
 
 interface CalculationHandlerProps {
   client: any;
@@ -12,26 +15,24 @@ interface CalculationHandlerProps {
 }
 
 const CalculationHandler = ({ client, clientId, currentProjectId, savedCalculations, onBack }: CalculationHandlerProps) => {
-  const [surfaceArea, setSurfaceArea] = useState("70");
-  const [roofArea, setRoofArea] = useState("85");
-  const [floorType, setFloorType] = useState("Bois");
-  const [climateZone, setClimateZone] = useState("C3");
-
-  const handleSurfaceAreaChange = (value: string) => {
-    setSurfaceArea(value);
-  };
-
-  const handleRoofAreaChange = (value: string) => {
-    setRoofArea(value);
-  };
-
-  const handleFloorTypeChange = (value: string) => {
-    setFloorType(value);
-  };
-
-  const handleClimateZoneChange = (value: string) => {
-    setClimateZone(value);
-  };
+  // Use the proper calculation state hook
+  const {
+    calculationData,
+    updateField,
+    addLayer,
+    updateLayer,
+    deleteLayer,
+    addSouflr47,
+    copyBeforeToAfter,
+    setRsiBefore,
+    setRseBefore,
+    setRsiAfter,
+    setRseAfter,
+    setVentilationBefore,
+    setVentilationAfter,
+    setRatioBefore,
+    setRatioAfter
+  } = useCalculationState();
 
   // Préparer les informations client pour le certificat énergétique
   const clientInfo = {
@@ -46,35 +47,53 @@ const CalculationHandler = ({ client, clientId, currentProjectId, savedCalculati
     onBack();
   };
 
-  const handleDelete = (projectId: string) => {
-    console.log("Deleting calculation:", projectId);
-    onBack();
+  const handleClimateZoneChange = (zone: string) => {
+    updateField('climateZone', zone);
   };
 
   return (
     <div className="space-y-6">
       <CalculationHeader
-        client={client}
-        clientId={clientId}
-        onBack={onBack}
+        calculationData={calculationData}
+        onSave={handleSave}
+        clientName={client.name}
+        clientAddress={client.address}
+        projectName={`Projet ${new Date().toLocaleDateString()}`}
+        clientData={{
+          name: client.name || '',
+          nif: client.nif || '',
+          address: client.address || '',
+          phone: client.phone || '',
+          email: client.email || ''
+        }}
       />
       
       <CalculationContent
-        surfaceArea={surfaceArea}
-        roofArea={roofArea}
-        floorType={floorType}
-        climateZone={climateZone}
-        onSurfaceAreaChange={handleSurfaceAreaChange}
-        onRoofAreaChange={handleRoofAreaChange}
-        onFloorTypeChange={handleFloorTypeChange}
+        calculationData={calculationData}
+        onAddLayer={addLayer}
+        onUpdateLayer={updateLayer}
+        onDeleteBeforeLayer={(id) => deleteLayer('before', id)}
+        onDeleteAfterLayer={(id) => deleteLayer('after', id)}
+        onAddSouflr47={addSouflr47}
+        onCopyBeforeToAfter={copyBeforeToAfter}
+        setRsiBefore={setRsiBefore}
+        setRseBefore={setRseBefore}
+        setRsiAfter={setRsiAfter}
+        setRseAfter={setRseAfter}
+        setVentilationBefore={setVentilationBefore}
+        setVentilationAfter={setVentilationAfter}
+        setRatioBefore={setRatioBefore}
+        setRatioAfter={setRatioAfter}
         onClimateZoneChange={handleClimateZoneChange}
         clientInfo={clientInfo}
       />
 
       <CalculationActions
+        calculationData={calculationData}
         onSave={handleSave}
-        onDelete={handleDelete}
-        onBack={onBack}
+        clientName={client.name}
+        clientAddress={client.address}
+        projectName={`Projet ${new Date().toLocaleDateString()}`}
       />
     </div>
   );
