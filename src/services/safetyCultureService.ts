@@ -1,5 +1,6 @@
+
 import type { SafetyCultureAudit, SafetyCulturePhoto, SafetyCultureConfig } from '@/types/safetyCulture';
-import { safetyCultureAPI } from './api.service';
+import { safetyCultureService } from './api/safetyCulture';
 
 class SafetyCultureServiceClass {
   private config: SafetyCultureConfig = {
@@ -8,7 +9,6 @@ class SafetyCultureServiceClass {
   };
 
   private getApiKey(): string {
-    // Récupérer la clé API depuis le localStorage ou les paramètres
     const apiKey = localStorage.getItem('safetyCulture_apiKey');
     if (!apiKey) {
       throw new Error('Clé API SafetyCulture non configurée. Veuillez la configurer dans les paramètres.');
@@ -18,87 +18,87 @@ class SafetyCultureServiceClass {
 
   async getSafetyCultureReportURL(projectId: string): Promise<string | null> {
     try {
-      // Utiliser la nouvelle API
-      const response = await safetyCultureAPI.getInspectionDetails(projectId);
+      const response = await safetyCultureService.getInspectionDetails(projectId);
       
-      return response.report_url || null;
+      if (response.success && response.data?.report_url) {
+        return response.data.report_url;
+      }
+      
+      return null;
     } catch (error) {
       console.error('Erreur lors de la récupération du rapport SafetyCulture:', error);
       
-      // Simulation pour la démo - retourne null si pas disponible
+      // Simulation pour la démo
       const mockAvailable = Math.random() > 0.5;
-      if (mockAvailable) {
-        return `https://app.safetyculture.com/reports/project-${projectId}`;
-      }
-      return null;
+      return mockAvailable ? `https://app.safetyculture.com/reports/project-${projectId}` : null;
     }
   }
 
   async getAudits(): Promise<SafetyCultureAudit[]> {
     try {
-      const response = await safetyCultureAPI.getInspections({ limit: 50 });
+      const response = await safetyCultureService.getInspections({ limit: 50 });
       
-      // Transformer les inspections en audits
-      const audits = response.items?.map((inspection: any) => ({
-        id: inspection.id,
-        title: inspection.audit_title || inspection.site_name || 'Inspection sans titre',
-        created_at: inspection.created_at,
-        modified_at: inspection.modified_at,
-        template_id: inspection.template_id,
-        template_name: inspection.template_name,
-        audit_owner: {
-          id: inspection.owner_id,
-          firstname: inspection.owner_firstname || 'Propriétaire',
-          lastname: inspection.owner_lastname || 'Inconnu',
-          email: inspection.owner_email || ''
-        },
-        site: {
-          id: inspection.site_id,
-          name: inspection.site_name || 'Site inconnu'
-        }
-      })) || [];
+      if (response.success && response.data?.items) {
+        return response.data.items.map((inspection: any) => ({
+          id: inspection.id,
+          title: inspection.audit_title || inspection.site_name || 'Inspection sans titre',
+          created_at: inspection.created_at,
+          modified_at: inspection.modified_at,
+          template_id: inspection.template_id,
+          template_name: inspection.template_name,
+          audit_owner: {
+            id: inspection.owner_id,
+            firstname: inspection.owner_firstname || 'Propriétaire',
+            lastname: inspection.owner_lastname || 'Inconnu',
+            email: inspection.owner_email || ''
+          },
+          site: {
+            id: inspection.site_id,
+            name: inspection.site_name || 'Site inconnu'
+          }
+        }));
+      }
       
-      return audits;
+      return this.getDemoAudits();
     } catch (error) {
       console.error('Erreur lors de la récupération des audits:', error);
-      
-      // Données de démo si l'API n'est pas disponible
       return this.getDemoAudits();
     }
   }
 
   async getAuditPhotos(auditId: string): Promise<SafetyCulturePhoto[]> {
     try {
-      const response = await safetyCultureAPI.getInspectionAnswers(auditId);
+      const response = await safetyCultureService.getInspectionAnswers(auditId);
 
-      const photos: SafetyCulturePhoto[] = [];
-      
-      // Parcourir les réponses pour extraire les photos
-      response.answers?.forEach((answer: any) => {
-        if (answer.type === 'image' && answer.image_url) {
-          photos.push({
-            id: answer.id,
-            url: answer.image_url,
-            thumbnail_url: answer.thumbnail_url || answer.image_url,
-            title: answer.title || 'Photo inspection',
-            caption: answer.caption,
-            created_at: answer.created_at,
-            modified_at: answer.modified_at,
-            file_size: answer.file_size || 0,
-            content_type: 'image/jpeg',
-            width: answer.width,
-            height: answer.height,
-            item_id: answer.item_id,
-            question_id: answer.question_id
-          });
-        }
-      });
+      if (response.success && response.data?.answers) {
+        const photos: SafetyCulturePhoto[] = [];
+        
+        response.data.answers.forEach((answer: any) => {
+          if (answer.type === 'image' && answer.image_url) {
+            photos.push({
+              id: answer.id,
+              url: answer.image_url,
+              thumbnail_url: answer.thumbnail_url || answer.image_url,
+              title: answer.title || 'Photo inspection',
+              caption: answer.caption,
+              created_at: answer.created_at,
+              modified_at: answer.modified_at,
+              file_size: answer.file_size || 0,
+              content_type: 'image/jpeg',
+              width: answer.width,
+              height: answer.height,
+              item_id: answer.item_id,
+              question_id: answer.question_id
+            });
+          }
+        });
 
-      return photos;
+        return photos;
+      }
+
+      return this.getDemoPhotos();
     } catch (error) {
       console.error('Erreur lors de la récupération des photos:', error);
-      
-      // Données de démo si l'API n'est pas disponible
       return this.getDemoPhotos();
     }
   }
@@ -141,7 +141,6 @@ class SafetyCultureServiceClass {
   }
 
   private getDemoPhotos(): SafetyCulturePhoto[] {
-    // Générer des photos de démo
     const demoPhotos: SafetyCulturePhoto[] = [];
     
     for (let i = 1; i <= 12; i++) {
