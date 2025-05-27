@@ -4,6 +4,13 @@
 import { API_BASE_URL, API_TIMEOUT, DEFAULT_FETCH_OPTIONS } from './config';
 import { ApiResponse } from './types';
 
+// Helper to retrieve auth token from localStorage and return the Authorization header if available
+const getAuthHeader = (): Record<string, string> => {
+  if (typeof window === 'undefined') return {};
+  const token = localStorage.getItem('auth_token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
 // Fonction pour gérer les timeouts des requêtes fetch
 const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout = API_TIMEOUT): Promise<Response> => {
   const controller = new AbortController();
@@ -25,7 +32,16 @@ export const httpClient = {
       const url = `${API_BASE_URL}${endpoint}`;
       console.log(`HTTP GET: ${url}`);
       
-      const options = { ...DEFAULT_FETCH_OPTIONS, ...customOptions, method: 'GET' };
+      const options: RequestInit = {
+        ...DEFAULT_FETCH_OPTIONS,
+        ...customOptions,
+        headers: {
+          ...DEFAULT_FETCH_OPTIONS.headers,
+          ...(customOptions.headers || {}),
+          ...getAuthHeader(),
+        },
+        method: 'GET',
+      };
       
       const response = await fetchWithTimeout(url, options);
       console.log(`Response status: ${response.status}`);
@@ -65,11 +81,16 @@ export const httpClient = {
   async post<T>(endpoint: string, body: any, customOptions: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
       const url = `${API_BASE_URL}${endpoint}`;
-      const options = {
+      const options: RequestInit = {
         ...DEFAULT_FETCH_OPTIONS,
         ...customOptions,
+        headers: {
+          ...DEFAULT_FETCH_OPTIONS.headers,
+          ...(customOptions.headers || {}),
+          ...getAuthHeader(),
+        },
         method: 'POST',
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       };
       
       const response = await fetchWithTimeout(url, options);
@@ -89,11 +110,16 @@ export const httpClient = {
   async patch<T>(endpoint: string, body: any, customOptions: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
       const url = `${API_BASE_URL}${endpoint}`;
-      const options = {
+      const options: RequestInit = {
         ...DEFAULT_FETCH_OPTIONS,
         ...customOptions,
+        headers: {
+          ...DEFAULT_FETCH_OPTIONS.headers,
+          ...(customOptions.headers || {}),
+          ...getAuthHeader(),
+        },
         method: 'PATCH',
-        body: JSON.stringify(body)
+        body: JSON.stringify(body),
       };
       
       const response = await fetchWithTimeout(url, options);
@@ -113,7 +139,16 @@ export const httpClient = {
   async delete<T>(endpoint: string, customOptions: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
       const url = `${API_BASE_URL}${endpoint}`;
-      const options = { ...DEFAULT_FETCH_OPTIONS, ...customOptions, method: 'DELETE' };
+      const options: RequestInit = {
+        ...DEFAULT_FETCH_OPTIONS,
+        ...customOptions,
+        headers: {
+          ...DEFAULT_FETCH_OPTIONS.headers,
+          ...(customOptions.headers || {}),
+          ...getAuthHeader(),
+        },
+        method: 'DELETE',
+      };
       
       const response = await fetchWithTimeout(url, options);
       
