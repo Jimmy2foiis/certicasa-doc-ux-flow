@@ -12,6 +12,7 @@ interface ClientsHeaderProps {
   onDownloadZip: () => void;
   onRefresh: () => void;
   selectedClientsCount: number;
+  isLoading?: boolean;
 }
 
 const ClientsHeader = ({
@@ -22,7 +23,8 @@ const ClientsHeader = ({
   onAddToExistingBatch,
   onDownloadZip,
   onRefresh,
-  selectedClientsCount
+  selectedClientsCount,
+  isLoading = false
 }: ClientsHeaderProps) => {
   return (
     <div className="sticky top-0 z-10 bg-gray-50 pb-4">
@@ -84,8 +86,9 @@ const ClientsHeader = ({
             variant="ghost" 
             className="flex items-center gap-1 h-9 text-gray-600"
             onClick={onRefresh}
+            disabled={isLoading}
           >
-            <RefreshCcw className="h-4 w-4" />
+            <RefreshCcw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             <span>Actualiser</span>
           </Button>
           <Button 
