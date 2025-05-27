@@ -18,21 +18,15 @@ const CalculationHandler = ({ client, clientId, currentProjectId, savedCalculati
   // Use the proper calculation state hook
   const {
     calculationData,
-    updateField,
-    addLayer,
-    updateLayer,
-    deleteLayer,
-    addSouflr47,
+    handleAddLayer,
+    handleUpdateLayer,
+    handleDeleteBeforeLayer,
+    handleDeleteAfterLayer,
+    handleAddSouflr47,
     copyBeforeToAfter,
-    setRsiBefore,
-    setRseBefore,
-    setRsiAfter,
-    setRseAfter,
-    setVentilationBefore,
-    setVentilationAfter,
-    setRatioBefore,
-    setRatioAfter
-  } = useCalculationState();
+    thermalSettings,
+    setClimateZone
+  } = useCalculationState({});
 
   // Préparer les informations client pour le certificat énergétique
   const clientInfo = {
@@ -48,7 +42,7 @@ const CalculationHandler = ({ client, clientId, currentProjectId, savedCalculati
   };
 
   const handleClimateZoneChange = (zone: string) => {
-    updateField('climateZone', zone);
+    setClimateZone(zone);
   };
 
   return (
@@ -70,20 +64,20 @@ const CalculationHandler = ({ client, clientId, currentProjectId, savedCalculati
       
       <CalculationContent
         calculationData={calculationData}
-        onAddLayer={addLayer}
-        onUpdateLayer={updateLayer}
-        onDeleteBeforeLayer={(id) => deleteLayer('before', id)}
-        onDeleteAfterLayer={(id) => deleteLayer('after', id)}
-        onAddSouflr47={addSouflr47}
+        onAddLayer={handleAddLayer}
+        onUpdateLayer={handleUpdateLayer}
+        onDeleteBeforeLayer={handleDeleteBeforeLayer}
+        onDeleteAfterLayer={handleDeleteAfterLayer}
+        onAddSouflr47={handleAddSouflr47}
         onCopyBeforeToAfter={copyBeforeToAfter}
-        setRsiBefore={setRsiBefore}
-        setRseBefore={setRseBefore}
-        setRsiAfter={setRsiAfter}
-        setRseAfter={setRseAfter}
-        setVentilationBefore={setVentilationBefore}
-        setVentilationAfter={setVentilationAfter}
-        setRatioBefore={setRatioBefore}
-        setRatioAfter={setRatioAfter}
+        setRsiBefore={thermalSettings?.setRsiBefore || (() => {})}
+        setRseBefore={thermalSettings?.setRseBefore || (() => {})}
+        setRsiAfter={thermalSettings?.setRsiAfter || (() => {})}
+        setRseAfter={thermalSettings?.setRseAfter || (() => {})}
+        setVentilationBefore={thermalSettings?.setVentilationBefore || (() => {})}
+        setVentilationAfter={thermalSettings?.setVentilationAfter || (() => {})}
+        setRatioBefore={thermalSettings?.setRatioBefore || (() => {})}
+        setRatioAfter={thermalSettings?.setRatioAfter || (() => {})}
         onClimateZoneChange={handleClimateZoneChange}
         clientInfo={clientInfo}
       />
