@@ -1,6 +1,7 @@
 
 import { GoogleMapsCoordinates } from "@/types/googleMaps";
 import { GOOGLE_MAPS_API_KEY } from "@/config/googleMapsConfig";
+import proj4 from 'proj4';
 
 /**
  * Interface defining geographic coordinates and associated methods
@@ -19,6 +20,12 @@ const geocodingCache: Record<string, { coordinates: GeoCoordinates; timestamp: n
  * Cache duration in milliseconds (24 hours)
  */
 const CACHE_DURATION = 24 * 60 * 60 * 1000;
+
+// Définir les systèmes de coordonnées pour proj4
+// WGS84 (GPS coordinates)
+const WGS84 = 'EPSG:4326';
+// UTM Zone 30N (ETRS89 / UTM zone 30N) - système utilisé en Espagne
+const UTM30N = '+proj=utm +zone=30 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs';
 
 /**
  * Get coordinates from a given address using Google Maps Geocoding API
@@ -110,7 +117,7 @@ export const getAddressFromCoordinates = async (coordinates: GeoCoordinates): Pr
 };
 
 /**
- * Convert GPS coordinates (latitude/longitude) to UTM format
+ * Convert GPS coordinates (latitude/longitude) to UTM 30N format using proj4
  * Returns a formatted string representation of UTM coordinates
  * @param latitude - The latitude in decimal degrees
  * @param longitude - The longitude in decimal degrees
@@ -119,21 +126,29 @@ export const getAddressFromCoordinates = async (coordinates: GeoCoordinates): Pr
 export const getFormattedUTMCoordinates = (latitude: number, longitude: number): string => {
   try {
     if (!latitude || !longitude || isNaN(latitude) || isNaN(longitude)) {
+      console.error("Coordonnées GPS invalides:", { latitude, longitude });
       return "";
     }
     
-    // This is a simplified implementation for demo purposes
-    // In a real implementation, you would use a library like proj4js for proper UTM conversion
-    // or integrate with a GIS service
+    console.log(`Conversion UTM pour les coordonnées GPS: ${latitude}, ${longitude}`);
     
-    // Format UTM coordinates for Spain (UTM Zone 30N - most of Spain)
-    // This is a placeholder implementation
-    const easting = Math.round(500000 + longitude * 111320 * Math.cos(latitude * Math.PI / 180));
-    const northing = Math.round(latitude * 111320);
+    // Convertir les coordonnées WGS84 (GPS) vers UTM 30N
+    const utmCoords = proj4(WGS84, UTM30N, [longitude, latitude]);
     
-    return `UTM 30N E: ${easting} N: ${northing}`;
+    if (!utmCoords || utmCoords.length < 2) {
+      console.error("Échec de la conversion UTM");
+      return "";
+    }
+    
+    const easting = Math.round(utmCoords[0] * 1000) / 1000; // Arrondir à 3 décimales
+    const northing = Math.round(utmCoords[1] * 1000) / 1000;
+    
+    const result = `UTM 30N E: ${easting} N: ${northing}`;
+    console.log(`Coordonnées UTM calculées: ${result}`);
+    
+    return result;
   } catch (error) {
-    console.error("Error converting to UTM coordinates:", error);
+    console.error("Erreur lors de la conversion UTM avec proj4:", error);
     return "";
   }
 };
