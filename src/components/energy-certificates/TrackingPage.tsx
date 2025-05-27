@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,12 +28,10 @@ import {
   CheckCircle, 
   AlertCircle,
   XCircle,
-  Filter,
-  Trash2
+  Filter
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import CertificateDetailModal from "./components/CertificateDetailModal";
-import { useEnergyCertificateQueue } from "@/hooks/useEnergyCertificateQueue";
 
 interface Certificate {
   id: string;
@@ -46,7 +44,6 @@ interface Certificate {
   reference: string;
 }
 
-// Données mock pour les certificats déjà envoyés (pour compatibilité)
 const mockCertificates: Certificate[] = [
   {
     id: "1",
@@ -67,39 +64,31 @@ const mockCertificates: Certificate[] = [
     status: "processing",
     reference: "CEE-2024-002",
   },
+  {
+    id: "3",
+    clientName: "López Fernández, Ana",
+    clientEmail: "ana.lopez@email.com",
+    thermician: "EnergieCert",
+    submissionDate: "2024-01-16",
+    status: "pending",
+    reference: "CEE-2024-003",
+  },
+  {
+    id: "4",
+    clientName: "Ruiz Sánchez, Pedro",
+    clientEmail: "pedro.ruiz@email.com",
+    thermician: "Tramitting",
+    submissionDate: "2024-01-14",
+    status: "error",
+    reference: "CEE-2024-004",
+  },
 ];
-
-const thermicians = ["Tramitting", "CertiPro", "EnergieCert"];
 
 const TrackingPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedCertificate, setSelectedCertificate] = useState<Certificate | null>(null);
-  const [selectedThermician, setSelectedThermician] = useState<string>("");
   const { toast } = useToast();
-  
-  const { 
-    queue, 
-    updateCertificateStatus, 
-    removeCertificate, 
-    getCertificatesByStatus 
-  } = useEnergyCertificateQueue();
-
-  // Convertir les éléments de la queue en format Certificate pour l'affichage
-  const queueCertificates: Certificate[] = queue.map(item => ({
-    id: item.id,
-    clientName: item.clientInfo.name,
-    clientEmail: item.clientInfo.email,
-    thermician: item.thermician || "",
-    submissionDate: item.dateAjout,
-    status: item.statut === "en_attente" ? "pending" : 
-           item.statut === "envoye" ? "processing" :
-           item.statut === "recu" ? "completed" : "error",
-    reference: item.certificatId
-  }));
-
-  // Combiner les certificats de la queue avec les mock
-  const allCertificates = [...queueCertificates, ...mockCertificates];
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -146,7 +135,7 @@ const TrackingPage = () => {
     }
   };
 
-  const filteredCertificates = allCertificates.filter(cert => {
+  const filteredCertificates = mockCertificates.filter(cert => {
     const matchesSearch = cert.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          cert.clientEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          cert.reference.toLowerCase().includes(searchTerm.toLowerCase());
@@ -157,51 +146,33 @@ const TrackingPage = () => {
   const statsData = [
     {
       title: "En attente",
-      count: allCertificates.filter(c => c.status === "pending").length,
+      count: mockCertificates.filter(c => c.status === "pending").length,
       icon: Clock,
       color: "text-gray-600",
       bgColor: "bg-gray-100",
     },
     {
       title: "En cours",
-      count: allCertificates.filter(c => c.status === "processing").length,
+      count: mockCertificates.filter(c => c.status === "processing").length,
       icon: AlertCircle,
       color: "text-blue-600",
       bgColor: "bg-blue-100",
     },
     {
       title: "Terminés",
-      count: allCertificates.filter(c => c.status === "completed").length,
+      count: mockCertificates.filter(c => c.status === "completed").length,
       icon: CheckCircle,
       color: "text-green-600",
       bgColor: "bg-green-100",
     },
     {
       title: "Erreurs",
-      count: allCertificates.filter(c => c.status === "error").length,
+      count: mockCertificates.filter(c => c.status === "error").length,
       icon: XCircle,
       color: "text-red-600",
       bgColor: "bg-red-100",
     },
   ];
-
-  const handleSendToThermician = (certificateId: string) => {
-    if (!selectedThermician) {
-      toast({
-        title: "Thermicien requis",
-        description: "Veuillez sélectionner un thermicien avant d'envoyer le certificat.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    updateCertificateStatus(certificateId, "envoye", selectedThermician);
-    
-    toast({
-      title: "Certificat envoyé",
-      description: `Le certificat a été envoyé à ${selectedThermician}`,
-    });
-  };
 
   const handleDownload = (certificate: Certificate) => {
     toast({
@@ -216,16 +187,6 @@ const TrackingPage = () => {
       description: `Le certificat ${certificate.reference} a été renvoyé`,
     });
   };
-
-  const handleDelete = (certificateId: string) => {
-    removeCertificate(certificateId);
-    toast({
-      title: "Certificat supprimé",
-      description: "Le certificat a été retiré de la liste d'envoi",
-    });
-  };
-
-  const pendingCertificates = filteredCertificates.filter(cert => cert.status === "pending");
 
   return (
     <div className="space-y-6">
@@ -247,42 +208,6 @@ const TrackingPage = () => {
           </Card>
         ))}
       </div>
-
-      {/* Actions pour les certificats en attente */}
-      {pendingCertificates.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Actions groupées - Certificats en attente</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <label className="text-sm font-medium">Sélectionner un thermicien :</label>
-                <select 
-                  value={selectedThermician} 
-                  onChange={(e) => setSelectedThermician(e.target.value)}
-                  className="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md"
-                >
-                  <option value="">Choisir un thermicien...</option>
-                  {thermicians.map(name => (
-                    <option key={name} value={name}>{name}</option>
-                  ))}
-                </select>
-              </div>
-              <Button 
-                onClick={() => {
-                  pendingCertificates.forEach(cert => handleSendToThermician(cert.id));
-                }}
-                disabled={!selectedThermician}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Send className="h-4 w-4 mr-2" />
-                Envoyer tous ({pendingCertificates.length})
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Filters and Search */}
       <Card>
@@ -335,7 +260,7 @@ const TrackingPage = () => {
                   <TableHead>Client</TableHead>
                   <TableHead>Thermicien</TableHead>
                   <TableHead>Référence</TableHead>
-                  <TableHead>Date d'ajout</TableHead>
+                  <TableHead>Date d'envoi</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead className="w-[100px]">Actions</TableHead>
                 </TableRow>
@@ -349,7 +274,7 @@ const TrackingPage = () => {
                         <p className="text-sm text-gray-500">{certificate.clientEmail}</p>
                       </div>
                     </TableCell>
-                    <TableCell>{certificate.thermician || "-"}</TableCell>
+                    <TableCell>{certificate.thermician}</TableCell>
                     <TableCell className="font-mono text-sm">{certificate.reference}</TableCell>
                     <TableCell>{new Date(certificate.submissionDate).toLocaleDateString()}</TableCell>
                     <TableCell>
@@ -372,12 +297,6 @@ const TrackingPage = () => {
                             <Eye className="h-4 w-4 mr-2" />
                             Voir détails
                           </DropdownMenuItem>
-                          {certificate.status === "pending" && (
-                            <DropdownMenuItem onClick={() => handleSendToThermician(certificate.id)}>
-                              <Send className="h-4 w-4 mr-2" />
-                              Envoyer
-                            </DropdownMenuItem>
-                          )}
                           {certificate.status === "completed" && (
                             <DropdownMenuItem onClick={() => handleDownload(certificate)}>
                               <Download className="h-4 w-4 mr-2" />
@@ -388,15 +307,6 @@ const TrackingPage = () => {
                             <Send className="h-4 w-4 mr-2" />
                             Renvoyer
                           </DropdownMenuItem>
-                          {certificate.status === "pending" && (
-                            <DropdownMenuItem 
-                              onClick={() => handleDelete(certificate.id)}
-                              className="text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Supprimer
-                            </DropdownMenuItem>
-                          )}
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
