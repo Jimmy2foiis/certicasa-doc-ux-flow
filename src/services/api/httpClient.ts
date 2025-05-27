@@ -8,6 +8,7 @@ export interface ApiResponse<T = any> {
   success: boolean;
   data?: T;
   error?: string;
+  message?: string;
   status?: number;
 }
 
@@ -46,9 +47,11 @@ class HttpClient {
       clearTimeout(timeoutId);
 
       if (!response.ok) {
+        const errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         return {
           success: false,
-          error: `HTTP ${response.status}: ${response.statusText}`,
+          error: errorMessage,
+          message: errorMessage,
           status: response.status,
         };
       }
@@ -62,16 +65,17 @@ class HttpClient {
     } catch (error: any) {
       clearTimeout(timeoutId);
       
+      let errorMessage = 'Network error';
       if (error.name === 'AbortError') {
-        return {
-          success: false,
-          error: 'Request timeout',
-        };
+        errorMessage = 'Request timeout';
+      } else if (error.message) {
+        errorMessage = error.message;
       }
 
       return {
         success: false,
-        error: error.message || 'Network error',
+        error: errorMessage,
+        message: errorMessage,
       };
     }
   }

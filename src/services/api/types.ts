@@ -7,6 +7,8 @@ export interface ApiResponse<T = any> {
   success: boolean;
   data: T | null;
   message?: string;
+  error?: string;
+  status?: number;
 }
 
 // Type pour les prospects/clients
