@@ -3,8 +3,7 @@ import React, { useState } from "react";
 import CalculationHeader from "@/components/calculations/CalculationHeader";
 import CalculationContent from "@/components/calculations/CalculationContent";
 import CalculationActions from "@/components/calculations/CalculationActions";
-import { useCalculationState } from "@/hooks/useCalculationState";
-import { useLayerManagement } from "@/hooks/useLayerManagement";
+import { useProjectCalculationState } from "@/hooks/useProjectCalculationState";
 
 interface CalculationHandlerProps {
   client: any;
@@ -15,7 +14,7 @@ interface CalculationHandlerProps {
 }
 
 const CalculationHandler = ({ client, clientId, currentProjectId, savedCalculations, onBack }: CalculationHandlerProps) => {
-  // Use the proper calculation state hook
+  // Utiliser le hook approprié qui fonctionne
   const {
     calculationData,
     handleAddLayer,
@@ -24,9 +23,21 @@ const CalculationHandler = ({ client, clientId, currentProjectId, savedCalculati
     handleDeleteAfterLayer,
     handleAddSouflr47,
     copyBeforeToAfter,
-    thermalSettings,
-    setClimateZone
-  } = useCalculationState({});
+    setRsiBefore,
+    setRseBefore,
+    setRsiAfter,
+    setRseAfter,
+    setVentilationBefore,
+    setVentilationAfter,
+    setRatioBefore,
+    setRatioAfter,
+    handleClimateZoneChange
+  } = useProjectCalculationState({
+    clientId,
+    surfaceArea: "70",
+    roofArea: "85",
+    floorType: "Bois"
+  });
 
   // Préparer les informations client pour le certificat énergétique
   const clientInfo = {
@@ -39,10 +50,6 @@ const CalculationHandler = ({ client, clientId, currentProjectId, savedCalculati
   const handleSave = (calculationData: any) => {
     console.log("Saving calculation:", calculationData);
     onBack();
-  };
-
-  const handleClimateZoneChange = (zone: string) => {
-    setClimateZone(zone);
   };
 
   return (
@@ -70,14 +77,14 @@ const CalculationHandler = ({ client, clientId, currentProjectId, savedCalculati
         onDeleteAfterLayer={handleDeleteAfterLayer}
         onAddSouflr47={handleAddSouflr47}
         onCopyBeforeToAfter={copyBeforeToAfter}
-        setRsiBefore={thermalSettings?.setRsiBefore || (() => {})}
-        setRseBefore={thermalSettings?.setRseBefore || (() => {})}
-        setRsiAfter={thermalSettings?.setRsiAfter || (() => {})}
-        setRseAfter={thermalSettings?.setRseAfter || (() => {})}
-        setVentilationBefore={thermalSettings?.setVentilationBefore || (() => {})}
-        setVentilationAfter={thermalSettings?.setVentilationAfter || (() => {})}
-        setRatioBefore={thermalSettings?.setRatioBefore || (() => {})}
-        setRatioAfter={thermalSettings?.setRatioAfter || (() => {})}
+        setRsiBefore={setRsiBefore || (() => {})}
+        setRseBefore={setRseBefore || (() => {})}
+        setRsiAfter={setRsiAfter || (() => {})}
+        setRseAfter={setRseAfter || (() => {})}
+        setVentilationBefore={setVentilationBefore || (() => {})}
+        setVentilationAfter={setVentilationAfter || (() => {})}
+        setRatioBefore={setRatioBefore || (() => {})}
+        setRatioAfter={setRatioAfter || (() => {})}
         onClimateZoneChange={handleClimateZoneChange}
         clientInfo={clientInfo}
       />
