@@ -79,7 +79,10 @@ class SafetyCultureService {
   }
 
   async getTemplateByInspection(inspectionId: string, locale?: string): Promise<ApiResponse<any>> {
-    const params = locale ? { locale } : {};
+    const params: Record<string, string> = {};
+    if (locale) {
+      params.locale = locale;
+    }
     return apiClient.get<any>(`/safety-culture/templates/inspections/${inspectionId}`, params);
   }
 
