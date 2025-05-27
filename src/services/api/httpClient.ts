@@ -1,4 +1,3 @@
-
 /**
  * Client HTTP pour les appels API
  */
@@ -24,18 +23,41 @@ export const httpClient = {
   async get<T>(endpoint: string, customOptions: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
       const url = `${API_BASE_URL}${endpoint}`;
+      console.log(`HTTP GET: ${url}`);
+      
       const options = { ...DEFAULT_FETCH_OPTIONS, ...customOptions, method: 'GET' };
       
       const response = await fetchWithTimeout(url, options);
-      const data = await response.json();
+      console.log(`Response status: ${response.status}`);
       
       if (!response.ok) {
-        throw new Error(data.message || `Erreur HTTP: ${response.status}`);
+        const errorText = await response.text();
+        console.error(`HTTP Error ${response.status}:`, errorText);
+        throw new Error(`Erreur HTTP: ${response.status} - ${errorText}`);
       }
       
-      return data;
+      const data = await response.json();
+      console.log('Response data type:', typeof data, Array.isArray(data) ? 'Array' : 'Object');
+      console.log('Response data sample:', Array.isArray(data) ? `Array with ${data.length} items` : data);
+      
+      // Pour l'endpoint /prospects/, retourner directement les données
+      if (endpoint === '/prospects/' && Array.isArray(data)) {
+        return { success: true, data: data as T, message: 'Success' };
+      }
+      
+      // Pour d'autres endpoints, vérifier si c'est déjà un ApiResponse
+      if (data && typeof data === 'object' && 'success' in data) {
+        return data;
+      }
+      
+      // Sinon, wrapper les données dans un ApiResponse
+      return { success: true, data: data as T, message: 'Success' };
+      
     } catch (error) {
       console.error(`Erreur GET ${endpoint}:`, error);
+      if (error instanceof Error && error.name === 'AbortError') {
+        return { success: false, data: null, message: 'Timeout de la requête' };
+      }
       return { success: false, data: null, message: error instanceof Error ? error.message : 'Erreur inconnue' };
     }
   },
