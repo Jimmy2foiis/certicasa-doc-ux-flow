@@ -1,7 +1,36 @@
+
 import { useState, useEffect, useMemo } from "react";
-import { getClients, Client } from "@/services/api";
 import { useToast } from "@/components/ui/use-toast";
 import { prospectsAPI } from "@/services/api.service";
+
+export interface Client {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  nif: string;
+  type: string;
+  status: string;
+  projects: number;
+  created_at: string;
+  postalCode: string;
+  ficheType: string;
+  climateZone: string;
+  isolatedArea: number;
+  isolationType: string;
+  floorType: string;
+  installationDate: string;
+  lotNumber: string | null;
+  depositStatus: string;
+  community: string;
+  teleprospector: string;
+  confirmer: string;
+  installationTeam: string;
+  delegate: string;
+  depositDate?: string;
+  entryChannel: string;
+}
 
 export interface ClientFilters {
   search: string;
@@ -33,156 +62,55 @@ export const useClients = () => {
     try {
       setLoading(true);
       
-      // Essayer d'abord la nouvelle API prospects
-      let data: Client[] = [];
-      try {
-        const prospectsData = await prospectsAPI.getAll();
-        
-        // Transformer les prospects en clients
-        data = prospectsData.map((prospect: any) => ({
-          id: prospect.id,
-          name: `${prospect.prenom} ${prospect.nom}`.trim(),
-          email: prospect.email,
-          phone: prospect.tel,
-          address: prospect.adresse,
-          nif: "",
-          type: "RES010",
-          status: prospect.status === "INITIALISATION_DONE_WAITING_FOR_CEE" 
-            ? "Initialisation terminée - En attente CEE" 
-            : "En cours",
-          projects: 1,
-          created_at: prospect.createdAt,
-          postalCode: prospect.codePostal,
-          ficheType: "RES010",
-          climateZone: "D1",
-          isolatedArea: 85,
-          isolationType: "Combles",
-          floorType: "Béton",
-          installationDate: new Date().toISOString().split('T')[0],
-          lotNumber: null,
-          depositStatus: "Non déposé",
-          community: prospect.ville || "España",
-          teleprospector: "Carmen Rodríguez",
-          confirmer: "Miguel Torres",
-          installationTeam: "Équipe Nord",
-          delegate: "Ana García",
-          depositDate: undefined,
-          entryChannel: "API Import"
-        }));
-        
-        console.log(`${data.length} prospects récupérés depuis la nouvelle API`);
-      } catch (prospectsError) {
-        console.warn('Erreur API prospects, utilisation de l\'ancienne API:', prospectsError);
-        data = await getClients();
-      }
+      // Utiliser la nouvelle API prospects
+      const prospectsData = await prospectsAPI.getAll();
       
-      // Si aucun client n'est récupéré, utiliser les données de démo
-      if (data.length === 0) {
-        const demoClient: Client = {
-          id: "demo-1",
-          name: "Juan García López",
-          email: "juan.garcia@example.com",
-          phone: "+34 612 345 678",
-          address: "Calle de Alcalá, 123, 28009 Madrid, España",
-          nif: "12345678A",
-          type: "RES010",
-          status: "En cours",
-          projects: 1,
-          created_at: new Date().toISOString(),
-          postalCode: "28009",
-          ficheType: "RES010",
-          climateZone: "C3",
-          isolatedArea: 75,
-          isolationType: "Combles",
-          floorType: "Bois",
-          installationDate: "2024-12-15",
-          lotNumber: null,
-          depositStatus: "Non déposé",
-          community: "Madrid",
-          teleprospector: "María González",
-          confirmer: "Carlos Ruiz",
-          installationTeam: "Équipe A",
-          delegate: "Pedro Martínez",
-          depositDate: undefined,
-          entryChannel: "Téléphone"
-        };
-        
-        setClients([demoClient]);
-        
-        toast({
-          title: "Mode démo",
-          description: "Client de démonstration ajouté",
-        });
-      } else {
-        // Communautés autonomes espagnoles pour les exemples
-        const communities = [
-          'Andalucía', 'Aragón', 'Asturias', 'Baleares', 'Canarias', 'Cantabria',
-          'Castilla-La Mancha', 'Castilla y León', 'Cataluña', 'Extremadura',
-          'Galicia', 'Madrid', 'Murcia', 'Navarra', 'País Vasco', 'La Rioja',
-          'Valencia'
-        ];
-        
-        // Enrichir les données avec des valeurs par défaut pour les nouveaux champs requis
-        const enrichedClients = data.map(client => ({
-          ...client,
-          postalCode: client.postalCode || extractPostalCode(client.address),
-          ficheType: client.ficheType || client.type || 'RES010',
-          climateZone: client.climateZone || 'C',
-          isolatedArea: client.isolatedArea || Math.floor(Math.random() * 100) + 20,
-          isolationType: client.isolationType || (Math.random() > 0.5 ? 'Combles' : 'Rampants'),
-          floorType: client.floorType || (Math.random() > 0.5 ? 'Bois' : 'Béton'),
-          depositStatus: client.depositStatus || 'Non déposé',
-          installationDate: client.installationDate || getRandomPastDate(),
-          lotNumber: client.lotNumber || (Math.random() > 0.7 ? `LOT-${Math.floor(Math.random() * 100)}` : null),
-          community: client.community || (Math.random() > 0.3 ? communities[Math.floor(Math.random() * communities.length)] : undefined)
-        }));
-        
-        setClients(enrichedClients);
-        
-        toast({
-          title: "Clients chargés",
-          description: `${enrichedClients.length} client(s) récupéré(s) avec succès`,
-        });
-      }
+      // Transformer les prospects en clients
+      const transformedClients = prospectsData.map((prospect: any) => ({
+        id: prospect.id,
+        name: `${prospect.prenom} ${prospect.nom}`.trim(),
+        email: prospect.email,
+        phone: prospect.tel,
+        address: prospect.adresse,
+        nif: prospect.beetoolToken,
+        type: "RES010",
+        status: prospect.status === "INITIALISATION_DONE_WAITING_FOR_CEE" 
+          ? "Initialisation terminée - En attente CEE" 
+          : "En cours",
+        projects: 1,
+        created_at: prospect.createdAt,
+        postalCode: prospect.codePostal,
+        ficheType: "RES010",
+        climateZone: "D1",
+        isolatedArea: 85,
+        isolationType: "Combles",
+        floorType: "Béton",
+        installationDate: new Date().toISOString().split('T')[0],
+        lotNumber: null,
+        depositStatus: "Non déposé",
+        community: prospect.ville || "España",
+        teleprospector: "Carmen Rodríguez",
+        confirmer: "Miguel Torres",
+        installationTeam: "Équipe Nord",
+        delegate: "Ana García",
+        depositDate: undefined,
+        entryChannel: "API Import"
+      }));
+      
+      setClients(transformedClients);
+      
+      toast({
+        title: "Clients chargés",
+        description: `${transformedClients.length} client(s) récupéré(s) avec succès`,
+      });
+      
     } catch (error) {
       console.error("Erreur lors du chargement des clients:", error);
       
-      // En cas d'erreur, créer le client de démonstration
-      const demoClient: Client = {
-        id: "demo-1",
-        name: "Juan García López",
-        email: "juan.garcia@example.com",
-        phone: "+34 612 345 678",
-        address: "Calle de Alcalá, 123, 28009 Madrid, España",
-        nif: "12345678A",
-        type: "RES010",
-        status: "En cours",
-        projects: 1,
-        created_at: new Date().toISOString(),
-        postalCode: "28009",
-        ficheType: "RES010",
-        climateZone: "C3",
-        isolatedArea: 75,
-        isolationType: "Combles",
-        floorType: "Bois",
-        installationDate: "2024-12-15",
-        lotNumber: null,
-        depositStatus: "Non déposé",
-        community: "Madrid",
-        teleprospector: "María González",
-        confirmer: "Carlos Ruiz",
-        installationTeam: "Équipe A",
-        delegate: "Pedro Martínez",
-        depositDate: undefined,
-        entryChannel: "Téléphone"
-      };
-      
-      setClients([demoClient]);
-      
       toast({
-        title: "Mode démo activé",
-        description: "Client d'exemple ajouté car l'API n'est pas accessible",
-        variant: "default",
+        title: "Erreur",
+        description: "Impossible de charger les clients depuis l'API",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -254,21 +182,4 @@ export const useClients = () => {
     loading,
     refreshClients: loadClients
   };
-};
-
-// Fonctions utilitaires
-const extractPostalCode = (address: string | undefined): string => {
-  if (!address) return '';
-  
-  // Essaie de trouver un code postal à 5 chiffres dans l'adresse
-  const match = address.match(/\b\d{5}\b/);
-  return match ? match[0] : '';
-};
-
-const getRandomPastDate = (): string => {
-  const today = new Date();
-  const pastDate = new Date(today);
-  pastDate.setDate(today.getDate() - Math.floor(Math.random() * 90));
-  
-  return pastDate.toISOString().split('T')[0]; // Format YYYY-MM-DD
 };
