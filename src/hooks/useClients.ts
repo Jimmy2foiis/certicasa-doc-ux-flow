@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { getClients, Client } from "@/services/api";
 import { useToast } from "@/components/ui/use-toast";
@@ -36,7 +37,7 @@ export const useClients = () => {
       // Client réel de l'API cert.mitain.com
       const realClient: Client = {
         id: "08dcadda-838d-4262-be31-d7c1f2924e2c",
-        name: `${data.find(c => c.id === "08dcadda-838d-4262-be31-d7c1f2924e2c")?.prenom || "Lourdes Moeses"} ${data.find(c => c.id === "08dcadda-838d-4262-be31-d7c1f2924e2c")?.nom || "Martín Cabreros"}`,
+        name: "Lourdes Moeses Martín Cabreros",
         email: "lmartinsan56@gmail.com",
         phone: "+34630608097",
         address: "calle alonso castrillo 43  24200 Valencia de Don Juan",
