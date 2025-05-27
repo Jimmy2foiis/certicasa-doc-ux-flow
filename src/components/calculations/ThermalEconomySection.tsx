@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect } from "react";
 import { FileText } from "lucide-react";
+
 export const climateZoneCoefficients: Record<string, number> = {
   "A3": 25,
   "A4": 26,
@@ -22,6 +23,7 @@ export const climateZoneCoefficients: Record<string, number> = {
   "D3": 61,
   "E1": 74
 };
+
 interface ThermalEconomySectionProps {
   surfaceArea: number;
   uValueBefore: number;
@@ -35,6 +37,7 @@ interface ThermalEconomySectionProps {
   climateDescription?: string;
   onClimateZoneChange?: (zone: string) => void;
 }
+
 const ThermalEconomySection = ({
   surfaceArea,
   uValueBefore,
@@ -89,12 +92,13 @@ const ThermalEconomySection = ({
     console.log('Génération de facture demandée');
     // Logique de génération de facture à implémenter
   };
-  return <div className="mt-6 space-y-4">
-      {/* Bouton Générer Facture */}
+  return (
+    <div className="mt-6 space-y-4">
+      {/* Bouton Envoyer le Certificat */}
       <div className="flex justify-center">
         <Button onClick={handleGenerateInvoice} size="lg" className="text-white px-6 py-3 rounded-lg shadow-md bg-orange-500 hover:bg-orange-400">
           <FileText className="h-5 w-5 mr-2" />
-          Générer Facture
+          Envoyer le Certificat
         </Button>
       </div>
 
@@ -138,6 +142,8 @@ const ThermalEconomySection = ({
           <CherryOption cherryEnabled={cherryEnabled} onCherryEnabledChange={setCherryEnabled} pricePerSqm={pricePerSqm} projectPrice={projectPrice} cherryPricePerSqm={cherryPricePerSqm} cherryProjectPrice={cherryProjectPrice} totalPricePerSqm={totalPricePerSqm} totalProjectPrice={totalProjectPrice} />
         </CardContent>
       </Card>
-    </div>;
+    </div>
+  );
 };
+
 export default ThermalEconomySection;
