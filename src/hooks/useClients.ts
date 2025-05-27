@@ -43,6 +43,66 @@ export interface ClientFilters {
   community: string | null;
 }
 
+// Fonction pour créer des clients de démonstration
+const createDemoClients = (): Client[] => {
+  return [
+    {
+      id: "08dcadda-838d-4262-be31-d7c1f2924e2c",
+      name: "Juan García López",
+      email: "juan.garcia@email.com",
+      phone: "+34 666 123 456",
+      address: "Calle Serrano 120, 28006 Madrid",
+      nif: "12345678Z",
+      type: "RES010",
+      status: "En cours",
+      projects: 1,
+      created_at: new Date().toISOString(),
+      postalCode: "28006",
+      ficheType: "RES010",
+      climateZone: "C3",
+      isolatedArea: 85,
+      isolationType: "Combles",
+      floorType: "Béton",
+      installationDate: new Date().toISOString().split('T')[0],
+      lotNumber: null,
+      depositStatus: "Non déposé",
+      community: "Madrid",
+      teleprospector: "Carmen Rodríguez",
+      confirmer: "Miguel Torres",
+      installationTeam: "Équipe Nord",
+      delegate: "Ana García",
+      entryChannel: "Demo"
+    },
+    {
+      id: "demo-client-2",
+      name: "María Fernández",
+      email: "maria.fernandez@email.com",
+      phone: "+34 666 789 012",
+      address: "Calle Alcalá 45, 28014 Madrid",
+      nif: "87654321Y",
+      type: "RES010",
+      status: "Initialisation terminée - En attente CEE",
+      projects: 1,
+      created_at: new Date().toISOString(),
+      postalCode: "28014",
+      ficheType: "RES010",
+      climateZone: "C3",
+      isolatedArea: 120,
+      isolationType: "Murs",
+      floorType: "Carrelage",
+      installationDate: new Date().toISOString().split('T')[0],
+      lotNumber: "LOT-2024-002",
+      depositStatus: "Déposé",
+      community: "Madrid",
+      teleprospector: "Pedro Sánchez",
+      confirmer: "Ana Ruiz",
+      installationTeam: "Équipe Sud",
+      delegate: "Carlos Martín",
+      entryChannel: "Demo"
+    }
+  ];
+};
+
 export const useClients = () => {
   const { toast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
@@ -61,56 +121,79 @@ export const useClients = () => {
   const loadClients = async () => {
     try {
       setLoading(true);
+      console.log("Chargement des clients...");
       
-      // Utiliser la nouvelle API prospects
-      const prospectsData = await prospectsAPI.getAll();
+      // Essayer de charger depuis l'API
+      try {
+        const prospectsData = await prospectsAPI.getAll();
+        
+        if (prospectsData && prospectsData.length > 0) {
+          // Transformer les prospects en clients
+          const transformedClients = prospectsData.map((prospect: any) => ({
+            id: prospect.id,
+            name: `${prospect.prenom} ${prospect.nom}`.trim(),
+            email: prospect.email,
+            phone: prospect.tel,
+            address: prospect.adresse,
+            nif: prospect.beetoolToken,
+            type: "RES010",
+            status: prospect.status === "INITIALISATION_DONE_WAITING_FOR_CEE" 
+              ? "Initialisation terminée - En attente CEE" 
+              : "En cours",
+            projects: 1,
+            created_at: prospect.createdAt,
+            postalCode: prospect.codePostal,
+            ficheType: "RES010",
+            climateZone: "C3",
+            isolatedArea: 85,
+            isolationType: "Combles",
+            floorType: "Béton",
+            installationDate: new Date().toISOString().split('T')[0],
+            lotNumber: null,
+            depositStatus: "Non déposé",
+            community: prospect.ville || "Madrid",
+            teleprospector: "Carmen Rodríguez",
+            confirmer: "Miguel Torres",
+            installationTeam: "Équipe Nord",
+            delegate: "Ana García",
+            depositDate: undefined,
+            entryChannel: "API Import"
+          }));
+          
+          setClients(transformedClients);
+          
+          toast({
+            title: "Clients chargés",
+            description: `${transformedClients.length} client(s) récupéré(s) depuis l'API`,
+          });
+          
+          return;
+        }
+      } catch (apiError) {
+        console.error("Erreur API:", apiError);
+      }
       
-      // Transformer les prospects en clients
-      const transformedClients = prospectsData.map((prospect: any) => ({
-        id: prospect.id,
-        name: `${prospect.prenom} ${prospect.nom}`.trim(),
-        email: prospect.email,
-        phone: prospect.tel,
-        address: prospect.adresse,
-        nif: prospect.beetoolToken,
-        type: "RES010",
-        status: prospect.status === "INITIALISATION_DONE_WAITING_FOR_CEE" 
-          ? "Initialisation terminée - En attente CEE" 
-          : "En cours",
-        projects: 1,
-        created_at: prospect.createdAt,
-        postalCode: prospect.codePostal,
-        ficheType: "RES010",
-        climateZone: "D1",
-        isolatedArea: 85,
-        isolationType: "Combles",
-        floorType: "Béton",
-        installationDate: new Date().toISOString().split('T')[0],
-        lotNumber: null,
-        depositStatus: "Non déposé",
-        community: prospect.ville || "España",
-        teleprospector: "Carmen Rodríguez",
-        confirmer: "Miguel Torres",
-        installationTeam: "Équipe Nord",
-        delegate: "Ana García",
-        depositDate: undefined,
-        entryChannel: "API Import"
-      }));
-      
-      setClients(transformedClients);
+      // Si l'API échoue, utiliser les données de démo
+      console.log("Utilisation des données de démonstration");
+      const demoClients = createDemoClients();
+      setClients(demoClients);
       
       toast({
-        title: "Clients chargés",
-        description: `${transformedClients.length} client(s) récupéré(s) avec succès`,
+        title: "Mode démonstration",
+        description: `${demoClients.length} client(s) de démonstration chargés`,
       });
       
     } catch (error) {
       console.error("Erreur lors du chargement des clients:", error);
       
+      // En dernier recours, utiliser les données de démo
+      const demoClients = createDemoClients();
+      setClients(demoClients);
+      
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les clients depuis l'API",
-        variant: "destructive",
+        title: "Mode démo",
+        description: "Utilisation des données de test",
+        variant: "default",
       });
     } finally {
       setLoading(false);
