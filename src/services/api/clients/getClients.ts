@@ -5,6 +5,7 @@
 import { Client } from '../types';
 import { mapProspectToClient } from '../mappers/clientMapper';
 import { API_BASE_URL } from '../config';
+import { getMockClients } from '../mockApiService';
 
 /**
  * Helper function for fetch requests
@@ -87,6 +88,13 @@ export const getClients = async (): Promise<Client[]> => {
       }
     } catch (internalError) {
       console.warn('Erreur lors de la récupération depuis l\'API interne:', internalError);
+      
+      // Si toutes les APIs échouent, utiliser les données mock
+      if (externalClients.length === 0) {
+        console.log('Utilisation des données mock en raison des erreurs CORS');
+        const mockClients = await getMockClients();
+        return mockClients;
+      }
     }
     
     // Combiner les deux sources en évitant les doublons
@@ -109,6 +117,9 @@ export const getClients = async (): Promise<Client[]> => {
     
   } catch (error) {
     console.error("Erreur lors de la récupération des clients:", error);
-    return [];
+    
+    // En cas d'erreur totale, utiliser les données mock
+    console.log('Utilisation des données mock de secours');
+    return await getMockClients();
   }
 };
