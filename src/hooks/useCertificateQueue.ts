@@ -1,7 +1,7 @@
-
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { ToastAction } from '@/components/ui/toast';
 
 export interface CertificateQueueItem {
   id: string;
@@ -73,10 +73,14 @@ export const useCertificateQueue = () => {
       title: "Certificat ajouté à la liste d'envoi",
       description: `Le certificat pour ${certificateData.clientName} a été ajouté à la queue d'envoi.`,
       duration: 5000,
-      action: {
-        altText: "Aller au suivi",
-        onClick: () => navigate('/certificats-energetiques/suivi')
-      }
+      action: (
+        <ToastAction 
+          altText="Aller au suivi"
+          onClick={() => navigate('/certificats-energetiques/suivi')}
+        >
+          Aller au suivi
+        </ToastAction>
+      )
     });
 
     return newCertificate;
