@@ -1,7 +1,7 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { getClients, Client } from "@/services/api";
 import { useToast } from "@/components/ui/use-toast";
+import { prospectsAPI } from "@/services/api.service";
 
 export interface ClientFilters {
   search: string;
@@ -32,39 +32,51 @@ export const useClients = () => {
   const loadClients = async () => {
     try {
       setLoading(true);
-      const data = await getClients();
       
-      // Client réel de l'API cert.mitain.com
-      const realClient: Client = {
-        id: "08dcadda-838d-4262-be31-d7c1f2924e2c",
-        name: "Lourdes Moeses Martín Cabreros",
-        email: "lmartinsan56@gmail.com",
-        phone: "+34630608097",
-        address: "calle alonso castrillo 43  24200 Valencia de Don Juan",
-        nif: "",
-        type: "RES010",
-        status: "Initialisation terminée - En attente CEE",
-        projects: 1,
-        created_at: "2025-05-27T06:18:15.494Z",
-        postalCode: "24200",
-        ficheType: "RES010",
-        climateZone: "D1",
-        isolatedArea: 85,
-        isolationType: "Combles",
-        floorType: "Béton",
-        installationDate: "2025-05-27",
-        lotNumber: null,
-        depositStatus: "Non déposé",
-        community: "Castilla y León",
-        teleprospector: "Carmen Rodríguez",
-        confirmer: "Miguel Torres",
-        installationTeam: "Équipe Nord",
-        delegate: "Ana García",
-        depositDate: undefined,
-        entryChannel: "API Import"
-      };
-
-      // Si aucun client n'est récupéré depuis l'API principale, utiliser le client réel et le client de démonstration
+      // Essayer d'abord la nouvelle API prospects
+      let data: Client[] = [];
+      try {
+        const prospectsData = await prospectsAPI.getAll();
+        
+        // Transformer les prospects en clients
+        data = prospectsData.map((prospect: any) => ({
+          id: prospect.id,
+          name: `${prospect.prenom} ${prospect.nom}`.trim(),
+          email: prospect.email,
+          phone: prospect.tel,
+          address: prospect.adresse,
+          nif: "",
+          type: "RES010",
+          status: prospect.status === "INITIALISATION_DONE_WAITING_FOR_CEE" 
+            ? "Initialisation terminée - En attente CEE" 
+            : "En cours",
+          projects: 1,
+          created_at: prospect.createdAt,
+          postalCode: prospect.codePostal,
+          ficheType: "RES010",
+          climateZone: "D1",
+          isolatedArea: 85,
+          isolationType: "Combles",
+          floorType: "Béton",
+          installationDate: new Date().toISOString().split('T')[0],
+          lotNumber: null,
+          depositStatus: "Non déposé",
+          community: prospect.ville || "España",
+          teleprospector: "Carmen Rodríguez",
+          confirmer: "Miguel Torres",
+          installationTeam: "Équipe Nord",
+          delegate: "Ana García",
+          depositDate: undefined,
+          entryChannel: "API Import"
+        }));
+        
+        console.log(`${data.length} prospects récupérés depuis la nouvelle API`);
+      } catch (prospectsError) {
+        console.warn('Erreur API prospects, utilisation de l\'ancienne API:', prospectsError);
+        data = await getClients();
+      }
+      
+      // Si aucun client n'est récupéré, utiliser les données de démo
       if (data.length === 0) {
         const demoClient: Client = {
           id: "demo-1",
@@ -95,30 +107,18 @@ export const useClients = () => {
           entryChannel: "Téléphone"
         };
         
-        setClients([realClient, demoClient]);
+        setClients([demoClient]);
         
         toast({
-          title: "Clients ajoutés",
-          description: "Client réel de l'API et client de démonstration ajoutés",
+          title: "Mode démo",
+          description: "Client de démonstration ajouté",
         });
       } else {
         // Communautés autonomes espagnoles pour les exemples
         const communities = [
-          'Andalucía', 
-          'Aragón', 
-          'Asturias', 
-          'Baleares', 
-          'Canarias', 
-          'Cantabria',
-          'Castilla-La Mancha', 
-          'Castilla y León', 
-          'Cataluña', 'Extremadura',
-          'Galicia', 
-          'Madrid', 
-          'Murcia', 
-          'Navarra', 
-          'País Vasco', 
-          'La Rioja',
+          'Andalucía', 'Aragón', 'Asturias', 'Baleares', 'Canarias', 'Cantabria',
+          'Castilla-La Mancha', 'Castilla y León', 'Cataluña', 'Extremadura',
+          'Galicia', 'Madrid', 'Murcia', 'Navarra', 'País Vasco', 'La Rioja',
           'Valencia'
         ];
         
@@ -137,47 +137,17 @@ export const useClients = () => {
           community: client.community || (Math.random() > 0.3 ? communities[Math.floor(Math.random() * communities.length)] : undefined)
         }));
         
-        // Ajouter le client réel en premier
-        setClients([realClient, ...enrichedClients]);
+        setClients(enrichedClients);
         
         toast({
           title: "Clients chargés",
-          description: `${enrichedClients.length + 1} client(s) récupéré(s) avec succès (incluant client réel)`,
+          description: `${enrichedClients.length} client(s) récupéré(s) avec succès`,
         });
       }
     } catch (error) {
       console.error("Erreur lors du chargement des clients:", error);
       
-      // En cas d'erreur, créer le client réel et le client de démonstration
-      const realClient: Client = {
-        id: "08dcadda-838d-4262-be31-d7c1f2924e2c",
-        name: "Lourdes Moeses Martín Cabreros",
-        email: "lmartinsan56@gmail.com",
-        phone: "+34630608097",
-        address: "calle alonso castrillo 43  24200 Valencia de Don Juan",
-        nif: "",
-        type: "RES010",
-        status: "Initialisation terminée - En attente CEE",
-        projects: 1,
-        created_at: "2025-05-27T06:18:15.494Z",
-        postalCode: "24200",
-        ficheType: "RES010",
-        climateZone: "D1",
-        isolatedArea: 85,
-        isolationType: "Combles",
-        floorType: "Béton",
-        installationDate: "2025-05-27",
-        lotNumber: null,
-        depositStatus: "Non déposé",
-        community: "Castilla y León",
-        teleprospector: "Carmen Rodríguez",
-        confirmer: "Miguel Torres",
-        installationTeam: "Équipe Nord",
-        delegate: "Ana García",
-        depositDate: undefined,
-        entryChannel: "API Import"
-      };
-
+      // En cas d'erreur, créer le client de démonstration
       const demoClient: Client = {
         id: "demo-1",
         name: "Juan García López",
@@ -207,11 +177,11 @@ export const useClients = () => {
         entryChannel: "Téléphone"
       };
       
-      setClients([realClient, demoClient]);
+      setClients([demoClient]);
       
       toast({
         title: "Mode démo activé",
-        description: "Client réel et client d'exemple ajoutés car l'API n'est pas accessible",
+        description: "Client d'exemple ajouté car l'API n'est pas accessible",
         variant: "default",
       });
     } finally {

@@ -1,9 +1,10 @@
 import type { SafetyCultureAudit, SafetyCulturePhoto, SafetyCultureConfig } from '@/types/safetyCulture';
+import { safetyCultureAPI } from './api.service';
 
 class SafetyCultureServiceClass {
   private config: SafetyCultureConfig = {
     apiKey: '',
-    baseUrl: 'https://api.safetyculture.io'
+    baseUrl: 'https://cert.mitain.com/api'
   };
 
   private getApiKey(): string {
@@ -15,30 +16,10 @@ class SafetyCultureServiceClass {
     return apiKey;
   }
 
-  private async makeRequest<T>(endpoint: string): Promise<T> {
-    const apiKey = this.getApiKey();
-    
-    const response = await fetch(`${this.config.baseUrl}${endpoint}`, {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`SafetyCulture API Error: ${response.status} ${response.statusText}`);
-    }
-
-    return response.json();
-  }
-
   async getSafetyCultureReportURL(projectId: string): Promise<string | null> {
     try {
-      // Appel API pour récupérer l'URL du rapport
-      const response = await this.makeRequest<{
-        report_url?: string;
-        available: boolean;
-      }>(`/reports/v1/projects/${projectId}/report`);
+      // Utiliser la nouvelle API
+      const response = await safetyCultureAPI.getInspectionDetails(projectId);
       
       return response.report_url || null;
     } catch (error) {
@@ -55,12 +36,29 @@ class SafetyCultureServiceClass {
 
   async getAudits(): Promise<SafetyCultureAudit[]> {
     try {
-      const response = await this.makeRequest<{
-        count: number;
-        audits: SafetyCultureAudit[];
-      }>('/audits/v1/audits?limit=50&order=desc');
+      const response = await safetyCultureAPI.getInspections({ limit: 50 });
       
-      return response.audits || [];
+      // Transformer les inspections en audits
+      const audits = response.items?.map((inspection: any) => ({
+        id: inspection.id,
+        title: inspection.audit_title || inspection.site_name || 'Inspection sans titre',
+        created_at: inspection.created_at,
+        modified_at: inspection.modified_at,
+        template_id: inspection.template_id,
+        template_name: inspection.template_name,
+        audit_owner: {
+          id: inspection.owner_id,
+          firstname: inspection.owner_firstname || 'Propriétaire',
+          lastname: inspection.owner_lastname || 'Inconnu',
+          email: inspection.owner_email || ''
+        },
+        site: {
+          id: inspection.site_id,
+          name: inspection.site_name || 'Site inconnu'
+        }
+      })) || [];
+      
+      return audits;
     } catch (error) {
       console.error('Erreur lors de la récupération des audits:', error);
       
@@ -71,47 +69,28 @@ class SafetyCultureServiceClass {
 
   async getAuditPhotos(auditId: string): Promise<SafetyCulturePhoto[]> {
     try {
-      const response = await this.makeRequest<{
-        audit: {
-          items: Array<{
-            id: string;
-            type: string;
-            responses?: {
-              image?: {
-                image_id: string;
-                file_name: string;
-                url: string;
-                thumbnail_url: string;
-              };
-            };
-            media?: SafetyCulturePhoto[];
-          }>;
-        };
-      }>(`/audits/v1/audits/${auditId}`);
+      const response = await safetyCultureAPI.getInspectionAnswers(auditId);
 
       const photos: SafetyCulturePhoto[] = [];
       
-      // Parcourir les items pour extraire les photos
-      response.audit.items.forEach(item => {
-        // Photos dans les réponses
-        if (item.responses?.image) {
-          const imageResponse = item.responses.image;
+      // Parcourir les réponses pour extraire les photos
+      response.answers?.forEach((answer: any) => {
+        if (answer.type === 'image' && answer.image_url) {
           photos.push({
-            id: imageResponse.image_id,
-            url: imageResponse.url,
-            thumbnail_url: imageResponse.thumbnail_url,
-            title: imageResponse.file_name,
-            created_at: new Date().toISOString(),
-            modified_at: new Date().toISOString(),
-            file_size: 0,
+            id: answer.id,
+            url: answer.image_url,
+            thumbnail_url: answer.thumbnail_url || answer.image_url,
+            title: answer.title || 'Photo inspection',
+            caption: answer.caption,
+            created_at: answer.created_at,
+            modified_at: answer.modified_at,
+            file_size: answer.file_size || 0,
             content_type: 'image/jpeg',
-            item_id: item.id
+            width: answer.width,
+            height: answer.height,
+            item_id: answer.item_id,
+            question_id: answer.question_id
           });
-        }
-        
-        // Photos dans les médias
-        if (item.media && Array.isArray(item.media)) {
-          photos.push(...item.media);
         }
       });
 
