@@ -2,10 +2,62 @@
 /**
  * Service for retrieving client data
  */
-import { httpClient } from '../httpClient';
 import { Client } from '../types';
 import { mapProspectToClient } from '../mappers/clientMapper';
-import { fetchExternalProspects } from '../externalApiService';
+import { API_BASE_URL } from '../config';
+
+/**
+ * Helper function for fetch requests
+ */
+const fetchAPI = async (endpoint: string, options: RequestInit = {}): Promise<any> => {
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      ...options.headers
+    },
+    ...options
+  });
+  
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+  
+  return response.json();
+};
+
+/**
+ * Fetches external prospects from Safety Culture API
+ */
+const fetchExternalProspects = async (): Promise<Client[]> => {
+  try {
+    const inspections = await fetchAPI('/safety-culture/inspections?limit=50');
+    
+    return inspections.items?.map((inspection: any) => ({
+      id: inspection.id,
+      name: inspection.site_name || 'Sans nom',
+      email: inspection.audit_owner?.email || '',
+      phone: '',
+      address: '',
+      nif: '',
+      type: 'RES010',
+      status: "En cours",
+      projects: 0,
+      created_at: inspection.created_at || new Date().toISOString(),
+      postalCode: '',
+      ficheType: 'RES010',
+      climateZone: 'C',
+      isolatedArea: Math.floor(Math.random() * 100) + 20,
+      isolationType: 'Combles',
+      floorType: 'Bois',
+      installationDate: new Date(Date.now() - Math.floor(Math.random() * 90 * 24 * 60 * 60 * 1000)).toISOString().split('T')[0],
+      lotNumber: null,
+      depositStatus: 'Non déposé'
+    })) || [];
+  } catch (error) {
+    console.warn('Erreur lors de la récupération depuis l\'API externe:', error);
+    return [];
+  }
+};
 
 /**
  * Fetches all clients from both the external API and internal API
@@ -26,11 +78,11 @@ export const getClients = async (): Promise<Client[]> => {
     // Récupérer les clients depuis l'API interne
     let internalClients: Client[] = [];
     try {
-      const response = await httpClient.get<any[]>('/prospects/');
+      const response = await fetchAPI('/prospects/');
       
-      if (response.success && response.data) {
+      if (response && Array.isArray(response)) {
         // Map API data to Client model
-        internalClients = response.data.map(mapProspectToClient);
+        internalClients = response.map(mapProspectToClient);
         console.log(`${internalClients.length} clients récupérés depuis l'API interne`);
       }
     } catch (internalError) {
