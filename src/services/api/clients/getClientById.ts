@@ -1,38 +1,32 @@
 
 /**
- * Service for retrieving a single client by ID
+ * Service pour récupérer un client par ID - refactorisé
  */
-import { httpClient } from '../httpClient';
 import { Client } from '../types';
-import { getClients } from './getClients';
-import { mapProspectToClient } from '../mappers/clientMapper';
+import { clientsApiService } from './clientsApiService';
 
 /**
- * Fetches a client by ID from the external API
+ * Récupère un client par son ID
  */
 export const getClientById = async (clientId: string): Promise<Client | null> => {
+  console.group(`🔍 getClientById(${clientId}) - Entry Point`);
+  
   try {
-    // Most REST APIs expose detail view with a final slash
-    const response = await httpClient.get<any>(`/prospects/${clientId}/`);
+    console.log('🔄 Delegating to ClientsApiService...');
+    const client = await clientsApiService.getClientById(clientId);
     
-    if (!response.success || !response.data) {
-      console.warn(`Endpoint détail non disponible pour le client ${clientId}. Tentative de fallback via la liste complète…`);
-
-      // Fallback: get full list and filter
-      const allClients = await getClients();
-      const found = allClients.find((c) => c.id === clientId);
-      if (found) return found;
-
-      console.error(`Client ${clientId} introuvable même après fallback.`);
-      return null;
+    if (client) {
+      console.log(`✅ getClientById(${clientId}) found client:`, client.name);
+    } else {
+      console.warn(`⚠️ getClientById(${clientId}) - client not found`);
     }
     
-    // Map API data to Client model
-    const client = mapProspectToClient(response.data);
-
     return client;
+    
   } catch (error) {
-    console.error(`Erreur lors de la récupération du client ${clientId}:`, error);
+    console.error(`❌ getClientById(${clientId}) failed:`, error);
     return null;
+  } finally {
+    console.groupEnd();
   }
 };

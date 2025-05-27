@@ -1,8 +1,16 @@
 /**
- * Client HTTP pour les appels API
+ * Client HTTP pour les appels API avec debug amélioré
  */
 import { API_BASE_URL, API_TIMEOUT, DEFAULT_FETCH_OPTIONS } from './config';
 import { ApiResponse } from './types';
+import { apiDebugger } from './debug/apiDebugger';
+import { 
+  isDirectArrayResponse, 
+  isApiResponseFormat, 
+  wrapInApiResponse, 
+  createErrorResponse,
+  logResponseType 
+} from './utils/responseUtils';
 
 // Helper to retrieve auth token from localStorage and return the Authorization header if available
 const getAuthHeader = (): Record<string, string> => {
@@ -16,65 +24,106 @@ const fetchWithTimeout = async (url: string, options: RequestInit = {}, timeout 
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), timeout);
   
-  const response = await fetch(url, {
-    ...options,
-    signal: controller.signal
-  });
-  
-  clearTimeout(id);
-  return response;
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal
+    });
+    clearTimeout(id);
+    return response;
+  } catch (error) {
+    clearTimeout(id);
+    throw error;
+  }
 };
 
-// Client HTTP générique
+// Client HTTP générique avec debug amélioré
 export const httpClient = {
   async get<T>(endpoint: string, customOptions: RequestInit = {}): Promise<ApiResponse<T>> {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const headers = {
+      ...DEFAULT_FETCH_OPTIONS.headers,
+      ...(customOptions.headers || {}),
+      ...getAuthHeader(),
+    };
+    
+    const options: RequestInit = {
+      ...DEFAULT_FETCH_OPTIONS,
+      ...customOptions,
+      headers,
+      method: 'GET',
+    };
+
     try {
-      const url = `${API_BASE_URL}${endpoint}`;
-      console.log(`HTTP GET: ${url}`);
-      
-      const options: RequestInit = {
-        ...DEFAULT_FETCH_OPTIONS,
-        ...customOptions,
-        headers: {
-          ...DEFAULT_FETCH_OPTIONS.headers,
-          ...(customOptions.headers || {}),
-          ...getAuthHeader(),
-        },
+      // Log de la requête
+      apiDebugger.logRequest({
+        url,
         method: 'GET',
-      };
-      
+        headers,
+      });
+
       const response = await fetchWithTimeout(url, options);
-      console.log(`Response status: ${response.status}`);
       
       if (!response.ok) {
         const errorText = await response.text();
-        console.error(`HTTP Error ${response.status}:`, errorText);
-        throw new Error(`Erreur HTTP: ${response.status} - ${errorText}`);
+        const error = new Error(`HTTP ${response.status}: ${errorText}`);
+        
+        apiDebugger.logRequest({
+          url,
+          method: 'GET',
+          headers,
+          responseStatus: response.status,
+          error,
+        });
+        
+        return createErrorResponse<T>(`Erreur HTTP: ${response.status} - ${errorText}`);
       }
       
       const data = await response.json();
-      console.log('Response data type:', typeof data, Array.isArray(data) ? 'Array' : 'Object');
-      console.log('Response data sample:', Array.isArray(data) ? `Array with ${data.length} items` : data);
       
-      // Pour l'endpoint /prospects/, retourner directement les données
-      if (endpoint === '/prospects/' && Array.isArray(data)) {
-        return { success: true, data: data as T, message: 'Success' };
+      // Analyse détaillée de la réponse
+      logResponseType(data, endpoint);
+      
+      // Log de la réponse réussie
+      apiDebugger.logRequest({
+        url,
+        method: 'GET',
+        headers,
+        responseStatus: response.status,
+        responseData: data,
+      });
+      
+      // Gestion spécifique pour l'endpoint /prospects/
+      if (endpoint === '/prospects/' && isDirectArrayResponse(data)) {
+        console.log('✅ Detected direct array response for prospects endpoint');
+        return wrapInApiResponse(data as T);
       }
       
-      // Pour d'autres endpoints, vérifier si c'est déjà un ApiResponse
-      if (data && typeof data === 'object' && 'success' in data) {
+      // Si c'est déjà un ApiResponse
+      if (isApiResponseFormat(data)) {
+        console.log('✅ Detected ApiResponse format');
         return data;
       }
       
-      // Sinon, wrapper les données dans un ApiResponse
-      return { success: true, data: data as T, message: 'Success' };
+      // Sinon, wrapper les données
+      console.log('✅ Wrapping raw data in ApiResponse format');
+      return wrapInApiResponse(data as T);
       
     } catch (error) {
-      console.error(`Erreur GET ${endpoint}:`, error);
-      if (error instanceof Error && error.name === 'AbortError') {
-        return { success: false, data: null, message: 'Timeout de la requête' };
+      const err = error instanceof Error ? error : new Error('Unknown error');
+      
+      apiDebugger.logRequest({
+        url,
+        method: 'GET',
+        headers,
+        error: err,
+      });
+      
+      if (err.name === 'AbortError') {
+        return createErrorResponse<T>('Timeout de la requête');
       }
-      return { success: false, data: null, message: error instanceof Error ? error.message : 'Erreur inconnue' };
+      
+      return createErrorResponse<T>(err.message);
     }
   },
   

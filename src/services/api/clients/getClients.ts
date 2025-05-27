@@ -1,77 +1,36 @@
 
 /**
- * Service for retrieving client data
+ * Service pour récupérer les données clients - refactorisé avec debug
  */
-import { httpClient } from '../httpClient';
 import { Client } from '../types';
-import { mapProspectToClient } from '../mappers/clientMapper';
+import { clientsApiService } from './clientsApiService';
 
 /**
- * Fetches all clients from the API
+ * Récupère tous les clients depuis l'API
  */
 export const getClients = async (): Promise<Client[]> => {
+  console.group('🚀 getClients() - Entry Point');
+  
   try {
-    console.log('🔄 Début de la récupération des clients depuis l\'API...');
+    console.log('🔄 Delegating to ClientsApiService...');
+    const clients = await clientsApiService.getAllClients();
     
-    // Récupération depuis l'API prospects
-    const response = await httpClient.get<any[]>('/prospects/');
-    console.log('📡 Réponse API reçue:', response);
-    
-    if (response.success && response.data && Array.isArray(response.data)) {
-      console.log(`✅ ${response.data.length} prospects reçus de l'API`);
-      
-      // Log d'un échantillon des données brutes
-      if (response.data.length > 0) {
-        console.log('📋 Échantillon de prospect brut:', response.data[0]);
-      }
-      
-      // Map API data to Client model
-      const clients = response.data.map((prospect, index) => {
-        try {
-          const mappedClient = mapProspectToClient(prospect);
-          if (index === 0) {
-            console.log('🔄 Client mappé (échantillon):', mappedClient);
-          }
-          return mappedClient;
-        } catch (mappingError) {
-          console.error(`❌ Erreur de mapping pour le prospect ${prospect.id}:`, mappingError);
-          console.error('Données du prospect problématique:', prospect);
-          throw mappingError;
-        }
-      });
-      
-      console.log(`✅ ${clients.length} clients mappés avec succès`);
-      return clients;
-      
-    } else {
-      console.warn('⚠️ Format de réponse API inattendu ou données manquantes:', response);
-      
-      if (!response.success) {
-        throw new Error(`Échec de l'API: ${response.message || 'Erreur inconnue'}`);
-      }
-      
-      if (!response.data) {
-        throw new Error('Aucune donnée reçue de l\'API');
-      }
-      
-      if (!Array.isArray(response.data)) {
-        throw new Error(`Format de données inattendu: ${typeof response.data}`);
-      }
-      
-      return [];
-    }
+    console.log(`✅ getClients() completed successfully with ${clients.length} clients`);
+    return clients;
     
   } catch (error) {
-    console.error("❌ Erreur lors de la récupération des clients:", error);
+    console.error('❌ getClients() failed:', error);
     
     // Log détaillé de l'erreur
     if (error instanceof Error) {
-      console.error("Type d'erreur:", error.name);
-      console.error("Message d'erreur:", error.message);
-      console.error("Stack trace:", error.stack);
+      console.error('📋 Error details:');
+      console.error('- Name:', error.name);
+      console.error('- Message:', error.message);
+      console.error('- Stack:', error.stack);
     }
     
-    // Re-throw pour que les composants puissent gérer l'erreur
-    throw new Error(`Impossible de récupérer les clients depuis l'API: ${error instanceof Error ? error.message : 'Erreur inconnue'}`);
+    throw new Error(`Failed to retrieve clients: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  } finally {
+    console.groupEnd();
   }
 };
