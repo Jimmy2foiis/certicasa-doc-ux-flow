@@ -64,7 +64,6 @@ const SendPage = () => {
   const pendingCount = certificates.filter(c => c.status === "pending").length;
   const selectedCount = selectedCertificates.length;
   const allSelected = filteredCertificates.length > 0 && selectedCertificates.length === filteredCertificates.length;
-  const someSelected = selectedCertificates.length > 0 && selectedCertificates.length < filteredCertificates.length;
 
   // Handle select all toggle
   const handleSelectAll = () => {
@@ -144,28 +143,18 @@ const SendPage = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Certificates List */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Certificats en attente</span>
-              <Badge variant="secondary">{pendingCount} certificat(s)</Badge>
-            </CardTitle>
+      {/* Main Table */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Certificats disponibles pour envoi</CardTitle>
+              <p className="text-sm text-gray-600 mt-1">
+                {pendingCount} certificat(s) en attente d'envoi
+              </p>
+            </div>
             
-            {/* Toolbar */}
-            <div className="flex items-center justify-between gap-4 pt-4">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={handleSelectAll}
-                  className="data-[state=checked]:bg-green-600"
-                />
-                <span className="text-sm text-gray-600">
-                  {selectedCount}/{filteredCertificates.length} sélectionnés
-                </span>
-              </div>
-              
+            <div className="flex items-center gap-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" size="sm">
@@ -184,132 +173,162 @@ const SendPage = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-          </CardHeader>
-          
-          <CardContent>
-            {filteredCertificates.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                Aucun certificat en attente
-              </div>
-            ) : (
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-12"></TableHead>
-                      <TableHead>Référence</TableHead>
-                      <TableHead>Client</TableHead>
-                      <TableHead>Surface</TableHead>
-                      <TableHead>Classe</TableHead>
-                      <TableHead>Montant</TableHead>
-                      <TableHead>Statut</TableHead>
+          </div>
+        </CardHeader>
+        
+        <CardContent>
+          {filteredCertificates.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              Aucun certificat en attente
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">
+                      <Checkbox
+                        checked={allSelected}
+                        onCheckedChange={handleSelectAll}
+                        className="data-[state=checked]:bg-green-600"
+                      />
+                    </TableHead>
+                    <TableHead>Nom</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Statut</TableHead>
+                    <TableHead>Dépôt</TableHead>
+                    <TableHead>Assigné</TableHead>
+                    <TableHead>Classe</TableHead>
+                    <TableHead>Ville</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Surface</TableHead>
+                    <TableHead>Type Combles</TableHead>
+                    <TableHead>Type Sol</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredCertificates.map((certificate) => (
+                    <TableRow 
+                      key={certificate.id} 
+                      className="hover:bg-gray-50 cursor-pointer"
+                      onClick={() => handleCertificateSelect(certificate.id)}
+                    >
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedCertificates.includes(certificate.id)}
+                          onCheckedChange={() => handleCertificateSelect(certificate.id)}
+                          className="data-[state=checked]:bg-green-600"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium text-sm">{certificate.clientName}</p>
+                          <p className="text-xs text-gray-500">{certificate.reference}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">RES010</span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="text-sm">
+                          <p>Initialisation terminée - En attente CEE</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-gray-500">Non déposé</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm text-gray-400">Non assigné</span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge 
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${getEnergyClassColor(certificate.energyClass || 'C')}`}
+                        >
+                          {certificate.energyClass || 'C'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">{certificate.clientEmail?.split('@')[0] || 'N/A'}</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">27/05/2025</span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="text-sm">{certificate.surfaceArea} m²</span>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                          🏠 Combles
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                          🏠 Béton
+                        </Badge>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredCertificates.map((certificate) => (
-                      <TableRow 
-                        key={certificate.id} 
-                        className="hover:bg-gray-50 cursor-pointer"
-                        onClick={() => handleCertificateSelect(certificate.id)}
-                      >
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedCertificates.includes(certificate.id)}
-                            onCheckedChange={() => handleCertificateSelect(certificate.id)}
-                            className="data-[state=checked]:bg-green-600"
-                          />
-                        </TableCell>
-                        <TableCell className="font-mono text-sm">
-                          {certificate.reference}
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium text-sm">{certificate.clientName}</p>
-                            <p className="text-xs text-gray-500">{certificate.clientEmail}</p>
-                            {certificate.clientPhone && (
-                              <p className="text-xs text-gray-500">{certificate.clientPhone}</p>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="text-sm">{certificate.projectType}</p>
-                            <p className="text-xs text-gray-500">{certificate.surfaceArea}m²</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge 
-                            className={`w-8 h-8 rounded-full flex items-center justify-center ${getEnergyClassColor(certificate.energyClass || 'C')}`}
-                          >
-                            {certificate.energyClass || 'C'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <span className="font-medium">{certificate.estimatedAmount?.toLocaleString()}€</span>
-                        </TableCell>
-                        <TableCell>
-                          {certificate.isUrgent && (
-                            <Badge className="bg-red-100 text-red-700">
-                              <AlertCircle className="h-3 w-3 mr-1" />
-                              Urgent
-                            </Badge>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Thermician Selection */}
-        <Card className={selectedCount === 0 ? "opacity-50" : ""}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Thermicien
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ThermicianSelector
-              selectedThermician={selectedThermician}
-              onThermicianSelect={setSelectedThermician}
-              disabled={selectedCount === 0}
-            />
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Summary and Send Button */}
+      {/* Thermician Selection and Summary */}
       {selectedCount > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="space-y-4">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-blue-900 mb-2">📊 Résumé :</h3>
-                <ul className="space-y-1 text-sm text-blue-800">
-                  <li>• {selectedCount} certificat(s) sélectionné(s)</li>
-                  <li>• Thermicien : {selectedThermician || "Non sélectionné"}</li>
-                  <li>• Montant total : {totalAmount.toLocaleString()} €</li>
-                </ul>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Thermician Selection */}
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Sélectionner un thermicien
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ThermicianSelector
+                  selectedThermician={selectedThermician}
+                  onThermicianSelect={setSelectedThermician}
+                  disabled={selectedCount === 0}
+                />
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle>📊 Résumé</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Certificats sélectionnés:</span>
+                  <span className="font-medium">{selectedCount}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Thermicien:</span>
+                  <span className="font-medium">{selectedThermician || "Non sélectionné"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Montant total:</span>
+                  <span className="font-medium">{totalAmount.toLocaleString()} €</span>
+                </div>
               </div>
               
-              <div className="flex justify-end">
-                <Button
-                  onClick={() => setShowConfirmModal(true)}
-                  disabled={!canSend}
-                  className={canSend ? "bg-green-600 hover:bg-green-700" : ""}
-                  size="lg"
-                >
-                  <Send className="h-5 w-5 mr-2" />
-                  {getButtonText()}
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              <Button
+                onClick={() => setShowConfirmModal(true)}
+                disabled={!canSend}
+                className={canSend ? "bg-green-600 hover:bg-green-700 w-full" : "w-full"}
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {getButtonText()}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Confirmation Modal */}
