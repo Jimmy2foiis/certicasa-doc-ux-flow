@@ -5,7 +5,8 @@ import { useClientData } from "@/hooks/useClientData";
 import ClientDetailsHeader from "./ClientDetailsHeader";
 import ClientDetailsTabs from "./ClientDetailsTabs";
 import CalculationHandler from "./CalculationHandler";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface ClientDetailsViewProps {
   clientId: string;
@@ -84,10 +85,14 @@ const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsV
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-400" />
           <p className="text-gray-500">Chargement des données client...</p>
+          <p className="text-xs text-gray-400 mt-2">ID: {clientId}</p>
         </div>
       </div>
     );
   }
+
+  // Afficher un avertissement si c'est un client par défaut
+  const isDefaultClient = client.name?.includes("par défaut") || client.name?.includes("Erreur");
 
   if (showCalculations) {
     return (
@@ -103,6 +108,16 @@ const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsV
 
   return (
     <div className="space-y-6">
+      {isDefaultClient && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Ce client a été créé par défaut car les données n'ont pas pu être récupérées depuis l'API. 
+            Certaines informations peuvent être manquantes ou incorrectes.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <ClientDetailsHeader 
         onBack={onBack} 
         clientId={clientId} 

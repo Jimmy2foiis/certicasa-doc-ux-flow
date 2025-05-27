@@ -30,23 +30,32 @@ export const useClientInfo = (clientId: string) => {
       const clientData = await getClientById(clientId);
       
       if (clientData) {
-        console.log("Client chargé:", clientData);
+        console.log("Client chargé avec succès:", clientData);
         setClient(clientData);
         setClientAddress(clientData.address || "");
         
-        toast({
-          title: "Client chargé",
-          description: "Données récupérées avec succès",
-        });
+        // Only show success toast if it's not a default/error client
+        if (!clientData.name.includes("par défaut") && !clientData.name.includes("Erreur")) {
+          toast({
+            title: "Client chargé",
+            description: "Données récupérées avec succès",
+          });
+        } else {
+          toast({
+            title: "Client chargé",
+            description: "Client créé par défaut - certaines données peuvent être manquantes",
+            variant: "default",
+          });
+        }
         
       } else {
-        console.error("Client non trouvé");
+        console.error("Aucun client retourné par l'API");
         setClient(null);
         setClientAddress("");
         
         toast({
-          title: "Client non trouvé",
-          description: "Impossible de trouver ce client",
+          title: "Erreur",
+          description: "Impossible de charger le client",
           variant: "destructive",
         });
       }
