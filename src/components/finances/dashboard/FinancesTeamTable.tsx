@@ -17,39 +17,8 @@ const FinancesTeamTable: React.FC<FinancesTeamTableProps> = ({
   selectedFicheType,
   selectedTeam,
 }) => {
-  // Données mockées pour le tableau des équipes
-  const teamData = [
-    {
-      id: "1",
-      teamName: "ARTISOL",
-      projectsCompleted: 37,
-      totalSurface: 2340,
-      averageDelay: 6.2,
-      completeness: 89,
-      uiAverage: { before: 2.1, after: 0.9 },
-      revenue: 98400,
-    },
-    {
-      id: "2",
-      teamName: "Rénovation Plus",
-      projectsCompleted: 28,
-      totalSurface: 1850,
-      averageDelay: 5.8,
-      completeness: 92,
-      uiAverage: { before: 2.3, after: 0.8 },
-      revenue: 77800,
-    },
-    {
-      id: "3",
-      teamName: "Éco Habitat",
-      projectsCompleted: 31,
-      totalSurface: 2120,
-      averageDelay: 7.1,
-      completeness: 85,
-      uiAverage: { before: 1.9, after: 1.0 },
-      revenue: 89200,
-    },
-  ];
+  // Aucune donnée mockée - utilisation des vraies APIs
+  const teamData: any[] = [];
 
   const getCompletenessColor = (percentage: number) => {
     if (percentage >= 90) return "text-green-600 bg-green-50";
@@ -65,56 +34,62 @@ const FinancesTeamTable: React.FC<FinancesTeamTableProps> = ({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Équipe de pose</TableHead>
-              <TableHead className="text-right">Projets terminés</TableHead>
-              <TableHead className="text-right">Surface totale (m²)</TableHead>
-              <TableHead className="text-right">Délai moyen (j)</TableHead>
-              <TableHead className="text-center">Complétude docs</TableHead>
-              <TableHead className="text-center">Ui moyen</TableHead>
-              <TableHead className="text-right">Chiffre d'affaires</TableHead>
-              <TableHead className="text-center">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {teamData.map((team) => (
-              <TableRow key={team.id}>
-                <TableCell className="font-medium">{team.teamName}</TableCell>
-                <TableCell className="text-right">{team.projectsCompleted}</TableCell>
-                <TableCell className="text-right">{team.totalSurface.toLocaleString()}</TableCell>
-                <TableCell className="text-right">{team.averageDelay}</TableCell>
-                <TableCell className="text-center">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCompletenessColor(team.completeness)}`}>
-                    {team.completeness}%
-                  </span>
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="text-sm">
-                    <div>{team.uiAverage.before} → {team.uiAverage.after}</div>
-                    <div className="text-xs text-gray-500">
-                      Δ: -{(team.uiAverage.before - team.uiAverage.after).toFixed(1)}
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell className="text-right font-medium">
-                  {formatCurrency(team.revenue)}
-                </TableCell>
-                <TableCell className="text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <Button variant="ghost" size="sm">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Download className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
+        {teamData.length === 0 ? (
+          <div className="flex items-center justify-center py-8">
+            <p className="text-gray-500">Aucune donnée d'équipe disponible. Connectez l'API pour voir les données.</p>
+          </div>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Équipe de pose</TableHead>
+                <TableHead className="text-right">Projets terminés</TableHead>
+                <TableHead className="text-right">Surface totale (m²)</TableHead>
+                <TableHead className="text-right">Délai moyen (j)</TableHead>
+                <TableHead className="text-center">Complétude docs</TableHead>
+                <TableHead className="text-center">Ui moyen</TableHead>
+                <TableHead className="text-right">Chiffre d'affaires</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {teamData.map((team) => (
+                <TableRow key={team.id}>
+                  <TableCell className="font-medium">{team.teamName}</TableCell>
+                  <TableCell className="text-right">{team.projectsCompleted}</TableCell>
+                  <TableCell className="text-right">{team.totalSurface.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">{team.averageDelay}</TableCell>
+                  <TableCell className="text-center">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCompletenessColor(team.completeness)}`}>
+                      {team.completeness}%
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="text-sm">
+                      <div>{team.uiAverage.before} → {team.uiAverage.after}</div>
+                      <div className="text-xs text-gray-500">
+                        Δ: -{(team.uiAverage.before - team.uiAverage.after).toFixed(1)}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right font-medium">
+                    {formatCurrency(team.revenue)}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <div className="flex items-center justify-center gap-2">
+                      <Button variant="ghost" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   );

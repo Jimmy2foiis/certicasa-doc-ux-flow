@@ -1,3 +1,4 @@
+
 import type { SafetyCultureAudit, SafetyCulturePhoto, SafetyCultureConfig } from '@/types/safetyCulture';
 import { safetyCultureAPI } from './api.service';
 
@@ -24,12 +25,6 @@ class SafetyCultureServiceClass {
       return response.report_url || null;
     } catch (error) {
       console.error('Erreur lors de la récupération du rapport SafetyCulture:', error);
-      
-      // Simulation pour la démo - retourne null si pas disponible
-      const mockAvailable = Math.random() > 0.5;
-      if (mockAvailable) {
-        return `https://app.safetyculture.com/reports/project-${projectId}`;
-      }
       return null;
     }
   }
@@ -61,9 +56,7 @@ class SafetyCultureServiceClass {
       return audits;
     } catch (error) {
       console.error('Erreur lors de la récupération des audits:', error);
-      
-      // Données de démo si l'API n'est pas disponible
-      return this.getDemoAudits();
+      return [];
     }
   }
 
@@ -97,72 +90,8 @@ class SafetyCultureServiceClass {
       return photos;
     } catch (error) {
       console.error('Erreur lors de la récupération des photos:', error);
-      
-      // Données de démo si l'API n'est pas disponible
-      return this.getDemoPhotos();
+      return [];
     }
-  }
-
-  private getDemoAudits(): SafetyCultureAudit[] {
-    return [
-      {
-        id: 'demo-audit-1',
-        title: 'Inspection isolation - Maison Martin',
-        created_at: '2024-01-15T10:30:00Z',
-        modified_at: '2024-01-15T11:45:00Z',
-        template_id: 'template-isolation',
-        template_name: 'Inspection isolation thermique',
-        audit_owner: {
-          id: 'user-1',
-          firstname: 'Jean',
-          lastname: 'Dupont',
-          email: 'jean.dupont@example.com'
-        },
-        site: {
-          id: 'site-1',
-          name: 'Chantier Valencia de Don Juan'
-        }
-      },
-      {
-        id: 'demo-audit-2',
-        title: 'Contrôle final - Appartement Durand',
-        created_at: '2024-01-20T09:15:00Z',
-        modified_at: '2024-01-20T10:30:00Z',
-        template_id: 'template-final',
-        template_name: 'Contrôle final travaux',
-        audit_owner: {
-          id: 'user-2',
-          firstname: 'Marie',
-          lastname: 'Lambert',
-          email: 'marie.lambert@example.com'
-        }
-      }
-    ];
-  }
-
-  private getDemoPhotos(): SafetyCulturePhoto[] {
-    // Générer des photos de démo
-    const demoPhotos: SafetyCulturePhoto[] = [];
-    
-    for (let i = 1; i <= 12; i++) {
-      demoPhotos.push({
-        id: `demo-photo-${i}`,
-        url: `https://picsum.photos/400/300?random=${i}`,
-        thumbnail_url: `https://picsum.photos/150/150?random=${i}`,
-        title: `Photo ${i} - Inspection chantier`,
-        caption: `Photo prise lors de l'inspection - Point ${i}`,
-        created_at: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString(),
-        modified_at: new Date().toISOString(),
-        file_size: Math.floor(Math.random() * 2000000) + 500000,
-        content_type: 'image/jpeg',
-        width: 400,
-        height: 300,
-        item_id: `item-${Math.floor(i / 3) + 1}`,
-        question_id: `question-${i}`
-      });
-    }
-    
-    return demoPhotos;
   }
 
   setApiKey(apiKey: string): void {

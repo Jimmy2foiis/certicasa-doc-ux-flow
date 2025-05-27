@@ -23,42 +23,6 @@ export const useClientInfo = (clientId: string) => {
   // État pour stocker l'adresse du client actuelle
   const [clientAddress, setClientAddress] = useState("");
   
-  // Fonction pour créer un client de fallback si l'API échoue
-  const createFallbackClient = useCallback((clientId: string) => {
-    console.log("Création d'un client de fallback pour l'ID:", clientId);
-    
-    const fallbackClient = {
-      id: clientId,
-      name: "Client Demo",
-      email: "client.demo@example.com",
-      phone: "+34 123 456 789",
-      address: "Calle Serrano 120, 28006 Madrid",
-      nif: "12345678Z",
-      type: "RES010",
-      status: "En cours",
-      projects: 1,
-      created_at: new Date().toISOString(),
-      postalCode: "28006",
-      ficheType: "RES010",
-      climateZone: "C3",
-      isolatedArea: 85,
-      isolationType: "Combles",
-      floorType: "Béton",
-      installationDate: new Date().toISOString().split('T')[0],
-      lotNumber: null,
-      depositStatus: "Non déposé",
-      community: "Madrid",
-      teleprospector: "Carmen Rodríguez",
-      confirmer: "Miguel Torres",
-      installationTeam: "Équipe Nord",
-      delegate: "Ana García",
-      depositDate: undefined,
-      entryChannel: "Demo"
-    };
-    
-    return fallbackClient;
-  }, []);
-  
   // Fonction pour charger les données du client depuis l'API
   const loadClientFromApi = useCallback(async () => {
     try {
@@ -91,7 +55,7 @@ export const useClientInfo = (clientId: string) => {
           installationDate: new Date().toISOString().split('T')[0],
           lotNumber: null,
           depositStatus: "Non déposé",
-          community: clientData.ville || "Madrid",
+          community: clientData.ville || "",
           teleprospector: "Carmen Rodríguez",
           confirmer: "Miguel Torres",
           installationTeam: "Équipe Nord",
@@ -114,23 +78,21 @@ export const useClientInfo = (clientId: string) => {
     } catch (error) {
       console.error("Erreur lors du chargement du client depuis l'API:", error);
       
-      // Utiliser le client de fallback
-      const fallbackClient = createFallbackClient(clientId);
-      setClient(fallbackClient);
-      setClientAddress(fallbackClient.address || "");
+      setClient(null);
+      setClientAddress("");
       
       toast({
-        title: "Mode démo",
-        description: "Utilisation des données de démonstration",
-        variant: "default",
+        title: "Erreur de chargement",
+        description: "Impossible de charger le client depuis l'API",
+        variant: "destructive",
       });
     }
-  }, [clientId, toast, createFallbackClient]);
+  }, [clientId, toast]);
   
   // Fonction pour charger les projets du client depuis l'API
   const loadProjectsFromApi = useCallback(async () => {
     try {
-      // Créer un projet par défaut
+      // Créer un projet par défaut basé sur les données du client
       const defaultProject: Project = {
         id: `project-${clientId}`,
         name: "Réhabilitation Énergétique",
@@ -143,6 +105,7 @@ export const useClientInfo = (clientId: string) => {
       console.log("Projet par défaut créé");
     } catch (error) {
       console.error("Erreur lors du chargement des projets:", error);
+      setProjects([]);
     }
   }, [clientId]);
 
@@ -168,8 +131,9 @@ export const useClientInfo = (clientId: string) => {
       // Même en cas d'erreur API, on garde le changement local
       setClient((prev: any) => prev ? {...prev, address: newAddress} : null);
       toast({
-        title: "Adresse mise à jour localement",
-        description: "Changement sauvegardé en local.",
+        title: "Erreur de mise à jour",
+        description: "Impossible de mettre à jour l'adresse dans l'API",
+        variant: "destructive",
       });
     }
   }, [client, clientId, toast]);

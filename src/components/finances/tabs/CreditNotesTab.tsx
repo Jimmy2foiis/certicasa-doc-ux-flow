@@ -16,39 +16,8 @@ const CreditNotesTab: React.FC<CreditNotesTabProps> = ({
   selectedStatuses,
   searchTerm,
 }) => {
-  // Données mockées pour l'exemple
-  const mockCreditNotes = [
-    {
-      id: "1",
-      clientName: "Jean Dupont",
-      ficheNumber: "CERT-00145",
-      caeKwh: 2340,
-      caeGlobalAmount: 6540,
-      creditNoteAmount: 654,
-      generationDate: "2025-04-25",
-      status: "generated",
-    },
-    {
-      id: "2",
-      clientName: "Marie Martin",
-      ficheNumber: "CERT-00146",
-      caeKwh: 2850,
-      caeGlobalAmount: 7980,
-      creditNoteAmount: 798,
-      generationDate: "2025-04-24",
-      status: "generated",
-    },
-    {
-      id: "3",
-      clientName: "Pierre Durand",
-      ficheNumber: "CERT-00147",
-      caeKwh: 2120,
-      caeGlobalAmount: 5936,
-      creditNoteAmount: 594,
-      generationDate: "2025-04-23",
-      status: "missing",
-    },
-  ];
+  // Aucune donnée mockée - utilisation des vraies APIs
+  const creditNotes: any[] = [];
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -76,6 +45,14 @@ const CreditNotesTab: React.FC<CreditNotesTabProps> = ({
     }
   };
 
+  if (creditNotes.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <p className="text-gray-500">Aucune note de crédit disponible. Connectez l'API pour voir les données.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <Table>
@@ -92,7 +69,7 @@ const CreditNotesTab: React.FC<CreditNotesTabProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {mockCreditNotes.map((note) => (
+          {creditNotes.map((note) => (
             <TableRow key={note.id}>
               <TableCell className="font-medium">{note.clientName}</TableCell>
               <TableCell>{note.ficheNumber}</TableCell>

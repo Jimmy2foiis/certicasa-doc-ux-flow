@@ -15,21 +15,21 @@ const FinancesTechnicalIndicators: React.FC<FinancesTechnicalIndicatorsProps> = 
   selectedFicheType,
   selectedTeam,
 }) => {
-  // Données mockées pour les indicateurs techniques CEE
+  // Aucune donnée mockée - utilisation des vraies APIs
   const technicalData = {
-    averageUiBefore: 2.1,
-    averageUiAfter: 0.9,
-    averageUiGap: 1.2,
-    projectsAboveThreshold: 87,
-    totalProjects: 96,
-    res010Count: 62,
-    res020Count: 34,
-    averageCAEPerM2: 42.8,
-    thermalSavings: 1240000,
+    averageUiBefore: 0,
+    averageUiAfter: 0,
+    averageUiGap: 0,
+    projectsAboveThreshold: 0,
+    totalProjects: 0,
+    res010Count: 0,
+    res020Count: 0,
+    averageCAEPerM2: 0,
+    thermalSavings: 0,
   };
 
-  const thresholdPercentage = (technicalData.projectsAboveThreshold / technicalData.totalProjects) * 100;
-  const res010Percentage = (technicalData.res010Count / (technicalData.res010Count + technicalData.res020Count)) * 100;
+  const thresholdPercentage = technicalData.totalProjects > 0 ? (technicalData.projectsAboveThreshold / technicalData.totalProjects) * 100 : 0;
+  const res010Percentage = (technicalData.res010Count + technicalData.res020Count) > 0 ? (technicalData.res010Count / (technicalData.res010Count + technicalData.res020Count)) * 100 : 0;
 
   return (
     <Card>
@@ -122,6 +122,12 @@ const FinancesTechnicalIndicators: React.FC<FinancesTechnicalIndicatorsProps> = 
             <div className="text-sm text-gray-500">Score de performance</div>
           </div>
         </div>
+
+        {technicalData.totalProjects === 0 && (
+          <div className="mt-6 flex items-center justify-center py-8">
+            <p className="text-gray-500">Aucune donnée technique disponible. Connectez l'API pour voir les indicateurs.</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

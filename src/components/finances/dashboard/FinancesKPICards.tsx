@@ -15,12 +15,12 @@ const FinancesKPICards: React.FC<FinancesKPICardsProps> = ({
   selectedFicheType,
   selectedTeam,
 }) => {
-  // Données mockées pour l'exemple
+  // Aucune donnée mockée - utilisation des vraies APIs
   const kpiData = {
-    activeClients: { value: 245, change: 12, trend: "up" as const },
-    totalSurface: { value: 18500, change: 8, trend: "up" as const },
-    totalCAE: { value: 1240000, change: 23, trend: "up" as const },
-    averagePrice: { value: 42, change: -3, trend: "down" as const },
+    activeClients: { value: 0, change: 0, trend: "up" as const },
+    totalSurface: { value: 0, change: 0, trend: "up" as const },
+    totalCAE: { value: 0, change: 0, trend: "up" as const },
+    averagePrice: { value: 0, change: 0, trend: "down" as const },
   };
 
   const KPICard = ({ 

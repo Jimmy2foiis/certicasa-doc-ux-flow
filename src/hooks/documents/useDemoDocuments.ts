@@ -22,65 +22,9 @@ export const determineDocumentCategory = (name: string): string => {
   return "administratif";
 };
 
-// Function to generate demo documents when no real documents are available
+// Cette fonction ne génère plus de documents de démonstration
+// Elle retourne un tableau vide pour forcer l'utilisation des vraies APIs
 export const generateDemoDocuments = (clientName?: string, projectType: string = "RES010"): AdministrativeDocument[] => {
-  const demoClient = clientName || "Demo Client";
-  
-  return [
-    {
-      id: "1",
-      name: `Contrat - ${demoClient}`,
-      type: "pdf",
-      category: "administratif",
-      status: "signed" as DocumentStatus,
-      created_at: new Date().toISOString(),
-      description: "Contrat client standard",
-      reference: "CONT-2023-001",
-      order: 1
-    },
-    {
-      id: "2",
-      name: `Plans d'installation - Projet ${projectType}`,
-      type: "dwg",
-      category: "technique",
-      status: "available" as DocumentStatus,
-      created_at: new Date().toISOString(),
-      description: "Plans techniques",
-      reference: "PLAN-2023-002",
-      order: 2
-    },
-    {
-      id: "3",
-      name: `Facture N°F20230001 - ${demoClient}`,
-      type: "pdf",
-      category: "administratif",
-      status: "sent" as DocumentStatus,
-      created_at: new Date().toISOString(),
-      description: "Facture initiale",
-      reference: "FACT-2023-003",
-      order: 3
-    },
-    {
-      id: "4",
-      name: `Rapport technique - Bilan énergétique`,
-      type: "docx",
-      category: "technique",
-      status: "draft" as DocumentStatus,
-      created_at: new Date().toISOString(),
-      description: "Rapport d'analyse énergétique",
-      reference: "RAP-2023-004",
-      order: 4
-    },
-    {
-      id: "5",
-      name: `Présentation commerciale - Solutions ${projectType}`,
-      type: "pptx",
-      category: "commercial",
-      status: "available" as DocumentStatus,
-      created_at: new Date().toISOString(),
-      description: "Présentation de la solution",
-      reference: "PRES-2023-005",
-      order: 5
-    }
-  ];
+  console.log("generateDemoDocuments appelée mais retourne un tableau vide - utilisation des vraies APIs uniquement");
+  return [];
 };

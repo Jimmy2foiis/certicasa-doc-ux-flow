@@ -16,39 +16,8 @@ const DelegateInvoicesTab: React.FC<DelegateInvoicesTabProps> = ({
   selectedStatuses,
   searchTerm,
 }) => {
-  // Données mockées pour l'exemple
-  const mockDelegateInvoices = [
-    {
-      id: "1",
-      lotNumber: "LOT-42",
-      delegate: "SOLATEC",
-      clientCount: 7,
-      totalCaeKwh: 16450,
-      totalAmount: 4354,
-      depositDate: "2025-04-18",
-      status: "generated",
-    },
-    {
-      id: "2",
-      lotNumber: "LOT-43",
-      delegate: "ISOCONFORT",
-      clientCount: 5,
-      totalCaeKwh: 11280,
-      totalAmount: 3125,
-      depositDate: "2025-04-15",
-      status: "not-generated",
-    },
-    {
-      id: "3",
-      lotNumber: "LOT-44",
-      delegate: "THERMIBLOC",
-      clientCount: 3,
-      totalCaeKwh: 7890,
-      totalAmount: 1875,
-      depositDate: "2025-04-20",
-      status: "generated",
-    },
-  ];
+  // Aucune donnée mockée - utilisation des vraies APIs
+  const delegateInvoices: any[] = [];
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -76,6 +45,14 @@ const DelegateInvoicesTab: React.FC<DelegateInvoicesTabProps> = ({
     }
   };
 
+  if (delegateInvoices.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <p className="text-gray-500">Aucune facture délégataire disponible. Connectez l'API pour voir les données.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <Table>
@@ -92,7 +69,7 @@ const DelegateInvoicesTab: React.FC<DelegateInvoicesTabProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {mockDelegateInvoices.map((invoice) => (
+          {delegateInvoices.map((invoice) => (
             <TableRow key={invoice.id}>
               <TableCell className="font-medium">{invoice.lotNumber}</TableCell>
               <TableCell>{invoice.delegate}</TableCell>

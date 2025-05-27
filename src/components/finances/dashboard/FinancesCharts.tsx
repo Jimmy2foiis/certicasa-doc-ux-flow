@@ -27,27 +27,10 @@ const FinancesCharts: React.FC<FinancesChartsProps> = ({
   selectedFicheType,
   selectedTeam,
 }) => {
-  // Données mockées pour les graphiques
-  const monthlyEvolution = [
-    { month: "Jan", cae: 180000, facturation: 18000 },
-    { month: "Fév", cae: 220000, facturation: 22000 },
-    { month: "Mar", cae: 195000, facturation: 19500 },
-    { month: "Avr", cae: 245000, facturation: 24500 },
-    { month: "Mai", cae: 280000, facturation: 28000 },
-  ];
-
-  const surfaceData = [
-    { month: "Jan", surface: 1200 },
-    { month: "Fév", surface: 1450 },
-    { month: "Mar", surface: 1320 },
-    { month: "Avr", surface: 1680 },
-    { month: "Mai", surface: 1890 },
-  ];
-
-  const ficheTypeDistribution = [
-    { name: "RES010", value: 65, fill: "#8884d8" },
-    { name: "RES020", value: 35, fill: "#82ca9d" },
-  ];
+  // Aucune donnée mockée - utilisation des vraies APIs
+  const monthlyEvolution: any[] = [];
+  const surfaceData: any[] = [];
+  const ficheTypeDistribution: any[] = [];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -59,23 +42,29 @@ const FinancesCharts: React.FC<FinancesChartsProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyEvolution}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip 
-                formatter={(value: number) => [`${value.toLocaleString()} kWh`, "CAE"]}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="cae" 
-                stroke="#8884d8" 
-                strokeWidth={2}
-                dot={{ fill: "#8884d8" }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {monthlyEvolution.length === 0 ? (
+            <div className="flex items-center justify-center h-[300px]">
+              <p className="text-gray-500">Aucune donnée disponible. Connectez l'API pour voir les graphiques.</p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={monthlyEvolution}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value: number) => [`${value.toLocaleString()} kWh`, "CAE"]}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="cae" 
+                  stroke="#8884d8" 
+                  strokeWidth={2}
+                  dot={{ fill: "#8884d8" }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 
@@ -87,23 +76,29 @@ const FinancesCharts: React.FC<FinancesChartsProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={monthlyEvolution}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip 
-                formatter={(value: number) => [`${value.toLocaleString()} €`, "Facturation"]}
-              />
-              <Line 
-                type="monotone" 
-                dataKey="facturation" 
-                stroke="#82ca9d" 
-                strokeWidth={2}
-                dot={{ fill: "#82ca9d" }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
+          {monthlyEvolution.length === 0 ? (
+            <div className="flex items-center justify-center h-[300px]">
+              <p className="text-gray-500">Aucune donnée disponible. Connectez l'API pour voir les graphiques.</p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={monthlyEvolution}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value: number) => [`${value.toLocaleString()} €`, "Facturation"]}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="facturation" 
+                  stroke="#82ca9d" 
+                  strokeWidth={2}
+                  dot={{ fill: "#82ca9d" }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 
@@ -115,17 +110,23 @@ const FinancesCharts: React.FC<FinancesChartsProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={surfaceData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip 
-                formatter={(value: number) => [`${value.toLocaleString()} m²`, "Surface"]}
-              />
-              <Bar dataKey="surface" fill="#ffc658" />
-            </BarChart>
-          </ResponsiveContainer>
+          {surfaceData.length === 0 ? (
+            <div className="flex items-center justify-center h-[300px]">
+              <p className="text-gray-500">Aucune donnée disponible. Connectez l'API pour voir les graphiques.</p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={surfaceData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value: number) => [`${value.toLocaleString()} m²`, "Surface"]}
+                />
+                <Bar dataKey="surface" fill="#ffc658" />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
 
@@ -137,24 +138,30 @@ const FinancesCharts: React.FC<FinancesChartsProps> = ({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <PieChart>
-              <Pie
-                data={ficheTypeDistribution}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                outerRadius={80}
-                dataKey="value"
-              >
-                {ficheTypeDistribution.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+          {ficheTypeDistribution.length === 0 ? (
+            <div className="flex items-center justify-center h-[300px]">
+              <p className="text-gray-500">Aucune donnée disponible. Connectez l'API pour voir les graphiques.</p>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={ficheTypeDistribution}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  dataKey="value"
+                >
+                  {ficheTypeDistribution.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </CardContent>
       </Card>
     </div>

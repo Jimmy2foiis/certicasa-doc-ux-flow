@@ -12,43 +12,18 @@ interface ProfitabilitySectionProps {
 const ProfitabilitySection: React.FC<ProfitabilitySectionProps> = ({
   selectedMonth,
 }) => {
-  // Données mockées pour l'exemple
+  // Aucune donnée mockée - utilisation des vraies APIs
   const profitabilityData = {
-    laborCostPerUnit: 45, // €/m²
-    averageCostPerIntervention: 200, // €
-    totalCostForPeriod: 3200, // € pour la période sélectionnée
-    totalRevenue: 7650, // € pour la période sélectionnée
-    grossMargin: 4450, // €
-    grossMarginPercent: 58.17, // %
+    laborCostPerUnit: 0,
+    averageCostPerIntervention: 0,
+    totalCostForPeriod: 0,
+    totalRevenue: 0,
+    grossMargin: 0,
+    grossMarginPercent: 0,
   };
 
-  // Données par délégataire (mock)
-  const delegateData = [
-    {
-      name: "SOLATEC",
-      projects: 12,
-      revenue: 3540,
-      cost: 1450,
-      margin: 2090,
-      marginPercent: 59.04,
-    },
-    {
-      name: "ISOCONFORT",
-      projects: 8,
-      revenue: 2450,
-      cost: 980,
-      margin: 1470,
-      marginPercent: 60.00,
-    },
-    {
-      name: "THERMIBLOC",
-      projects: 5,
-      revenue: 1660,
-      cost: 770,
-      margin: 890,
-      marginPercent: 53.61,
-    },
-  ];
+  // Aucune donnée mockée par délégataire
+  const delegateData: any[] = [];
 
   return (
     <Card>
@@ -110,70 +85,82 @@ const ProfitabilitySection: React.FC<ProfitabilitySectionProps> = ({
                 <CardTitle className="text-sm font-medium">Résumé financier - Période actuelle</CardTitle>
               </CardHeader>
               <CardContent className="p-4 pt-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Élément</TableHead>
-                      <TableHead className="text-right">Montant</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    <TableRow>
-                      <TableCell>Chiffre d'affaires total</TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(profitabilityData.totalRevenue)}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>Coût total opérations</TableCell>
-                      <TableCell className="text-right font-medium">
-                        {formatCurrency(profitabilityData.totalCostForPeriod)}
-                      </TableCell>
-                    </TableRow>
-                    <TableRow className="border-t-2">
-                      <TableCell className="font-bold">Marge brute</TableCell>
-                      <TableCell className="text-right font-bold text-emerald-600">
-                        {formatCurrency(profitabilityData.grossMargin)}
-                        <span className="text-sm ml-2">
-                          ({profitabilityData.grossMarginPercent.toFixed(2)}%)
-                        </span>
-                      </TableCell>
-                    </TableRow>
-                  </TableBody>
-                </Table>
+                {profitabilityData.totalRevenue === 0 ? (
+                  <div className="flex items-center justify-center py-8">
+                    <p className="text-gray-500">Aucune donnée financière disponible. Connectez l'API pour voir les données.</p>
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Élément</TableHead>
+                        <TableHead className="text-right">Montant</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell>Chiffre d'affaires total</TableCell>
+                        <TableCell className="text-right font-medium">
+                          {formatCurrency(profitabilityData.totalRevenue)}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell>Coût total opérations</TableCell>
+                        <TableCell className="text-right font-medium">
+                          {formatCurrency(profitabilityData.totalCostForPeriod)}
+                        </TableCell>
+                      </TableRow>
+                      <TableRow className="border-t-2">
+                        <TableCell className="font-bold">Marge brute</TableCell>
+                        <TableCell className="text-right font-bold text-emerald-600">
+                          {formatCurrency(profitabilityData.grossMargin)}
+                          <span className="text-sm ml-2">
+                            ({profitabilityData.grossMarginPercent.toFixed(2)}%)
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
 
           <TabsContent value="delegate">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Délégataire</TableHead>
-                  <TableHead className="text-center">Projets</TableHead>
-                  <TableHead className="text-right">CA</TableHead>
-                  <TableHead className="text-right">Coûts</TableHead>
-                  <TableHead className="text-right">Marge</TableHead>
-                  <TableHead className="text-right">Marge %</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {delegateData.map((delegate) => (
-                  <TableRow key={delegate.name}>
-                    <TableCell className="font-medium">{delegate.name}</TableCell>
-                    <TableCell className="text-center">{delegate.projects}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(delegate.revenue)}</TableCell>
-                    <TableCell className="text-right">{formatCurrency(delegate.cost)}</TableCell>
-                    <TableCell className="text-right font-medium">
-                      {formatCurrency(delegate.margin)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {delegate.marginPercent.toFixed(2)}%
-                    </TableCell>
+            {delegateData.length === 0 ? (
+              <div className="flex items-center justify-center py-8">
+                <p className="text-gray-500">Aucune donnée par délégataire disponible. Connectez l'API pour voir les données.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Délégataire</TableHead>
+                    <TableHead className="text-center">Projets</TableHead>
+                    <TableHead className="text-right">CA</TableHead>
+                    <TableHead className="text-right">Coûts</TableHead>
+                    <TableHead className="text-right">Marge</TableHead>
+                    <TableHead className="text-right">Marge %</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {delegateData.map((delegate) => (
+                    <TableRow key={delegate.name}>
+                      <TableCell className="font-medium">{delegate.name}</TableCell>
+                      <TableCell className="text-center">{delegate.projects}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(delegate.revenue)}</TableCell>
+                      <TableCell className="text-right">{formatCurrency(delegate.cost)}</TableCell>
+                      <TableCell className="text-right font-medium">
+                        {formatCurrency(delegate.margin)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {delegate.marginPercent.toFixed(2)}%
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
           </TabsContent>
         </Tabs>
       </CardContent>
