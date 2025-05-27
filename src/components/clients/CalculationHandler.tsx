@@ -1,5 +1,7 @@
-import { useToast } from '@/components/ui/use-toast';
-import ProjectCalculationView from './ProjectCalculationView';
+import React, { useState } from "react";
+import CalculationHeader from "@/components/calculations/CalculationHeader";
+import CalculationContent from "@/components/calculations/CalculationContent";
+import CalculationActions from "@/components/calculations/CalculationActions";
 
 interface CalculationHandlerProps {
   client: any;
@@ -9,85 +11,72 @@ interface CalculationHandlerProps {
   onBack: () => void;
 }
 
-const CalculationHandler = ({
-  client,
-  clientId,
-  currentProjectId,
-  savedCalculations,
-  onBack,
-}: CalculationHandlerProps) => {
-  const { toast } = useToast();
+const CalculationHandler = ({ client, clientId, currentProjectId, savedCalculations, onBack }: CalculationHandlerProps) => {
+  const [surfaceArea, setSurfaceArea] = useState("70");
+  const [roofArea, setRoofArea] = useState("85");
+  const [floorType, setFloorType] = useState("Bois");
+  const [climateZone, setClimateZone] = useState("C3");
 
-  // Fonction pour sauvegarder un nouveau calcul
-  const saveCalculation = (calculationData: any) => {
-    try {
-      // Générer un ID unique pour ce calcul
-      const calculationId = `calc_${Date.now()}`;
-      const projectNumber = savedCalculations.length + 1;
+  const handleSurfaceAreaChange = (value: string) => {
+    setSurfaceArea(value);
+  };
 
-      const newCalculation = {
-        id: calculationId,
-        projectId: currentProjectId || `project_${projectNumber}`,
-        projectName: `Réhabilitation Énergétique #${projectNumber}`,
-        clientId: clientId,
-        type: calculationData.projectType || 'RES010',
-        surface: parseFloat(calculationData.surfaceArea) || 120,
-        date: new Date().toLocaleDateString('fr-FR'),
-        improvement: calculationData.improvementPercent || 35,
-        calculationData: calculationData,
-      };
+  const handleRoofAreaChange = (value: string) => {
+    setRoofArea(value);
+  };
 
-      // Récupérer tous les calculs existants
-      const savedData = localStorage.getItem('saved_calculations');
-      let allCalculations: any[] = [];
+  const handleFloorTypeChange = (value: string) => {
+    setFloorType(value);
+  };
 
-      if (savedData) {
-        allCalculations = JSON.parse(savedData);
-      }
+  const handleClimateZoneChange = (value: string) => {
+    setClimateZone(value);
+  };
 
-      // Ajouter ou mettre à jour le calcul
-      const existingIndex = allCalculations.findIndex(
-        (c: any) => c.clientId === clientId && c.projectId === newCalculation.projectId,
-      );
+  // Préparer les informations client pour le certificat énergétique
+  const clientInfo = {
+    id: clientId,
+    name: client.name || "Client",
+    email: client.email || "",
+    address: client.address || ""
+  };
 
-      if (existingIndex >= 0) {
-        allCalculations[existingIndex] = newCalculation;
-      } else {
-        allCalculations.push(newCalculation);
-      }
+  const handleSave = (calculationData: any) => {
+    console.log("Saving calculation:", calculationData);
+    onBack();
+  };
 
-      // Sauvegarder dans le localStorage
-      localStorage.setItem('saved_calculations', JSON.stringify(allCalculations));
-
-      // Afficher un message de succès
-      toast({
-        title: 'Calcul sauvegardé',
-        description: 'Les données du calcul ont été enregistrées avec succès.',
-        duration: 3000,
-      });
-
-      // Retourner à la liste des calculs
-      onBack();
-    } catch (error) {
-      console.error('Erreur lors de la sauvegarde du calcul:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Une erreur est survenue lors de la sauvegarde du calcul.',
-        variant: 'destructive',
-        duration: 5000,
-      });
-    }
+  const handleDelete = (projectId: string) => {
+    console.log("Deleting calculation:", projectId);
+    onBack();
   };
 
   return (
-    <ProjectCalculationView
-      client={{ ...client, climateZone: client.climateZone }}
-      clientId={clientId}
-      currentProjectId={currentProjectId}
-      savedCalculations={savedCalculations}
-      onBack={onBack}
-      onSave={saveCalculation}
-    />
+    <div className="space-y-6">
+      <CalculationHeader
+        client={client}
+        clientId={clientId}
+        onBack={onBack}
+      />
+      
+      <CalculationContent
+        surfaceArea={surfaceArea}
+        roofArea={roofArea}
+        floorType={floorType}
+        climateZone={climateZone}
+        onSurfaceAreaChange={handleSurfaceAreaChange}
+        onRoofAreaChange={handleRoofAreaChange}
+        onFloorTypeChange={handleFloorTypeChange}
+        onClimateZoneChange={handleClimateZoneChange}
+        clientInfo={clientInfo}
+      />
+
+      <CalculationActions
+        onSave={handleSave}
+        onDelete={handleDelete}
+        onBack={onBack}
+      />
+    </div>
   );
 };
 
