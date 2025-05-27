@@ -12,25 +12,33 @@ import { mapProspectToClient } from '../mappers/clientMapper';
  */
 export const getClientById = async (clientId: string): Promise<Client | null> => {
   try {
-    // Most REST APIs expose detail view with a final slash
-    const response = await httpClient.get<any>(`/prospects/${clientId}/`);
+    console.log(`Recherche du client ${clientId}...`);
     
-    if (!response.success || !response.data) {
-      console.warn(`Endpoint détail non disponible pour le client ${clientId}. Tentative de fallback via la liste complète…`);
-
-      // Fallback: get full list and filter
-      const allClients = await getClients();
-      const found = allClients.find((c) => c.id === clientId);
-      if (found) return found;
-
-      console.error(`Client ${clientId} introuvable même après fallback.`);
-      return null;
+    // First try to get the client from the full list (more reliable)
+    const allClients = await getClients();
+    const found = allClients.find((c) => c.id === clientId);
+    
+    if (found) {
+      console.log(`Client ${clientId} trouvé dans la liste complète`);
+      return found;
     }
-    
-    // Map API data to Client model
-    const client = mapProspectToClient(response.data);
 
-    return client;
+    // Fallback: try the detail endpoint
+    try {
+      const response = await httpClient.get<any>(`/prospects/${clientId}/`);
+      
+      if (response.success && response.data) {
+        const client = mapProspectToClient(response.data);
+        console.log(`Client ${clientId} récupéré via l'endpoint détail`);
+        return client;
+      }
+    } catch (detailError) {
+      console.warn(`Endpoint détail non disponible pour le client ${clientId}`, detailError);
+    }
+
+    console.error(`Client ${clientId} introuvable`);
+    return null;
+    
   } catch (error) {
     console.error(`Erreur lors de la récupération du client ${clientId}:`, error);
     return null;

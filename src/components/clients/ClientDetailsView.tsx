@@ -5,6 +5,7 @@ import { useClientData } from "@/hooks/useClientData";
 import ClientDetailsHeader from "./ClientDetailsHeader";
 import ClientDetailsTabs from "./ClientDetailsTabs";
 import CalculationHandler from "./CalculationHandler";
+import { Loader2 } from "lucide-react";
 
 interface ClientDetailsViewProps {
   clientId: string;
@@ -76,7 +77,17 @@ const ClientDetailsView = ({ clientId, onBack, onClientUpdated }: ClientDetailsV
     }
   };
   
-  if (!client) return null;
+  // Afficher un loader pendant le chargement du client
+  if (!client) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-gray-400" />
+          <p className="text-gray-500">Chargement des données client...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (showCalculations) {
     return (

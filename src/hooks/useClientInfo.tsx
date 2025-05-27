@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/components/ui/use-toast";
-import { prospectsAPI } from "@/services/api.service";
+import { getClientById } from "@/services/api/clients/getClientById";
 
 export interface Project {
   id: string;
@@ -26,70 +26,45 @@ export const useClientInfo = (clientId: string) => {
   // Fonction pour charger les données du client depuis l'API
   const loadClientFromApi = useCallback(async () => {
     try {
-      console.log("Tentative de chargement du client:", clientId);
-      const clientData = await prospectsAPI.getByToken(clientId);
+      console.log("Chargement du client:", clientId);
+      const clientData = await getClientById(clientId);
       
       if (clientData) {
-        console.log("Client chargé depuis l'API:", clientData);
-        
-        // Transformer les données du prospect en format client
-        const transformedClient = {
-          id: clientData.id,
-          name: `${clientData.prenom} ${clientData.nom}`.trim(),
-          email: clientData.email,
-          phone: clientData.tel,
-          address: clientData.adresse,
-          nif: clientData.beetoolToken,
-          type: "RES010",
-          status: clientData.status === "INITIALISATION_DONE_WAITING_FOR_CEE" 
-            ? "Initialisation terminée - En attente CEE" 
-            : "En cours",
-          projects: 1,
-          created_at: clientData.createdAt,
-          postalCode: clientData.codePostal,
-          ficheType: "RES010",
-          climateZone: "C3",
-          isolatedArea: 85,
-          isolationType: "Combles",
-          floorType: "Béton",
-          installationDate: new Date().toISOString().split('T')[0],
-          lotNumber: null,
-          depositStatus: "Non déposé",
-          community: clientData.ville || "",
-          teleprospector: "Carmen Rodríguez",
-          confirmer: "Miguel Torres",
-          installationTeam: "Équipe Nord",
-          delegate: "Ana García",
-          depositDate: undefined,
-          entryChannel: "API Import"
-        };
-        
-        setClient(transformedClient);
-        setClientAddress(transformedClient.address || "");
+        console.log("Client chargé:", clientData);
+        setClient(clientData);
+        setClientAddress(clientData.address || "");
         
         toast({
           title: "Client chargé",
-          description: "Données récupérées depuis l'API",
+          description: "Données récupérées avec succès",
         });
         
       } else {
-        throw new Error("Client non trouvé dans l'API");
+        console.error("Client non trouvé");
+        setClient(null);
+        setClientAddress("");
+        
+        toast({
+          title: "Client non trouvé",
+          description: "Impossible de trouver ce client",
+          variant: "destructive",
+        });
       }
     } catch (error) {
-      console.error("Erreur lors du chargement du client depuis l'API:", error);
+      console.error("Erreur lors du chargement du client:", error);
       
       setClient(null);
       setClientAddress("");
       
       toast({
         title: "Erreur de chargement",
-        description: "Impossible de charger le client depuis l'API",
+        description: "Impossible de charger le client",
         variant: "destructive",
       });
     }
   }, [clientId, toast]);
   
-  // Fonction pour charger les projets du client depuis l'API
+  // Fonction pour charger les projets du client
   const loadProjectsFromApi = useCallback(async () => {
     try {
       // Créer un projet par défaut basé sur les données du client
@@ -115,37 +90,24 @@ export const useClientInfo = (clientId: string) => {
     
     console.log("Mise à jour de l'adresse client:", newAddress);
     setClientAddress(newAddress);
+    setClient((prev: any) => prev ? {...prev, address: newAddress} : null);
     
-    try {
-      // Essayer de mettre à jour l'adresse dans l'API
-      const updatedClient = await prospectsAPI.update(clientId, { adresse: newAddress });
-      if (updatedClient) {
-        setClient((prev: any) => prev ? {...prev, address: newAddress} : null);
-        toast({
-          title: "Adresse mise à jour",
-          description: "L'adresse du client a été mise à jour avec succès.",
-        });
-      }
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de l'adresse:", error);
-      // Même en cas d'erreur API, on garde le changement local
-      setClient((prev: any) => prev ? {...prev, address: newAddress} : null);
-      toast({
-        title: "Erreur de mise à jour",
-        description: "Impossible de mettre à jour l'adresse dans l'API",
-        variant: "destructive",
-      });
-    }
-  }, [client, clientId, toast]);
+    toast({
+      title: "Adresse mise à jour",
+      description: "L'adresse du client a été mise à jour localement.",
+    });
+  }, [client, toast]);
 
   // Charger le client et les projets au montage du composant
   useEffect(() => {
-    const loadApiData = async () => {
-      await loadClientFromApi();
-      await loadProjectsFromApi();
-    };
-    
-    loadApiData();
+    if (clientId) {
+      const loadApiData = async () => {
+        await loadClientFromApi();
+        await loadProjectsFromApi();
+      };
+      
+      loadApiData();
+    }
   }, [clientId, loadClientFromApi, loadProjectsFromApi]);
 
   return {
