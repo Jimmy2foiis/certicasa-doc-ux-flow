@@ -1,105 +1,94 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { User, MapPin, Phone, Mail, FileText, Building, Zap } from "lucide-react";
+import { User, MapPin, Mail, Phone, FileText, Zap, Euro } from "lucide-react";
 
 interface ClientDataPreviewProps {
   client: any;
 }
 
 const ClientDataPreview = ({ client }: ClientDataPreviewProps) => {
+  // Données simulées pour l'aperçu
+  const thermalData = {
+    surface: Math.floor(Math.random() * 50) + 50,
+    cae: -(Math.floor(Math.random() * 500) + 800),
+    price: -(Math.floor(Math.random() * 100) + 80),
+    climateZone: 'C3',
+    thermalCoefficient: 46
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {/* Personal Information */}
-      <Card>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Informations personnelles */}
+      <Card className="bg-blue-50 border-blue-200">
         <CardContent className="p-4">
-          <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <User className="h-4 w-4" />
-            Informations Personnelles
-          </h4>
-          <div className="space-y-2">
-            <div>
-              <label className="text-xs text-gray-500 uppercase tracking-wide">Nom</label>
-              <p className="font-medium">{client.name}</p>
+          <div className="flex items-center gap-2 mb-4">
+            <User className="h-5 w-5 text-blue-600" />
+            <h3 className="font-semibold text-blue-800">Informations Client</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-gray-600" />
+              <span className="font-medium">{client.name}</span>
             </div>
-            {client.email && (
-              <div>
-                <label className="text-xs text-gray-500 uppercase tracking-wide">Email</label>
-                <p className="flex items-center gap-1">
-                  <Mail className="h-3 w-3 text-gray-400" />
-                  {client.email}
-                </p>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-gray-600" />
+              <span className="text-sm">{client.email}</span>
+            </div>
             {client.phone && (
-              <div>
-                <label className="text-xs text-gray-500 uppercase tracking-wide">Téléphone</label>
-                <p className="flex items-center gap-1">
-                  <Phone className="h-3 w-3 text-gray-400" />
-                  {client.phone}
-                </p>
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-gray-600" />
+                <span className="text-sm">{client.phone}</span>
               </div>
             )}
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-gray-600" />
+              <span className="text-sm">{client.address}</span>
+            </div>
             {client.nif && (
-              <div>
-                <label className="text-xs text-gray-500 uppercase tracking-wide">NIF</label>
-                <p className="font-mono text-sm">{client.nif}</p>
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-gray-600" />
+                <span className="text-sm">NIF: {client.nif}</span>
               </div>
             )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Address Information */}
-      <Card>
+      {/* Données thermiques */}
+      <Card className="bg-green-50 border-green-200">
         <CardContent className="p-4">
-          <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <MapPin className="h-4 w-4" />
-            Adresse
-          </h4>
-          <div className="space-y-2">
-            {client.address && (
-              <div>
-                <label className="text-xs text-gray-500 uppercase tracking-wide">Adresse complète</label>
-                <p>{client.address}</p>
-              </div>
-            )}
-            <div className="pt-2">
-              <Badge variant="outline" className="text-xs">
-                Zone climatique: D3
-              </Badge>
-            </div>
+          <div className="flex items-center gap-2 mb-4">
+            <Zap className="h-5 w-5 text-green-600" />
+            <h3 className="font-semibold text-green-800">Économie Thermique</h3>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Project Information */}
-      <Card>
-        <CardContent className="p-4">
-          <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-            <Building className="h-4 w-4" />
-            Projet
-          </h4>
-          <div className="space-y-2">
-            <div>
-              <label className="text-xs text-gray-500 uppercase tracking-wide">Type</label>
-              <p className="flex items-center gap-1">
-                <FileText className="h-3 w-3 text-gray-400" />
-                {client.type || "Résidentiel"}
-              </p>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Surface habitable</span>
+              <Badge variant="secondary">{thermalData.surface} m²</Badge>
             </div>
-            <div>
-              <label className="text-xs text-gray-500 uppercase tracking-wide">Statut</label>
-              <Badge variant={client.status === "active" ? "default" : "secondary"}>
-                {client.status || "En cours"}
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Zone thermique</span>
+              <Badge variant="secondary">{thermalData.climateZone} - Coefficient {thermalData.thermalCoefficient}</Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">CAE projet</span>
+              <Badge variant="secondary" className="bg-purple-100 text-purple-800">
+                {thermalData.cae} kWh/an
               </Badge>
             </div>
-            <div>
-              <label className="text-xs text-gray-500 uppercase tracking-wide">Projets</label>
-              <p className="flex items-center gap-1">
-                <Zap className="h-3 w-3 text-gray-400" />
-                {client.projects || 0} projet(s)
-              </p>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Prix projet</span>
+              <Badge variant="secondary" className="bg-orange-100 text-orange-800">
+                <Euro className="h-3 w-3 mr-1" />
+                {thermalData.price} €
+              </Badge>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Prix au m²</span>
+              <Badge variant="secondary">
+                {(thermalData.price / thermalData.surface).toFixed(2)} €/m²
+              </Badge>
             </div>
           </div>
         </CardContent>
