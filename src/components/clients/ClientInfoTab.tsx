@@ -2,9 +2,9 @@
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast"; 
 import { GeoCoordinates } from "@/services/geoCoordinatesService";
-import { ClientTabsContainer } from "./ClientTabsContainer";
-import ClientInfoCard from "./ClientInfoCard";
-import CadastralInfo from "./CadastralInfo";
+import ClientPersonalInfo from "./ClientPersonalInfo";
+import AddressFormSection from "./sections/AddressFormSection";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface ClientInfoTabProps {
   client: any;
@@ -35,10 +35,7 @@ const ClientInfoTab = ({
 }: ClientInfoTabProps) => {
   const { toast } = useToast();
   // Adresse par défaut du client
-  const [address, setAddress] = useState(client.address || "Rue Serrano 120, 28006 Madrid");
-  const [surfaceArea, setSurfaceArea] = useState("56");
-  const [roofArea, setRoofArea] = useState("89");
-  const [floorType, setFloorType] = useState("Bois");
+  const [address, setAddress] = useState(client.address || "");
   
   // Gestionnaire de changement d'adresse
   const handleAddressChange = (newAddress: string) => {
@@ -84,60 +81,42 @@ const ClientInfoTab = ({
     }
   };
 
-  // Mock data for ClientTabsContainer
-  const mockSavedCalculations: any[] = [];
-  
-  const handleNewCalculation = () => {
-    if (onShowCalculation) {
-      onShowCalculation();
-    }
-  };
-
-  const handleEditCalculation = (projectId: string) => {
-    if (onShowCalculation) {
-      onShowCalculation(projectId);
-    }
-  };
-
-  const handleDeleteCalculation = (projectId: string) => {
-    console.log("Deleting calculation:", projectId);
-  };
-
-  const handleBack = () => {
-    // Handle back navigation if needed
+  const handleClimateZoneChange = (climateData: any) => {
+    console.log("Données de zone climatique reçues:", climateData);
   };
   
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Colonne de gauche - Informations personnelles */}
       <div className="lg:col-span-1">
-        <ClientInfoCard 
-          client={client}
-          address={address}
-          onAddressChange={handleAddressChange}
-          onCoordinatesChange={handleCoordinatesChange}
-          utmCoordinates={utmCoordinates}
-          cadastralReference={cadastralReference}
-          climateZone={climateZone}
-          apiSource={apiSource}
-          loadingCadastral={loadingCadastral}
-          onRefreshCadastralData={handleRefreshCadastralData}
-          gpsCoordinates={coordinates}
-        />
+        <Card>
+          <CardContent className="p-6">
+            <ClientPersonalInfo 
+              client={client}
+              address={address}
+              onAddressChange={handleAddressChange}
+              onCoordinatesChange={handleCoordinatesChange}
+              utmCoordinates={utmCoordinates}
+              cadastralReference={cadastralReference}
+              climateZone={climateZone}
+              apiSource={apiSource}
+              loadingCadastral={loadingCadastral}
+              onRefreshCadastralData={handleRefreshCadastralData}
+            />
+          </CardContent>
+        </Card>
       </div>
 
+      {/* Colonne de droite - Formulaire d'adresse complet */}
       <div className="lg:col-span-2">
-        <ClientTabsContainer 
-          client={client}
-          clientId={client?.id || ""}
-          savedCalculations={mockSavedCalculations}
-          onNewCalculation={handleNewCalculation}
-          onEditCalculation={handleEditCalculation}
-          onDeleteCalculation={handleDeleteCalculation}
-          onBack={handleBack}
-          surfaceArea={surfaceArea}
-          roofArea={roofArea}
-          floorType={floorType}
-        />
+        <Card>
+          <CardContent className="p-6">
+            <AddressFormSection
+              client={client}
+              onClimateZoneChange={handleClimateZoneChange}
+            />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
