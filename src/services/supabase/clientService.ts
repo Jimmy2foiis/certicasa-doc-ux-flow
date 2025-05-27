@@ -1,8 +1,7 @@
-
 import { Client } from './types';
 
 // Point de terminaison unique pour récupérer les prospects/clients
-const PROSPECTS_ENDPOINT = 'https://cert.mitain.com/api/prospects/';
+const PROSPECTS_ENDPOINT = 'https://certicasa.mitain.com/api/prospects/';
 
 // ---------------------------------------------------------------------------
 // Clients

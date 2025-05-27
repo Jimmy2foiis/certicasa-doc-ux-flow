@@ -18,20 +18,19 @@ export const mapProspectToClient = (prospect: any): Client => {
     address: prospect.adresse || '',
     nif: prospect.nif || '',
     type: prospect.type || 'RES010',
-    status: prospect.status || "En cours",
+    status: "En cours",
     projects: 0,
-    created_at: prospect.createdAt || prospect.updatedAt || new Date().toISOString(),
-    // Enrichir avec des données pour notre interface
-    postalCode: prospect.codePostal || extractPostalCode(prospect.adresse),
+    created_at: prospect.createdAt || new Date().toISOString(),
+    // Enrichir avec des données pour notre nouvelle interface
+    postalCode: extractPostalCode(prospect.adresse),
     ficheType: prospect.type || 'RES010',
     climateZone: prospect.zone_climatique || 'C',
-    isolatedArea: prospect.surface_isolee || 0,
+    isolatedArea: prospect.surface_isolee || Math.floor(Math.random() * 100) + 20,
     isolationType: prospect.type_isolation || 'Combles',
     floorType: prospect.type_plancher || 'Bois',
-    installationDate: prospect.date_pose || formatDate(new Date()),
+    installationDate: prospect.date_pose || formatDate(new Date(Date.now() - Math.floor(Math.random() * 90 * 24 * 60 * 60 * 1000))),
     lotNumber: prospect.numero_lot || null,
-    depositStatus: prospect.statut_depot || 'Non déposé',
-    community: prospect.ville || prospect.pays
+    depositStatus: prospect.statut_depot || 'Non déposé'
   };
 };
 

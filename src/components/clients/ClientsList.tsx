@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import ClientsTable from '@/components/clients/ClientsTable';
 import ClientsFloatingBar from '@/components/clients/ClientsFloatingBar';
@@ -68,7 +67,6 @@ const ClientsList = ({
         onDownloadZip={() => handleDownloadZip(selectedClients)}
         onRefresh={refreshClients}
         selectedClientsCount={selectedClients.length}
-        isLoading={loading}
       />
       
       {/* Tableau des clients */}
