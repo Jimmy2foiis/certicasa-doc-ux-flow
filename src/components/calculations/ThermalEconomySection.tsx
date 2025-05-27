@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect } from "react";
 import { FileText } from "lucide-react";
+import { useCertificateQueue } from "@/hooks/useCertificateQueue";
 
 export const climateZoneCoefficients: Record<string, number> = {
   "A3": 25,
@@ -82,21 +83,44 @@ const ThermalEconomySection = ({
     uValueAfter,
     climateZone: validClimateZone
   });
+
+  const { addToQueue } = useCertificateQueue();
+
   const handleClimateZoneChange = (zone: string) => {
     console.log('🌡️ ThermalEconomySection - Changement manuel vers:', zone);
     if (onClimateZoneChange) {
       onClimateZoneChange(zone);
     }
   };
-  const handleGenerateInvoice = () => {
-    console.log('Génération de facture demandée');
-    // Logique de génération de facture à implémenter
+
+  const handleAddToQueue = () => {
+    // Calculate improvement percentage
+    const improvementPercent = uValueBefore > 0 ? 
+      Math.round(((uValueBefore - uValueAfter) / uValueBefore) * 100) : 0;
+
+    // Add certificate to queue
+    addToQueue({
+      clientName: "Client", // This should come from props in a real implementation
+      clientEmail: "client@example.com", // This should come from props
+      projectType,
+      surfaceArea,
+      uValueBefore,
+      uValueAfter,
+      climateZone: validClimateZone,
+      annualSavings,
+      improvementPercent
+    });
   };
+
   return (
     <div className="mt-6 space-y-4">
       {/* Bouton Envoyer le Certificat */}
       <div className="flex justify-center">
-        <Button onClick={handleGenerateInvoice} size="lg" className="text-white px-6 py-3 rounded-lg shadow-md bg-orange-500 hover:bg-orange-400">
+        <Button 
+          onClick={handleAddToQueue} 
+          size="lg" 
+          className="text-white px-6 py-3 rounded-lg shadow-md bg-orange-500 hover:bg-orange-400"
+        >
           <FileText className="h-5 w-5 mr-2" />
           Envoyer le Certificat
         </Button>
