@@ -17,7 +17,7 @@ export const createClientRecord = async (clientData: Client): Promise<Client | n
     const response = await httpClient.post<any>('/prospects/', requestData);
     
     if (!response.success || !response.data) {
-      console.error('Erreur lors de la création du client:', response.message);
+      console.error('Erreur lors de la création du client:', response.error || response.message);
       return null;
     }
     
