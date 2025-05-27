@@ -1,5 +1,5 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useThermalEconomyCalculations } from "@/hooks/useThermalEconomyCalculations";
 import DelegateSelector from "./thermal-economy/DelegateSelector";
 import CalculationsDisplay from "./thermal-economy/CalculationsDisplay";
@@ -7,6 +7,7 @@ import CherryOption from "./thermal-economy/CherryOption";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useEffect } from "react";
+import { FileText } from "lucide-react";
 
 export const climateZoneCoefficients: Record<string, number> = {
   "A3": 25,
@@ -92,69 +93,89 @@ const ThermalEconomySection = ({
     }
   };
 
+  const handleGenerateInvoice = () => {
+    console.log('Génération de facture demandée');
+    // Logique de génération de facture à implémenter
+  };
+
   return (
-    <Card className="mt-6">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg font-semibold">
-          Économie Thermique Annuelle
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label>Zone Thermique (G: {gCoefficient})</Label>
-            <Select 
-              value={validClimateZone}
-              onValueChange={handleClimateZoneChange}
-            >
-              <SelectTrigger>
-                <SelectValue>
-                  {validClimateZone} - Coefficient {gCoefficient}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent className="bg-white border shadow-lg z-50">
-                {Object.entries(climateZoneCoefficients).map(([zone, coef]) => (
-                  <SelectItem key={zone} value={zone}>
-                    {zone} - G={coef}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+    <div className="mt-6 space-y-4">
+      {/* Bouton Générer Facture */}
+      <div className="flex justify-center">
+        <Button 
+          onClick={handleGenerateInvoice}
+          className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow-md"
+          size="lg"
+        >
+          <FileText className="h-5 w-5 mr-2" />
+          Générer Facture
+        </Button>
+      </div>
+
+      {/* Carte Économie Thermique */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-semibold">
+            Économie Thermique Annuelle
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Zone Thermique (G: {gCoefficient})</Label>
+              <Select 
+                value={validClimateZone}
+                onValueChange={handleClimateZoneChange}
+              >
+                <SelectTrigger>
+                  <SelectValue>
+                    {validClimateZone} - Coefficient {gCoefficient}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="bg-white border shadow-lg z-50">
+                  {Object.entries(climateZoneCoefficients).map(([zone, coef]) => (
+                    <SelectItem key={zone} value={zone}>
+                      {zone} - G={coef}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              
+              {climateMethod && climateReferenceCity && (
+                <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
+                  📍 Déterminé automatiquement: {climateReferenceCity}
+                  {climateDistance && ` (${climateDistance}km)`}
+                  <br />
+                  Confiance: {climateConfidence}%
+                </div>
+              )}
+            </div>
             
-            {climateMethod && climateReferenceCity && (
-              <div className="text-xs text-green-600 bg-green-50 p-2 rounded">
-                📍 Déterminé automatiquement: {climateReferenceCity}
-                {climateDistance && ` (${climateDistance}km)`}
-                <br />
-                Confiance: {climateConfidence}%
-              </div>
-            )}
+            <DelegateSelector
+              delegate={delegate}
+              onDelegateChange={setDelegate}
+            />
           </div>
           
-          <DelegateSelector
-            delegate={delegate}
-            onDelegateChange={setDelegate}
+          <CalculationsDisplay
+            annualSavings={annualSavings}
+            projectPrice={projectPrice}
+            pricePerSqm={pricePerSqm}
           />
-        </div>
-        
-        <CalculationsDisplay
-          annualSavings={annualSavings}
-          projectPrice={projectPrice}
-          pricePerSqm={pricePerSqm}
-        />
-        
-        <CherryOption
-          cherryEnabled={cherryEnabled}
-          onCherryEnabledChange={setCherryEnabled}
-          pricePerSqm={pricePerSqm}
-          projectPrice={projectPrice}
-          cherryPricePerSqm={cherryPricePerSqm}
-          cherryProjectPrice={cherryProjectPrice}
-          totalPricePerSqm={totalPricePerSqm}
-          totalProjectPrice={totalProjectPrice}
-        />
-      </CardContent>
-    </Card>
+          
+          <CherryOption
+            cherryEnabled={cherryEnabled}
+            onCherryEnabledChange={setCherryEnabled}
+            pricePerSqm={pricePerSqm}
+            projectPrice={projectPrice}
+            cherryPricePerSqm={cherryPricePerSqm}
+            cherryProjectPrice={cherryProjectPrice}
+            totalPricePerSqm={totalPricePerSqm}
+            totalProjectPrice={totalProjectPrice}
+          />
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
