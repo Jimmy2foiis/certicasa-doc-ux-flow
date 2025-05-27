@@ -2,7 +2,7 @@
 // Fonctions d'authentification avec l'API REST
 export const signUp = async (email: string, password: string) => {
   try {
-    const response = await fetch('https://certicasa.mitain.com/api/auth/register', {
+    const response = await fetch('https://cert.mitain.com/api/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -26,7 +26,7 @@ export const signUp = async (email: string, password: string) => {
 
 export const signIn = async (email: string, password: string) => {
   try {
-    const response = await fetch('https://certicasa.mitain.com/api/auth/login', {
+    const response = await fetch('https://cert.mitain.com/api/auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ export const getCurrentUser = async () => {
   }
   
   try {
-    const response = await fetch('https://certicasa.mitain.com/api/auth/me', {
+    const response = await fetch('https://cert.mitain.com/api/auth/me', {
       headers: {
         'Authorization': `Bearer ${token}`
       }

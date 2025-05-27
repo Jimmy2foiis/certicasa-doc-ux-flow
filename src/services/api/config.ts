@@ -4,7 +4,7 @@
  */
 
 // URL de base de l'API
-export const API_BASE_URL = 'https://certicasa.mitain.com/api';
+export const API_BASE_URL = 'https://cert.mitain.com/api';
 
 // Options par défaut pour les requêtes fetch
 export const DEFAULT_FETCH_OPTIONS = {
