@@ -6,6 +6,7 @@ import { Building2, CheckCircle, Clock, Users } from "lucide-react";
 interface ThermicianSelectorProps {
   selectedThermician: string;
   onThermicianSelect: (thermician: string) => void;
+  disabled?: boolean;
 }
 
 const thermicians = [
@@ -38,18 +39,20 @@ const thermicians = [
   },
 ];
 
-const ThermicianSelector = ({ selectedThermician, onThermicianSelect }: ThermicianSelectorProps) => {
+const ThermicianSelector = ({ selectedThermician, onThermicianSelect, disabled = false }: ThermicianSelectorProps) => {
   return (
     <div className="grid grid-cols-1 gap-4">
       {thermicians.map((thermician) => (
         <Card
           key={thermician.id}
           className={`cursor-pointer transition-all duration-200 hover:shadow-md ${
-            selectedThermician === thermician.id
-              ? "ring-2 ring-green-500 bg-green-50"
-              : "hover:bg-gray-50"
+            disabled 
+              ? "opacity-50 cursor-not-allowed" 
+              : selectedThermician === thermician.id
+                ? "ring-2 ring-green-500 bg-green-50"
+                : "hover:bg-gray-50"
           }`}
-          onClick={() => onThermicianSelect(thermician.id)}
+          onClick={() => !disabled && onThermicianSelect(thermician.id)}
         >
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -73,7 +76,7 @@ const ThermicianSelector = ({ selectedThermician, onThermicianSelect }: Thermici
                 </div>
               </div>
               <div className="flex flex-col items-end gap-2">
-                {selectedThermician === thermician.id && (
+                {selectedThermician === thermician.id && !disabled && (
                   <CheckCircle className="h-5 w-5 text-green-500" />
                 )}
                 <Badge variant={thermician.status === "active" ? "default" : "secondary"}>

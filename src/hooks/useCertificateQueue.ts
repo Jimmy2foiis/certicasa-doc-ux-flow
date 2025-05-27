@@ -2,11 +2,13 @@
 import { useState, useCallback } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
 
 export interface CertificateQueueItem {
   id: string;
   clientName: string;
   clientEmail: string;
+  clientPhone?: string;
   projectType: string;
   surfaceArea: number;
   uValueBefore: number;
@@ -16,6 +18,11 @@ export interface CertificateQueueItem {
   improvementPercent: number;
   addedDate: string;
   status: 'pending' | 'processing' | 'completed' | 'error';
+  energyClass?: string;
+  consumption?: number;
+  estimatedAmount?: number;
+  isUrgent?: boolean;
+  reference: string;
 }
 
 const STORAGE_KEY = 'certificate_queue';
@@ -45,27 +52,37 @@ export const useCertificateQueue = () => {
   }, []);
 
   // Add certificate to queue
-  const addToQueue = useCallback((certificateData: Omit<CertificateQueueItem, 'id' | 'addedDate' | 'status'>) => {
+  const addToQueue = useCallback((certificateData: Omit<CertificateQueueItem, 'id' | 'addedDate' | 'status' | 'reference'>) => {
     const newCertificate: CertificateQueueItem = {
       ...certificateData,
       id: `cert_${Date.now()}`,
       addedDate: new Date().toISOString(),
-      status: 'pending'
+      status: 'pending',
+      reference: `CEE-2024-${String(Date.now()).slice(-3)}`,
+      energyClass: 'C', // Default value
+      consumption: Math.round(Math.random() * 200 + 100), // Mock data
+      estimatedAmount: Math.round(Math.random() * 5000 + 2000), // Mock data
+      isUrgent: Math.random() > 0.7 // 30% chance of being urgent
     };
 
     const currentQueue = getQueue();
     const updatedQueue = [...currentQueue, newCertificate];
     saveQueue(updatedQueue);
 
-    // Show success toast with navigation option
+    // Show success toast with navigation button
     toast({
       title: "Certificat ajouté à la liste d'envoi",
       description: `Le certificat pour ${certificateData.clientName} a été ajouté à la queue d'envoi.`,
       duration: 5000,
-      action: {
-        altText: "Aller au suivi des envois",
-        onClick: () => navigate('/energy-certificates/suivi')
-      }
+      action: (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/certificats-energetiques/suivi')}
+        >
+          Aller au suivi
+        </Button>
+      )
     });
 
     return newCertificate;
@@ -77,9 +94,17 @@ export const useCertificateQueue = () => {
     return queue.filter(cert => cert.status === 'pending').length;
   }, [getQueue]);
 
+  // Remove certificates from queue
+  const removeFromQueue = useCallback((certificateIds: string[]) => {
+    const currentQueue = getQueue();
+    const updatedQueue = currentQueue.filter(cert => !certificateIds.includes(cert.id));
+    saveQueue(updatedQueue);
+  }, [getQueue, saveQueue]);
+
   return {
     addToQueue,
     getQueue,
-    getPendingCount
+    getPendingCount,
+    removeFromQueue
   };
 };
