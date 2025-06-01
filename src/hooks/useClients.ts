@@ -43,6 +43,36 @@ export interface ClientFilters {
   community: string | null;
 }
 
+// Client mocké pour les tests
+const getMockedClient = (): Client => ({
+  id: 'client_test_001',
+  name: 'Sophie Martínez García',
+  email: 'sophie.martinez@email.com',
+  phone: '0634567890',
+  address: 'Calle Mayor 123, 28001 Madrid',
+  nif: 'X1234567Z',
+  type: 'RES010',
+  status: 'Initialisation terminée - En attente CEE',
+  projects: 1,
+  created_at: '2025-05-28T10:00:00.000Z',
+  postalCode: '28001',
+  ficheType: 'RES010',
+  climateZone: 'D3',
+  isolatedArea: 95,
+  isolationType: 'Combles perdues',
+  floorType: 'Béton',
+  installationDate: '2025-06-15',
+  lotNumber: 'LOT-2025-001',
+  depositStatus: 'Non déposé',
+  community: 'Madrid',
+  teleprospector: 'Carmen Rodríguez',
+  confirmer: 'Miguel Torres',
+  installationTeam: 'Équipe Centre',
+  delegate: 'Ana García',
+  depositDate: undefined,
+  entryChannel: 'Téléprospection'
+});
+
 export const useClients = () => {
   const { toast } = useToast();
   const [clients, setClients] = useState<Client[]>([]);
@@ -63,62 +93,69 @@ export const useClients = () => {
       setLoading(true);
       console.log("Chargement des clients depuis l'API...");
       
-      const prospectsData = await prospectsAPI.getAll();
+      // Ajouter le client mocké en premier
+      const mockedClient = getMockedClient();
+      let allClients = [mockedClient];
       
-      if (prospectsData && prospectsData.length > 0) {
-        // Transformer les prospects en clients
-        const transformedClients = prospectsData.map((prospect: any) => ({
-          id: prospect.id,
-          name: `${prospect.prenom} ${prospect.nom}`.trim(),
-          email: prospect.email,
-          phone: prospect.tel,
-          address: prospect.adresse,
-          nif: prospect.beetoolToken,
-          type: "RES010",
-          status: prospect.status === "INITIALISATION_DONE_WAITING_FOR_CEE" 
-            ? "Initialisation terminée - En attente CEE" 
-            : "En cours",
-          projects: 1,
-          created_at: prospect.createdAt,
-          postalCode: prospect.codePostal,
-          ficheType: "RES010",
-          climateZone: "C3",
-          isolatedArea: 85,
-          isolationType: "Combles",
-          floorType: "Béton",
-          installationDate: new Date().toISOString().split('T')[0],
-          lotNumber: null,
-          depositStatus: "Non déposé",
-          community: prospect.ville || "",
-          teleprospector: "Carmen Rodríguez",
-          confirmer: "Miguel Torres",
-          installationTeam: "Équipe Nord",
-          delegate: "Ana García",
-          depositDate: undefined,
-          entryChannel: "API Import"
-        }));
+      try {
+        const prospectsData = await prospectsAPI.getAll();
         
-        setClients(transformedClients);
-        
-        toast({
-          title: "Clients chargés",
-          description: `${transformedClients.length} client(s) récupéré(s) depuis l'API`,
-        });
-      } else {
-        setClients([]);
-        toast({
-          title: "Aucun client",
-          description: "Aucun client trouvé dans l'API",
-        });
+        if (prospectsData && prospectsData.length > 0) {
+          // Transformer les prospects en clients
+          const transformedClients = prospectsData.map((prospect: any) => ({
+            id: prospect.id,
+            name: `${prospect.prenom} ${prospect.nom}`.trim(),
+            email: prospect.email,
+            phone: prospect.tel,
+            address: prospect.adresse,
+            nif: prospect.beetoolToken,
+            type: "RES010",
+            status: prospect.status === "INITIALISATION_DONE_WAITING_FOR_CEE" 
+              ? "Initialisation terminée - En attente CEE" 
+              : "En cours",
+            projects: 1,
+            created_at: prospect.createdAt,
+            postalCode: prospect.codePostal,
+            ficheType: "RES010",
+            climateZone: "C3",
+            isolatedArea: 85,
+            isolationType: "Combles",
+            floorType: "Béton",
+            installationDate: new Date().toISOString().split('T')[0],
+            lotNumber: null,
+            depositStatus: "Non déposé",
+            community: prospect.ville || "",
+            teleprospector: "Carmen Rodríguez",
+            confirmer: "Miguel Torres",
+            installationTeam: "Équipe Nord",
+            delegate: "Ana García",
+            depositDate: undefined,
+            entryChannel: "API Import"
+          }));
+          
+          // Ajouter les clients de l'API après le client mocké
+          allClients = [mockedClient, ...transformedClients];
+        }
+      } catch (apiError) {
+        console.warn("Erreur API, utilisation du client mocké uniquement:", apiError);
       }
+      
+      setClients(allClients);
+      
+      toast({
+        title: "Clients chargés",
+        description: `${allClients.length} client(s) disponible(s) (dont 1 client test)`,
+      });
       
     } catch (error) {
       console.error("Erreur lors du chargement des clients:", error);
-      setClients([]);
+      // En cas d'erreur, utiliser au moins le client mocké
+      const mockedClient = getMockedClient();
+      setClients([mockedClient]);
       
       toast({
-        title: "Erreur de chargement",
-        description: "Impossible de charger les clients depuis l'API",
+        title: "Mode hors ligne",
+        description: "Affichage du client test uniquement",
         variant: "destructive",
       });
     } finally {
